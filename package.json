@@ -1,12 +1,12 @@
 {
-  "name": "mattermost-desktop",
-  "productName": "Mattermost",
+  "name": "ktalk-desktop",
+  "productName": "ktalk",
   "version": "5.0.0-develop",
-  "description": "Mattermost",
+  "description": "kTalk",
   "main": "dist/index.js",
   "author": "Mattermost, Inc. <feedback@mattermost.com>",
   "license": "Apache-2.0",
-  "desktopName": "Mattermost.Desktop",
+  "desktopName": "kTalk.Desktop",
   "homepage": "https://about.mattermost.com",
   "engines": {
     "node": ">=4.2.0"
@@ -22,6 +22,12 @@
     "disturl": "https://electronjs.org/headers",
     "runtime": "electron",
     "build_from_source": true
+  },
+  "protocols": {
+    "name": "ktalk-protocol",
+    "schemes": [
+      "ktalk"
+    ]
   },
   "scripts": {
     "build": "npm-run-all build:*",
