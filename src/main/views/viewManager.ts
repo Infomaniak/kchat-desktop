@@ -424,7 +424,7 @@ export class ViewManager {
             const parsedURL = urlUtils.parseURL(url)!;
             const tabView = urlUtils.getView(parsedURL, this.configServers, true);
             if (tabView) {
-                const urlWithSchema = `${urlUtils.parseURL(tabView.url)?.origin}${parsedURL.pathname}${parsedURL.search}`;
+                const urlWithSchema = `${urlUtils.parseURL(tabView.url)?.origin}${parsedURL.pathname}${parsedURL.search}${parsedURL.hash}`;
                 if (this.closedViews.has(tabView.name)) {
                     this.openClosedTab(tabView.name, urlWithSchema);
                 } else {
