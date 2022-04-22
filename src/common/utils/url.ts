@@ -127,16 +127,43 @@ function getView(inputURL: URL | string, teams: TeamWithTabs[], ignoreScheme = f
     if (!parsedURL) {
         return undefined;
     }
+    console.log(parsedURL);
 
     // TODO: add check for IK server (prod, preprod dev..)
     // Match for ktalk protocol and redirect to IK server
     if (parsedURL.protocol === 'ktalk:') {
+        if (parsedURL.pathname.includes('desktop-login')) {
+            console.log(parsedURL.search)
+            if (!teams[0].tabs.some((el) => el.name === 'TAB_LOGIN')) {
+                teams[0].tabs.push({
+                    name: 'TAB_LOGIN',
+                    order: 3,
+                    isOpen: true,
+                });
+            }
+            const srv = new MattermostServer(teams[0].name, teams[0].url);
+            const tabView = getServerView(srv, teams[0].tabs[0]);
+            return {name: tabView.name, url: parsedURL.href};
+        }
+
         const srv = new MattermostServer(teams[0].name, teams[0].url);
         const tabView = getServerView(srv, teams[0].tabs[0]);
         const ktalkParsedUrl = parseURL(tabView.url);
         if (ktalkParsedUrl) {
             return {name: tabView.name, url: ktalkParsedUrl.toString()};
         }
+    }
+
+    if ((parsedURL.host.includes('infomaniak.com') || parsedURL.host.includes('infomaniak.ch')) && parsedURL.host.includes('kmeet')) {
+        if (!teams[0].tabs.some((el) => el.name === 'TAB_MEET')) {
+            teams[0].tabs.push({name: 'TAB_MEET',
+                order: 4,
+                isOpen: true,
+            });
+        }
+        const srv = new MattermostServer(teams[0].name, teams[0].url);
+        const tabView = getServerView(srv, teams[0].tabs[0]);
+        return {name: tabView.name, url: parsedURL.href};
     }
 
     // If not ktalk protocol and maybe another server than IK server
