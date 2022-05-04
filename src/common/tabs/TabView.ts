@@ -8,16 +8,11 @@ import {MattermostServer} from 'common/servers/MattermostServer';
 import MessagingTabView from './MessagingTabView';
 import FocalboardTabView from './FocalboardTabView';
 import PlaybooksTabView from './PlaybooksTabView';
-import LoginTabView from './LoginTabView';
-import MeetTabView from './MeetTabView';
 
 export const TAB_MESSAGING = 'TAB_MESSAGING';
 export const TAB_FOCALBOARD = 'TAB_FOCALBOARD';
 export const TAB_PLAYBOOKS = 'TAB_PLAYBOOKS';
-export const TAB_LOGIN = 'TAB_LOGIN';
-export const TAB_MEET = 'TAB_MEET';
-
-export type TabType = typeof TAB_MESSAGING | typeof TAB_FOCALBOARD | typeof TAB_PLAYBOOKS | typeof TAB_LOGIN | typeof TAB_MEET;
+export type TabType = typeof TAB_MESSAGING | typeof TAB_FOCALBOARD | typeof TAB_PLAYBOOKS;
 
 export interface TabView {
     server: MattermostServer;
@@ -45,14 +40,6 @@ export function getDefaultTeamWithTabsFromTeam(team: Team) {
                 name: TAB_PLAYBOOKS,
                 order: 2,
             },
-            {
-                name: TAB_LOGIN,
-                order: 3,
-            },
-            {
-                name: TAB_MEET,
-                order: 4,
-            },
         ],
     };
 }
@@ -65,10 +52,6 @@ export function getServerView(srv: MattermostServer, tab: Tab) {
         return new FocalboardTabView(srv);
     case TAB_PLAYBOOKS:
         return new PlaybooksTabView(srv);
-    case TAB_LOGIN:
-        return new LoginTabView(srv);
-    case TAB_MEET:
-        return new MeetTabView(srv);
     default:
         throw new Error('Not implemeneted');
     }
@@ -86,10 +69,6 @@ export function getTabDisplayName(tabType: TabType) {
         return 'Boards';
     case TAB_PLAYBOOKS:
         return 'Playbooks';
-    case TAB_LOGIN:
-        return 'Login';
-    case TAB_MEET:
-        return 'kMeet';
     default:
         throw new Error('Not implemeneted');
     }

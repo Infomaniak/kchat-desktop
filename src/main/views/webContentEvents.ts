@@ -18,7 +18,6 @@ import allowProtocolDialog from '../allowProtocolDialog';
 import {composeUserAgent} from '../utils';
 
 import {MattermostView} from './MattermostView';
-import {TAB_LOGIN, TAB_MEET} from './../../common/tabs/TabView';
 
 type CustomLogin = {
     inProgress: boolean;
@@ -53,16 +52,6 @@ export class WebContentsEventManager {
             const configServers = getServersFunction();
             const server = urlUtils.getView(parsedURL, configServers);
 
-            if (server && (server.url.includes('infomaniak.com') || server.url.includes('infomaniak.ch')) && server.url.includes('login')) {
-                WindowManager.switchTab('Infomaniak', TAB_LOGIN);
-                return;
-            }
-
-            if (server && (server.url.includes('infomaniak.com') || server.url.includes('infomaniak.ch')) && server.url.includes('kmeet')) {
-                WindowManager.switchTab('Infomaniak', TAB_MEET);
-                return;
-            }
-
             if (server && (urlUtils.isTeamUrl(server.url, parsedURL) || urlUtils.isAdminUrl(server.url, parsedURL) || this.isTrustedPopupWindow(event.sender))) {
                 return;
             }
@@ -80,7 +69,7 @@ export class WebContentsEventManager {
             if (this.customLogins[contentID]?.inProgress) {
                 return;
             }
-
+            
             // if ((url.includes('infomaniak.com') || url.includes('infomaniak.ch')) && !url.includes('preprod')) {
             if (url.includes('infomaniak.com') || url.includes('infomaniak.ch')) {
                 return;
@@ -131,7 +120,7 @@ export class WebContentsEventManager {
             if (parsedURL.protocol === 'devtools:') {
                 return {action: 'allow'};
             }
-
+            
             // Check for custom protocol
             if (parsedURL.protocol !== 'http:' && parsedURL.protocol !== 'https:' && parsedURL.protocol !== `${scheme}:`) {
                 allowProtocolDialog.handleDialogEvent(parsedURL.protocol, details.url);

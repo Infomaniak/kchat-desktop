@@ -1,7 +1,6 @@
 // Copyright (c) 2015-2016 Yuya Ochiai
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-/* eslint-disable no-negated-condition */
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'renderer/css/index.css';
@@ -116,25 +115,8 @@ class Root extends React.PureComponent<Record<string, never>, State> {
 
     render() {
         const {config} = this.state;
-        console.log(config);
         if (!config) {
             return null;
-        }
-
-        if (config) {
-            if (!config.teams[0].tabs.some((el) => el.name === 'TAB_LOGIN')) {
-                config.teams[0].tabs.push({name: 'TAB_LOGIN',
-                    order: 3,
-                    isOpen: true,
-                });
-            }
-
-            if (!config.teams[0].tabs.some((el) => el.name === 'TAB_MEET')) {
-                config.teams[0].tabs.push({name: 'TAB_MEET',
-                    order: 4,
-                    isOpen: true,
-                });
-            }
         }
 
         return (

@@ -10,7 +10,7 @@ import {Boundaries} from 'types/utils';
 
 import Config from 'common/config';
 import {MattermostServer} from 'common/servers/MattermostServer';
-import {TAB_FOCALBOARD, TAB_LOGIN, TAB_MEET, TAB_MESSAGING, TAB_PLAYBOOKS} from 'common/tabs/TabView';
+import {TAB_FOCALBOARD, TAB_MESSAGING, TAB_PLAYBOOKS} from 'common/tabs/TabView';
 import urlUtils from 'common/utils/url';
 import Utils from 'common/utils/util';
 
@@ -61,14 +61,6 @@ function openExtraTabs(data: Array<RemoteInfo | string | undefined>, team: TeamW
                     tab.isOpen = true;
                 }
                 if (tab.name === TAB_FOCALBOARD && remoteInfo.hasFocalboard && tab.isOpen !== false) {
-                    log.info(`opening ${team.name}___${tab.name} on hasFocalboard`);
-                    tab.isOpen = true;
-                }
-                if (tab.name === TAB_LOGIN && tab.isOpen !== false) {
-                    log.info(`opening ${team.name}___${tab.name} on hasFocalboard`);
-                    tab.isOpen = true;
-                }
-                if (tab.name === TAB_MEET && tab.isOpen !== false) {
                     log.info(`opening ${team.name}___${tab.name} on hasFocalboard`);
                     tab.isOpen = true;
                 }
