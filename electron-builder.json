@@ -69,6 +69,7 @@
   },
   "mac": {
     "category": "public.app-category.productivity",
+    "icon": "src/assets/icon.icns", 
     "target": [
       "zip",
       "dmg"
