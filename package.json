@@ -23,6 +23,12 @@
     "runtime": "electron",
     "build_from_source": true
   },
+  "protocols": {
+    "name": "ktalk-protocol",
+    "schemes": [
+      "ktalk"
+    ]
+  },
   "scripts": {
     "build": "npm-run-all build:*",
     "build:main": "webpack-cli --bail --config webpack.config.main.js",

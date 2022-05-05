@@ -23,8 +23,9 @@
   ],
   "protocols": [
     {
-      "name": "Mattermost",
+      "name": "ktalk",
       "schemes": [
+        "ktalk",
         "mattermost",
         "http",
         "https",
