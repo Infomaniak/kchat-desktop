@@ -6,7 +6,7 @@ import React from 'react';
 function LoadingBackground() {
     return (
         <div className='LoadingScreen__backgound'>
-            <svg
+            {/* <svg
                 viewBox='0 0 1366 728'
                 xmlns='http://www.w3.org/2000/svg'
                 preserveAspectRatio='xMidYMid slice'
@@ -70,7 +70,7 @@ function LoadingBackground() {
                         />
                     </linearGradient>
                 </defs>
-            </svg>
+            </svg> */}
         </div>
     );
 }

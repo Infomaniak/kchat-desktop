@@ -203,11 +203,16 @@ function initializeBeforeAppReady() {
 
     AllowProtocolDialog.init();
 
-    if (isDev && process.env.NODE_ENV !== 'test') {
-        log.info('In development mode, deeplinking is disabled');
-    } else if (mainProtocol) {
+    // Alows protocol in dev
+    if (mainProtocol) {
         app.setAsDefaultProtocolClient(mainProtocol);
     }
+
+    // if (isDev && process.env.NODE_ENV !== 'test') {
+    //     log.info('In development mode, deeplinking is disabled');
+    // } else if (mainProtocol) {
+    //     app.setAsDefaultProtocolClient(mainProtocol);
+    // }
 }
 
 function initializeInterCommunicationEventListeners() {
