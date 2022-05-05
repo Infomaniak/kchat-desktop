@@ -27,7 +27,7 @@ function getAppFileName(context) {
     case 'win32':
         return 'Mattermost.exe';
     case 'darwin':
-        return 'Mattermost.app';
+        return 'kchat.app';
     case 'linux':
         return context.packager.executableName;
     default:

@@ -1,8 +1,8 @@
 {
-  "name": "mattermost-desktop",
-  "productName": "Mattermost",
-  "version": "5.0.0-develop",
-  "description": "Mattermost",
+  "name": "kchat-desktop",
+  "productName": "kchat",
+  "version": "0.1.0-develop",
+  "description": "kChat",
   "main": "dist/index.js",
   "author": "Mattermost, Inc. <feedback@mattermost.com>",
   "license": "Apache-2.0",

@@ -3,7 +3,7 @@
     "provider": "generic",
     "url": "https://releases.mattermost.com/desktop/"
   }],
-  "appId": "Mattermost.Desktop",
+  "appId": "kChat.Desktop",
   "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
   "directories": {
     "buildResources": "src/assets",
@@ -37,7 +37,7 @@
   "afterPack": "scripts/afterpack.js",
   "afterSign": "scripts/notarize.js",
   "deb": {
-    "synopsis": "Mattermost Desktop App",
+    "synopsis": "kChat Desktop App",
     "depends": ["gconf2", "gconf-service", "libnotify4", "libxtst6", "libnss3"],
     "category": "contrib/net",
     "priority": "optional"
@@ -69,6 +69,7 @@
   },
   "mac": {
     "category": "public.app-category.productivity",
+    "icon": "icon.png",
     "target": [
       "zip",
       "dmg"
