@@ -6,8 +6,8 @@
   "main": "dist/index.js",
   "author": "Mattermost, Inc. <feedback@mattermost.com>",
   "license": "Apache-2.0",
-  "desktopName": "Mattermost.Desktop",
-  "homepage": "https://about.mattermost.com",
+  "desktopName": "kChat.Desktop",
+  "homepage": "https://infomaniak.com",
   "engines": {
     "node": ">=4.2.0"
   },

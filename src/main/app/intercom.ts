@@ -90,33 +90,50 @@ export function addNewServerModalWhenMainWindowIsShown() {
 }
 
 export function handleNewServerModal() {
-    const html = getLocalURLString('newServer.html');
+    // const html = getLocalURLString('newServer.html');
 
-    const modalPreload = getLocalPreload('modalPreload.js');
+    // const modalPreload = getLocalPreload('modalPreload.js');
 
+    const data = {
+
+        url: 'https://kchat.preprod.dev.infomaniak.ch',
+        name: 'Infomaniak',
+        index: undefined,
+        order: 0,
+    };
     const mainWindow = WindowManager.getMainWindow();
     if (!mainWindow) {
         return;
     }
-    const modalPromise = ModalManager.addModal<unknown, Team>('newServer', html, modalPreload, {}, mainWindow, Config.teams.length === 0);
-    if (modalPromise) {
-        modalPromise.then((data) => {
-            const teams = Config.teams;
-            const order = teams.length;
-            const newTeam = getDefaultTeamWithTabsFromTeam({...data, order});
-            teams.push(newTeam);
-            Config.set('teams', teams);
-            updateServerInfos([newTeam]);
-            WindowManager.switchServer(newTeam.name, true);
-        }).catch((e) => {
-            // e is undefined for user cancellation
-            if (e) {
-                log.error(`there was an error in the new server modal: ${e}`);
-            }
-        });
-    } else {
-        log.warn('There is already a new server modal');
-    }
+
+    const teams = Config.teams;
+    const order = teams.length;
+    const newTeam = getDefaultTeamWithTabsFromTeam({...data, order});
+    teams.push(newTeam);
+    Config.set('teams', teams);
+    updateServerInfos([newTeam]);
+    WindowManager.switchServer(newTeam.name, true);
+
+    // const modalPromise = ModalManager.addModal<unknown, Team>('newServer', html, modalPreload, {}, mainWindow, Config.teams.length === 0);
+    // if (modalPromise) {
+    //     modalPromise.then((data) => {
+    //         console.log(data)
+    //         const teams = Config.teams;
+    //         const order = teams.length;
+    //         const newTeam = getDefaultTeamWithTabsFromTeam({...data, order});
+    //         teams.push(newTeam);
+    //         Config.set('teams', teams);
+    //         updateServerInfos([newTeam]);
+    //         WindowManager.switchServer(newTeam.name, true);
+    //     }).catch((e) => {
+    //         // e is undefined for user cancellation
+    //         if (e) {
+    //             log.error(`there was an error in the new server modal: ${e}`);
+    //         }
+    //     });
+    // } else {
+    //     log.warn('There is already a new server modal');
+    // }
 }
 
 export function handleEditServerModal(e: IpcMainEvent, name: string) {
