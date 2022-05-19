@@ -253,6 +253,21 @@ function initializeAfterAppReady() {
     app.setAppUserModelId('Mattermost.Desktop'); // Use explicit AppUserModelID
     const defaultSession = session.defaultSession;
 
+    defaultSession.webRequest.onHeadersReceived({urls: ['*://*/*']},
+        (d, c) => {
+            if (d.url === 'https://login.preprod.dev.infomaniak.ch/token') {
+                d.responseHeaders['Access-Control-Allow-Origin'] = ['https://kchat.devd281.dev.infomaniak.ch'];
+                d.responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
+                d.responseHeaders['Access-Control-Allow-Headers'] = ['x-requested-with'];
+            }
+
+            c({
+                cancel: false,
+                responseHeaders: d.responseHeaders
+            });
+        }
+    );
+
     if (process.platform !== 'darwin') {
         defaultSession.on('spellcheck-dictionary-download-failure', (event, lang) => {
             if (Config.spellCheckerURL) {
@@ -357,7 +372,7 @@ function initializeAfterAppReady() {
     // handle permission requests
     // - approve if a supported permission type and the request comes from the renderer or one of the defined servers
     defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
-    // is the requested permission type supported?
+        // is the requested permission type supported?
         if (!supportedPermissionTypes.includes(permission)) {
             callback(false);
             return;
