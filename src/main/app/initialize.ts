@@ -52,6 +52,8 @@ import WindowManager from 'main/windows/windowManager';
 
 import {protocols} from '../../../electron-builder.json';
 
+import {IKLoginAllowedUrls} from 'common/utils/constants';
+
 import {
     handleAppBeforeQuit,
     handleAppBrowserWindowCreated,
@@ -253,19 +255,20 @@ function initializeAfterAppReady() {
     app.setAppUserModelId('Mattermost.Desktop'); // Use explicit AppUserModelID
     const defaultSession = session.defaultSession;
 
-    defaultSession.webRequest.onHeadersReceived({urls: ['*://*/*']},
+    defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
         (d, c) => {
-            if (d.url === 'https://login.preprod.dev.infomaniak.ch/token') {
-                d.responseHeaders['Access-Control-Allow-Origin'] = ['https://kchat.devd281.dev.infomaniak.ch'];
+            const currentServerURL = WindowManager.getCurrentServerUrl();
+            if (currentServerURL && d.url.includes('/token') && d.responseHeaders) {
+                d.responseHeaders['Access-Control-Allow-Origin'] = [currentServerURL];
                 d.responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
                 d.responseHeaders['Access-Control-Allow-Headers'] = ['x-requested-with'];
             }
 
             c({
                 cancel: false,
-                responseHeaders: d.responseHeaders
+                responseHeaders: d.responseHeaders,
             });
-        }
+        },
     );
 
     if (process.platform !== 'darwin') {
@@ -299,6 +302,7 @@ function initializeAfterAppReady() {
     }
 
     if (global.isDev) {
+        WindowManager.openBrowserViewDevTools();
         installExtension(REACT_DEVELOPER_TOOLS).
             then((name) => log.info(`Added Extension:  ${name}`)).
             catch((err) => log.error('An error occurred: ', err));
