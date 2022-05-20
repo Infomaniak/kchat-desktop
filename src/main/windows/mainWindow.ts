@@ -4,6 +4,7 @@
 import fs from 'fs';
 
 import os from 'os';
+import path from 'path';
 
 import {app, BrowserWindow, BrowserWindowConstructorOptions, globalShortcut, ipcMain, screen} from 'electron';
 import log from 'electron-log';
@@ -84,6 +85,7 @@ function createMainWindow(options: {linuxAppIcon: string}) {
             preload,
             spellcheck,
         },
+        icon: path.resolve(path.resolve(app.getAppPath(), 'assets'), 'appicon_48'),
     });
 
     if (process.platform === 'linux') {

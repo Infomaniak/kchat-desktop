@@ -426,14 +426,14 @@ export default class MainPage extends React.PureComponent<Props, State> {
                     >
                         <DotsVerticalIcon/>
                     </button>
-                    <TeamDropdownButton
+                    {/* <TeamDropdownButton
                         isDisabled={this.state.modalOpen}
                         activeServerName={this.state.activeServerName}
                         totalMentionCount={totalMentionCount}
                         hasUnreads={totalUnreadCount > 0}
                         isMenuOpen={this.state.isMenuOpen}
                         darkMode={this.state.darkMode}
-                    />
+                    /> */}
                     {tabsRow}
                     {overlayGradient}
                     {titleBarButtons}
