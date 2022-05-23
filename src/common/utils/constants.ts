@@ -278,3 +278,8 @@ export const localeTranslations: Record<string, string> = {
     'zu': 'Zulu',
     'zu-ZA': 'Zulu (South Africa)',
 };
+
+export const IKLoginAllowedUrls = [
+    'https://login.infomaniak.com/*',
+    'https://login.preprod.dev.infomaniak.ch/*',
+];

@@ -10,60 +10,60 @@ if [[ ! -d "${DEST}" ]]; then
     mkdir -p "${DEST}"
 fi
 
-if [[ -f "${SRC}/mattermost-desktop-${VERSION}-win-ia32.zip" ]]; then
+if [[ -f "${SRC}/kchat-desktop-${VERSION}-win-ia32.zip" ]]; then
     echo -e "Copying Win32\n"
-    cp "${SRC}/mattermost-desktop-${VERSION}-win-ia32.zip" "${DEST}/mattermost-desktop-${VERSION}-win32.zip"
+    cp "${SRC}/kchat-desktop-${VERSION}-win-ia32.zip" "${DEST}/kchat-desktop-${VERSION}-win32.zip"
     SOMETHING_COPIED=1
 fi
-if [[ -f "${SRC}/mattermost-desktop-${VERSION}-win-x64.zip" ]]; then
+if [[ -f "${SRC}/kchat-desktop-${VERSION}-win-x64.zip" ]]; then
     echo -e "Copying Win64\n"
-    cp "${SRC}/mattermost-desktop-${VERSION}-win-x64.zip" "${DEST}/mattermost-desktop-${VERSION}-win64.zip"
+    cp "${SRC}/kchat-desktop-${VERSION}-win-x64.zip" "${DEST}/kchat-desktop-${VERSION}-win64.zip"
     SOMETHING_COPIED=$((SOMETHING_COPIED + 2))
 fi
 
-if [[ ${MM_WIN_INSTALLERS-0} -eq 1 && -f "${SRC}/mattermost-desktop-setup-${VERSION}-win.exe" ]]; then
+if [[ ${MM_WIN_INSTALLERS-0} -eq 1 && -f "${SRC}/kchat-desktop-setup-${VERSION}-win.exe" ]]; then
     echo -e "Copying win-no-arch\n"
-    cp "${SRC}/mattermost-desktop-setup-${VERSION}-win.exe" "${DEST}/"
+    cp "${SRC}/kchat-desktop-setup-${VERSION}-win.exe" "${DEST}/"
     SOMETHING_COPIED=$((SOMETHING_COPIED + 4))
 fi
-if [[ -f "${SRC}/mattermost-desktop-${VERSION}-mac.zip" ]]; then
+if [[ -f "${SRC}/kchat-desktop-${VERSION}-mac.zip" ]]; then
     echo -e "Copying mac\n"
-    cp "${SRC}"/mattermost-desktop-*-mac*.* "${DEST}/"
-    if [[ -f "${SRC}"/mattermost-desktop-${VERSION}-mac.dmg ]]; then
+    cp "${SRC}"/kchat-desktop-*-mac*.* "${DEST}/"
+    if [[ -f "${SRC}"/kchat-desktop-${VERSION}-mac.dmg ]]; then
         cp "${SRC}"/*.blockmap "${DEST}/"
     fi
     SOMETHING_COPIED=$((SOMETHING_COPIED + 8))
 fi
-if [[ -f "${SRC}/mattermost-desktop-${VERSION}-mac-x64.zip" ]]; then
+if [[ -f "${SRC}/kchat-desktop-${VERSION}-mac-x64.zip" ]]; then
     echo -e "Copying mac-x64\n"
-    cp "${SRC}/mattermost-desktop-${VERSION}-mac-x64.zip" "${DEST}/mattermost-desktop-${VERSION}-mac-x64.zip"
-    if [[ -f "${SRC}"/mattermost-desktop-${VERSION}-mac-x64.dmg ]]; then
-        cp "${SRC}/mattermost-desktop-${VERSION}-mac-x64.dmg.blockmap" "${DEST}/mattermost-desktop-${VERSION}-mac-x64.dmg.blockmap"
-        cp "${SRC}/mattermost-desktop-${VERSION}-mac-x64.dmg" "${DEST}/mattermost-desktop-${VERSION}-mac-x64.dmg"
+    cp "${SRC}/kchat-desktop-${VERSION}-mac-x64.zip" "${DEST}/kchat-desktop-${VERSION}-mac-x64.zip"
+    if [[ -f "${SRC}"/kchat-desktop-${VERSION}-mac-x64.dmg ]]; then
+        cp "${SRC}/kchat-desktop-${VERSION}-mac-x64.dmg.blockmap" "${DEST}/kchat-desktop-${VERSION}-mac-x64.dmg.blockmap"
+        cp "${SRC}/kchat-desktop-${VERSION}-mac-x64.dmg" "${DEST}/kchat-desktop-${VERSION}-mac-x64.dmg"
     fi
     SOMETHING_COPIED=$((SOMETHING_COPIED + 8))
 fi
-if [[ -f "${SRC}/mattermost-desktop-${VERSION}-mac-arm64.zip" ]]; then
+if [[ -f "${SRC}/kchat-desktop-${VERSION}-mac-arm64.zip" ]]; then
     echo -e "Copying mac-arm64\n"
-    cp "${SRC}/mattermost-desktop-${VERSION}-mac-arm64.zip" "${DEST}/mattermost-desktop-${VERSION}-mac-arm64.zip"
-    if [[ -f "${SRC}"/mattermost-desktop-${VERSION}-mac-arm64.dmg ]]; then
-        cp "${SRC}/mattermost-desktop-${VERSION}-mac-arm64.dmg.blockmap" "${DEST}/mattermost-desktop-${VERSION}-mac-arm64.dmg.blockmap"
-        cp "${SRC}/mattermost-desktop-${VERSION}-mac-arm64.dmg" "${DEST}/mattermost-desktop-${VERSION}-mac-arm64.dmg"
+    cp "${SRC}/kchat-desktop-${VERSION}-mac-arm64.zip" "${DEST}/kchat-desktop-${VERSION}-mac-arm64.zip"
+    if [[ -f "${SRC}"/kchat-desktop-${VERSION}-mac-arm64.dmg ]]; then
+        cp "${SRC}/kchat-desktop-${VERSION}-mac-arm64.dmg.blockmap" "${DEST}/kchat-desktop-${VERSION}-mac-arm64.dmg.blockmap"
+        cp "${SRC}/kchat-desktop-${VERSION}-mac-arm64.dmg" "${DEST}/kchat-desktop-${VERSION}-mac-arm64.dmg"
     fi
     SOMETHING_COPIED=$((SOMETHING_COPIED + 16))
 fi
-if [[ -f "${SRC}/mattermost-desktop-${VERSION}-mac-universal.zip" ]]; then
+if [[ -f "${SRC}/kchat-desktop-${VERSION}-mac-universal.zip" ]]; then
     echo -e "Copying mac-universal\n"
-    cp "${SRC}/mattermost-desktop-${VERSION}-mac-universal.zip" "${DEST}/mattermost-desktop-${VERSION}-mac-universal.zip"
-    if [[ -f "${SRC}"/mattermost-desktop-${VERSION}-mac-universal.dmg ]]; then
-        cp "${SRC}/mattermost-desktop-${VERSION}-mac-universal.dmg.blockmap" "${DEST}/mattermost-desktop-${VERSION}-mac-universal.dmg.blockmap"
-        cp "${SRC}/mattermost-desktop-${VERSION}-mac-universal.dmg" "${DEST}/mattermost-desktop-${VERSION}-mac-universal.dmg"
+    cp "${SRC}/kchat-desktop-${VERSION}-mac-universal.zip" "${DEST}/kchat-desktop-${VERSION}-mac-universal.zip"
+    if [[ -f "${SRC}"/kchat-desktop-${VERSION}-mac-universal.dmg ]]; then
+        cp "${SRC}/kchat-desktop-${VERSION}-mac-universal.dmg.blockmap" "${DEST}/kchat-desktop-${VERSION}-mac-universal.dmg.blockmap"
+        cp "${SRC}/kchat-desktop-${VERSION}-mac-universal.dmg" "${DEST}/kchat-desktop-${VERSION}-mac-universal.dmg"
     fi
     SOMETHING_COPIED=$((SOMETHING_COPIED + 32))
 fi
-if [[ -f "${SRC}"/mattermost-desktop-${VERSION}-linux-x64.tar.gz ]]; then
+if [[ -f "${SRC}"/kchat-desktop-${VERSION}-linux-x64.tar.gz ]]; then
     echo -e "Copying linux\n"
-    cp "${SRC}"/mattermost-desktop-*-linux-* "${DEST}/"
+    cp "${SRC}"/kchat-desktop-*-linux-* "${DEST}/"
     SOMETHING_COPIED=$((SOMETHING_COPIED + 64))
 fi
 

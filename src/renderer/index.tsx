@@ -118,6 +118,23 @@ class Root extends React.PureComponent<Record<string, never>, State> {
         if (!config) {
             return null;
         }
+        if (config.teams[0]) {
+            if (config.teams[0].tabs.some((el) => el.name === 'TAB_LOGIN')) {
+                console.log('remove login');
+                const index = config.teams[0].tabs.map((a) => a.name).indexOf('TAB_LOGIN');
+                config.teams[0].tabs.splice(index, 1);
+            }
+            if (config.teams[0].tabs.some((el) => el.name === 'TAB_MEET')) {
+                console.log('remove meeet');
+                const index = config.teams[0].tabs.map((a) => a.name).indexOf('TAB_MEET');
+                config.teams[0].tabs.splice(index, 1);
+            }
+            if (config.teams[0].tabs.some((el) => el.name === 'TAB_MESSAGING')) {
+                console.log('update last active tabs');
+                const index = config.teams[0].tabs.map((a) => a.name).indexOf('TAB_MESSAGING');
+                config.teams[0].lastActiveTab = config.teams[0].tabs[index].order;
+            }
+        }
 
         return (
             <MainPage
