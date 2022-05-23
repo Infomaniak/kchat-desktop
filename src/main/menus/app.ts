@@ -42,14 +42,14 @@ export function createTemplate(config: Config) {
     });
 
     // Hide server management for v0
-    // if (config.data?.enableServerManagement === true) {
-    //     platformAppMenu.push({
-    //         label: 'Sign in to Another Server',
-    //         click() {
-    //             ipcMain.emit(SHOW_NEW_SERVER_MODAL);
-    //         },
-    //     });
-    // }
+    if (config.data?.enableServerManagement === true && process.env.NODE_ENV === 'dev') {
+        platformAppMenu.push({
+            label: 'Sign in to Another Server',
+            click() {
+                ipcMain.emit(SHOW_NEW_SERVER_MODAL);
+            },
+        });
+    }
 
     if (isMac) {
         platformAppMenu = platformAppMenu.concat([

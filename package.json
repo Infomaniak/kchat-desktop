@@ -34,7 +34,7 @@
     "clean": "rm -rf release/ node_modules/ src/node_modules/ dist/ && find src -name '*_bundle.js' | xargs rm",
     "clean-install": "npm run clean && npm install",
     "clean-dist": "rm -rf dist/",
-    "watch": "run-p watch:*",
+    "watch": "NODE_ENV=dev run-p watch:*",
     "watch:main": "node scripts/watch_main_and_preload.js",
     "watch:renderer": "webpack-dev-server --config webpack.config.renderer.js",
     "test": "npm-run-all lint:js test:unit test:e2e",
