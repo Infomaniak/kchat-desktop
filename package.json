@@ -1,7 +1,7 @@
 {
   "name": "kchat-desktop",
   "productName": "kchat",
-  "version": "0.1.0-develop",
+  "version": "0.2.0-develop",
   "description": "kChat",
   "main": "dist/index.js",
   "author": "Mattermost, Inc. <feedback@mattermost.com>",
