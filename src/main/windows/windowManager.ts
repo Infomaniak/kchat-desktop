@@ -24,6 +24,7 @@ import {
     BROWSER_HISTORY_BUTTON,
     CALL_JOINED,
     CONNECT_CALL,
+    CALL_CLOSED,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import Config from 'common/config';
@@ -597,7 +598,7 @@ export class WindowManager {
         }
     }
 
-    handleCallJoined = (event: IpcMainEvent, message) => {
+    handleCallJoined = (event: IpcMainEvent, message, viewName: string) => {
         if (this.callWindow) {
             this.callWindow.show();
         } else {
@@ -608,8 +609,13 @@ export class WindowManager {
 
             this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url);
             setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.chat');
+            ipcMain.on(CALL_CLOSED, () => {
+                this.callWindow.close();
+            });
             this.callWindow.on('closed', () => {
                 delete this.callWindow;
+                const currentView = this.viewManager?.views.get(viewName);
+                currentView?.view.webContents.send(CALL_CLOSED, message.id);
             });
         }
     }

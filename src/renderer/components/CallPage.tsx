@@ -6,6 +6,8 @@
 // import 'renderer/css/settings.css';
 import React from 'react';
 
+import {CALL_CLOSED} from 'common/communication';
+
 import JitsiMeetExternalAPI from 'renderer/external_api';
 
 export default class SettingsPage extends React.PureComponent<Record<string, never>> {
@@ -22,11 +24,12 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
     }
 
     handleConnect(id, url) {
-        console.log('handleConnect', id, url);
         const configOverwrite = {
             startWithAudioMuted: false,
             startWithVideoMuted: true,
-            subject: 'toto',
+            subject: id,
+            prejoinConfig: {enabled: false},
+            disableDeepLinking: true,
         };
 
         const options = {
@@ -43,6 +46,10 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
         window.jitsiNodeAPI.setupRenderer(api, {
             enableRemoteControl: false,
             enableAlwaysOnTopWindow: false,
+        });
+
+        api.on('readyToClose', () => {
+            window.ipcRenderer.send(CALL_CLOSED, id);
         });
     }
 

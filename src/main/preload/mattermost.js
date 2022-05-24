@@ -29,6 +29,7 @@ import {
     GET_VIEW_NAME,
     GET_VIEW_WEBCONTENTS_ID,
     CALL_JOINED,
+    CALL_CLOSED,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -152,7 +153,7 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
         break;
     }
     case 'call-joined': {
-        ipcRenderer.send(CALL_JOINED, message);
+        ipcRenderer.send(CALL_JOINED, message, viewName);
         break;
     }
     }
@@ -244,6 +245,18 @@ setInterval(() => {
 
 window.addEventListener('click', () => {
     ipcRenderer.send(CLOSE_TEAMS_DROPDOWN);
+});
+
+ipcRenderer.on(CALL_CLOSED, (event, id) => {
+    window.postMessage(
+        {
+            type: 'call-closed',
+            message: {
+                id,
+            },
+        },
+        window.location.origin,
+    );
 });
 
 ipcRenderer.on(BROWSER_HISTORY_PUSH, (event, pathName) => {
