@@ -19,6 +19,7 @@ module.exports = merge(base, {
     entry: {
         index: './src/renderer/index.tsx',
         settings: './src/renderer/settings.tsx',
+        call: './src/renderer/call.tsx',
         dropdown: './src/renderer/dropdown.tsx',
         urlView: './src/renderer/modals/urlView/urlView.tsx',
         newServer: './src/renderer/modals/newServer/newServer.tsx',
@@ -45,6 +46,12 @@ module.exports = merge(base, {
             template: 'src/renderer/index.html',
             chunks: ['settings'],
             filename: 'settings.html',
+        }),
+        new HtmlWebpackPlugin({
+            title: 'Call Window',
+            template: 'src/renderer/index.html',
+            chunks: ['call'],
+            filename: 'call.html',
         }),
         new HtmlWebpackPlugin({
             title: 'Mattermost Desktop Settings',
@@ -107,6 +114,7 @@ module.exports = merge(base, {
         }),
     ],
     module: {
+        noParse: /external_api\\.js/,
         rules: [{
             test: /\.(js|jsx|ts|tsx)?$/,
             use: {

@@ -157,6 +157,7 @@
     "webpack-merge": "^4.1.4"
   },
   "dependencies": {
+    "@antonbuks/jitsi-electron-sdk": "^1.0.0",
     "@hapi/joi": "^16.1.8",
     "auto-launch": "^5.0.5",
     "bootstrap": "^4.6.0",

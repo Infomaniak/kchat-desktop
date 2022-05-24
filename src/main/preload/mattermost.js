@@ -4,6 +4,7 @@
 
 'use strict';
 
+/* eslint-disable import/no-commonjs */
 /* eslint-disable no-magic-numbers */
 
 import {contextBridge, ipcRenderer, webFrame, desktopCapturer} from 'electron';
@@ -27,6 +28,7 @@ import {
     APP_LOGGED_OUT,
     GET_VIEW_NAME,
     GET_VIEW_WEBCONTENTS_ID,
+    CALL_JOINED,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -147,6 +149,10 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
     }
     case 'history-button': {
         ipcRenderer.send(BROWSER_HISTORY_BUTTON, viewName);
+        break;
+    }
+    case 'call-joined': {
+        ipcRenderer.send(CALL_JOINED, viewName);
         break;
     }
     }
