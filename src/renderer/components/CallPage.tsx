@@ -4,7 +4,6 @@
 /* eslint-disable max-lines */
 
 // import 'renderer/css/settings.css';
-
 import React from 'react';
 
 import JitsiMeetExternalAPI from 'renderer/external_api';
@@ -16,32 +15,25 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
         super(props);
 
         this.currentRef = React.createRef();
-
-        // if (!(window as any).JitsiMeetExternalAPI) {
-        //     const script = document.createElement('script');
-        //     script.type = 'text/javascript';
-        //     script.src = 'https://kmeet.preprod.dev.infomaniak.ch/external_api.js';
-        //     document.head.appendChild(script);
-        // }
     }
 
     componentDidMount() {
+        window.ipcRenderer.on('jitsi-connect', (_, msg) => this.handleConnect(msg.id, msg.url));
+    }
+
+    handleConnect(id, url) {
+        console.log('handleConnect', id, url);
         const configOverwrite = {
             startWithAudioMuted: false,
             startWithVideoMuted: true,
             subject: 'toto',
         };
 
-        // const options = {
-        //     configOverwrite,
-        //     onload: () => console.log('[jitsi] iframe loaded'),
-        //     roomName: 'toto',
-        // };
-
         const options = {
             configOverwrite,
-            parentNode: this.currentRef.current,
-            roomName: 'toto',
+
+            // parentNode: this.currentRef.current,
+            roomName: id,
         };
 
         const api = new JitsiMeetExternalAPI('kmeet.preprod.dev.infomaniak.ch', {
@@ -56,15 +48,17 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
 
     render() {
         return (
-            <div
-                style={{
-                    height: '100%',
-                    position: 'absolute',
-                    right: 0,
-                    left: 0,
-                }}
-                ref={this.currentRef}
-            />
+            <React.Fragment/>
+
+        // <div
+        //     style={{
+        //         height: '100%',
+        //         position: 'absolute',
+        //         right: 0,
+        //         left: 0,
+        //     }}
+        //     ref={this.currentRef}
+        // />
         );
     }
 }

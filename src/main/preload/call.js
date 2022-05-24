@@ -6,7 +6,7 @@
 'use strict';
 
 // eslint-disable-next-line import/no-commonjs
-const {ipcRenderer, desktopCapturer} = require('electron');
+const {ipcRenderer} = require('electron');
 // eslint-disable-next-line import/no-commonjs
 const {setupScreenSharingRender} = require('@antonbuks/jitsi-electron-sdk');
 
@@ -50,8 +50,10 @@ function setupRenderer(api, options = {}) {
     // setupPowerMonitorRender(api);
 }
 
-window.desktopCapturer = {
-    getSources: desktopCapturer.getSources,
+window.ipcRenderer = {
+    send: ipcRenderer.send,
+    on: (channel, listener) => ipcRenderer.on(channel, (_, ...args) => listener(null, ...args)),
+    invoke: ipcRenderer.invoke,
 };
 
 window.jitsiNodeAPI = {

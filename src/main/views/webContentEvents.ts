@@ -69,7 +69,7 @@ export class WebContentsEventManager {
             if (this.customLogins[contentID]?.inProgress) {
                 return;
             }
-            
+
             // if ((url.includes('infomaniak.com') || url.includes('infomaniak.ch')) && !url.includes('preprod')) {
             if (url.includes('infomaniak.com') || url.includes('infomaniak.ch')) {
                 return;
@@ -120,7 +120,7 @@ export class WebContentsEventManager {
             if (parsedURL.protocol === 'devtools:') {
                 return {action: 'allow'};
             }
-            
+
             // Check for custom protocol
             if (parsedURL.protocol !== 'http:' && parsedURL.protocol !== 'https:' && parsedURL.protocol !== `${scheme}:`) {
                 allowProtocolDialog.handleDialogEvent(parsedURL.protocol, details.url);

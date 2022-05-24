@@ -1,15 +1,16 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserWindow} from 'electron';
+import {BrowserWindow, ipcRenderer} from 'electron';
 import log from 'electron-log';
 
 import Config from 'common/config';
 
 import ContextMenu from '../contextMenu';
 import {getLocalPreload, getLocalURLString} from '../utils';
+import {CONNECT_CALL} from 'common/communication';
 
-export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolean) {
+export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolean, id: string, url: string) {
     const preload = getLocalPreload('call.js');
     const spellcheck = (typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker);
     const callWindow = new BrowserWindow({
@@ -38,6 +39,9 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
             log.info(process.env);
         });
     callWindow.show();
+    callWindow.webContents.on('did-finish-load', () => {
+        callWindow.webContents.send('jitsi-connect', {id, url});
+    });
 
     if (withDevTools) {
         callWindow.webContents.openDevTools({mode: 'detach'});

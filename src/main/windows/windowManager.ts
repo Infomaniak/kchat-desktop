@@ -23,6 +23,7 @@ import {
     APP_LOGGED_OUT,
     BROWSER_HISTORY_BUTTON,
     CALL_JOINED,
+    CONNECT_CALL,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import Config from 'common/config';
@@ -596,7 +597,7 @@ export class WindowManager {
         }
     }
 
-    handleCallJoined = (event: IpcMainEvent) => {
+    handleCallJoined = (event: IpcMainEvent, message) => {
         if (this.callWindow) {
             this.callWindow.show();
         } else {
@@ -605,7 +606,7 @@ export class WindowManager {
             // }
             const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
 
-            this.callWindow = createCallWindow(this.mainWindow!, true);
+            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url);
             setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.chat');
             this.callWindow.on('closed', () => {
                 delete this.callWindow;

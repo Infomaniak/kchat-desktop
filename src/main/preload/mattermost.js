@@ -152,7 +152,7 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
         break;
     }
     case 'call-joined': {
-        ipcRenderer.send(CALL_JOINED, viewName);
+        ipcRenderer.send(CALL_JOINED, message);
         break;
     }
     }
