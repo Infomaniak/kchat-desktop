@@ -14,6 +14,8 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
     const preload = getLocalPreload('call.js');
     const spellcheck = (typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker);
     const callWindow = new BrowserWindow({
+        width: 1100,
+        height: 800,
         parent: mainWindow,
         title: 'Call 🔉',
         fullscreen: false,
