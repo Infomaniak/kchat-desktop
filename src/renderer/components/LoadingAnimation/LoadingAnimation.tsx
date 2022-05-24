@@ -6,7 +6,7 @@ import classNames from 'classnames';
 
 import useAnimationEnd from '../../hooks/useAnimationEnd';
 
-import loaderIk from '../../../assets/loading.gif';
+import loaderIk from '../../../assets/loading@2x.gif';
 
 import LoadingIcon from './LoadingIcon';
 
@@ -81,7 +81,7 @@ function LoadingAnimation({
         if (onLoadAnimationComplete) {
             onLoadAnimationComplete();
         }
-    }, 500);
+    }, 1000);
     return (
         <div
             ref={loadingIconContainerRef}
@@ -92,7 +92,11 @@ function LoadingAnimation({
                 'LoadingAnimation--loaded': animationState === LOADING_STATE.LOADED && animationState !== LOADING_STATE.COMPLETE,
             })}
         >
-            <img src={loaderIk}/>
+            <img
+                src={loaderIk}
+                width='80px'
+                height='80px'
+            />
             {/* <LoadingIcon/> */}
         </div>
     );

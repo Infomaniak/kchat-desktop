@@ -634,6 +634,15 @@ export class WindowManager {
     handleGetWebContentsId = (event: IpcMainInvokeEvent) => {
         return event.sender.id;
     }
+
+    getCurrentServerUrl = (): string => {
+        const server = Config.teams.find((team) => team.name === this.getCurrentTeamName());
+        if (!server) {
+            log.error('Cannot find server in config');
+            return '';
+        }
+        return server.url;
+    }
 }
 
 const windowManager = new WindowManager();
