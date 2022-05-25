@@ -1,6 +1,6 @@
 {
   "name": "kchat-desktop",
-  "productName": "kchat",
+  "productName": "kChat",
   "version": "0.2.0-develop",
   "description": "kChat",
   "main": "dist/index.js",
