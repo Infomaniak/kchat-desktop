@@ -4,6 +4,7 @@
 
 'use strict';
 
+/* eslint-disable import/no-commonjs */
 /* eslint-disable no-magic-numbers */
 
 import {contextBridge, ipcRenderer, webFrame, desktopCapturer} from 'electron';
@@ -27,6 +28,8 @@ import {
     APP_LOGGED_OUT,
     GET_VIEW_NAME,
     GET_VIEW_WEBCONTENTS_ID,
+    CALL_JOINED,
+    CALL_CLOSED,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -149,6 +152,10 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
         ipcRenderer.send(BROWSER_HISTORY_BUTTON, viewName);
         break;
     }
+    case 'call-joined': {
+        ipcRenderer.send(CALL_JOINED, message, viewName);
+        break;
+    }
     }
 });
 
@@ -238,6 +245,18 @@ setInterval(() => {
 
 window.addEventListener('click', () => {
     ipcRenderer.send(CLOSE_TEAMS_DROPDOWN);
+});
+
+ipcRenderer.on(CALL_CLOSED, (event, id) => {
+    window.postMessage(
+        {
+            type: 'call-closed',
+            message: {
+                id,
+            },
+        },
+        window.location.origin,
+    );
 });
 
 ipcRenderer.on(BROWSER_HISTORY_PUSH, (event, pathName) => {

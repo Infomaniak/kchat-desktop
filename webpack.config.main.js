@@ -18,6 +18,7 @@ module.exports = merge(base, {
     entry: {
         index: './src/main/app/index.ts',
         mainWindow: './src/main/preload/mainWindow.js',
+        call: './src/main/preload/call.js',
         dropdown: './src/main/preload/dropdown.js',
         preload: './src/main/preload/mattermost.js',
         modalPreload: './src/main/preload/modalPreload.js',
@@ -29,6 +30,7 @@ module.exports = merge(base, {
         filename: '[name].js',
     },
     module: {
+        noParse: /external_api\\.js/,
         rules: [{
             test: /\.(js|ts)?$/,
             use: {
@@ -63,6 +65,9 @@ module.exports = merge(base, {
     node: {
         __filename: true,
         __dirname: true,
+    },
+    externals: {
+        '@antonbuks/jitsi-electron-sdk': "require('@antonbuks/jitsi-electron-sdk')",
     },
     target: 'electron-main',
 });

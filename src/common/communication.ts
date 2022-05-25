@@ -106,3 +106,7 @@ export const MODAL_UNCLOSEABLE = 'modal-uncloseable';
 export const UPDATE_PATHS = 'update-paths';
 
 export const UPDATE_URL_VIEW_WIDTH = 'update-url-view-width';
+
+export const CALL_JOINED = 'call-joined';
+export const CALL_CLOSED = 'call-closed';
+export const CONNECT_CALL = 'connect-call';

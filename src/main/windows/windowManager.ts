@@ -22,6 +22,9 @@ import {
     RESIZE_MODAL,
     APP_LOGGED_OUT,
     BROWSER_HISTORY_BUTTON,
+    CALL_JOINED,
+    CONNECT_CALL,
+    CALL_CLOSED,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import Config from 'common/config';
@@ -36,6 +39,10 @@ import TeamDropdownView from '../views/teamDropdownView';
 
 import {createSettingsWindow} from './settingsWindow';
 import createMainWindow from './mainWindow';
+import {createCallWindow} from './callWindow';
+
+// eslint-disable-next-line import/no-commonjs
+const {setupScreenSharingMain} = require('@antonbuks/jitsi-electron-sdk');
 
 // singleton module to manage application's windows
 
@@ -44,6 +51,7 @@ export class WindowManager {
 
     mainWindow?: BrowserWindow;
     settingsWindow?: BrowserWindow;
+    callWindow?: BrowserWindow;
     viewManager?: ViewManager;
     teamDropdown?: TeamDropdownView;
     currentServerName?: string;
@@ -60,6 +68,7 @@ export class WindowManager {
         ipcMain.on(BROWSER_HISTORY_BUTTON, this.handleBrowserHistoryButton);
         ipcMain.on(APP_LOGGED_IN, this.handleAppLoggedIn);
         ipcMain.on(APP_LOGGED_OUT, this.handleAppLoggedOut);
+        ipcMain.on(CALL_JOINED, this.handleCallJoined);
         ipcMain.handle(GET_VIEW_NAME, this.handleGetViewName);
         ipcMain.handle(GET_VIEW_WEBCONTENTS_ID, this.handleGetWebContentsId);
     }
@@ -586,6 +595,28 @@ export class WindowManager {
         if (view) {
             view.isLoggedIn = true;
             this.viewManager?.reloadViewIfNeeded(viewName);
+        }
+    }
+
+    handleCallJoined = (event: IpcMainEvent, message, viewName: string) => {
+        if (this.callWindow) {
+            this.callWindow.show();
+        } else {
+            // if (!this.mainWindow) {
+            //     this.showMainWindow();
+            // }
+            const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
+
+            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url);
+            setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.chat');
+            ipcMain.on(CALL_CLOSED, () => {
+                this.callWindow.close();
+            });
+            this.callWindow.on('closed', () => {
+                delete this.callWindow;
+                const currentView = this.viewManager?.views.get(viewName);
+                currentView?.view.webContents.send(CALL_CLOSED, message.id);
+            });
         }
     }
 
