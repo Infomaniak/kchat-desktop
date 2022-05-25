@@ -66,6 +66,9 @@ module.exports = merge(base, {
         __filename: true,
         __dirname: true,
     },
+    externals: {
+        '@antonbuks/jitsi-electron-sdk': "require('@antonbuks/jitsi-electron-sdk')",
+    },
     target: 'electron-main',
 });
 
