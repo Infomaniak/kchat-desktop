@@ -612,6 +612,12 @@ export class WindowManager {
             ipcMain.on(CALL_CLOSED, () => {
                 this.callWindow.close();
             });
+
+            ipcMain.on('call-audio-status-change', (_, status) => {
+                const currentView = this.viewManager?.views.get(viewName);
+                currentView?.view.webContents.send('call-audio-status-change', status.muted);
+            });
+
             this.callWindow.on('closed', () => {
                 delete this.callWindow;
                 const currentView = this.viewManager?.views.get(viewName);

@@ -8,7 +8,7 @@ import Config from 'common/config';
 
 import ContextMenu from '../contextMenu';
 import {getLocalPreload, getLocalURLString} from '../utils';
-import {CALL_CLOSED} from 'common/communication';
+import {CALL_CLOSED, CALL_COMMAND} from 'common/communication';
 
 export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolean, id: string, url: string) {
     const preload = getLocalPreload('call.js');
@@ -16,7 +16,7 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
     const callWindow = new BrowserWindow({
         width: 1100,
         height: 800,
-        parent: mainWindow,
+        // parent: mainWindow,
         title: 'Call 🔉',
         fullscreen: false,
         webPreferences: {
@@ -43,6 +43,14 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
     callWindow.show();
     callWindow.webContents.on('did-finish-load', () => {
         callWindow.webContents.send('jitsi-connect', {id, url});
+    });
+
+    ipcMain.on(CALL_COMMAND, (_, message: {command: string}) => {
+        callWindow.webContents.send('call-command', {command: message.command});
+    });
+
+    ipcMain.on('call-audio-status-change', (_, message: {muted: boolean}) => {
+        mainWindow.webContents.send('call-audio-status-change', message.muted);
     });
 
     callWindow.on('close', () => {
