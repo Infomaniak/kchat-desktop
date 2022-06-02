@@ -62,6 +62,10 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
             window.ipcRenderer.send('call-video-status-change', status);
         });
 
+        api.addListener('screenSharingStatusChanged', (status) => {
+            window.ipcRenderer.send('call-ss-status-change', status);
+        });
+
         window.ipcRenderer.on(CALL_COMMAND, (_, msg) => {
             api.executeCommand(msg.command);
         });

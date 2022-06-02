@@ -287,6 +287,18 @@ ipcRenderer.on('call-video-status-change', (event, status) => {
     );
 });
 
+ipcRenderer.on('call-ss-status-change', (event, status) => {
+    window.postMessage(
+        {
+            type: 'call-ss-status-change',
+            message: {
+                status,
+            },
+        },
+        window.location.origin,
+    );
+});
+
 ipcRenderer.on(BROWSER_HISTORY_PUSH, (event, pathName) => {
     window.postMessage(
         {

@@ -57,6 +57,10 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
         mainWindow.webContents.send('call-video-status-change', message.muted);
     });
 
+    ipcMain.on('call-ss-status-change', (_, message: {on: boolean}) => {
+        mainWindow.webContents.send('call-ss-status-change', message.on);
+    });
+
     callWindow.on('close', () => {
         mainWindow.webContents.send(CALL_CLOSED, id);
     });
