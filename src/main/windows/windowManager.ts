@@ -618,6 +618,11 @@ export class WindowManager {
                 currentView?.view.webContents.send('call-audio-status-change', status.muted);
             });
 
+            ipcMain.on('call-video-status-change', (_, status) => {
+                const currentView = this.viewManager?.views.get(viewName);
+                currentView?.view.webContents.send('call-video-status-change', status.muted);
+            });
+
             this.callWindow.on('closed', () => {
                 delete this.callWindow;
                 const currentView = this.viewManager?.views.get(viewName);

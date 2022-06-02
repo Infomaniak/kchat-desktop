@@ -58,6 +58,10 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
             window.ipcRenderer.send('call-audio-status-change', status);
         });
 
+        api.addListener('videoMuteStatusChanged', (status) => {
+            window.ipcRenderer.send('call-video-status-change', status);
+        });
+
         window.ipcRenderer.on(CALL_COMMAND, (_, msg) => {
             api.executeCommand(msg.command);
         });
