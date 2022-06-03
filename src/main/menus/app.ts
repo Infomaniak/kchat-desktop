@@ -41,7 +41,8 @@ export function createTemplate(config: Config) {
         },
     });
 
-    if (config.data?.enableServerManagement === true) {
+    // Hide server management for v0
+    if (config.data?.enableServerManagement === true && process.env.NODE_ENV === 'dev') {
         platformAppMenu.push({
             label: 'Sign in to Another Server',
             click() {
@@ -212,48 +213,53 @@ export function createTemplate(config: Config) {
         ] : []), {
             role: 'close',
             accelerator: 'CmdOrCtrl+W',
-        }, separatorItem, {
-            label: 'Show Servers',
-            accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+S`,
-            click() {
-                ipcMain.emit(OPEN_TEAMS_DROPDOWN);
-            },
-        }, ...teams.sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).map((team, i) => {
-            const items = [];
-            items.push({
-                label: team.name,
-                accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+${i + 1}`,
-                click() {
-                    WindowManager.switchServer(team.name);
-                },
-            });
-            if (WindowManager.getCurrentTeamName() === team.name) {
-                team.tabs.filter((tab) => tab.isOpen).sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).forEach((tab, i) => {
-                    items.push({
-                        label: `    ${getTabDisplayName(tab.name as TabType)}`,
-                        accelerator: `CmdOrCtrl+${i + 1}`,
-                        click() {
-                            WindowManager.switchTab(team.name, tab.name);
-                        },
-                    });
-                });
-            }
-            return items;
-        }).flat(), separatorItem, {
-            label: 'Select Next Tab',
-            accelerator: 'Ctrl+Tab',
-            click() {
-                WindowManager.selectNextTab();
-            },
-            enabled: (teams.length > 1),
-        }, {
-            label: 'Select Previous Tab',
-            accelerator: 'Ctrl+Shift+Tab',
-            click() {
-                WindowManager.selectPreviousTab();
-            },
-            enabled: (teams.length > 1),
-        }, ...(isMac ? [separatorItem, {
+        }, separatorItem,
+
+        // {
+        //     label: 'Show Servers',
+        //     accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+S`,
+        //     click() {
+        //         ipcMain.emit(OPEN_TEAMS_DROPDOWN);
+        //     },
+        // },
+        // ...teams.sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).map((team, i) => {
+        //     const items = [];
+        //     items.push({
+        //         label: team.name,
+        //         accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+${i + 1}`,
+        //         click() {
+        //             WindowManager.switchServer(team.name);
+        //         },
+        //     });
+        //     if (WindowManager.getCurrentTeamName() === team.name) {
+        //         team.tabs.filter((tab) => tab.isOpen).sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).forEach((tab, i) => {
+        //             items.push({
+        //                 label: `    ${getTabDisplayName(tab.name as TabType)}`,
+        //                 accelerator: `CmdOrCtrl+${i + 1}`,
+        //                 click() {
+        //                     WindowManager.switchTab(team.name, tab.name);
+        //                 },
+        //             });
+        //         });
+        //     }
+        //     return items;
+        // }).flat(),
+        //     separatorItem, {
+        //     label: 'Select Next Tab',
+        //     accelerator: 'Ctrl+Tab',
+        //     click() {
+        //         WindowManager.selectNextTab();
+        //     },
+        //     enabled: (teams.length > 1),
+        // }, {
+        //     label: 'Select Previous Tab',
+        //     accelerator: 'Ctrl+Shift+Tab',
+        //     click() {
+        //         WindowManager.selectPreviousTab();
+        //     },
+        //     enabled: (teams.length > 1),
+        //     },
+            ...(isMac ? [separatorItem, {
             role: 'front',
         }] : []),
         ],
@@ -273,7 +279,7 @@ export function createTemplate(config: Config) {
     // eslint-disable-next-line no-undef
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const version = `Version ${app.getVersion()}${__HASH_VERSION__ ? ` commit: ${__HASH_VERSION__}` : ''}`;
+    const version = `Version ${app.getVersion()}`;
     submenu.push({
         label: version,
         enabled: true,

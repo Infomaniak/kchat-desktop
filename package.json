@@ -1,13 +1,13 @@
 {
-  "name": "mattermost-desktop",
-  "productName": "Mattermost",
-  "version": "5.0.0-develop",
-  "description": "Mattermost",
+  "name": "kchat-desktop",
+  "productName": "kChat",
+  "version": "0.2.0-develop",
+  "description": "kChat",
   "main": "dist/index.js",
   "author": "Mattermost, Inc. <feedback@mattermost.com>",
   "license": "Apache-2.0",
-  "desktopName": "Mattermost.Desktop",
-  "homepage": "https://about.mattermost.com",
+  "desktopName": "kChat.Desktop",
+  "homepage": "https://infomaniak.com",
   "engines": {
     "node": ">=4.2.0"
   },
@@ -34,7 +34,7 @@
     "clean": "rm -rf release/ node_modules/ src/node_modules/ dist/ && find src -name '*_bundle.js' | xargs rm",
     "clean-install": "npm run clean && npm install",
     "clean-dist": "rm -rf dist/",
-    "watch": "run-p watch:*",
+    "watch": "NODE_ENV=dev run-p watch:*",
     "watch:main": "node scripts/watch_main_and_preload.js",
     "watch:renderer": "webpack-dev-server --config webpack.config.renderer.js",
     "test": "npm-run-all lint:js test:unit test:e2e",
@@ -120,7 +120,7 @@
     "css-loader": "^1.0.1",
     "devtron": "^1.4.0",
     "electron": "14.1.0",
-    "electron-builder": "22.11.7",
+    "electron-builder": "23.0.9",
     "electron-connect": "^0.6.3",
     "electron-mocha": "^10.1.0",
     "electron-notarize": "^1.1.0",
@@ -157,6 +157,7 @@
     "webpack-merge": "^4.1.4"
   },
   "dependencies": {
+    "@antonbuks/jitsi-electron-sdk": "^1.0.0",
     "@hapi/joi": "^16.1.8",
     "auto-launch": "^5.0.5",
     "bootstrap": "^4.6.0",

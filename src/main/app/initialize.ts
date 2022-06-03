@@ -52,6 +52,8 @@ import WindowManager from 'main/windows/windowManager';
 
 import {protocols} from '../../../electron-builder.json';
 
+import {IKLoginAllowedUrls} from 'common/utils/constants';
+
 import {
     handleAppBeforeQuit,
     handleAppBrowserWindowCreated,
@@ -180,9 +182,9 @@ function initializeBeforeAppReady() {
         log.error('No config loaded');
         return;
     }
-    if (process.env.NODE_ENV !== 'test') {
-        app.enableSandbox();
-    }
+    // if (process.env.NODE_ENV !== 'test') {
+    //     app.enableSandbox();
+    // }
     TrustedOriginsStore.load();
 
     // prevent using a different working directory, which happens on windows running after installation.
@@ -203,11 +205,16 @@ function initializeBeforeAppReady() {
 
     AllowProtocolDialog.init();
 
-    if (isDev && process.env.NODE_ENV !== 'test') {
-        log.info('In development mode, deeplinking is disabled');
-    } else if (mainProtocol) {
+    // Alows protocol in dev
+    if (mainProtocol) {
         app.setAsDefaultProtocolClient(mainProtocol);
     }
+
+    // if (isDev && process.env.NODE_ENV !== 'test') {
+    //     log.info('In development mode, deeplinking is disabled');
+    // } else if (mainProtocol) {
+    //     app.setAsDefaultProtocolClient(mainProtocol);
+    // }
 }
 
 function initializeInterCommunicationEventListeners() {
@@ -248,6 +255,22 @@ function initializeAfterAppReady() {
     app.setAppUserModelId('Mattermost.Desktop'); // Use explicit AppUserModelID
     const defaultSession = session.defaultSession;
 
+    defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
+        (d, c) => {
+            const currentServerURL = WindowManager.getCurrentServerUrl();
+            if (currentServerURL && d.url.includes('/token') && d.responseHeaders) {
+                d.responseHeaders['Access-Control-Allow-Origin'] = [currentServerURL];
+                d.responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
+                d.responseHeaders['Access-Control-Allow-Headers'] = ['x-requested-with'];
+            }
+
+            c({
+                cancel: false,
+                responseHeaders: d.responseHeaders,
+            });
+        },
+    );
+
     if (process.platform !== 'darwin') {
         defaultSession.on('spellcheck-dictionary-download-failure', (event, lang) => {
             if (Config.spellCheckerURL) {
@@ -279,6 +302,7 @@ function initializeAfterAppReady() {
     }
 
     if (global.isDev) {
+        WindowManager.openBrowserViewDevTools();
         installExtension(REACT_DEVELOPER_TOOLS).
             then((name) => log.info(`Added Extension:  ${name}`)).
             catch((err) => log.error('An error occurred: ', err));
@@ -352,7 +376,7 @@ function initializeAfterAppReady() {
     // handle permission requests
     // - approve if a supported permission type and the request comes from the renderer or one of the defined servers
     defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
-    // is the requested permission type supported?
+        // is the requested permission type supported?
         if (!supportedPermissionTypes.includes(permission)) {
             callback(false);
             return;

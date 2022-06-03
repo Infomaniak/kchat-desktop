@@ -70,6 +70,11 @@ export class WebContentsEventManager {
                 return;
             }
 
+            // if ((url.includes('infomaniak.com') || url.includes('infomaniak.ch')) && !url.includes('preprod')) {
+            if (url.includes('infomaniak.com') || url.includes('infomaniak.ch')) {
+                return;
+            }
+
             log.info(`Prevented desktop from navigating to: ${url}`);
             event.preventDefault();
         };
