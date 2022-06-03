@@ -111,3 +111,5 @@ export const CALL_JOINED = 'call-joined';
 export const CALL_COMMAND = 'call-command';
 export const CALL_CLOSED = 'call-closed';
 export const CONNECT_CALL = 'connect-call';
+
+export const WINDOW_WILL_UNLOADED = 'window-will-unloaded';

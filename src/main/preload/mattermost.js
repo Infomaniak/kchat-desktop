@@ -31,6 +31,7 @@ import {
     CALL_JOINED,
     CALL_CLOSED,
     CALL_COMMAND,
+    WINDOW_WILL_UNLOADED,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -159,6 +160,11 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
     }
     case 'call-command': {
         ipcRenderer.send(CALL_COMMAND, message, viewName);
+        break;
+    }
+    case 'window-will-unloaded': {
+        ipcRenderer.send(WINDOW_WILL_UNLOADED, viewName);
+        break;
     }
     }
 });
