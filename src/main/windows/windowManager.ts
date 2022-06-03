@@ -23,8 +23,8 @@ import {
     APP_LOGGED_OUT,
     BROWSER_HISTORY_BUTTON,
     CALL_JOINED,
-    CONNECT_CALL,
     CALL_CLOSED,
+    WINDOW_WILL_UNLOADED,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import Config from 'common/config';
@@ -612,6 +612,30 @@ export class WindowManager {
             ipcMain.on(CALL_CLOSED, () => {
                 this.callWindow.close();
             });
+
+            ipcMain.on('call-audio-status-change', (_, status) => {
+                const currentView = this.viewManager?.views.get(viewName);
+                currentView?.view.webContents.send('call-audio-status-change', status.muted);
+            });
+
+            ipcMain.on('call-video-status-change', (_, status) => {
+                const currentView = this.viewManager?.views.get(viewName);
+                currentView?.view.webContents.send('call-video-status-change', status.muted);
+            });
+
+            ipcMain.on('call-ss-status-change', (_, status) => {
+                const currentView = this.viewManager?.views.get(viewName);
+                currentView?.view.webContents.send('call-ss-status-change', status.on);
+            });
+
+            ipcMain.on(WINDOW_WILL_UNLOADED, () => {
+                if (this.callWindow) {
+                    this.callWindow.focus();
+                    this.callWindow.close();
+                    delete this.callWindow;
+                }
+            });
+
             this.callWindow.on('closed', () => {
                 delete this.callWindow;
                 const currentView = this.viewManager?.views.get(viewName);

@@ -6,7 +6,7 @@
 // import 'renderer/css/settings.css';
 import React from 'react';
 
-import {CALL_CLOSED} from 'common/communication';
+import {CALL_CLOSED, CALL_COMMAND} from 'common/communication';
 
 import JitsiMeetExternalAPI from 'renderer/external_api';
 
@@ -23,13 +23,14 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
         window.ipcRenderer.on('jitsi-connect', (_, msg) => this.handleConnect(msg.id, msg.url));
     }
 
-    handleConnect(id, url) {
+    handleConnect(id: string, url: string) {
         const configOverwrite = {
             startWithAudioMuted: false,
             startWithVideoMuted: true,
             subject: id,
             prejoinConfig: {enabled: false},
             disableDeepLinking: true,
+            feedbackPercentage: 0,
         };
 
         const options = {
@@ -50,22 +51,29 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
 
         api.on('readyToClose', () => {
             window.ipcRenderer.send(CALL_CLOSED, id);
+            api.dispose();
+        });
+
+        api.addListener('audioMuteStatusChanged', (status) => {
+            window.ipcRenderer.send('call-audio-status-change', status);
+        });
+
+        api.addListener('videoMuteStatusChanged', (status) => {
+            window.ipcRenderer.send('call-video-status-change', status);
+        });
+
+        api.addListener('screenSharingStatusChanged', (status) => {
+            window.ipcRenderer.send('call-ss-status-change', status);
+        });
+
+        window.ipcRenderer.on(CALL_COMMAND, (_, msg) => {
+            api.executeCommand(msg.command);
         });
     }
 
     render() {
         return (
             <React.Fragment/>
-
-        // <div
-        //     style={{
-        //         height: '100%',
-        //         position: 'absolute',
-        //         right: 0,
-        //         left: 0,
-        //     }}
-        //     ref={this.currentRef}
-        // />
         );
     }
 }
