@@ -607,7 +607,7 @@ export class WindowManager {
             // }
             const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
 
-            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url);
+            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.username, message.avatar, message.channelName);
             setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.chat');
             ipcMain.on(CALL_CLOSED, () => {
                 this.callWindow.close();

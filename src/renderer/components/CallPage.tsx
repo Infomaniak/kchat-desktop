@@ -20,14 +20,14 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
     }
 
     componentDidMount() {
-        window.ipcRenderer.on('jitsi-connect', (_, msg) => this.handleConnect(msg.id, msg.url));
+        window.ipcRenderer.on('jitsi-connect', (_, msg) => this.handleConnect(msg.id, msg.url, msg.username, msg.avatar, msg.channelName));
     }
 
-    handleConnect(id: string, url: string) {
+    handleConnect(id: string, url: string, username: string, avatar: string, channelName: string) {
         const configOverwrite = {
             startWithAudioMuted: false,
             startWithVideoMuted: true,
-            subject: id,
+            subject: channelName !== '' ? channelName : id,
             prejoinConfig: {enabled: false},
             disableDeepLinking: true,
             feedbackPercentage: 0,
@@ -38,6 +38,9 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
 
             // parentNode: this.currentRef.current,
             roomName: id,
+            userInfo: {
+                displayName: username,
+            },
         };
 
         const api = new JitsiMeetExternalAPI('kmeet.preprod.dev.infomaniak.ch', {
@@ -48,6 +51,10 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
             enableRemoteControl: false,
             enableAlwaysOnTopWindow: false,
         });
+        
+        setTimeout(() => {
+            api.executeCommand('avatarUrl', avatar);
+        }, 1000);
 
         api.on('readyToClose', () => {
             window.ipcRenderer.send(CALL_CLOSED, id);

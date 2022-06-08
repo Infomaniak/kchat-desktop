@@ -10,14 +10,15 @@ import ContextMenu from '../contextMenu';
 import {getLocalPreload, getLocalURLString} from '../utils';
 import {CALL_CLOSED, CALL_COMMAND} from 'common/communication';
 
-export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolean, id: string, url: string) {
+export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolean, id: string, url: string, username: string, avatar: string, channelName: string) {
     const preload = getLocalPreload('call.js');
     const spellcheck = (typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker);
+    const callName = channelName !== '' ? `${channelName}  🔉` : 'Call 🔉';
     const callWindow = new BrowserWindow({
         width: 1100,
         height: 800,
         // parent: mainWindow,
-        title: 'Call 🔉',
+        title: callName,
         fullscreen: false,
         webPreferences: {
             nativeWindowOpen: true,
@@ -42,7 +43,8 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
         });
     callWindow.show();
     callWindow.webContents.on('did-finish-load', () => {
-        callWindow.webContents.send('jitsi-connect', {id, url});
+        callWindow.setTitle(callName);
+        callWindow.webContents.send('jitsi-connect', {id, url, username, avatar, channelName});
     });
 
     ipcMain.on(CALL_COMMAND, (_, message: {command: string}) => {
