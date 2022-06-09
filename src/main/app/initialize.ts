@@ -31,6 +31,9 @@ import {
     UPDATE_LAST_ACTIVE,
     GET_AVAILABLE_SPELL_CHECKER_LANGUAGES,
     USER_ACTIVITY_UPDATE,
+    START_UPGRADE,
+    START_DOWNLOAD,
+    PING_DOMAIN,
 } from 'common/communication';
 import Config from 'common/config';
 import urlUtils from 'common/utils/url';
@@ -39,6 +42,7 @@ import AllowProtocolDialog from 'main/allowProtocolDialog';
 import AppVersionManager from 'main/AppVersionManager';
 import AuthManager from 'main/authManager';
 import AutoLauncher from 'main/AutoLauncher';
+import updateManager from 'main/autoUpdater';
 import {setupBadge} from 'main/badge';
 import CertificateManager from 'main/certificateManager';
 import {updatePaths} from 'main/constants';
@@ -80,6 +84,7 @@ import {
     handleSwitchServer,
     handleSwitchTab,
     handleUpdateLastActive,
+    handlePingDomain,
 } from './intercom';
 import {
     clearAppCache,
@@ -90,6 +95,7 @@ import {
     updateSpellCheckerLocales,
     wasUpdated,
     initCookieManager,
+    migrateMacAppStore,
 } from './utils';
 
 export const mainProtocol = protocols?.[0]?.schemes?.[0];
@@ -117,6 +123,13 @@ export async function initialize() {
         return;
     }
 
+    // eslint-disable-next-line no-undef
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (__IS_MAC_APP_STORE__) {
+        migrateMacAppStore();
+    }
+
     // initialization that should run once the app is ready
     initializeInterCommunicationEventListeners();
     initializeAfterAppReady();
@@ -128,12 +141,6 @@ export async function initialize() {
 
 function initializeArgs() {
     global.args = parseArgs(process.argv.slice(1));
-
-    // output the application version via cli when requested (-v or --version)
-    if (global.args.version) {
-        process.stdout.write(`v.${app.getVersion()}\n`);
-        process.exit(0); // eslint-disable-line no-process-exit
-    }
 
     global.isDev = isDev && !global.args.disableDevMode; // this doesn't seem to be right and isn't used as the single source of truth
 
@@ -197,10 +204,15 @@ function initializeBeforeAppReady() {
     refreshTrayImages(Config.trayIconTheme);
 
     // If there is already an instance, quit this one
-    const gotTheLock = app.requestSingleInstanceLock();
-    if (!gotTheLock) {
-        app.exit();
-        global.willAppQuit = true;
+    // eslint-disable-next-line no-undef
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (!__IS_MAC_APP_STORE__) {
+        const gotTheLock = app.requestSingleInstanceLock();
+        if (!gotTheLock) {
+            app.exit();
+            global.willAppQuit = true;
+        }
     }
 
     AllowProtocolDialog.init();
@@ -248,6 +260,9 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(SHOW_SETTINGS_WINDOW, WindowManager.showSettingsWindow);
     ipcMain.handle(GET_AVAILABLE_SPELL_CHECKER_LANGUAGES, () => session.defaultSession.availableSpellCheckerLanguages);
     ipcMain.handle(GET_DOWNLOAD_LOCATION, handleSelectDownload);
+    ipcMain.on(START_DOWNLOAD, handleStartDownload);
+    ipcMain.on(START_UPGRADE, handleStartUpgrade);
+    ipcMain.handle(PING_DOMAIN, handlePingDomain);
 }
 
 function initializeAfterAppReady() {
@@ -297,11 +312,34 @@ function initializeAfterAppReady() {
     }
     AppVersionManager.lastAppVersion = app.getVersion();
 
+    if (typeof Config.canUpgrade === 'undefined') {
+        // windows might not be ready, so we have to wait until it is
+        Config.once('update', () => {
+            log.debug('Initialize.checkForUpdates');
+            if (Config.canUpgrade && Config.autoCheckForUpdates) {
+                setTimeout(() => {
+                    updateManager.checkForUpdates(false);
+                }, 5000);
+            } else {
+                log.info(`Autoupgrade disabled: ${Config.canUpgrade}`);
+            }
+        });
+    } else if (Config.canUpgrade && Config.autoCheckForUpdates) {
+        setTimeout(() => {
+            updateManager.checkForUpdates(false);
+        }, 5000);
+    } else {
+        log.info(`Autoupgrade disabled: ${Config.canUpgrade}`);
+    }
+
     if (!global.isDev) {
         AutoLauncher.upgradeAutoLaunch();
     }
 
-    if (global.isDev) {
+    // eslint-disable-next-line no-undef
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (global.isDev || __IS_NIGHTLY_BUILD__) {
         WindowManager.openBrowserViewDevTools();
         installExtension(REACT_DEVELOPER_TOOLS).
             then((name) => log.info(`Added Extension:  ${name}`)).
@@ -326,6 +364,7 @@ function initializeAfterAppReady() {
 
     // listen for status updates and pass on to renderer
     UserActivityMonitor.on('status', (status) => {
+        log.debug('Initialize.UserActivityMonitor.on(status)', status);
         WindowManager.sendToMattermostViews(USER_ACTIVITY_UPDATE, status);
     });
 
@@ -338,6 +377,7 @@ function initializeAfterAppReady() {
     setupBadge();
 
     defaultSession.on('will-download', (event, item, webContents) => {
+        log.debug('Initialize.will-download', {item, sourceURL: webContents.getURL()});
         const filename = item.getFilename();
         const fileElements = filename.split('.');
         const filters = [];
@@ -349,7 +389,7 @@ function initializeAfterAppReady() {
         }
         item.setSaveDialogOptions({
             title: filename,
-            defaultPath: path.resolve(Config.downloadLocation, filename),
+            defaultPath: Config.downloadLocation ? path.resolve(Config.downloadLocation, filename) : undefined,
             filters,
         });
 
@@ -400,5 +440,17 @@ function initializeAfterAppReady() {
         if (Config.teams.length === 0) {
             addNewServerModalWhenMainWindowIsShown();
         }
+    }
+}
+
+function handleStartDownload() {
+    if (updateManager) {
+        updateManager.handleDownload();
+    }
+}
+
+function handleStartUpgrade() {
+    if (updateManager) {
+        updateManager.handleUpdate();
     }
 }

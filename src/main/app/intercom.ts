@@ -4,11 +4,12 @@
 import {app, dialog, IpcMainEvent, IpcMainInvokeEvent, Menu} from 'electron';
 import log from 'electron-log';
 
-import {Team} from 'types/config';
+import {Team, TeamWithIndex} from 'types/config';
 import {MentionData} from 'types/notification';
 
 import Config from 'common/config';
 import {getDefaultTeamWithTabsFromTeam} from 'common/tabs/TabView';
+import {ping} from 'common/utils/requests';
 
 import {displayMention} from 'main/notifications';
 import {getLocalPreload, getLocalURLString} from 'main/utils';
@@ -19,6 +20,8 @@ import {handleAppBeforeQuit} from './app';
 import {updateServerInfos} from './utils';
 
 export function handleReloadConfig() {
+    log.debug('Intercom.handleReloadConfig');
+
     Config.reload();
     WindowManager.handleUpdateConfig();
 }
@@ -38,14 +41,18 @@ export function handleQuit(e: IpcMainEvent, reason: string, stack: string) {
 }
 
 export function handleSwitchServer(event: IpcMainEvent, serverName: string) {
+    log.silly('Intercom.handleSwitchServer', serverName);
     WindowManager.switchServer(serverName);
 }
 
 export function handleSwitchTab(event: IpcMainEvent, serverName: string, tabName: string) {
+    log.silly('Intercom.handleSwitchTab', {serverName, tabName});
     WindowManager.switchTab(serverName, tabName);
 }
 
 export function handleCloseTab(event: IpcMainEvent, serverName: string, tabName: string) {
+    log.debug('Intercom.handleCloseTab', {serverName, tabName});
+
     const teams = Config.teams;
     teams.forEach((team) => {
         if (team.name === serverName) {
@@ -62,6 +69,8 @@ export function handleCloseTab(event: IpcMainEvent, serverName: string, tabName:
 }
 
 export function handleOpenTab(event: IpcMainEvent, serverName: string, tabName: string) {
+    log.debug('Intercom.handleOpenTab', {serverName, tabName});
+
     const teams = Config.teams;
     teams.forEach((team) => {
         if (team.name === serverName) {
@@ -83,6 +92,7 @@ export function addNewServerModalWhenMainWindowIsShown() {
             handleNewServerModal();
         } else {
             mainWindow.once('show', () => {
+                log.debug('Intercom.addNewServerModalWhenMainWindowIsShown.show');
                 handleNewServerModal();
             });
         }
@@ -96,7 +106,6 @@ export function handleNewServerModal() {
         const modalPreload = getLocalPreload('modalPreload.js');
 
         const data = {
-
             url: 'https://kchat.preprod.dev.infomaniak.ch',
             name: 'Infomaniak',
             index: undefined,
@@ -115,7 +124,7 @@ export function handleNewServerModal() {
         updateServerInfos([newTeam]);
         WindowManager.switchServer(newTeam.name, true);
 
-        const modalPromise = ModalManager.addModal<unknown, Team>('newServer', html, modalPreload, {}, mainWindow, Config.teams.length === 0);
+        const modalPromise = ModalManager.addModal<TeamWithIndex[], Team>('newServer', html, modalPreload, Config.teams.map((team, index) => ({...team, index})), mainWindow, Config.teams.length === 0);
         if (modalPromise) {
             modalPromise.then((data) => {
                 const teams = Config.teams;
@@ -158,6 +167,8 @@ export function handleNewServerModal() {
 }
 
 export function handleEditServerModal(e: IpcMainEvent, name: string) {
+    log.debug('Intercom.handleEditServerModal', name);
+
     const html = getLocalURLString('editServer.html');
 
     const modalPreload = getLocalPreload('modalPreload.js');
@@ -170,7 +181,15 @@ export function handleEditServerModal(e: IpcMainEvent, name: string) {
     if (serverIndex < 0) {
         return;
     }
-    const modalPromise = ModalManager.addModal<Team, Team>('editServer', html, modalPreload, Config.teams[serverIndex], mainWindow);
+    const modalPromise = ModalManager.addModal<{currentTeams: TeamWithIndex[]; team: TeamWithIndex}, Team>(
+        'editServer',
+        html,
+        modalPreload,
+        {
+            currentTeams: Config.teams.map((team, index) => ({...team, index})),
+            team: {...Config.teams[serverIndex], index: serverIndex},
+        },
+        mainWindow);
     if (modalPromise) {
         modalPromise.then((data) => {
             const teams = Config.teams;
@@ -189,6 +208,8 @@ export function handleEditServerModal(e: IpcMainEvent, name: string) {
 }
 
 export function handleRemoveServerModal(e: IpcMainEvent, name: string) {
+    log.debug('Intercom.handleRemoveServerModal', name);
+
     const html = getLocalURLString('removeServer.html');
 
     const modalPreload = getLocalPreload('modalPreload.js');
@@ -227,10 +248,13 @@ export function handleRemoveServerModal(e: IpcMainEvent, name: string) {
 }
 
 export function handleMentionNotification(event: IpcMainEvent, title: string, body: string, channel: {id: string}, teamId: string, url: string, silent: boolean, data: MentionData) {
+    log.debug('Intercom.handleMentionNotification', {title, body, channel, teamId, url, silent, data});
     displayMention(title, body, channel, teamId, url, silent, event.sender, data);
 }
 
 export function handleOpenAppMenu() {
+    log.debug('Intercom.handleOpenAppMenu');
+
     const windowMenu = Menu.getApplicationMenu();
     if (!windowMenu) {
         log.error('No application menu found');
@@ -244,6 +268,8 @@ export function handleOpenAppMenu() {
 }
 
 export async function handleSelectDownload(event: IpcMainInvokeEvent, startFrom: string) {
+    log.debug('Intercom.handleSelectDownload', startFrom);
+
     const message = 'Specify the folder where files will download';
     const result = await dialog.showOpenDialog({defaultPath: startFrom || Config.downloadLocation,
         message,
@@ -253,6 +279,8 @@ export async function handleSelectDownload(event: IpcMainInvokeEvent, startFrom:
 }
 
 export function handleUpdateLastActive(event: IpcMainEvent, serverName: string, viewName: string) {
+    log.debug('Intercom.handleUpdateLastActive', {serverName, viewName});
+
     const teams = Config.teams;
     teams.forEach((team) => {
         if (team.name === serverName) {
@@ -264,3 +292,16 @@ export function handleUpdateLastActive(event: IpcMainEvent, serverName: string, 
     Config.set('lastActiveTeam', teams.find((team) => team.name === serverName)?.order || 0);
 }
 
+export function handlePingDomain(event: IpcMainInvokeEvent, url: string): Promise<string> {
+    return Promise.allSettled([
+        ping(new URL(`https://${url}`)),
+        ping(new URL(`http://${url}`)),
+    ]).then(([https, http]): string => {
+        if (https.status === 'fulfilled') {
+            return 'https';
+        } else if (http.status === 'fulfilled') {
+            return 'http';
+        }
+        throw new Error('Could not find server ' + url);
+    });
+}

@@ -1,10 +1,12 @@
 {
-  "publish": [{
+  "publish": [
+    {
     "provider": "generic",
-    "url": "https://releases.mattermost.com/desktop/"
-  }],
+    "url": "https://releases.mattermost.com/desktop"
+    }
+  ],
   "appId": "kChat.Desktop",
-  "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
+  "artifactName": "${version}/${name}-${version}-${os}-${arch}.${ext}",
   "directories": {
     "buildResources": "src/assets",
     "output": "release"
@@ -37,9 +39,17 @@
   ],
   "afterPack": "scripts/afterpack.js",
   "afterSign": "scripts/notarize.js",
+  "afterAllArtifactBuild": "scripts/afterbuild.js",
   "deb": {
+    "artifactName": "${version}/${name}_${version}-1_${arch}.${ext}",
     "synopsis": "kChat Desktop App",
-    "depends": ["gconf2", "gconf-service", "libnotify4", "libxtst6", "libnss3"],
+    "depends": [
+      "gconf2",
+      "gconf-service",
+      "libnotify4",
+      "libxtst6",
+      "libnss3"
+    ],
     "category": "contrib/net",
     "priority": "optional"
   },
@@ -51,6 +61,7 @@
       "appimage",
       "rpm"
     ],
+    "icon": "src/assets/icon.icns",
     "extraFiles": [
       {
         "filter": [
@@ -84,6 +95,7 @@
         ]
       }
     ],
+    "icon": "src/assets/osx/osx_icon.icns",
     "hardenedRuntime": true,
     "gatekeeperAssess": true,
     "asarUnpack": "**/*.node",
@@ -94,6 +106,19 @@
       "NSCameraUsageDescription": "Camera access may be used by kChat plugins, such as kMeet video conferencing.",
       "LSFileQuarantineEnabled": true
   }
+  },
+  "mas": {
+    "hardenedRuntime": false,
+    "entitlements": "./entitlements.mas.plist",
+    "entitlementsInherit": "./entitlements.mas.inherit.plist",
+    "entitlementsLoginHelper": "./entitlements.mas.inherit.plist",
+    "provisioningProfile": "./mas.provisionprofile",
+    "extendInfo": {
+      "ITSAppUsesNonExemptEncryption": false
+    }
+  },
+  "masDev": {
+    "provisioningProfile": "./mas-dev.provisionprofile"
   },
   "dmg": {
     "background": "src/assets/osx/DMG_BG.png",
@@ -117,7 +142,7 @@
   },
   "squirrelWindows": {
     "iconUrl": "file://src/assets/icon.ico",
-    "artifactName": "${name}-setup-${version}-${arch}.${ext}"
+    "artifactName": "${version}/${name}-setup-${version}-${arch}.${ext}"
   },
   "win": {
     "target": [
@@ -131,9 +156,10 @@
           "NOTICE.txt"
         ]
       }
-    ]
+    ],
+    "publisherName": "CN=\"Mattermost, Inc.\", O=\"Mattermost, Inc.\", L=Palo Alto, S=California, C=US"
   },
   "nsis": {
-    "artifactName": "${name}-setup-${version}-win.${ext}"
+    "artifactName": "${version}/${name}-setup-${version}-win.${ext}"
   }
 }

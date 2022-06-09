@@ -63,12 +63,6 @@ jest.mock('electron-devtools-installer', () => {
 const isDev = false;
 jest.mock('electron-is-dev', () => isDev);
 
-jest.mock('electron-log', () => ({
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-}));
-
 jest.mock('../../../electron-builder.json', () => ([
     {
         name: 'Mattermost',
@@ -113,6 +107,7 @@ jest.mock('main/authManager', () => ({}));
 jest.mock('main/AutoLauncher', () => ({
     upgradeAutoLaunch: jest.fn(),
 }));
+jest.mock('main/autoUpdater', () => ({}));
 jest.mock('main/badge', () => ({
     setupBadge: jest.fn(),
 }));
@@ -175,16 +170,6 @@ describe('main/app/initialize', () => {
             await initialize();
             expect(app.setPath).toHaveBeenCalledWith('userData', '/basedir/some/dir');
         });
-
-        it('should show version and exit when specified', async () => {
-            jest.spyOn(process.stdout, 'write').mockImplementation(() => {});
-            const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
-            parseArgs.mockReturnValue({
-                version: true,
-            });
-            await initialize();
-            expect(exitSpy).toHaveBeenCalledWith(0);
-        });
     });
 
     describe('initializeConfig', () => {
@@ -244,7 +229,7 @@ describe('main/app/initialize', () => {
             path.resolve.mockImplementation((base, p) => `${base}/${p}`);
             session.defaultSession.on.mockImplementation((event, cb) => {
                 if (event === 'will-download') {
-                    cb(null, item, {id: 0});
+                    cb(null, item, {id: 0, getURL: jest.fn()});
                 }
             });
 
