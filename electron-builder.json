@@ -70,7 +70,6 @@
   },
   "mac": {
     "category": "public.app-category.productivity",
-    "icon": "icon.png",
     "target": [
       "zip",
       "dmg"
