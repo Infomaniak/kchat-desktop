@@ -4,6 +4,7 @@
 
 'use strict';
 
+/* eslint-disable import/no-commonjs */
 /* eslint-disable no-magic-numbers */
 
 import {contextBridge, ipcRenderer, webFrame, desktopCapturer} from 'electron';
@@ -27,6 +28,10 @@ import {
     APP_LOGGED_OUT,
     GET_VIEW_NAME,
     GET_VIEW_WEBCONTENTS_ID,
+    CALL_JOINED,
+    CALL_CLOSED,
+    CALL_COMMAND,
+    WINDOW_WILL_UNLOADED,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -149,6 +154,18 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
         ipcRenderer.send(BROWSER_HISTORY_BUTTON, viewName);
         break;
     }
+    case 'call-joined': {
+        ipcRenderer.send(CALL_JOINED, message, viewName);
+        break;
+    }
+    case 'call-command': {
+        ipcRenderer.send(CALL_COMMAND, message, viewName);
+        break;
+    }
+    case 'window-will-unloaded': {
+        ipcRenderer.send(WINDOW_WILL_UNLOADED, viewName);
+        break;
+    }
     }
 });
 
@@ -238,6 +255,54 @@ setInterval(() => {
 
 window.addEventListener('click', () => {
     ipcRenderer.send(CLOSE_TEAMS_DROPDOWN);
+});
+
+ipcRenderer.on(CALL_CLOSED, (event, id) => {
+    window.postMessage(
+        {
+            type: 'call-closed',
+            message: {
+                id,
+            },
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on('call-audio-status-change', (event, status) => {
+    window.postMessage(
+        {
+            type: 'call-audio-status-change',
+            message: {
+                status,
+            },
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on('call-video-status-change', (event, status) => {
+    window.postMessage(
+        {
+            type: 'call-video-status-change',
+            message: {
+                status,
+            },
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on('call-ss-status-change', (event, status) => {
+    window.postMessage(
+        {
+            type: 'call-ss-status-change',
+            message: {
+                status,
+            },
+        },
+        window.location.origin,
+    );
 });
 
 ipcRenderer.on(BROWSER_HISTORY_PUSH, (event, pathName) => {
