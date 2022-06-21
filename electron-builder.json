@@ -3,7 +3,7 @@
     "provider": "generic",
     "url": "https://releases.mattermost.com/desktop/"
   }],
-  "appId": "kChat.Desktop",
+  "appId": "com.infomaniak.kchat",
   "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
   "directories": {
     "buildResources": "src/assets",
