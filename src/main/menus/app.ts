@@ -266,15 +266,15 @@ export function createTemplate(config: Config) {
     };
     template.push(windowMenu);
     const submenu = [];
-    if (config.data?.helpLink) {
-        submenu.push({
-            label: 'Learn More...',
-            click() {
-                shell.openExternal(config.data!.helpLink);
-            },
-        });
-        submenu.push(separatorItem);
-    }
+    // if (config.data?.helpLink) {
+    //     submenu.push({
+    //         label: 'Learn More...',
+    //         click() {
+    //             shell.openExternal(config.data!.helpLink);
+    //         },
+    //     });
+    //     submenu.push(separatorItem);
+    // }
 
     // eslint-disable-next-line no-undef
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
