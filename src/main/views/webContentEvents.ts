@@ -71,7 +71,7 @@ export class WebContentsEventManager {
             }
 
             // if ((url.includes('infomaniak.com') || url.includes('infomaniak.ch')) && !url.includes('preprod')) {
-            if (url.includes('infomaniak.com') || url.includes('infomaniak.ch')) {
+            if ((url.includes('infomaniak.com') || url.includes('infomaniak.ch')) && url.includes('login')) {
                 return;
             }
 
