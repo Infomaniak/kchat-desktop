@@ -11,6 +11,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const merge = require('webpack-merge');
 
+const {ProvidePlugin} = require('webpack');
+
 const base = require('./webpack.config.base');
 
 const WEBSERVER_PORT = process.env.WEBSERVER_PORT ?? 9001;
@@ -20,6 +22,7 @@ module.exports = merge(base, {
         index: './src/renderer/index.tsx',
         settings: './src/renderer/settings.tsx',
         call: './src/renderer/call.tsx',
+        callDialing: './src/renderer/callDialing.tsx',
         dropdown: './src/renderer/dropdown.tsx',
         urlView: './src/renderer/modals/urlView/urlView.tsx',
         newServer: './src/renderer/modals/newServer/newServer.tsx',
@@ -52,6 +55,12 @@ module.exports = merge(base, {
             template: 'src/renderer/index.html',
             chunks: ['call'],
             filename: 'call.html',
+        }),
+        new HtmlWebpackPlugin({
+            title: '🔉',
+            template: 'src/renderer/index.html',
+            chunks: ['callDialing'],
+            filename: 'callDialing.html',
         }),
         new HtmlWebpackPlugin({
             title: 'kChat Desktop Settings',
@@ -111,6 +120,12 @@ module.exports = merge(base, {
             filename: 'styles.[contenthash].css',
             ignoreOrder: true,
             chunkFilename: '[id].[contenthash].css',
+        }),
+        new ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
+        }),
+        new ProvidePlugin({
+            process: 'process/browser',
         }),
     ],
     module: {

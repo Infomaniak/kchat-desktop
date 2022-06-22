@@ -113,3 +113,4 @@ export const CALL_CLOSED = 'call-closed';
 export const CONNECT_CALL = 'connect-call';
 
 export const WINDOW_WILL_UNLOADED = 'window-will-unloaded';
+export const CALL_RINGING = 'call-ringing';

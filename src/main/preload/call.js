@@ -82,6 +82,3 @@ window.jitsiNodeAPI = {
         },
     },
 };
-
-// console.log(desktopCapturer.getSources)
-

@@ -25,6 +25,7 @@ import {
     CALL_JOINED,
     CALL_CLOSED,
     WINDOW_WILL_UNLOADED,
+    CALL_RINGING,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import Config from 'common/config';
@@ -40,6 +41,7 @@ import TeamDropdownView from '../views/teamDropdownView';
 import {createSettingsWindow} from './settingsWindow';
 import createMainWindow from './mainWindow';
 import {createCallWindow} from './callWindow';
+import {createCallDialingWindow} from './callDialingWindow';
 
 // eslint-disable-next-line import/no-commonjs
 const {setupScreenSharingMain} = require('@antonbuks/jitsi-electron-sdk');
@@ -69,6 +71,7 @@ export class WindowManager {
         ipcMain.on(APP_LOGGED_IN, this.handleAppLoggedIn);
         ipcMain.on(APP_LOGGED_OUT, this.handleAppLoggedOut);
         ipcMain.on(CALL_JOINED, this.handleCallJoined);
+        ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(GET_VIEW_NAME, this.handleGetViewName);
         ipcMain.handle(GET_VIEW_WEBCONTENTS_ID, this.handleGetWebContentsId);
     }
@@ -596,6 +599,12 @@ export class WindowManager {
             view.isLoggedIn = true;
             this.viewManager?.reloadViewIfNeeded(viewName);
         }
+    }
+
+    handleCallDialing = (event: IpcMainEvent, message, viewName: string) => {
+        const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
+        // this.dialingWindow = createCallDialingWindow(this.mainWindow!, withDevTools);
+        createCallDialingWindow(this.mainWindow!, withDevTools, message.calling);
     }
 
     handleCallJoined = (event: IpcMainEvent, message, viewName: string) => {

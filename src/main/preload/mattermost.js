@@ -32,6 +32,7 @@ import {
     CALL_CLOSED,
     CALL_COMMAND,
     WINDOW_WILL_UNLOADED,
+    CALL_RINGING,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -165,6 +166,9 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
     case 'window-will-unloaded': {
         ipcRenderer.send(WINDOW_WILL_UNLOADED, viewName);
         break;
+    }
+    case 'call-dialing': {
+        ipcRenderer.send(CALL_RINGING, message, viewName);
     }
     }
 });
