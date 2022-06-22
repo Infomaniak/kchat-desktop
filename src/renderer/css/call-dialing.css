@@ -13,7 +13,7 @@ div.actions {
     display: flex;
     justify-content: space-around;
     margin-top: auto;
-    padding-bottom: 10%;
+    padding-bottom: 16px;
 }
 div.avatars {
     justify-content: center;
@@ -23,6 +23,14 @@ div.avatars {
 }
 button {
     color: white !important;
+}
+button span {
+    font-weight: 400;
+    font-size: 14px;
+}
+h6.grey {
+    align-self: center;
+    color: #666666;
 }
 button.accept {
     background: var(--blue);

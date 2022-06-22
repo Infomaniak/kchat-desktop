@@ -41,9 +41,8 @@ const LazyAvatarImage = ({source, style}: PLazyAvatarImage): JSX.Element => {
     useEffect(() => {
         getBase64(source).
             then((imageString) => setImage(imageString)).
-            catch((e) => {console.log(e)});
+            catch(() => {});
     }, [source]);
-    console.log(image)
 
     if (!image) {
         return (

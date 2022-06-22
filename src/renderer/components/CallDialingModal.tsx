@@ -6,6 +6,8 @@
 import {Button} from 'react-bootstrap';
 import React from 'react';
 
+import {CALL_JOINED} from 'common/communication';
+
 import Avatar from './Avatar';
 
 type State = {
@@ -26,6 +28,9 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
         this.state = {
             callInfo: undefined,
         };
+
+        this.onHandleAccept = this.onHandleAccept.bind(this);
+        this.onHandleDecline = this.onHandleDecline.bind(this);
     }
 
     componentDidMount() {
@@ -35,11 +40,17 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
     }
 
     onHandleDecline() {
-        console.log('decline');
+        const {callInfo} = this.state;
+
+        window.ipcRenderer.send('decline-call', callInfo);
+        window.close();
     }
 
     onHandleAccept() {
-        console.log('accept');
+        const {callInfo} = this.state;
+
+        window.ipcRenderer.send(CALL_JOINED, callInfo);
+        window.close();
     }
 
     render() {
@@ -48,7 +59,6 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
         if (!callInfo) {
             return null;
         }
-        console.log(callInfo);
 
         return (
             <div className='container'>
@@ -65,29 +75,35 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                 <h6
                     style={{
                         alignSelf: 'center',
-                        paddingTop: '10px',
+                        paddingTop: 10,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         maxWidth: '200px',
                     }}
                 >{callInfo.channel.display_name}</h6>
+                <h6
+                    className='grey'
+                    style={{fontSize: 12}}
+                >{'🎧 incoming call'}</h6>
                 <div className='actions'>
                     <Button
                         className='decline'
                         size='lg'
                         onClick={this.onHandleDecline}
                         variant='link'
+                        style={{fontSize: 14}}
                     >
-                        <span style={{fontSize: 16}}>{'Decline'}</span>
+                        <span>{'Decline'}</span>
                     </Button>
                     <Button
                         className='accept'
                         size='lg'
                         onClick={this.onHandleAccept}
                         variant='link'
+                        style={{fontSize: 14}}
                     >
-                        <span style={{fontSize: 16}}>{'Accept'}</span>
+                        <span>{'Accept'}</span>
                     </Button>
                 </div>
             </div>
