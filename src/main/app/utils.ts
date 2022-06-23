@@ -87,10 +87,10 @@ export function getDeeplinkingURL(args: string[]) {
         let url = args[args.length - 1];
 
         if (url && mainProtocol && url.startsWith(mainProtocol) && urlUtils.isValidURI(url)) {
-            if (process.platform === 'linux') {
+            if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
                 const currentServerURL = WindowManager.getCurrentServerUrl();
 
-                url = url.replace('ktalk://', currentServerURL);
+                url = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
 
             // return url;
             }
