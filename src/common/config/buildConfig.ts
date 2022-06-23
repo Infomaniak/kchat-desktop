@@ -20,13 +20,14 @@ import {BuildConfig} from 'types/config';
  * @prop {[]} managedResources - Defines which paths are managed
  */
 const buildConfig: BuildConfig = {
-    defaultTeams: [/*
-    {
-      name: 'example',
-      url: 'https://example.com'
-    }
-  */],
-    helpLink: 'https://docs.mattermost.com/messaging/managing-desktop-app-servers.html',
+    defaultTeams: [
+        {
+            name: 'Infomaniak',
+            url: 'https://kchat.preprod.dev.infomaniak.ch',
+            order: 0,
+        },
+    ],
+    helpLink: 'https://about.mattermost.com/default-desktop-app-documentation/',
     enableServerManagement: true,
     enableAutoUpdater: true,
     managedResources: ['trusted'],

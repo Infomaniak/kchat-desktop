@@ -97,8 +97,16 @@ export function handleUpdateMenuEvent() {
 export function getDeeplinkingURL(args: string[]) {
     if (Array.isArray(args) && args.length) {
     // deeplink urls should always be the last argument, but may not be the first (i.e. Windows with the app already running)
-        const url = args[args.length - 1];
+        let url = args[args.length - 1];
+
         if (url && mainProtocol && url.startsWith(mainProtocol) && urlUtils.isValidURI(url)) {
+            if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
+                const currentServerURL = WindowManager.getCurrentServerUrl();
+
+                url = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
+
+            // return url;
+            }
             return url;
         }
     }

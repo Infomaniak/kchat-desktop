@@ -2,11 +2,10 @@
   "publish": [
     {
     "provider": "generic",
-    "url": "https://releases.mattermost.com/desktop"
-    }
-  ],
-  "appId": "kChat.Desktop",
-  "artifactName": "${version}/${name}-${version}-${os}-${arch}.${ext}",
+    "url": "https://releases.mattermost.com/desktop/"
+  }],
+  "appId": "com.infomaniak.kchat",
+  "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
   "directories": {
     "buildResources": "src/assets",
     "output": "release"
@@ -81,7 +80,6 @@
   },
   "mac": {
     "category": "public.app-category.productivity",
-    "icon": "icon.png",
     "target": [
       "zip",
       "dmg"
