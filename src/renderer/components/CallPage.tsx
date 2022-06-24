@@ -20,14 +20,14 @@ export default class CallPage extends React.PureComponent<Record<string, never>>
     }
 
     componentDidMount() {
-        window.ipcRenderer.on('jitsi-connect', (_, msg) => this.handleConnect(msg.id, msg.url, msg.name, msg.avatar));
+        window.ipcRenderer.on('jitsi-connect', (_, msg) => this.handleConnect(msg.id, msg.url, msg.name, msg.avatar, msg.username));
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         document.body.style['-webkit-app-region'] = 'drag';
     }
 
-    handleConnect(id: string, url: string, name: string, avatar: string) {
+    handleConnect(id: string, url: string, name: string, avatar: string, userName: string) {
         const configOverwrite = {
             startWithAudioMuted: false,
             startWithVideoMuted: true,
@@ -43,6 +43,9 @@ export default class CallPage extends React.PureComponent<Record<string, never>>
 
             // parentNode: this.currentRef.current,
             roomName: id,
+            userInfo: {
+                displayName: userName,
+            },
         };
 
         const api = new JitsiMeetExternalAPI('kmeet.preprod.dev.infomaniak.ch', {
