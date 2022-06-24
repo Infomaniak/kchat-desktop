@@ -10,7 +10,7 @@ import {CALL_CLOSED, CALL_COMMAND} from 'common/communication';
 
 import JitsiMeetExternalAPI from 'renderer/external_api';
 
-export default class SettingsPage extends React.PureComponent<Record<string, never>> {
+export default class CallPage extends React.PureComponent<Record<string, never>> {
     currentRef: React.RefObject<HTMLDivElement>;
 
     constructor(props: Record<string, never>) {
@@ -20,14 +20,18 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
     }
 
     componentDidMount() {
-        window.ipcRenderer.on('jitsi-connect', (_, msg) => this.handleConnect(msg.id, msg.url));
+        window.ipcRenderer.on('jitsi-connect', (_, msg) => this.handleConnect(msg.id, msg.url, msg.name, msg.avatar));
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        document.body.style['-webkit-app-region'] = 'drag';
     }
 
-    handleConnect(id: string, url: string) {
+    handleConnect(id: string, url: string, name: string, avatar: string) {
         const configOverwrite = {
             startWithAudioMuted: false,
             startWithVideoMuted: true,
-            subject: id,
+            subject: name,
             prejoinConfig: {enabled: false},
             disableDeepLinking: true,
             feedbackPercentage: 0,
@@ -35,6 +39,7 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
 
         const options = {
             configOverwrite,
+            interfaceConfigOverwrite: {HIDE_INVITE_MORE_HEADER: true},
 
             // parentNode: this.currentRef.current,
             roomName: id,
@@ -46,8 +51,10 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
 
         window.jitsiNodeAPI.setupRenderer(api, {
             enableRemoteControl: false,
-            enableAlwaysOnTopWindow: false,
+            enableAlwaysOnTopWindow: true,
         });
+
+        api.executeCommand('avatarUrl', avatar);
 
         api.on('readyToClose', () => {
             window.ipcRenderer.send(CALL_CLOSED, id);

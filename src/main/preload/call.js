@@ -8,7 +8,9 @@
 // eslint-disable-next-line import/no-commonjs
 const {ipcRenderer} = require('electron');
 // eslint-disable-next-line import/no-commonjs
-const {setupScreenSharingRender} = require('@antonbuks/jitsi-electron-sdk');
+const {setupScreenSharingRender, setupAlwaysOnTopRender, setupWiFiStats, setupPowerMonitorRender, initPopupsConfigurationRender} = require('@antonbuks/jitsi-electron-sdk');
+// eslint-disable-next-line import/no-commonjs
+const {platform} = require('process');
 
 const whitelistedIpcChannels = [
     'protocol-data-msg',
@@ -31,6 +33,8 @@ function setupRenderer(api, options = {}) {
 
     const iframe = api.getIFrame();
 
+    initPopupsConfigurationRender(this._api);
+
     setupScreenSharingRender(api);
 
     // if (options.enableRemoteControl) {
@@ -38,16 +42,16 @@ function setupRenderer(api, options = {}) {
     // }
 
     // // Allow window to be on top if enabled in settings
-    // if (options.enableAlwaysOnTopWindow) {
-    //     setupAlwaysOnTopRender(api);
-    // }
+    if (options.enableAlwaysOnTopWindow) {
+        setupAlwaysOnTopRender(api);
+    }
 
     // // Disable WiFiStats on mac due to jitsi-meet-electron#585
-    // if (platform !== 'darwin') {
-    //     setupWiFiStats(iframe);
-    // }
+    if (platform !== 'darwin') {
+        setupWiFiStats(iframe);
+    }
 
-    // setupPowerMonitorRender(api);
+    setupPowerMonitorRender(api);
 }
 
 window.ipcRenderer = {

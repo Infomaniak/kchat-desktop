@@ -10,14 +10,27 @@ import ContextMenu from '../contextMenu';
 import {getLocalPreload, getLocalURLString} from '../utils';
 import {CALL_CLOSED, CALL_COMMAND} from 'common/communication';
 
-export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolean, id: string, url: string) {
+let callWindow: BrowserWindow | null = null;
+
+/**
+ * Add protocol data
+ */
+const appProtocolSurplus = `kchat://`;
+const rendererReady = false;
+
+// let protocolDataForFrontApp = null;
+
+export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolean, id: string, url: string, name: string, avatar: string) {
     const preload = getLocalPreload('call.js');
     const spellcheck = (typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker);
-    const callWindow = new BrowserWindow({
+
+    callWindow = new BrowserWindow({
         width: 1100,
         height: 800,
+
         // parent: mainWindow,
-        title: 'Call 🔉',
+        // title: 'Call 🔉',
+        titleBarStyle: 'hidden',
         fullscreen: false,
         webPreferences: {
             nativeWindowOpen: true,
@@ -42,7 +55,7 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
         });
     callWindow.show();
     callWindow.webContents.on('did-finish-load', () => {
-        callWindow.webContents.send('jitsi-connect', {id, url});
+        callWindow.webContents.send('jitsi-connect', {id, url, name, avatar});
     });
 
     ipcMain.on(CALL_COMMAND, (_, message: {command: string}) => {
@@ -68,5 +81,45 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
     if (withDevTools) {
         callWindow.webContents.openDevTools({mode: 'detach'});
     }
+
+    /**
+     * When someone tries to enter something like jitsi-meet://test
+     *  while app is closed
+     * it will trigger this event below
+     */
+    handleProtocolCall(process.argv.pop());
+
     return callWindow;
+}
+
+/**
+ * Handler for application protocol links to initiate a conference.
+ */
+function handleProtocolCall(fullProtocolCall: string | void) {
+    try {
+        // eslint-disable-next-line no-console
+        console.log(`handle protocol call with ${fullProtocolCall}, app is ready ${app.isReady()} and mainWindow exists ${Boolean(mainWindow)}`);
+    } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(`handle protocol call error ${JSON.stringify(e)}`);
+    }
+
+    // don't touch when something is bad
+    if (
+        !fullProtocolCall ||
+        fullProtocolCall.trim() === '' ||
+        fullProtocolCall.indexOf(appProtocolSurplus) !== 0
+    ) {
+        return;
+    }
+
+    const inputURL = fullProtocolCall.replace(appProtocolSurplus, '');
+
+    // protocolDataForFrontApp = inputURL;
+
+    if (rendererReady) {
+        (callWindow as BrowserWindow).
+            webContents.
+            send('protocol-data-msg', inputURL);
+    }
 }

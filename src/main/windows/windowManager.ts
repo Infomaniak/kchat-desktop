@@ -44,7 +44,7 @@ import {createCallWindow} from './callWindow';
 import {createCallDialingWindow} from './callDialingWindow';
 
 // eslint-disable-next-line import/no-commonjs
-const {setupScreenSharingMain} = require('@antonbuks/jitsi-electron-sdk');
+const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@antonbuks/jitsi-electron-sdk');
 
 // singleton module to manage application's windows
 
@@ -603,6 +603,7 @@ export class WindowManager {
 
     handleCallDialing = (event: IpcMainEvent, message, viewName: string) => {
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
+
         // this.dialingWindow = createCallDialingWindow(this.mainWindow!, withDevTools);
         createCallDialingWindow(this.mainWindow!, withDevTools, message.calling);
     }
@@ -616,10 +617,19 @@ export class WindowManager {
             // }
             const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
 
-            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url);
-            setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.chat');
+            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar);
+            initPopupsConfigurationMain(this.callWindow);
+            setupScreenSharingMain(this.callWindow, viewName, 'kChat.Desktop');
+            setupAlwaysOnTopMain(this.callWindow);
+            setupPowerMonitorMain(this.callWindow);
+
+            // setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
             ipcMain.on(CALL_CLOSED, () => {
                 this.callWindow.close();
+            });
+
+            ipcMain.on('call-focus', () => {
+                this.callWindow?.focus();
             });
 
             ipcMain.on('call-audio-status-change', (_, status) => {

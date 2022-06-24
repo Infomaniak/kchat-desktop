@@ -169,6 +169,10 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
     }
     case 'call-dialing': {
         ipcRenderer.send(CALL_RINGING, message, viewName);
+        break;
+    }
+    case 'call-focus': {
+        ipcRenderer.send('call-focus', message, viewName);
     }
     }
 });
