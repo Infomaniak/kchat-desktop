@@ -20,7 +20,7 @@ const rendererReady = false;
 
 // let protocolDataForFrontApp = null;
 
-export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolean, id: string, url: string, name: string, avatar: string) {
+export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolean, id: string, url: string, name: string, avatar: string, username: string) {
     const preload = getLocalPreload('call.js');
     const spellcheck = (typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker);
 
@@ -55,7 +55,7 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
         });
     callWindow.show();
     callWindow.webContents.on('did-finish-load', () => {
-        callWindow.webContents.send('jitsi-connect', {id, url, name, avatar});
+        callWindow.webContents.send('jitsi-connect', {id, url, name, avatar, username});
     });
 
     ipcMain.on(CALL_COMMAND, (_, message: {command: string}) => {

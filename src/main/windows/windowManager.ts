@@ -617,7 +617,7 @@ export class WindowManager {
             // }
             const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
 
-            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar);
+            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar, message.username);
             initPopupsConfigurationMain(this.callWindow);
             setupScreenSharingMain(this.callWindow, viewName, 'kChat.Desktop');
             setupAlwaysOnTopMain(this.callWindow);
