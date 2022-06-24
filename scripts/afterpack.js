@@ -25,7 +25,7 @@ function fixSetuid(context) {
 function getAppFileName(context) {
     switch (context.electronPlatformName) {
     case 'win32':
-        return 'Mattermost.exe';
+        return 'kchat.exe';
     case 'darwin':
         return 'kchat.app';
     case 'linux':

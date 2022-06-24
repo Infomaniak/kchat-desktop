@@ -504,7 +504,7 @@ function Run-BuildId {
     $msiDescriptor = [xml](Get-Content $msiDescriptorFileName)
     $msiDescriptor.Wix.Product.Version = [string]$env:COM_MATTERMOST_MAKEFILE_BUILD_ID_MSI
     $ComponentDownload = $msiDescriptor.CreateElement("Property", "http://schemas.microsoft.com/wix/2006/wi")
-    $ComponentDownload.InnerText = "https://releases.mattermost.com/desktop/$version/mattermost-desktop-$version-`$(var.Platform).msi"
+    $ComponentDownload.InnerText = "https://releases.mattermost.com/desktop/$version/kchat-desktop-$version-`$(var.Platform).msi"
     $ComponentDownload.SetAttribute("Id", "ComponentDownload")
     $msiDescriptor.Wix.Product.AppendChild($ComponentDownload)
     $msiDescriptor.Save($msiDescriptorFileName)
@@ -552,16 +552,16 @@ function Run-BuildForceSignature {
                 # "SignTool Error: The specified timestamp server either could not be reached or returned an invalid response.
                 # src.: https://web.archive.org/web/20190306223053/https://github.com/electron-userland/electron-builder/issues/2795#issuecomment-466831315
                 Start-Sleep -s 15
-                signtool.exe sign /f "./mattermost-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha1 /td sha1 "$($_.FullName)"
+                signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha1 /td sha1 "$($_.FullName)"
                 Start-Sleep -s 15
-                signtool.exe sign /f "./mattermost-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /as "$($_.FullName)"
+                signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /as "$($_.FullName)"
             }
 
-            Print-Info "Signing Mattermost.exe (waiting for 2 * 15 seconds)..."
+            Print-Info "Signing kchat.exe (waiting for 2 * 15 seconds)..."
             Start-Sleep -s 15
-            signtool.exe sign /f "./mattermost-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha1 /td sha1 "$archPath\Mattermost.exe"
+            signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha1 /td sha1 "$archPath\kchat.exe"
             Start-Sleep -s 15
-            signtool.exe sign /f "./mattermost-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /as "$archPath\Mattermost.exe"
+            signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /as "$archPath\kchat.exe"
         }
     } else {
         Print-Info "Certificate file not found, DLLs and executable won't be signed."
@@ -625,26 +625,26 @@ function Run-BuildMsi {
     Print-Info "Building 32 bits msi installer..."
     heat.exe dir "release\win-ia32-unpacked\" -o "scripts\msi_installer_files.wxs" -scom -frag -srd -sreg -gg -cg MattermostDesktopFiles -t "scripts\msi_installer_files_replace_id.xslt" -dr INSTALLDIR
     candle.exe -dPlatform=x86 "scripts\msi_installer.wxs" "scripts\msi_installer_files.wxs" -o "scripts\"
-    light.exe "scripts\msi_installer.wixobj" "scripts\msi_installer_files.wixobj" -loc "resources\windows\msi_i18n\en_US.wxl" -o "release\mattermost-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" -b "release\win-ia32-unpacked\"
+    light.exe "scripts\msi_installer.wixobj" "scripts\msi_installer_files.wixobj" -loc "resources\windows\msi_i18n\en_US.wxl" -o "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" -b "release\win-ia32-unpacked\"
 
     Print-Info "Building 64 bits msi installer..."
     heat.exe dir "release\win-unpacked\" -o "scripts\msi_installer_files.wxs" -scom -frag -srd -sreg -gg -cg MattermostDesktopFiles -t "scripts\msi_installer_files_replace_id.xslt" -t "scripts\msi_installer_files_set_win64.xslt" -dr INSTALLDIR
     candle.exe -dPlatform=x64 "scripts\msi_installer.wxs" "scripts\msi_installer_files.wxs" -o "scripts\"
-    light.exe "scripts\msi_installer.wixobj" "scripts\msi_installer_files.wixobj" -loc "resources\windows\msi_i18n\en_US.wxl" -o "release\mattermost-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" -b "release\win-unpacked\"
+    light.exe "scripts\msi_installer.wixobj" "scripts\msi_installer_files.wixobj" -loc "resources\windows\msi_i18n\en_US.wxl" -o "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" -b "release\win-unpacked\"
 
     # Only sign the executable and .dll if this is a release and not a pull request
     # check.
     if (Test-Path 'env:PFX') {
-        Print-Info "Signing mattermost-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi (waiting for 15 seconds)..."
+        Print-Info "Signing kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi (waiting for 15 seconds)..."
         Start-Sleep -s 15
         # Dual signing is not supported on msi files. Is it recommended to sign with 256 hash.
         # src.: https://security.stackexchange.com/a/124685/84134
         # src.: https://social.msdn.microsoft.com/Forums/windowsdesktop/en-us/d4b70ecd-a883-4289-8047-cc9cde28b492#0b3e3b80-6b3b-463f-ac1e-1bf0dc831952
-        signtool.exe sign /f "./mattermost-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\mattermost-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" "release\mattermost-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi"
+        signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi"
 
-        Print-Info "Signing mattermost-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi (waiting for 15 seconds)..."
+        Print-Info "Signing kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi (waiting for 15 seconds)..."
         Start-Sleep -s 15
-        signtool.exe sign /f "./mattermost-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\mattermost-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" "release\mattermost-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi"
+        signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi"
     } else {
         Print-Info "Certificate file not found, the msi installers won't be signed."
     }
@@ -653,10 +653,10 @@ function Run-BuildMsi {
 function Get-Cert {
     if (Test-Path 'env:PFX') {
         Print-Info "Getting windows certificate"
-        [IO.File]::WriteAllBytes("./mattermost-desktop-windows.pfx", [Convert]::FromBase64String($env:PFX))
+        [IO.File]::WriteAllBytes("./kchat-desktop-windows.pfx", [Convert]::FromBase64String($env:PFX))
         $password = "$env:PFX_KEY" | convertto-securestring -asplaintext -force
         Print-Info "Importing certificate into the machine"
-        Import-PfxCertificate -filepath "./mattermost-desktop-windows.pfx" cert:\localMachine\my -password $password
+        Import-PfxCertificate -filepath "./kchat-desktop-windows.pfx" cert:\localMachine\my -password $password
     } else {
         Print-Warning "No env:PFX environment variable found, build will not be signed."
     }
@@ -665,7 +665,7 @@ function Get-Cert {
 function Remove-Cert {
     if (Test-Path 'env:PFX') {
         Print-Info "Removing windows certificate"
-        Remove-Item -path "./mattermost-desktop-windows.pfx"
+        Remove-Item -path "./kchat-desktop-windows.pfx"
     }
 }
 
