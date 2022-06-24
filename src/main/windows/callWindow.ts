@@ -29,8 +29,7 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
         height: 800,
 
         // parent: mainWindow,
-        // title: 'Call 🔉',
-        titleBarStyle: 'hidden',
+        title: name + '🔉',
         fullscreen: false,
         webPreferences: {
             nativeWindowOpen: true,

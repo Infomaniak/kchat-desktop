@@ -37,6 +37,8 @@ export default class CallPage extends React.PureComponent<Record<string, never>>
             feedbackPercentage: 0,
         };
 
+        document.title = '🔉 ' + name;
+
         const options = {
             configOverwrite,
             interfaceConfigOverwrite: {HIDE_INVITE_MORE_HEADER: true},
