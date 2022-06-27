@@ -46,10 +46,8 @@
   "linux": {
     "category": "Network;InstantMessaging",
     "target": [
-      "deb",
-      "tar.gz",
       "appimage",
-      "rpm"
+      "deb"
     ],
     "extraFiles": [
       {
@@ -66,7 +64,13 @@
           "README.md"
         ]
       }
-    ]
+    ],
+    "mimeTypes": [
+      "x-sheme-handler/ktalk"
+    ],
+    "desktop": {
+      "MimeType": "x-sheme-handler/ktalk"
+    }
   },
   "mac": {
     "category": "public.app-category.productivity",
