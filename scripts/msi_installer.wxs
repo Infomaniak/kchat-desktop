@@ -35,12 +35,12 @@
   - there are any changes in the feature hierarchy (child
     feature moving out of a parent, or a parent feature getting a new child).
   -->
-  <Product Id="*" UpgradeCode="8523DAF0-699D-4CC7-9A65-C5E696A9DE6D" Name="Mattermost" Manufacturer="Mattermost, Inc." Language="1033" Codepage="1252" Version="0.0.0">
+  <Product Id="*" UpgradeCode="8523DAF0-699D-4CC7-9A65-C5E696A9DE6D" Name="kChat" Manufacturer="Infomaniak" Language="1033" Codepage="1252" Version="0.0.0">
     <!--
     perMachine installs the app system wide (ALLUSERS is set to 1)
     src.: https://www.joyofsetup.com/2008/04/01/new-wix-feature-setting-package-installation-scope/
     -->
-    <Package Id="*" Keywords="Installer" Description="Mattermost Installer" Manufacturer="Mattermost, Inc." InstallerVersion="400" Languages="1033" Compressed="yes" SummaryCodepage="1252" Platform="$(var.Platform)" InstallScope="perMachine" />
+    <Package Id="*" Keywords="Installer" Description="kChat Installer" Manufacturer="Infomaniak" InstallerVersion="400" Languages="1033" Compressed="yes" SummaryCodepage="1252" Platform="$(var.Platform)" InstallScope="perMachine" />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
     <!--
     Perform OS check requirements only if we are installing (not on repair/
@@ -56,31 +56,31 @@
     <MajorUpgrade AllowDowngrades="yes" />
     <!-- Retrieve previous installation path -->
     <Property Id="INSTALLDIR">
-      <RegistrySearch Id="DetermineInstallLocation" Type="raw" Root="HKLM" Key="Software\Mattermost\Desktop" Name="InstallLocation" Win64="$(var.Win64)" />
+      <RegistrySearch Id="DetermineInstallLocation" Type="raw" Root="HKLM" Key="Software\kChat\Desktop" Name="InstallLocation" Win64="$(var.Win64)" />
     </Property>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="$(var.ProgramFilesVersion)" Name="PFiles">
-        <Directory Id="MattermostFolder" Name="Mattermost">
+        <Directory Id="kChatFolder" Name="kChat">
           <Directory Id="INSTALLDIR" Name="Desktop">
             <Component Id="MainExecutableShortcutDesktop" Guid="9C71385D-C892-48BA-A35D-D89A661D2952" Win64="$(var.Win64)">
               <Condition><![CDATA[ADDDESKTOPSHORTCUT = "true"]]></Condition>
-              <RegistryValue Id="RegShortcutDesktop" Root="HKCU" Key="SOFTWARE\Mattermost\Desktop\settings" Name="MattermostDesktopShortcutDesktop" Value="1" Type="integer" KeyPath="yes" />
-              <Shortcut Id="MattermostDesktopShortcutDesktop" Directory="DesktopFolder" Name="Mattermost" WorkingDirectory="INSTALLDIR" Icon="icon.ico" IconIndex="0" Advertise="no" Target="[INSTALLDIR]kchat.exe" />
+              <RegistryValue Id="RegShortcutDesktop" Root="HKCU" Key="SOFTWARE\kChat\Desktop\settings" Name="kChatDesktopShortcutDesktop" Value="1" Type="integer" KeyPath="yes" />
+              <Shortcut Id="kChatDesktopShortcutDesktop" Directory="DesktopFolder" Name="kChat" WorkingDirectory="INSTALLDIR" Icon="kChat.ico" IconIndex="0" Advertise="no" Target="[INSTALLDIR]kChat.exe" />
             </Component>
             <Component Id="MainExecutableShortcutStartMenu" Guid="DF2028FF-7E03-407B-A46A-726E1B67DF83" Win64="$(var.Win64)">
               <Condition><![CDATA[ADDSTARTMENUSHORTCUT = "true"]]></Condition>
-              <RegistryValue Id="RegShortcutStartMenu" Root="HKCU" Key="SOFTWARE\Mattermost\Desktop\settings" Name="MattermostDesktopShortcutStartMenu" Value="1" Type="integer" KeyPath="yes" />
-              <Shortcut Id="MattermostDesktopShortcutStartMenu" Directory="ProgramMenuDir" Name="Mattermost" WorkingDirectory="INSTALLDIR" Icon="icon.ico" IconIndex="0" Advertise="no" Target="[INSTALLDIR]kchat.exe">
-                <ShortcutProperty Key="System.AppUserModel.ID" Value="Mattermost.Desktop" />
+              <RegistryValue Id="RegShortcutStartMenu" Root="HKCU" Key="SOFTWARE\kChat\Desktop\settings" Name="kChatDesktopShortcutStartMenu" Value="1" Type="integer" KeyPath="yes" />
+              <Shortcut Id="kChatDesktopShortcutStartMenu" Directory="ProgramMenuDir" Name="kChat" WorkingDirectory="INSTALLDIR" Icon="kChat.ico" IconIndex="0" Advertise="no" Target="[INSTALLDIR]kChat.exe">
+                <ShortcutProperty Key="System.AppUserModel.ID" Value="kChat.Desktop" />
               </Shortcut>
             </Component>
             <Directory Id="GPOFiles" Name="gpo">
               <Component Id="GPODefinitionFile" Guid="BE30D350-8727-41CB-9F8D-9E0B7B9572A9" Win64="$(var.Win64)">
-                <File Id="MattermostAdmxFile" Name="mattermost.admx" Source="../resources/windows/gpo/mattermost.admx" KeyPath="yes" />
+                <File Id="kChatAdmxFile" Name="kChat.admx" Source="../resources/windows/gpo/kChat.admx" KeyPath="yes" />
               </Component>
               <Directory Id="GPOUSEnglishFiles" Name="en-US">
                 <Component Id="GPOUSEnglishFiles" Guid="1D49A24E-769C-4AF0-863E-0648628A4554" Win64="$(var.Win64)">
-                  <File Id="MattermostAdmlFile" Name="mattermost.adml" Source="../resources/windows/gpo/en-US/mattermost.adml" KeyPath="yes" />
+                  <File Id="kChatAdmlFile" Name="kChat.adml" Source="../resources/windows/gpo/en-US/kChat.adml" KeyPath="yes" />
                 </Component>
               </Directory>
             </Directory>
@@ -88,10 +88,10 @@
         </Directory>
       </Directory>
       <Directory Id="ProgramMenuFolder" Name="Programs">
-        <Directory Id="ProgramMenuDir" Name="Mattermost">
+        <Directory Id="ProgramMenuDir" Name="kChat">
           <Component Id="ProgramMenuDir" Guid="CA5C6FAF-C004-4909-AF1C-AA0A5F53C245">
             <RemoveFolder Id="ProgramMenuDir" On="uninstall" />
-            <RegistryValue Root="HKCU" Key="Software\Mattermost\Desktop" Type="string" Value="" KeyPath="yes" />
+            <RegistryValue Root="HKCU" Key="Software\kChat\Desktop" Type="string" Value="" KeyPath="yes" />
           </Component>
         </Directory>
       </Directory>
@@ -105,7 +105,7 @@
     src.: https://web.archive.org/web/20181104151047/https://helgeklein.com/blog/2014/09/real-world-example-wix-msi-application-installer/
     -->
       <Component Id="RegInstallLocation" Guid="BF67264A-28BB-44FF-A646-F118D814651E">
-        <RegistryKey Root="HKLM" Key="Software\Mattermost\Desktop">
+        <RegistryKey Root="HKLM" Key="Software\kChat\Desktop">
           <RegistryValue Name="InstallLocation" Value="[INSTALLDIR]" Type="string" KeyPath="yes" />
         </RegistryKey>
       </Component>
@@ -114,7 +114,7 @@
       <!-- Using heat to generate file and directory hierarchy
            src.: https://stackoverflow.com/a/26558025/3514658
       -->
-      <ComponentGroupRef Id="MattermostDesktopFiles" />
+      <ComponentGroupRef Id="kChatDesktopFiles" />
       <ComponentRef Id="MainExecutableShortcutDesktop" />
       <ComponentRef Id="MainExecutableShortcutStartMenu" />
       <ComponentRef Id="ProgramMenuDir" />
@@ -128,10 +128,10 @@
       <Custom Action="KillApp" Before="InstallValidate" />
       <Custom Action="LaunchApp" After="InstallFinalize">Installed</Custom>
     </InstallExecuteSequence>
-    <CustomAction Id="LaunchApp" FileKey="MattermostDesktopEXE" ExeCommand="" Return="asyncNoWait" />
-    <CustomAction Id="KillApp" Directory="INSTALLDIR" Return="ignore" ExeCommand="&quot;[SystemFolder]taskkill.exe&quot; /F /IM &quot;kchat.exe&quot;" />
-    <Icon Id="icon.ico" SourceFile="../src/assets/icon.ico" />
-    <Property Id="ARPPRODUCTICON">icon.ico</Property>
+    <CustomAction Id="LaunchApp" FileKey="kChatDesktopEXE" ExeCommand="" Return="asyncNoWait" />
+    <CustomAction Id="KillApp" Directory="INSTALLDIR" Return="ignore" ExeCommand="&quot;[SystemFolder]taskkill.exe&quot; /F /IM &quot;kChat.exe&quot;" />
+    <Icon Id="kChat.ico" SourceFile="../src/assets/icon.ico" />
+    <Property Id="ARPPRODUCTICON">kChat.ico</Property>
     <Property Id="ARPCONTACT">https://pre-release.mattermost.com</Property>
     <Property Id="ARPHELPLINK">https://docs.mattermost.com/</Property>
     <Property Id="ARPURLINFOABOUT">https://mattermost.com/</Property>
@@ -989,7 +989,7 @@ The [Installer] will complete the installation of [ProductName] on your computer
     <Property Id="DialogBitmap"><![CDATA[DialogBitmap]]></Property>
     <Property Id="Installer" Value="Installer" />
     <Property Id="ButtonText_Uninstall" Value="&amp;Uninstall" />
-    <!-- Mattermost blue banners -->
+    <!-- kChat blue banners -->
     <Binary Id="DialogBitmap" SourceFile="../resources/windows/msi_dialog_banner.png" />
     <Binary Id="BannerBitmap" SourceFile="../resources/windows/msi_dialog_banner_small.png" />
     <!-- Error and warnings -->

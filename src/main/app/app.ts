@@ -49,6 +49,21 @@ export function handleAppBrowserWindowCreated(event: Event, newWindow: BrowserWi
 export function handleAppWillFinishLaunching() {
     // Protocol handler for osx
     app.on('open-url', (event, url) => {
+        if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
+                
+                if (app.isReady()) {
+                    const currentServerURL = WindowManager.getCurrentServerUrl();
+
+                const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
+                    openDeepLink(newUrl);
+                } else {
+                    const currentServerURL = WindowManager.getCurrentServerUrl();
+
+                const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
+                    app.once('ready', () => openDeepLink(newUrl));
+                }
+            // return url;
+            }
         log.info(`Handling deeplinking url: ${url}`);
         event.preventDefault();
         const deeplinkingUrl = getDeeplinkingURL([url]);
@@ -105,7 +120,7 @@ export async function handleAppCertificateError(event: Event, webContents: WebCo
         try {
             let result = await dialog.showMessageBox(mainWindow, {
                 title: 'Certificate Error',
-                message: 'There is a configuration issue with this Mattermost server, or someone is trying to intercept your connection. You also may need to sign into the Wi-Fi you are connected to using your web browser.',
+                message: 'There is a configuration issue with this kChat server, or someone is trying to intercept your connection. You also may need to sign into the Wi-Fi you are connected to using your web browser.',
                 type: 'error',
                 detail,
                 buttons: ['More Details', 'Cancel Connection'],

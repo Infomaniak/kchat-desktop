@@ -9,9 +9,9 @@ xmlns:wi="http://schemas.microsoft.com/wix/2006/wi">
   </xsl:template>
   
   <!-- src.: https://stackoverflow.com/a/19259647/3514658 -->
-  <xsl:template match="wi:ComponentGroup[@Id='MattermostDesktopFiles']/wi:Component/wi:File[contains(@Source,'kchat.exe')]">
+  <xsl:template match="wi:ComponentGroup[@Id='kChatDesktopFiles']/wi:Component/wi:File[contains(@Source,'kChat.exe')]">
      <xsl:copy>
-        <xsl:attribute name="Id">MattermostDesktopEXE</xsl:attribute>
+        <xsl:attribute name="Id">kChatDesktopEXE</xsl:attribute>
         <xsl:copy-of select="@*[name()!='Id']"/>
         <xsl:apply-templates />
      </xsl:copy>

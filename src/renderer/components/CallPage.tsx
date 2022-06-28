@@ -58,6 +58,10 @@ export default class CallPage extends React.PureComponent<Record<string, never>>
             enableRemoteControl: false,
             enableAlwaysOnTopWindow: true,
         });
+        
+        setTimeout(() => {
+            api.executeCommand('avatarUrl', avatar);
+        }, 1000);
 
         api.executeCommand('avatarUrl', avatar);
 

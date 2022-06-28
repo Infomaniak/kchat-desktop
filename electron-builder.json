@@ -3,7 +3,7 @@
     "provider": "generic",
     "url": "https://releases.mattermost.com/desktop/"
   }],
-  "appId": "kChat.Desktop",
+  "appId": "com.infomaniak.kchat",
   "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
   "directories": {
     "buildResources": "src/assets",
@@ -46,10 +46,8 @@
   "linux": {
     "category": "Network;InstantMessaging",
     "target": [
-      "deb",
-      "tar.gz",
       "appimage",
-      "rpm"
+      "deb"
     ],
     "extraFiles": [
       {
@@ -66,11 +64,16 @@
           "README.md"
         ]
       }
-    ]
+    ],
+    "mimeTypes": [
+      "x-sheme-handler/ktalk"
+    ],
+    "desktop": {
+      "MimeType": "x-sheme-handler/ktalk"
+    }
   },
   "mac": {
     "category": "public.app-category.productivity",
-    "icon": "icon.png",
     "target": [
       "zip",
       "dmg"
