@@ -88,7 +88,6 @@
       }
     ],
     "hardenedRuntime": true,
-    "gatekeeperAssess": true,
     "asarUnpack": "**/*.node",
     "entitlements": "./entitlements.mac.plist",
     "entitlementsInherit": "./entitlements.mac.plist",
