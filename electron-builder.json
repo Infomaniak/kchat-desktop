@@ -1,8 +1,10 @@
 {
   "publish": [
     {
-    "provider": "generic",
-    "url": "https://releases.mattermost.com/desktop/"
+    "provider": "s3",
+    "channel": "latest",
+    "bucket": "kChat",
+    "endpoint": "https://download.storage.infomaniak.com"
   }],
   "appId": "com.infomaniak.kchat",
   "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
