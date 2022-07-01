@@ -108,15 +108,15 @@ export function getDeeplinkingURL(args: string[]) {
     if (Array.isArray(args) && args.length) {
     // deeplink urls should always be the last argument, but may not be the first (i.e. Windows with the app already running)
         let url = args[args.length - 1];
-
+// alert(args)
         if (url && mainProtocol && url.startsWith(mainProtocol) && urlUtils.isValidURI(url)) {
-            if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
-                const currentServerURL = WindowManager.getCurrentServerUrl();
+            // if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
+            //     const currentServerURL = WindowManager.getCurrentServerUrl();
 
-                url = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
+            //     url = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
 
-            // return url;
-            }
+            // // return url;
+            // }
             return url;
         }
     }

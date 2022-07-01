@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "author": "Infomaniak <kchat@infomaniak.com>",
   "license": "proprietary",
-  "desktopName": "kChat.Desktop",
+  "desktopName": "kchat.Desktop",
   "homepage": "https://infomaniak.com/kchat",
   "engines": {
     "node": ">=14.6.0"

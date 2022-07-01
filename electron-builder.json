@@ -55,10 +55,8 @@
   "linux": {
     "category": "Network;InstantMessaging",
     "target": [
-      "deb",
-      "tar.gz",
       "appimage",
-      "rpm"
+      "deb"
     ],
     "icon": "src/assets/icon.icns",
     "extraFiles": [
@@ -76,7 +74,13 @@
           "README.md"
         ]
       }
-    ]
+    ],
+    "mimeTypes": [
+      "x-sheme-handler/ktalk"
+    ],
+    "desktop": {
+      "MimeType": "x-sheme-handler/ktalk"
+    }
   },
   "mac": {
     "category": "public.app-category.productivity",
@@ -95,7 +99,6 @@
     ],
     "icon": "src/assets/osx/osx_icon.icns",
     "hardenedRuntime": true,
-    "gatekeeperAssess": true,
     "asarUnpack": "**/*.node",
     "entitlements": "./entitlements.mac.plist",
     "entitlementsInherit": "./entitlements.mac.plist",
