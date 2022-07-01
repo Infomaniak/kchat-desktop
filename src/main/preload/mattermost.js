@@ -34,6 +34,7 @@ import {
     WINDOW_WILL_UNLOADED,
     DISPATCH_GET_DESKTOP_SOURCES,
     DESKTOP_SOURCES_RESULT,
+    CALL_RINGING,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -171,6 +172,13 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
     case 'get-desktop-sources': {
         ipcRenderer.send(DISPATCH_GET_DESKTOP_SOURCES, viewName, message);
         break;
+    }
+    case 'call-dialing': {
+        ipcRenderer.send(CALL_RINGING, message, viewName);
+        break;
+    }
+    case 'call-focus': {
+        ipcRenderer.send('call-focus', message, viewName);
     }
     }
 });

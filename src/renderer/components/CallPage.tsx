@@ -10,7 +10,7 @@ import {CALL_CLOSED, CALL_COMMAND} from 'common/communication';
 
 import JitsiMeetExternalAPI from 'renderer/external_api';
 
-export default class SettingsPage extends React.PureComponent<Record<string, never>> {
+export default class CallPage extends React.PureComponent<Record<string, never>> {
     currentRef: React.RefObject<HTMLDivElement>;
 
     constructor(props: Record<string, never>) {
@@ -20,26 +20,33 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
     }
 
     componentDidMount() {
-        window.ipcRenderer.on('jitsi-connect', (_, msg) => this.handleConnect(msg.id, msg.url, msg.username, msg.avatar, msg.channelName));
+        window.ipcRenderer.on('jitsi-connect', (_, msg) => this.handleConnect(msg.id, msg.url, msg.name, msg.avatar, msg.username));
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        document.body.style['-webkit-app-region'] = 'drag';
     }
 
-    handleConnect(id: string, url: string, username: string, avatar: string, channelName: string) {
+    handleConnect(id: string, url: string, name: string, avatar: string, userName: string) {
         const configOverwrite = {
             startWithAudioMuted: false,
             startWithVideoMuted: true,
-            subject: channelName !== '' ? channelName : id,
+            subject: name,
             prejoinConfig: {enabled: false},
             disableDeepLinking: true,
             feedbackPercentage: 0,
         };
 
+        document.title = '🔉 ' + name;
+
         const options = {
             configOverwrite,
+            interfaceConfigOverwrite: {HIDE_INVITE_MORE_HEADER: true},
 
             // parentNode: this.currentRef.current,
             roomName: id,
             userInfo: {
-                displayName: username,
+                displayName: userName,
             },
         };
 
@@ -49,12 +56,14 @@ export default class SettingsPage extends React.PureComponent<Record<string, nev
 
         window.jitsiNodeAPI.setupRenderer(api, {
             enableRemoteControl: false,
-            enableAlwaysOnTopWindow: false,
+            enableAlwaysOnTopWindow: true,
         });
         
         setTimeout(() => {
             api.executeCommand('avatarUrl', avatar);
         }, 1000);
+
+        api.executeCommand('avatarUrl', avatar);
 
         api.on('readyToClose', () => {
             window.ipcRenderer.send(CALL_CLOSED, id);

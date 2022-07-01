@@ -29,6 +29,7 @@ import {
     DISPATCH_GET_DESKTOP_SOURCES,
     DESKTOP_SOURCES_RESULT,
     RELOAD_CURRENT_VIEW,
+    CALL_RINGING,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import {SECOND} from 'common/utils/constants';
@@ -45,9 +46,10 @@ import TeamDropdownView from '../views/teamDropdownView';
 import {createSettingsWindow} from './settingsWindow';
 import createMainWindow from './mainWindow';
 import {createCallWindow} from './callWindow';
+import {createCallDialingWindow} from './callDialingWindow';
 
 // eslint-disable-next-line import/no-commonjs
-const {setupScreenSharingMain} = require('@antonbuks/jitsi-electron-sdk');
+const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@antonbuks/jitsi-electron-sdk');
 
 // singleton module to manage application's windows
 
@@ -76,6 +78,7 @@ export class WindowManager {
         ipcMain.on(APP_LOGGED_IN, this.handleAppLoggedIn);
         ipcMain.on(APP_LOGGED_OUT, this.handleAppLoggedOut);
         ipcMain.on(CALL_JOINED, this.handleCallJoined);
+        ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(GET_VIEW_NAME, this.handleGetViewName);
         ipcMain.handle(GET_VIEW_WEBCONTENTS_ID, this.handleGetWebContentsId);
         ipcMain.on(DISPATCH_GET_DESKTOP_SOURCES, this.handleGetDesktopSources);
@@ -650,6 +653,13 @@ export class WindowManager {
         }
     }
 
+    handleCallDialing = (event: IpcMainEvent, message, viewName: string) => {
+        const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
+
+        // this.dialingWindow = createCallDialingWindow(this.mainWindow!, withDevTools);
+        createCallDialingWindow(this.mainWindow!, withDevTools, message.calling);
+    }
+
     handleCallJoined = (event: IpcMainEvent, message, viewName: string) => {
         if (this.callWindow) {
             this.callWindow.show();
@@ -659,10 +669,19 @@ export class WindowManager {
             // }
             const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
 
-            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.username, message.avatar, message.channelName);
-            setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.chat');
+            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar, message.username);
+            initPopupsConfigurationMain(this.callWindow);
+            setupScreenSharingMain(this.callWindow, viewName, 'kChat.Desktop');
+            setupAlwaysOnTopMain(this.callWindow);
+            setupPowerMonitorMain(this.callWindow);
+
+            // setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
             ipcMain.on(CALL_CLOSED, () => {
                 this.callWindow.close();
+            });
+
+            ipcMain.on('call-focus', () => {
+                this.callWindow?.focus();
             });
 
             ipcMain.on('call-audio-status-change', (_, status) => {

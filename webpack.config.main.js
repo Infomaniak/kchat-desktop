@@ -19,6 +19,7 @@ module.exports = merge(base, {
         index: './src/main/app/index.ts',
         mainWindow: './src/main/preload/mainWindow.js',
         call: './src/main/preload/call.js',
+        callDial: './src/main/preload/callDial.js',
         dropdown: './src/main/preload/dropdown.js',
         preload: './src/main/preload/mattermost.js',
         modalPreload: './src/main/preload/modalPreload.js',

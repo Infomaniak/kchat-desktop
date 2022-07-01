@@ -1,0 +1,89 @@
+.StatusIcon {
+    position: absolute;
+}
+.StyledAvatarImage {
+    flex: 1;
+    align-self: stretch;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    // TODO@all: these styles need to be extracted (and adjusted) to the Skeleton component once it is ready to be built
+    .skeleton {
+        display: block;
+        flex: 1;
+        align-self: stretch;
+        background: var(--background-skeleton);
+        overflow: hidden;
+        position: relative;
+
+        &::after {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            transform: translateX(-100%);
+            // background: linear-gradient(
+            //         90deg,
+            //         ${({ theme }): string => setAlpha(theme.background.shimmer, 0)} 0,
+            //         ${({ theme }): string => setAlpha(theme.background.shimmer, 0.25)} 40%,
+            //         ${({ theme }): string => setAlpha(theme.background.shimmer, 0.5)} 75%,
+            //         ${({ theme }): string => setAlpha(theme.background.shimmer, 0)}
+            // );
+            animation: shimmer 1.5s infinite;
+            content: '';
+        }
+    }
+
+    @keyframes shimmer {
+        100% {
+            transform: translateX(100%);
+        }
+    }
+}
+
+.AvatarRoot {
+    color: white;
+        position: relative;
+
+        > div:first-child {
+            // display: flex;
+            // overflow: hidden;
+            // align-items: center;
+            // justify-content: center;
+
+            // ${applyShape({
+            //     width: AVATAR_SIZE_MAP[size].size,
+            //     height: AVATAR_SIZE_MAP[size].size,
+            //     radius: variant === 'circle' ? variant : AVATAR_SIZE_MAP[size].radius,
+            // })};
+
+            // ${applyHeadingStyles({
+            //     size: AVATAR_SIZE_MAP[size].text,
+            //     weight: 'bold',
+            // })};
+
+            .isActive {
+                box-shadow: 0 0 0 3px var(--background-color),
+                    0 0 0 6px var(--grey);
+
+                transform: scale(1);
+            }
+
+            .disableHover {
+                &:hover {
+                    box-shadow: 0 0 0 1px var(--background-color)
+                        0 0 0 2px var(--background-color);
+
+                    transform: scale(var(--scale-factor));
+                }
+            }
+
+            transition: box-shadow 500ms ease, transform 500ms ease;
+        }
+}
+
+.AvatarStatusBadgeRoot {
+    
+}

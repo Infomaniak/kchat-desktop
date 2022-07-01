@@ -129,3 +129,4 @@ export const RELOAD_CURRENT_VIEW = 'reload-current-view';
 
 export const PING_DOMAIN = 'ping-domain';
 export const PING_DOMAIN_RESPONSE = 'ping-domain-response';
+export const CALL_RINGING = 'call-ringing';
