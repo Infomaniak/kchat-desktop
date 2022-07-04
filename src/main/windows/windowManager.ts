@@ -49,7 +49,7 @@ import {createCallWindow} from './callWindow';
 import {createCallDialingWindow} from './callDialingWindow';
 
 // eslint-disable-next-line import/no-commonjs
-const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@antonbuks/jitsi-electron-sdk');
+const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@jitsi/electron-sdk');
 
 // singleton module to manage application's windows
 
@@ -671,13 +671,14 @@ export class WindowManager {
 
             this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar, message.username);
             initPopupsConfigurationMain(this.callWindow);
-            setupScreenSharingMain(this.callWindow, viewName, 'kChat.Desktop');
+            setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.kchat');
             setupAlwaysOnTopMain(this.callWindow);
             setupPowerMonitorMain(this.callWindow);
 
             // setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
             ipcMain.on(CALL_CLOSED, () => {
                 this.callWindow.close();
+                this.callWindow = undefined;
             });
 
             ipcMain.on('call-focus', () => {

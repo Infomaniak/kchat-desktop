@@ -8,7 +8,7 @@
 // eslint-disable-next-line import/no-commonjs
 const {ipcRenderer} = require('electron');
 // eslint-disable-next-line import/no-commonjs
-const {setupScreenSharingRender, setupAlwaysOnTopRender, setupWiFiStats, setupPowerMonitorRender, initPopupsConfigurationRender} = require('@antonbuks/jitsi-electron-sdk');
+const {setupScreenSharingRender, setupAlwaysOnTopRender, setupWiFiStats, setupPowerMonitorRender, initPopupsConfigurationRender} = require('@jitsi/electron-sdk');
 // eslint-disable-next-line import/no-commonjs
 const {platform} = require('process');
 
@@ -33,7 +33,7 @@ function setupRenderer(api, options = {}) {
 
     const iframe = api.getIFrame();
 
-    initPopupsConfigurationRender(this._api);
+    initPopupsConfigurationRender(api);
 
     setupScreenSharingRender(api);
 

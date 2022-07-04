@@ -4,7 +4,6 @@ import classNames from 'classnames';
 import React, {useEffect, useState} from 'react';
 
 import '../../css/components/Avatar.scss';
-import '../../css/compass-icons.css';
 
 import {
     AVATAR_ELEMENTS,

@@ -86,7 +86,7 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
      *  while app is closed
      * it will trigger this event below
      */
-    handleProtocolCall(process.argv.pop());
+    // handleProtocolCall(process.argv.pop());
 
     return callWindow;
 }
@@ -94,31 +94,31 @@ export function createCallWindow(mainWindow: BrowserWindow, withDevTools: boolea
 /**
  * Handler for application protocol links to initiate a conference.
  */
-function handleProtocolCall(fullProtocolCall: string | void) {
-    try {
-        // eslint-disable-next-line no-console
-        console.log(`handle protocol call with ${fullProtocolCall}, app is ready ${app.isReady()} and mainWindow exists ${Boolean(mainWindow)}`);
-    } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log(`handle protocol call error ${JSON.stringify(e)}`);
-    }
+// function handleProtocolCall(fullProtocolCall: string | void) {
+//     try {
+//         // eslint-disable-next-line no-console
+//         console.log(`handle protocol call with ${fullProtocolCall}, app is ready ${app.isReady()} and mainWindow exists ${Boolean(mainWindow)}`);
+//     } catch (e) {
+//         // eslint-disable-next-line no-console
+//         console.log(`handle protocol call error ${JSON.stringify(e)}`);
+//     }
 
-    // don't touch when something is bad
-    if (
-        !fullProtocolCall ||
-        fullProtocolCall.trim() === '' ||
-        fullProtocolCall.indexOf(appProtocolSurplus) !== 0
-    ) {
-        return;
-    }
+//     // don't touch when something is bad
+//     if (
+//         !fullProtocolCall ||
+//         fullProtocolCall.trim() === '' ||
+//         fullProtocolCall.indexOf(appProtocolSurplus) !== 0
+//     ) {
+//         return;
+//     }
 
-    const inputURL = fullProtocolCall.replace(appProtocolSurplus, '');
+//     const inputURL = fullProtocolCall.replace(appProtocolSurplus, '');
 
-    // protocolDataForFrontApp = inputURL;
+//     // protocolDataForFrontApp = inputURL;
 
-    if (rendererReady) {
-        (callWindow as BrowserWindow).
-            webContents.
-            send('protocol-data-msg', inputURL);
-    }
-}
+//     if (rendererReady) {
+//         (callWindow as BrowserWindow).
+//             webContents.
+//             send('protocol-data-msg', inputURL);
+//     }
+// }

@@ -173,8 +173,8 @@
     "webpack-merge": "5.8.0"
   },
   "dependencies": {
-    "@antonbuks/jitsi-electron-sdk": "^1.0.0",
-    "@mattermost/compass-icons": "0.1.21",
+    "@jitsi/electron-sdk": "^3.0.8",
+    "@infomaniak/compass-icons": "0.5.0",
     "auto-launch": "5.0.5",
     "bootstrap": "4.6.1",
     "bootstrap-dark": "1.0.3",
