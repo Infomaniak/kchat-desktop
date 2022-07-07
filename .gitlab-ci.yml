@@ -1,8 +1,8 @@
----
+# ---
 
-include:
-  - project: mattermost/ci/desktop
-    ref: main
-    file: private.yml
+# include:
+#   - project: mattermost/ci/desktop
+#     ref: main
+#     file: private.yml
 
 
