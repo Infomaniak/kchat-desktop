@@ -50,21 +50,21 @@ export class UpdateManager {
 
     constructor() {
         autoUpdater.on('error', (err: Error) => {
-            log.error(`[Mattermost] There was an error while trying to update: ${err}`);
+            log.error(`[kChat] There was an error while trying to update: ${err}`);
         });
 
         autoUpdater.on('update-available', (info: UpdateInfo) => {
             autoUpdater.removeListener('update-not-available', this.displayNoUpgrade);
             this.versionAvailable = info.version;
             ipcMain.emit(UPDATE_SHORTCUT_MENU);
-            log.info(`[Mattermost] available version ${info.version}`);
+            log.info(`[kChat] available version ${info.version}`);
             this.notify();
         });
 
         autoUpdater.on('update-downloaded', (info: UpdateInfo) => {
             this.versionDownloaded = info.version;
             ipcMain.emit(UPDATE_SHORTCUT_MENU);
-            log.info(`[Mattermost] downloaded version ${info.version}`);
+            log.info(`[kChat] downloaded version ${info.version}`);
             this.notifyDownloaded();
         });
 
@@ -73,7 +73,7 @@ export class UpdateManager {
         });
 
         ipcMain.on(CANCEL_UPGRADE, () => {
-            log.info('[Mattermost] User Canceled upgrade');
+            log.info('[kChat] User Canceled upgrade');
         });
 
         ipcMain.on(CHECK_FOR_UPDATES, () => {
@@ -108,9 +108,9 @@ export class UpdateManager {
             clearTimeout(this.lastCheck);
         }
         dialog.showMessageBox({
-            title: 'Mattermost',
+            title: 'kChat',
             message: 'New desktop version available',
-            detail: 'A new version of the Mattermost Desktop app is available for you to download and install now.',
+            detail: 'A new version of the kChat Desktop app is available for you to download and install now.',
             icon: appIcon,
             buttons: ['Download', 'Remind me Later'],
             type: 'info',
@@ -131,9 +131,9 @@ export class UpdateManager {
 
     handleUpdate = (): void => {
         dialog.showMessageBox({
-            title: 'Mattermost',
+            title: 'kChat',
             message: 'A new version is ready to install',
-            detail: 'A new version of the Mattermost Desktop app is ready to install.',
+            detail: 'A new version of the kChat Desktop app is ready to install.',
             icon: appIcon,
             buttons: ['Restart and Update', 'Remind me Later'],
             type: 'info',
@@ -149,7 +149,7 @@ export class UpdateManager {
     displayNoUpgrade = (): void => {
         const version = app.getVersion();
         dialog.showMessageBox({
-            title: 'Mattermost',
+            title: 'kChat',
             icon: appIcon,
             message: 'You\'re up to date',
             type: 'info',
@@ -171,7 +171,7 @@ export class UpdateManager {
                 autoUpdater.once('update-not-available', this.displayNoUpgrade);
             }
             autoUpdater.checkForUpdates().catch((reason) => {
-                log.error(`[Mattermost] Failed to check for updates: ${reason}`);
+                log.error(`[kChat] Failed to check for updates: ${reason}`);
             });
             this.lastCheck = setTimeout(() => this.checkForUpdates(false), NEXT_CHECK);
         }

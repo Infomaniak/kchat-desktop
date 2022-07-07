@@ -3,7 +3,7 @@
 
 /* eslint-disable max-lines */
 
-// import 'renderer/css/settings.css';
+import 'renderer/css/call.css';
 import React from 'react';
 
 import {CALL_CLOSED, CALL_COMMAND} from 'common/communication';
@@ -21,10 +21,6 @@ export default class CallPage extends React.PureComponent<Record<string, never>>
 
     componentDidMount() {
         window.ipcRenderer.on('jitsi-connect', (_, msg) => this.handleConnect(msg.id, msg.url, msg.name, msg.avatar, msg.username));
-
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        document.body.style['-webkit-app-region'] = 'drag';
     }
 
     handleConnect(id: string, url: string, name: string, avatar: string, userName: string) {
