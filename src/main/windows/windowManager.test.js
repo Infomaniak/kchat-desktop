@@ -40,17 +40,13 @@ jest.mock('electron', () => ({
     },
 }));
 
-jest.mock('electron-log', () => ({
-    error: jest.fn(),
-    info: jest.fn(),
-}));
-
 jest.mock('common/config', () => ({}));
 
 jest.mock('common/utils/url', () => ({
     isTeamUrl: jest.fn(),
     isAdminUrl: jest.fn(),
     getView: jest.fn(),
+    cleanPathName: jest.fn(),
 }));
 jest.mock('common/tabs/TabView', () => ({
     getTabViewName: jest.fn(),
@@ -58,6 +54,7 @@ jest.mock('common/tabs/TabView', () => ({
 }));
 jest.mock('../utils', () => ({
     getAdjustedWindowBoundaries: jest.fn(),
+    shouldHaveBackBar: jest.fn(),
 }));
 jest.mock('../views/viewManager', () => ({
     ViewManager: jest.fn(),
@@ -156,6 +153,7 @@ describe('main/windows/windowManager', () => {
         it('should create the main window and add listeners', () => {
             const window = {
                 on: jest.fn(),
+                once: jest.fn(),
             };
             createMainWindow.mockReturnValue(window);
             windowManager.showMainWindow();
@@ -166,6 +164,7 @@ describe('main/windows/windowManager', () => {
         it('should open deep link when provided', () => {
             const window = {
                 on: jest.fn(),
+                once: jest.fn(),
             };
             createMainWindow.mockReturnValue(window);
             windowManager.showMainWindow('mattermost://server-1.com/subpath');
@@ -350,7 +349,6 @@ describe('main/windows/windowManager', () => {
                 value: originalPlatform,
             });
             expect(windowManager.mainWindow.flashFrame).toBeCalledWith(true);
-            expect(windowManager.settingsWindow.flashFrame).toBeCalledWith(true);
         });
 
         it('mac - should not bounce icon when config item is not set', () => {
@@ -773,6 +771,7 @@ describe('main/windows/windowManager', () => {
                     ],
                 },
             ];
+            urlUtils.cleanPathName.mockImplementation((base, path) => path);
         });
 
         afterEach(() => {
@@ -790,7 +789,6 @@ describe('main/windows/windowManager', () => {
 
             windowManager.handleBrowserHistoryPush(null, 'server-1_tab-messaging', '/other_type_2/subpath');
             expect(windowManager.viewManager.openClosedTab).toBeCalledWith('server-1_other_type_2', 'http://server-1.com/other_type_2/subpath');
-            expect(windowManager.viewManager.showByName).toBeCalledWith('server-1_other_type_2');
         });
 
         it('should open redirect view if different from current view', () => {

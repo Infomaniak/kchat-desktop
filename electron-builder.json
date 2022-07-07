@@ -1,8 +1,11 @@
 {
-  "publish": [{
-    "provider": "generic",
-    "url": "https://releases.mattermost.com/desktop/"
-  }],
+  "publish": {
+    "provider": "s3",
+    "channel": "latest",
+    "bucket": "kchat",
+    "endpoint": "https://download.storage5.infomaniak.com",
+    "path": "/"
+  },
   "appId": "com.infomaniak.kchat",
   "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
   "directories": {
@@ -37,9 +40,17 @@
   ],
   "afterPack": "scripts/afterpack.js",
   "afterSign": "scripts/notarize.js",
+  "afterAllArtifactBuild": "scripts/afterbuild.js",
   "deb": {
+    "artifactName": "${version}/${name}_${version}-1_${arch}.${ext}",
     "synopsis": "kChat Desktop App",
-    "depends": ["gconf2", "gconf-service", "libnotify4", "libxtst6", "libnss3"],
+    "depends": [
+      "gconf2",
+      "gconf-service",
+      "libnotify4",
+      "libxtst6",
+      "libnss3"
+    ],
     "category": "contrib/net",
     "priority": "optional"
   },
@@ -49,6 +60,7 @@
       "appimage",
       "deb"
     ],
+    "icon": "src/assets/icon.icns",
     "extraFiles": [
       {
         "filter": [
@@ -87,6 +99,7 @@
         ]
       }
     ],
+    "icon": "src/assets/osx/osx_icon.icns",
     "hardenedRuntime": true,
     "asarUnpack": "**/*.node",
     "entitlements": "./entitlements.mac.plist",
@@ -95,7 +108,20 @@
       "NSMicrophoneUsageDescription": "Microphone access may be used by kChat plugins, such as kMeet video conferencing.",
       "NSCameraUsageDescription": "Camera access may be used by kChat plugins, such as kMeet video conferencing.",
       "LSFileQuarantineEnabled": true
-  }
+    }
+  },
+  "mas": {
+    "hardenedRuntime": false,
+    "entitlements": "./entitlements.mas.plist",
+    "entitlementsInherit": "./entitlements.mas.inherit.plist",
+    "entitlementsLoginHelper": "./entitlements.mas.inherit.plist",
+    "provisioningProfile": "./mas.provisionprofile",
+    "extendInfo": {
+      "ITSAppUsesNonExemptEncryption": false
+    }
+  },
+  "masDev": {
+    "provisioningProfile": "./mas-dev.provisionprofile"
   },
   "dmg": {
     "background": "src/assets/osx/DMG_BG.png",
@@ -119,7 +145,7 @@
   },
   "squirrelWindows": {
     "iconUrl": "file://src/assets/icon.ico",
-    "artifactName": "${name}-setup-${version}-${arch}.${ext}"
+    "artifactName": "${version}/${name}-setup-${version}-${arch}.${ext}"
   },
   "win": {
     "target": [
@@ -133,9 +159,10 @@
           "NOTICE.txt"
         ]
       }
-    ]
+    ],
+    "publisherName": "CN=\"Mattermost, Inc.\", O=\"Mattermost, Inc.\", L=Palo Alto, S=California, C=US"
   },
   "nsis": {
-    "artifactName": "${name}-setup-${version}-win.${ext}"
+    "artifactName": "${version}/${name}-setup-${version}-win.${ext}"
   }
 }

@@ -8,7 +8,7 @@
 
 const path = require('path');
 
-const merge = require('webpack-merge');
+const {merge} = require('webpack-merge');
 
 const CopyPlugin = require('copy-webpack-plugin');
 
@@ -19,15 +19,12 @@ module.exports = merge(base, {
         index: './src/main/app/index.ts',
         mainWindow: './src/main/preload/mainWindow.js',
         call: './src/main/preload/call.js',
+        callDial: './src/main/preload/callDial.js',
         dropdown: './src/main/preload/dropdown.js',
         preload: './src/main/preload/mattermost.js',
         modalPreload: './src/main/preload/modalPreload.js',
         loadingScreenPreload: './src/main/preload/loadingScreenPreload.js',
         urlView: './src/main/preload/urlView.js',
-    },
-    output: {
-        path: path.join(__dirname, 'dist/'),
-        filename: '[name].js',
     },
     module: {
         noParse: /external_api\\.js/,
@@ -41,9 +38,7 @@ module.exports = merge(base, {
             },
         }, {
             test: /\.mp3$/,
-            use: {
-                loader: 'url-loader',
-            },
+            type: 'asset/inline',
         },
         {
             test: /\.node$/,
@@ -67,7 +62,7 @@ module.exports = merge(base, {
         __dirname: true,
     },
     externals: {
-        '@antonbuks/jitsi-electron-sdk': "require('@antonbuks/jitsi-electron-sdk')",
+        '@jitsi/electron-sdk': "require('@jitsi/electron-sdk')",
     },
     target: 'electron-main',
 });

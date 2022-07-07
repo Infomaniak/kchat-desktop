@@ -12,7 +12,13 @@ import os from 'os';
 
 import {ConfigV3} from 'types/config';
 
-export const getDefaultDownloadLocation = (): string => {
+export const getDefaultDownloadLocation = (): string | undefined => {
+    // eslint-disable-next-line no-undef
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (__IS_MAC_APP_STORE__) {
+        return undefined;
+    }
     return path.join(os.homedir(), 'Downloads');
 };
 
@@ -21,7 +27,7 @@ const defaultPreferences: ConfigV3 = {
     teams: [],
     showTrayIcon: true,
     trayIconTheme: 'use_system',
-    minimizeToTray: true,
+    minimizeToTray: process.platform !== 'linux',
     notifications: {
         flashWindow: 2,
         bounceIcon: true,
@@ -36,6 +42,7 @@ const defaultPreferences: ConfigV3 = {
     darkMode: false,
     lastActiveTeam: 0,
     downloadLocation: getDefaultDownloadLocation(),
+    startInFullscreen: false,
 };
 
 export default defaultPreferences;

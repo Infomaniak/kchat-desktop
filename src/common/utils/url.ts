@@ -221,6 +221,18 @@ function isChannelExportUrl(serverUrl: URL | string, inputUrl: URL | string): bo
     return isUrlType('plugins/com.mattermost.plugin-channel-export/api/v1/export', serverUrl, inputUrl);
 }
 
+function cleanPathName(basePathName: string, pathName: string) {
+    if (basePathName === '/') {
+        return pathName;
+    }
+
+    if (pathName.startsWith(basePathName)) {
+        return pathName.replace(basePathName, '');
+    }
+
+    return pathName;
+}
+
 export default {
     isValidURL,
     isValidURI,
@@ -236,4 +248,6 @@ export default {
     isTrustedURL,
     isCustomLoginURL,
     isChannelExportUrl,
+    isUrlType,
+    cleanPathName,
 };

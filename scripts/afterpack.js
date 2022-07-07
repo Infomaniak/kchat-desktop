@@ -27,6 +27,7 @@ function getAppFileName(context) {
     case 'win32':
         return 'kChat.exe';
     case 'darwin':
+    case 'mas':
         return 'kChat.app';
     case 'linux':
         return context.packager.executableName;

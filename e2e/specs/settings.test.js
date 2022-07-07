@@ -41,7 +41,7 @@ describe('Settings', function desc() {
                     predicate: (window) => window.url().includes('settings'),
                 });
                 await settingsWindow.waitForSelector('.settingsPage.container');
-                await settingsWindow.waitForSelector('#inputAutoStart');
+                await settingsWindow.waitForSelector('#inputAutoStart', {state: expected ? 'attached' : 'detached'});
                 const existing = await settingsWindow.isVisible('#inputAutoStart');
                 existing.should.equal(expected);
             });
@@ -57,7 +57,7 @@ describe('Settings', function desc() {
                     predicate: (window) => window.url().includes('settings'),
                 });
                 await settingsWindow.waitForSelector('.settingsPage.container');
-                await settingsWindow.waitForSelector('#inputShowTrayIcon');
+                await settingsWindow.waitForSelector('#inputShowTrayIcon', {state: expected ? 'attached' : 'detached'});
                 const existing = await settingsWindow.isVisible('#inputShowTrayIcon');
                 existing.should.equal(expected);
             });
@@ -72,13 +72,15 @@ describe('Settings', function desc() {
                     });
                     await settingsWindow.waitForSelector('.settingsPage.container');
                     await settingsWindow.click('#inputShowTrayIcon');
-                    await settingsWindow.waitForSelector('.IndicatorContainer :text("Saved")');
+                    await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saving...")');
+                    await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saved")');
 
                     let config0 = JSON.parse(fs.readFileSync(env.configFilePath, 'utf-8'));
                     config0.showTrayIcon.should.true;
 
                     await settingsWindow.click('#inputShowTrayIcon');
-                    await settingsWindow.waitForSelector('.IndicatorContainer :text("Saved")');
+                    await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saving...")');
+                    await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saved")');
 
                     config0 = JSON.parse(fs.readFileSync(env.configFilePath, 'utf-8'));
                     config0.showTrayIcon.should.false;
@@ -96,13 +98,15 @@ describe('Settings', function desc() {
                     await settingsWindow.waitForSelector('.settingsPage.container');
                     await settingsWindow.click('#inputShowTrayIcon');
                     await settingsWindow.click('input[value="dark"]');
-                    await settingsWindow.waitForSelector('.IndicatorContainer :text("Saved")');
+                    await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saving...")');
+                    await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saved")');
 
                     const config0 = JSON.parse(fs.readFileSync(env.configFilePath, 'utf-8'));
                     config0.trayIconTheme.should.equal('dark');
 
                     await settingsWindow.click('input[value="light"]');
-                    await settingsWindow.waitForSelector('.IndicatorContainer :text("Saved")');
+                    await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saving...")');
+                    await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saved")');
 
                     const config1 = JSON.parse(fs.readFileSync(env.configFilePath, 'utf-8'));
                     config1.trayIconTheme.should.equal('light');
@@ -111,8 +115,8 @@ describe('Settings', function desc() {
         });
 
         describe('Leave app running in notification area when application window is closed', () => {
-            it('MM-T4394 should appear on linux', async () => {
-                const expected = (process.platform === 'linux');
+            it('MM-T4394 should appear on linux and win32', async () => {
+                const expected = (process.platform === 'linux' || process.platform === 'win32');
                 this.app.evaluate(({ipcMain}, showWindow) => {
                     ipcMain.emit(showWindow);
                 }, SHOW_SETTINGS_WINDOW);
@@ -171,7 +175,8 @@ describe('Settings', function desc() {
                 selected.should.equal(true);
 
                 await settingsWindow.click('#inputSpellChecker');
-                await settingsWindow.waitForSelector('.IndicatorContainer :text("Saved")');
+                await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saving...")');
+                await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saved")');
 
                 const config1 = JSON.parse(fs.readFileSync(env.configFilePath, 'utf-8'));
                 config1.useSpellChecker.should.equal(false);
@@ -192,15 +197,46 @@ describe('Settings', function desc() {
                 selected.should.equal(true); // default is true
 
                 await settingsWindow.click(ID_INPUT_ENABLE_HARDWARE_ACCELERATION);
-                await settingsWindow.waitForSelector('.IndicatorContainer :text("Saved")');
+                await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saving...")');
+                await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saved")');
                 const config0 = JSON.parse(fs.readFileSync(env.configFilePath, 'utf-8'));
                 config0.enableHardwareAcceleration.should.equal(false);
 
                 await settingsWindow.click(ID_INPUT_ENABLE_HARDWARE_ACCELERATION);
-                await settingsWindow.waitForSelector('.IndicatorContainer :text("Saved")');
+                await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saving...")');
+                await settingsWindow.waitForSelector('.appOptionsSaveIndicator :text("Saved")');
                 const config1 = JSON.parse(fs.readFileSync(env.configFilePath, 'utf-8'));
                 config1.enableHardwareAcceleration.should.equal(true);
             });
         });
+
+        if (process.platform !== 'darwin') {
+            describe('Enable automatic check for updates', () => {
+                it('MM-T4549 should save selected option', async () => {
+                    const ID_INPUT_ENABLE_AUTO_UPDATES = '#inputAutoCheckForUpdates';
+                    this.app.evaluate(({ipcMain}, showWindow) => {
+                        ipcMain.emit(showWindow);
+                    }, SHOW_SETTINGS_WINDOW);
+                    const settingsWindow = await this.app.waitForEvent('window', {
+                        predicate: (window) => window.url().includes('settings'),
+                    });
+                    await settingsWindow.waitForSelector('.settingsPage.container');
+                    const selected = await settingsWindow.isChecked(ID_INPUT_ENABLE_AUTO_UPDATES);
+                    selected.should.equal(true); // default is true
+
+                    await settingsWindow.click(ID_INPUT_ENABLE_AUTO_UPDATES);
+                    await settingsWindow.waitForSelector('.updatesSaveIndicator :text("Saving...")');
+                    await settingsWindow.waitForSelector('.updatesSaveIndicator :text("Saved")');
+                    const config0 = JSON.parse(fs.readFileSync(env.configFilePath, 'utf-8'));
+                    config0.autoCheckForUpdates.should.equal(false);
+
+                    await settingsWindow.click(ID_INPUT_ENABLE_AUTO_UPDATES);
+                    await settingsWindow.waitForSelector('.updatesSaveIndicator :text("Saving...")');
+                    await settingsWindow.waitForSelector('.updatesSaveIndicator :text("Saved")');
+                    const config1 = JSON.parse(fs.readFileSync(env.configFilePath, 'utf-8'));
+                    config1.autoCheckForUpdates.should.equal(true);
+                });
+            });
+        }
     });
 });
