@@ -1,11 +1,11 @@
 {
-  "publish": [
-    {
+  "publish": {
     "provider": "s3",
     "channel": "latest",
-    "bucket": "kChat",
-    "endpoint": "https://download.storage.infomaniak.com"
-  }],
+    "bucket": "kchat",
+    "endpoint": "https://download.storage5.infomaniak.com",
+    "path": "/"
+  },
   "appId": "com.infomaniak.kchat",
   "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
   "directories": {
@@ -108,7 +108,7 @@
       "NSMicrophoneUsageDescription": "Microphone access may be used by kChat plugins, such as kMeet video conferencing.",
       "NSCameraUsageDescription": "Camera access may be used by kChat plugins, such as kMeet video conferencing.",
       "LSFileQuarantineEnabled": true
-  }
+    }
   },
   "mas": {
     "hardenedRuntime": false,

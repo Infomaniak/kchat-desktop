@@ -260,7 +260,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         //     },
         //     enabled: (teams.length > 1),
         //     },
-            ...(isMac ? [separatorItem, {
+        ...(isMac ? [separatorItem, {
             role: 'front',
         }] : []),
         ],
@@ -291,6 +291,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             });
         }
     }
+
     // if (config.data?.helpLink) {
     //     submenu.push({
     //         label: 'Learn More...',

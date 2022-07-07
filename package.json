@@ -1,7 +1,7 @@
 {
   "name": "kchat-desktop",
   "productName": "kChat",
-  "version": "0.5.0-develop",
+  "version": "0.7.0-develop",
   "description": "kChat",
   "main": "dist/index.js",
   "author": "Infomaniak <kchat@infomaniak.com>",
@@ -48,7 +48,7 @@
     "test:coverage": "jest --coverage",
     "package:all": "cross-env NODE_ENV=production npm-run-all check-build-config package:windows package:mac package:mac-universal package:linux",
     "package:windows": "cross-env NODE_ENV=production npm-run-all check-build-config build && electron-builder --win --x64 --ia32 --publish=never",
-    "package:mac": "cross-env NODE_ENV=production npm-run-all check-build-config build && electron-builder --mac --x64 --arm64 --publish=never",
+    "package:mac": "cross-env NODE_ENV=production npm-run-all check-build-config build && electron-builder --mac --x64 --arm64 --publish=always",
     "package:mac-with-universal": "cross-env NODE_ENV=production npm-run-all check-build-config build && electron-builder --mac --x64 --arm64 --universal --publish=never",
     "package:mas": "cross-env NODE_ENV=production IS_MAC_APP_STORE=true npm-run-all check-build-config build && electron-builder --mac mas --universal --publish=never",
     "package:mas-dev": "cross-env NODE_ENV=production IS_MAC_APP_STORE=true npm-run-all check-build-config build && electron-builder --mac mas-dev --universal --publish=never",
