@@ -9,6 +9,7 @@ import React from 'react';
 import {CALL_JOINED} from 'common/communication';
 
 import Avatar from './Avatar';
+import Avatars from './Avatars/Avatars';
 
 type State = {
     callInfo: {
@@ -60,17 +61,15 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
             return null;
         }
 
+        console.log(callInfo);
         return (
             <div className='container'>
                 <div className='avatars'>
-                    {callInfo.users.map((user) => (
-                        <Avatar
-                            image={user.picture}
-                            size='xl'
-                            onClick={console.log}
-                            key={user.id}
-                            name={user.nickname}
-                        />))}
+                    <Avatars
+                        users={callInfo.users}
+                        size='xl' />
+                    {/* {callInfo.users.map((user) => (
+                    ))} */}
                 </div>
                 <h6
                     style={{
