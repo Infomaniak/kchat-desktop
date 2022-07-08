@@ -141,7 +141,13 @@ export class UpdateManager {
             cancelId: 1,
         }).then(({response}) => {
             if (response === 0) {
-                autoUpdater.quitAndInstall();
+                setTimeout(() => {
+                    autoUpdater.quitAndInstall();
+                    app.exit();
+                }, 1000);
+
+                // autoUpdater.quitAndInstall();
+                // app.exit();
             }
         });
     }
@@ -154,7 +160,7 @@ export class UpdateManager {
             message: 'You\'re up to date',
             type: 'info',
             buttons: ['OK'],
-            detail: `You are using the latest version of the Mattermost Desktop App (version ${version}). You'll be notified when a new version is available to install.`,
+            detail: `You are using the latest version of the kChat Desktop App (version ${version}). You'll be notified when a new version is available to install.`,
         });
     }
 
