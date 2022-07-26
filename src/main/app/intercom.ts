@@ -106,7 +106,7 @@ export function handleNewServerModal() {
         const modalPreload = getLocalPreload('modalPreload.js');
 
         const data = {
-            url: 'https://kchat.preprod.dev.infomaniak.ch',
+            url: 'https://kchat.infomaniak.com',
             name: 'Infomaniak',
             index: undefined,
             order: 0,
@@ -146,7 +146,7 @@ export function handleNewServerModal() {
     } else {
         const data = {
 
-            url: 'https://kchat.preprod.dev.infomaniak.ch',
+            url: 'https://kchat.infomaniak.com',
             name: 'Infomaniak',
             index: undefined,
             order: 0,

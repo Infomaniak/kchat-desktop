@@ -23,11 +23,11 @@ const buildConfig: BuildConfig = {
     defaultTeams: [
         {
             name: 'Infomaniak',
-            url: 'https://kchat.preprod.dev.infomaniak.ch',
+            url: 'https://kchat.infomaniak.com',
             order: 0,
         },
     ],
-    helpLink: 'https://about.mattermost.com/default-desktop-app-documentation/',
+    helpLink: '',
     enableServerManagement: true,
     enableAutoUpdater: true,
     managedResources: ['trusted'],

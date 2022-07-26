@@ -46,7 +46,7 @@ export default class CallPage extends React.PureComponent<Record<string, never>>
             },
         };
 
-        const api = new JitsiMeetExternalAPI('kmeet.preprod.dev.infomaniak.ch', {
+        const api = new JitsiMeetExternalAPI('kmeet.infomaniak.com', {
             ...options,
         });
 

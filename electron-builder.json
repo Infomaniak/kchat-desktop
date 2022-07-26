@@ -6,6 +6,7 @@
     "endpoint": "https://download.storage5.infomaniak.com",
     "path": "/"
   },
+  "generateUpdatesFilesForAllChannels": true,
   "appId": "com.infomaniak.kchat",
   "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
   "directories": {
@@ -42,7 +43,7 @@
   "afterSign": "scripts/notarize.js",
   "afterAllArtifactBuild": "scripts/afterbuild.js",
   "deb": {
-    "artifactName": "${version}/${name}_${version}-1_${arch}.${ext}",
+    "artifactName": "${name}_${version}-1_${arch}.${ext}",
     "synopsis": "kChat Desktop App",
     "depends": [
       "gconf2",
