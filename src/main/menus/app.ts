@@ -10,8 +10,9 @@ import {Config} from 'common/config';
 import {TabType, getTabDisplayName} from 'common/tabs/TabView';
 
 import WindowManager from 'main/windows/windowManager';
+import {UpdateManager} from 'main/autoUpdater';
 
-export function createTemplate(config: Config) {
+export function createTemplate(config: Config, updateManager: UpdateManager) {
     const separatorItem: MenuItemConstructorOptions = {
         type: 'separator',
     };
@@ -41,7 +42,8 @@ export function createTemplate(config: Config) {
         },
     });
 
-    if (config.data?.enableServerManagement === true) {
+    // Hide server management for v0
+    if (config.data?.enableServerManagement === true && process.env.NODE_ENV === 'dev') {
         platformAppMenu.push({
             label: 'Sign in to Another Server',
             click() {
@@ -212,68 +214,98 @@ export function createTemplate(config: Config) {
         ] : []), {
             role: 'close',
             accelerator: 'CmdOrCtrl+W',
-        }, separatorItem, {
-            label: 'Show Servers',
-            accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+S`,
-            click() {
-                ipcMain.emit(OPEN_TEAMS_DROPDOWN);
-            },
-        }, ...teams.sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).map((team, i) => {
-            const items = [];
-            items.push({
-                label: team.name,
-                accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+${i + 1}`,
-                click() {
-                    WindowManager.switchServer(team.name);
-                },
-            });
-            if (WindowManager.getCurrentTeamName() === team.name) {
-                team.tabs.filter((tab) => tab.isOpen).sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).forEach((tab, i) => {
-                    items.push({
-                        label: `    ${getTabDisplayName(tab.name as TabType)}`,
-                        accelerator: `CmdOrCtrl+${i + 1}`,
-                        click() {
-                            WindowManager.switchTab(team.name, tab.name);
-                        },
-                    });
-                });
-            }
-            return items;
-        }).flat(), separatorItem, {
-            label: 'Select Next Tab',
-            accelerator: 'Ctrl+Tab',
-            click() {
-                WindowManager.selectNextTab();
-            },
-            enabled: (teams.length > 1),
-        }, {
-            label: 'Select Previous Tab',
-            accelerator: 'Ctrl+Shift+Tab',
-            click() {
-                WindowManager.selectPreviousTab();
-            },
-            enabled: (teams.length > 1),
-        }, ...(isMac ? [separatorItem, {
+        }, separatorItem,
+
+        // {
+        //     label: 'Show Servers',
+        //     accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+S`,
+        //     click() {
+        //         ipcMain.emit(OPEN_TEAMS_DROPDOWN);
+        //     },
+        // },
+        // ...teams.sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).map((team, i) => {
+        //     const items = [];
+        //     items.push({
+        //         label: team.name,
+        //         accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+${i + 1}`,
+        //         click() {
+        //             WindowManager.switchServer(team.name);
+        //         },
+        //     });
+        //     if (WindowManager.getCurrentTeamName() === team.name) {
+        //         team.tabs.filter((tab) => tab.isOpen).sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).forEach((tab, i) => {
+        //             items.push({
+        //                 label: `    ${getTabDisplayName(tab.name as TabType)}`,
+        //                 accelerator: `CmdOrCtrl+${i + 1}`,
+        //                 click() {
+        //                     WindowManager.switchTab(team.name, tab.name);
+        //                 },
+        //             });
+        //         });
+        //     }
+        //     return items;
+        // }).flat(),
+        //     separatorItem, {
+        //     label: 'Select Next Tab',
+        //     accelerator: 'Ctrl+Tab',
+        //     click() {
+        //         WindowManager.selectNextTab();
+        //     },
+        //     enabled: (teams.length > 1),
+        // }, {
+        //     label: 'Select Previous Tab',
+        //     accelerator: 'Ctrl+Shift+Tab',
+        //     click() {
+        //         WindowManager.selectPreviousTab();
+        //     },
+        //     enabled: (teams.length > 1),
+        //     },
+        ...(isMac ? [separatorItem, {
             role: 'front',
         }] : []),
         ],
     };
     template.push(windowMenu);
     const submenu = [];
-    if (config.data?.helpLink) {
-        submenu.push({
-            label: 'Learn More...',
-            click() {
-                shell.openExternal(config.data!.helpLink);
-            },
-        });
-        submenu.push(separatorItem);
+    if (updateManager && config.canUpgrade) {
+        if (updateManager.versionDownloaded) {
+            submenu.push({
+                label: 'Restart and Update',
+                click() {
+                    updateManager.handleUpdate();
+                },
+            });
+        } else if (updateManager.versionAvailable) {
+            submenu.push({
+                label: 'Download Update',
+                click() {
+                    updateManager.handleDownload();
+                },
+            });
+        } else {
+            submenu.push({
+                label: 'Check for Updates',
+                click() {
+                    updateManager.checkForUpdates(true);
+                },
+            });
+        }
     }
+
+    // if (config.data?.helpLink) {
+    //     submenu.push({
+    //         label: 'Learn More...',
+    //         click() {
+    //             shell.openExternal(config.data!.helpLink);
+    //         },
+    //     });
+    //     submenu.push(separatorItem);
+    // }
 
     // eslint-disable-next-line no-undef
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const version = `Version ${app.getVersion()}${__HASH_VERSION__ ? ` commit: ${__HASH_VERSION__}` : ''}`;
+    const version = `Version ${app.getVersion()}`;
     submenu.push({
         label: version,
         enabled: true,
@@ -286,7 +318,7 @@ export function createTemplate(config: Config) {
     return template;
 }
 
-export function createMenu(config: Config) {
-    // Electron is enforcing certain variables that it doesn't need
-    return Menu.buildFromTemplate(createTemplate(config) as Array<MenuItemConstructorOptions | MenuItem>);
+export function createMenu(config: Config, updateManager: UpdateManager) {
+    // TODO: Electron is enforcing certain variables that it doesn't need
+    return Menu.buildFromTemplate(createTemplate(config, updateManager) as Array<MenuItemConstructorOptions | MenuItem>);
 }

@@ -47,6 +47,8 @@ export class WebContentsEventManager {
 
     generateWillNavigate = (getServersFunction: () => TeamWithTabs[]) => {
         return (event: Event & {sender: WebContents}, url: string) => {
+            log.debug('webContentEvents.will-navigate', {webContentsId: event.sender.id, url});
+
             const contentID = event.sender.id;
             const parsedURL = urlUtils.parseURL(url)!;
             const configServers = getServersFunction();
@@ -70,6 +72,11 @@ export class WebContentsEventManager {
                 return;
             }
 
+            // if ((url.includes('infomaniak.com') || url.includes('infomaniak.ch')) && !url.includes('preprod')) {
+            if ((url.includes('infomaniak.com') || url.includes('infomaniak.ch')) && url.includes('login')) {
+                return;
+            }
+
             log.info(`Prevented desktop from navigating to: ${url}`);
             event.preventDefault();
         };
@@ -77,6 +84,8 @@ export class WebContentsEventManager {
 
     generateDidStartNavigation = (getServersFunction: () => TeamWithTabs[]) => {
         return (event: Event & {sender: WebContents}, url: string) => {
+            log.debug('webContentEvents.did-start-navigation', {webContentsId: event.sender.id, url});
+
             const serverList = getServersFunction();
             const contentID = event.sender.id;
             const parsedURL = urlUtils.parseURL(url)!;
@@ -103,6 +112,8 @@ export class WebContentsEventManager {
 
     generateNewWindowListener = (getServersFunction: () => TeamWithTabs[], spellcheck?: boolean) => {
         return (details: Electron.HandlerDetails): {action: 'deny' | 'allow'} => {
+            log.debug('webContentEvents.new-window', details.url);
+
             const parsedURL = urlUtils.parseURL(details.url);
             if (!parsedURL) {
                 log.warn(`Ignoring non-url ${details.url}`);
@@ -179,7 +190,6 @@ export class WebContentsEventManager {
                         show: false,
                         center: true,
                         webPreferences: {
-                            nativeWindowOpen: true,
                             spellcheck: (typeof spellcheck === 'undefined' ? true : spellcheck),
                         },
                     });

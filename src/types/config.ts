@@ -37,9 +37,14 @@ export type ConfigV3 = {
     hideOnStart: boolean;
     spellCheckerLocales: string[];
     darkMode: boolean;
-    downloadLocation: string;
+    downloadLocation?: string;
     spellCheckerURL?: string;
     lastActiveTeam?: number;
+    startInFullscreen?: boolean;
+    autoCheckForUpdates?: boolean;
+    alwaysMinimize?: boolean;
+    alwaysClose?: boolean;
+    logLevel?: string;
 }
 
 export type ConfigV2 = {
@@ -64,7 +69,7 @@ export type ConfigV2 = {
     spellCheckerLocale: string;
     spellCheckerURL?: string;
     darkMode: boolean;
-    downloadLocation: string;
+    downloadLocation?: string;
 }
 
 export type ConfigV1 = {
@@ -117,8 +122,10 @@ export type CombinedConfig = ConfigV3 & BuildConfig & {
 export type LocalConfiguration = Config & {
     appName: string;
     enableServerManagement: boolean;
+    canUpgrade: boolean;
 }
 
 export type MigrationInfo = {
     updateTrayIconWin32: boolean;
+    masConfigs: boolean;
 }

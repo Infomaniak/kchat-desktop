@@ -6,13 +6,14 @@ import classNames from 'classnames';
 
 import useAnimationEnd from '../../hooks/useAnimationEnd';
 
+import loaderIk from '../../../assets/loading@2x.gif';
+
 import LoadingIcon from './LoadingIcon';
 
 const LOADING_STATE = {
     INITIALIZING: 'initializing', // animation graphics are hidden
     LOADING: 'loading', // animation graphics fade in and animate
     LOADED: 'loaded', // animation graphics fade out
-    COMPLETE: 'complete', // animation graphics are removed from the DOM
 };
 
 const ANIMATION_COMPLETION_DELAY = 500;
@@ -60,31 +61,42 @@ function LoadingAnimation({
     }, [loadingAnimationComplete]);
 
     // listen for end of the css logo animation sequence
-    useAnimationEnd<HTMLDivElement>(loadingIconContainerRef, () => {
-        setTimeout(() => {
-            setLoadingAnimationComplete(true);
-        }, ANIMATION_COMPLETION_DELAY);
-    }, 'LoadingAnimation__compass-shrink');
+    // useAnimationEnd<HTMLDivElement>(loadingIconContainerRef, () => {
+    //     setTimeout(() => {
+    //         setLoadingAnimationComplete(true);
+    //     }, ANIMATION_COMPLETION_DELAY);
+    // }, 'LoadingAnimation__compass-shrink');
 
-    // listen for end of final css logo fade/shrink animation sequence
-    useAnimationEnd<HTMLDivElement>(loadingIconContainerRef, () => {
+    // // listen for end of final css logo fade/shrink animation sequence
+    // useAnimationEnd<HTMLDivElement>(loadingIconContainerRef, () => {
+    //     if (onLoadAnimationComplete) {
+    //         onLoadAnimationComplete();
+    //     }
+    //     setAnimationState(LOADING_STATE.COMPLETE);
+    // }, 'LoadingAnimation__shrink');
+
+    setTimeout(() => {
+        setLoadingAnimationComplete(true);
         if (onLoadAnimationComplete) {
             onLoadAnimationComplete();
         }
-        setAnimationState(LOADING_STATE.COMPLETE);
-    }, 'LoadingAnimation__shrink');
-
+    }, 1000);
     return (
         <div
             ref={loadingIconContainerRef}
             className={classNames('LoadingAnimation', {
                 'LoadingAnimation--darkMode': darkMode,
-                'LoadingAnimation--spinning': animationState !== LOADING_STATE.INITIALIZING && animationState !== LOADING_STATE.COMPLETE,
-                'LoadingAnimation--loading': animationState === LOADING_STATE.LOADING && animationState !== LOADING_STATE.COMPLETE,
-                'LoadingAnimation--loaded': animationState === LOADING_STATE.LOADED && animationState !== LOADING_STATE.COMPLETE,
+                'LoadingAnimation--spinning': animationState !== LOADING_STATE.INITIALIZING,
+                'LoadingAnimation--loading': animationState === LOADING_STATE.LOADING,
+                'LoadingAnimation--loaded': animationState === LOADING_STATE.LOADED,
             })}
         >
-            <LoadingIcon/>
+            <img
+                src={loaderIk}
+                width='80px'
+                height='80px'
+            />
+            {/* <LoadingIcon/> */}
         </div>
     );
 }

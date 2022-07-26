@@ -7,9 +7,12 @@
 'use strict';
 
 const path = require('path');
+
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const merge = require('webpack-merge');
+const {merge} = require('webpack-merge');
+
+const {ProvidePlugin} = require('webpack');
 
 const base = require('./webpack.config.base');
 
@@ -19,6 +22,8 @@ module.exports = merge(base, {
     entry: {
         index: './src/renderer/index.tsx',
         settings: './src/renderer/settings.tsx',
+        call: './src/renderer/call.tsx',
+        callDialing: './src/renderer/callDialing.tsx',
         dropdown: './src/renderer/dropdown.tsx',
         urlView: './src/renderer/modals/urlView/urlView.tsx',
         newServer: './src/renderer/modals/newServer/newServer.tsx',
@@ -32,70 +37,83 @@ module.exports = merge(base, {
     output: {
         path: path.resolve(__dirname, 'dist/renderer'),
         filename: '[name]_bundle.js',
+        assetModuleFilename: '[name].[ext]',
     },
     plugins: [
         new HtmlWebpackPlugin({
-            title: 'Mattermost Desktop App',
+            title: 'kChat Desktop App',
             template: 'src/renderer/index.html',
             chunks: ['index'],
             filename: 'index.html',
         }),
         new HtmlWebpackPlugin({
-            title: 'Mattermost Desktop Settings',
+            title: 'kChat Desktop Settings',
             template: 'src/renderer/index.html',
             chunks: ['settings'],
             filename: 'settings.html',
         }),
         new HtmlWebpackPlugin({
-            title: 'Mattermost Desktop Settings',
+            title: 'Call Window',
+            template: 'src/renderer/index.html',
+            chunks: ['call'],
+            filename: 'call.html',
+        }),
+        new HtmlWebpackPlugin({
+            title: '🔉',
+            template: 'src/renderer/index.html',
+            chunks: ['callDialing'],
+            filename: 'callDialing.html',
+        }),
+        new HtmlWebpackPlugin({
+            title: 'kChat Desktop Settings',
             template: 'src/renderer/index.html',
             chunks: ['dropdown'],
             filename: 'dropdown.html',
         }),
         new HtmlWebpackPlugin({
-            title: 'Mattermost Desktop Settings',
+            title: 'kChat Desktop Settings',
             template: 'src/renderer/index.html',
             chunks: ['urlView'],
             filename: 'urlView.html',
         }),
         new HtmlWebpackPlugin({
-            title: 'Mattermost Desktop Settings',
+            title: 'kChat Desktop Settings',
             template: 'src/renderer/index.html',
             chunks: ['newServer'],
             filename: 'newServer.html',
         }),
         new HtmlWebpackPlugin({
-            title: 'Mattermost Desktop Settings',
+            title: 'kChat Desktop Settings',
             template: 'src/renderer/index.html',
             chunks: ['editServer'],
             filename: 'editServer.html',
         }),
         new HtmlWebpackPlugin({
-            title: 'Mattermost Desktop Settings',
+            title: 'kChat Desktop Settings',
             template: 'src/renderer/index.html',
             chunks: ['removeServer'],
             filename: 'removeServer.html',
         }),
         new HtmlWebpackPlugin({
-            title: 'Mattermost Desktop Settings',
+            title: 'kChat Desktop Settings',
             template: 'src/renderer/index.html',
             chunks: ['loginModal'],
             filename: 'loginModal.html',
         }),
         new HtmlWebpackPlugin({
-            title: 'Mattermost Desktop Settings',
+            title: 'kChat Desktop Settings',
             template: 'src/renderer/index.html',
             chunks: ['permissionModal'],
             filename: 'permissionModal.html',
         }),
         new HtmlWebpackPlugin({
-            title: 'Mattermost Desktop Settings',
+            title: 'kChat Desktop Settings',
             template: 'src/renderer/index.html',
             chunks: ['certificateModal'],
             filename: 'certificateModal.html',
         }),
         new HtmlWebpackPlugin({
-            title: 'Mattermost Desktop Settings',
+            title: 'kChat Desktop Settings',
             template: 'src/renderer/index.html',
             chunks: ['loadingScreen'],
             filename: 'loadingScreen.html',
@@ -105,8 +123,15 @@ module.exports = merge(base, {
             ignoreOrder: true,
             chunkFilename: '[id].[contenthash].css',
         }),
+        new ProvidePlugin({
+            Buffer: ['buffer', 'Buffer'],
+        }),
+        new ProvidePlugin({
+            process: 'process/browser',
+        }),
     ],
     module: {
+        noParse: /external_api\\.js/,
         rules: [{
             test: /\.(js|jsx|ts|tsx)?$/,
             use: {
@@ -139,30 +164,13 @@ module.exports = merge(base, {
             ],
         }, {
             test: /\.mp3$/,
-            use: {
-                loader: 'url-loader',
-            },
+            type: 'asset/inline',
         }, {
             test: /\.(svg|gif)$/,
-            use: [
-                {
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        publicPath: './assets',
-                        outputPath: '/../assets',
-                    },
-                },
-                {loader: 'image-webpack-loader'},
-            ],
+            type: 'asset/resource',
         }, {
             test: /\.(eot|ttf|woff|woff2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-            loader: 'file-loader',
-            options: {
-                name: '[name].[ext]',
-                outputPath: '/../assets/fonts',
-                publicPath: './assets/fonts',
-            },
+            type: 'asset/resource',
         }],
     },
     node: {
@@ -171,10 +179,6 @@ module.exports = merge(base, {
     },
     target: 'electron-renderer',
     devServer: {
-        contentBase: 'src/assets',
-        contentBasePublicPath: '/assets',
-        inline: true,
-        publicPath: '/renderer/',
         port: WEBSERVER_PORT,
     },
 });

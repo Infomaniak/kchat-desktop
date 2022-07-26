@@ -2,11 +2,12 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import classNames from 'classnames';
 import React, {Fragment} from 'react';
 import {Container, Row} from 'react-bootstrap';
 import {DropResult} from 'react-beautiful-dnd';
-import DotsVerticalIcon from 'mdi-react/DotsVerticalIcon';
 import {IpcRendererEvent} from 'electron/renderer';
+import prettyBytes from 'pretty-bytes';
 
 import {TeamWithTabs} from 'types/config';
 
@@ -36,7 +37,13 @@ import {
     CLOSE_TEAMS_DROPDOWN,
     OPEN_TEAMS_DROPDOWN,
     SWITCH_TAB,
+    UPDATE_AVAILABLE,
+    UPDATE_DOWNLOADED,
+    UPDATE_PROGRESS,
+    START_UPGRADE,
+    START_DOWNLOAD,
     CLOSE_TAB,
+    RELOAD_CURRENT_VIEW,
 } from 'common/communication';
 
 import restoreButton from '../../assets/titlebar/chrome-restore.svg';
@@ -50,6 +57,7 @@ import TabBar from './TabBar';
 import ExtraBar from './ExtraBar';
 import ErrorView from './ErrorView';
 import TeamDropdownButton from './TeamDropdownButton';
+import '../css/components/UpgradeButton.scss';
 
 enum Status {
     LOADING = 1,
@@ -57,6 +65,13 @@ enum Status {
     RETRY = -1,
     FAILED = 0,
     NOSERVERS = -2,
+}
+
+enum UpgradeStatus {
+    NONE = 0,
+    AVAILABLE = 1,
+    DOWNLOADING = 2,
+    DOWNLOADED = 3,
 }
 
 type Props = {
@@ -82,6 +97,14 @@ type State = {
     fullScreen?: boolean;
     showExtraBar?: boolean;
     isMenuOpen: boolean;
+    upgradeStatus: UpgradeStatus;
+    upgradeProgress?: {
+        total: number;
+        delta: number;
+        transferred: number;
+        percent: number;
+        bytesPerSecond: number;
+    };
 };
 
 type TabViewStatus = {
@@ -119,6 +142,7 @@ export default class MainPage extends React.PureComponent<Props, State> {
             tabViewStatus: new Map(this.props.teams.map((team) => team.tabs.map((tab) => getTabViewName(team.name, tab.name))).flat().map((tabViewName) => [tabViewName, {status: Status.LOADING}])),
             darkMode: this.props.darkMode,
             isMenuOpen: false,
+            upgradeStatus: UpgradeStatus.NONE,
         };
     }
 
@@ -221,6 +245,27 @@ export default class MainPage extends React.PureComponent<Props, State> {
             this.setState({isMenuOpen: true});
         });
 
+        window.ipcRenderer.on(UPDATE_AVAILABLE, () => {
+            this.setState({upgradeStatus: UpgradeStatus.AVAILABLE});
+        });
+
+        window.ipcRenderer.on(UPDATE_DOWNLOADED, () => {
+            this.setState({upgradeStatus: UpgradeStatus.DOWNLOADED});
+        });
+
+        window.ipcRenderer.on(UPDATE_PROGRESS, (event, total, delta, transferred, percent, bytesPerSecond) => {
+            this.setState({
+                upgradeStatus: UpgradeStatus.DOWNLOADING,
+                upgradeProgress: {
+                    total,
+                    delta,
+                    transferred,
+                    percent,
+                    bytesPerSecond,
+                },
+            });
+        });
+
         if (window.process.platform !== 'darwin') {
             window.ipcRenderer.on(FOCUS_THREE_DOT_MENU, () => {
                 if (this.threeDotMenu.current) {
@@ -313,6 +358,10 @@ export default class MainPage extends React.PureComponent<Props, State> {
         this.handleCloseTeamsDropdown();
     }
 
+    reloadCurrentView = () => {
+        window.ipcRenderer.send(RELOAD_CURRENT_VIEW);
+    }
+
     render() {
         const currentTabs = this.props.teams.find((team) => team.name === this.state.activeServerName)?.tabs || [];
 
@@ -334,16 +383,11 @@ export default class MainPage extends React.PureComponent<Props, State> {
             />
         );
 
-        let topBarClassName = 'topBar';
-        if (window.process.platform === 'darwin') {
-            topBarClassName += ' macOS';
-        }
-        if (this.state.darkMode) {
-            topBarClassName += ' darkMode';
-        }
-        if (this.state.fullScreen) {
-            topBarClassName += ' fullScreen';
-        }
+        const topBarClassName = classNames('topBar', {
+            macOS: window.process.platform === 'darwin',
+            darkMode: this.state.darkMode,
+            fullScreen: this.state.fullScreen,
+        });
 
         let maxButton;
         if (this.state.maximized || this.state.fullScreen) {
@@ -352,7 +396,10 @@ export default class MainPage extends React.PureComponent<Props, State> {
                     className='button restore-button'
                     onClick={this.handleRestore}
                 >
-                    <img src={restoreButton}/>
+                    <img
+                        src={restoreButton}
+                        draggable={false}
+                    />
                 </div>
             );
         } else {
@@ -361,15 +408,56 @@ export default class MainPage extends React.PureComponent<Props, State> {
                     className='button max-button'
                     onClick={this.handleMaximize}
                 >
-                    <img src={maximizeButton}/>
+                    <img
+                        src={maximizeButton}
+                        draggable={false}
+                    />
                 </div>
             );
         }
 
-        let overlayGradient;
-        if (window.process.platform !== 'darwin') {
-            overlayGradient = (
-                <span className='overlay-gradient'/>
+        let upgradeTooltip;
+        switch (this.state.upgradeStatus) {
+        case UpgradeStatus.AVAILABLE:
+            upgradeTooltip = 'Update available';
+            break;
+        case UpgradeStatus.DOWNLOADED:
+            upgradeTooltip = 'Update ready to install';
+            break;
+        case UpgradeStatus.DOWNLOADING:
+            upgradeTooltip = `Downloading update. ${String(this.state.upgradeProgress?.percent).split('.')[0]}% of ${prettyBytes(this.state.upgradeProgress?.total || 0)} @ ${prettyBytes(this.state.upgradeProgress?.bytesPerSecond || 0)}/s`;
+            break;
+        }
+
+        let upgradeIcon;
+        if (this.state.upgradeStatus !== UpgradeStatus.NONE) {
+            upgradeIcon = (
+                <button
+                    className={classNames('upgrade-btns', {darkMode: this.state.darkMode})}
+                    onClick={() => {
+                        if (this.state.upgradeStatus === UpgradeStatus.DOWNLOADING) {
+                            return;
+                        }
+
+                        window.ipcRenderer.send(this.state.upgradeStatus === UpgradeStatus.DOWNLOADED ? START_UPGRADE : START_DOWNLOAD);
+                    }}
+                >
+                    <div
+                        className={classNames('button upgrade-button', {
+                            rotate: this.state.upgradeStatus === UpgradeStatus.DOWNLOADING,
+                        })}
+                        title={upgradeTooltip}
+                    >
+                        <i
+                            className={classNames({
+                                'icon-arrow-down-bold-circle-outline': this.state.upgradeStatus === UpgradeStatus.AVAILABLE,
+                                'icon-sync': this.state.upgradeStatus === UpgradeStatus.DOWNLOADING,
+                                'icon-arrow-up-bold-circle-outline': this.state.upgradeStatus === UpgradeStatus.DOWNLOADED,
+                            })}
+                        />
+                        {(this.state.upgradeStatus !== UpgradeStatus.DOWNLOADING) && <div className={'circle'}/>}
+                    </div>
+                </button>
             );
         }
 
@@ -381,14 +469,20 @@ export default class MainPage extends React.PureComponent<Props, State> {
                         className='button min-button'
                         onClick={this.handleMinimize}
                     >
-                        <img src={minimizeButton}/>
+                        <img
+                            src={minimizeButton}
+                            draggable={false}
+                        />
                     </div>
                     {maxButton}
                     <div
                         className='button close-button'
                         onClick={this.handleClose}
                     >
-                        <img src={closeButton}/>
+                        <img
+                            src={closeButton}
+                            draggable={false}
+                        />
                     </div>
                 </span>
             );
@@ -424,18 +518,19 @@ export default class MainPage extends React.PureComponent<Props, State> {
                         ref={this.threeDotMenu}
                         aria-label='Context menu'
                     >
-                        <DotsVerticalIcon/>
+                        <i className='icon-dots-vertical'/>
                     </button>
-                    <TeamDropdownButton
-                        isDisabled={this.state.modalOpen}
-                        activeServerName={this.state.activeServerName}
-                        totalMentionCount={totalMentionCount}
-                        hasUnreads={totalUnreadCount > 0}
-                        isMenuOpen={this.state.isMenuOpen}
-                        darkMode={this.state.darkMode}
-                    />
+                    {process.env.NODE_ENV === 'dev' && (
+                        <TeamDropdownButton
+                            isDisabled={this.state.modalOpen}
+                            activeServerName={this.state.activeServerName}
+                            totalMentionCount={totalMentionCount}
+                            hasUnreads={totalUnreadCount > 0}
+                            isMenuOpen={this.state.isMenuOpen}
+                            darkMode={this.state.darkMode}
+                        />)}
                     {tabsRow}
-                    {overlayGradient}
+                    {upgradeIcon}
                     {titleBarButtons}
                 </div>
             </Row>
@@ -453,16 +548,6 @@ export default class MainPage extends React.PureComponent<Props, State> {
                 return null;
             }
             switch (tabStatus.status) {
-            case Status.NOSERVERS: // TODO: substitute with https://mattermost.atlassian.net/browse/MM-25003
-                component = (
-                    <ErrorView
-                        id={'NoServers'}
-                        errorInfo={'No Servers configured'}
-                        url={tabStatus.extra ? tabStatus.extra.url : ''}
-                        active={true}
-                        appName={this.props.appName}
-                    />);
-                break;
             case Status.FAILED:
                 component = (
                     <ErrorView
@@ -471,6 +556,7 @@ export default class MainPage extends React.PureComponent<Props, State> {
                         url={tabStatus.extra ? tabStatus.extra.url : ''}
                         active={true}
                         appName={this.props.appName}
+                        handleLink={this.reloadCurrentView}
                     />);
                 break;
             case Status.LOADING:

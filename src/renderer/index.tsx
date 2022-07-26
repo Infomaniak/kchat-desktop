@@ -98,7 +98,7 @@ class Root extends React.PureComponent<Record<string, never>, State> {
         try {
             const configRequest = await window.ipcRenderer.invoke(GET_CONFIGURATION);
             return configRequest;
-        } catch (err) {
+        } catch (err: any) {
             console.log(`there was an error with the config: ${err}`);
             if (exitOnError) {
                 window.ipcRenderer.send(QUIT, `unable to load configuration: ${err}`, err.stack);
@@ -117,6 +117,22 @@ class Root extends React.PureComponent<Record<string, never>, State> {
         const {config} = this.state;
         if (!config) {
             return null;
+        }
+
+        // TODO remove this
+        if (config.teams[0]) {
+            if (config.teams[0].tabs.some((el) => el.name === 'TAB_LOGIN')) {
+                const index = config.teams[0].tabs.map((a) => a.name).indexOf('TAB_LOGIN');
+                config.teams[0].tabs.splice(index, 1);
+            }
+            if (config.teams[0].tabs.some((el) => el.name === 'TAB_MEET')) {
+                const index = config.teams[0].tabs.map((a) => a.name).indexOf('TAB_MEET');
+                config.teams[0].tabs.splice(index, 1);
+            }
+            if (config.teams[0].tabs.some((el) => el.name === 'TAB_MESSAGING')) {
+                const index = config.teams[0].tabs.map((a) => a.name).indexOf('TAB_MESSAGING');
+                config.teams[0].lastActiveTab = config.teams[0].tabs[index].order;
+            }
         }
 
         return (

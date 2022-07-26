@@ -127,8 +127,22 @@ function getView(inputURL: URL | string, teams: TeamWithTabs[], ignoreScheme = f
     if (!parsedURL) {
         return undefined;
     }
+
+    // TODO: add check for IK server (prod, preprod dev..)
+    // Match for ktalk protocol and redirect to IK server
+    if (parsedURL.protocol === 'ktalk:') {
+        const srv = new MattermostServer(teams[0].name, teams[0].url);
+        const tabView = getServerView(srv, teams[0].tabs[0]);
+        const ktalkParsedUrl = parseURL(tabView.url);
+        if (ktalkParsedUrl) {
+            return {name: tabView.name, url: ktalkParsedUrl.toString()};
+        }
+    }
+
+    // If not ktalk protocol and maybe another server than IK server
     let firstOption;
     let secondOption;
+
     teams.forEach((team) => {
         const srv = new MattermostServer(team.name, team.url);
 
@@ -138,7 +152,6 @@ function getView(inputURL: URL | string, teams: TeamWithTabs[], ignoreScheme = f
             const parsedServerUrl = parseURL(tabView.url);
             return {tabView, parsedServerUrl};
         });
-
         filteredTabs.sort((a, b) => a.tabView.url.toString().length - b.tabView.url.toString().length);
         filteredTabs.forEach((tab) => {
             if (tab.parsedServerUrl) {
@@ -208,6 +221,18 @@ function isChannelExportUrl(serverUrl: URL | string, inputUrl: URL | string): bo
     return isUrlType('plugins/com.mattermost.plugin-channel-export/api/v1/export', serverUrl, inputUrl);
 }
 
+function cleanPathName(basePathName: string, pathName: string) {
+    if (basePathName === '/') {
+        return pathName;
+    }
+
+    if (pathName.startsWith(basePathName)) {
+        return pathName.replace(basePathName, '');
+    }
+
+    return pathName;
+}
+
 export default {
     isValidURL,
     isValidURI,
@@ -223,4 +248,6 @@ export default {
     isTrustedURL,
     isCustomLoginURL,
     isChannelExportUrl,
+    isUrlType,
+    cleanPathName,
 };

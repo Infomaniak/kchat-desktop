@@ -6,6 +6,7 @@ import log from 'electron-log';
 
 import urlUtils from 'common/utils/url';
 
+import updateManager from 'main/autoUpdater';
 import CertificateStore from 'main/certificateStore';
 import {destroyTray} from 'main/tray/tray';
 import WindowManager from 'main/windows/windowManager';
@@ -14,12 +15,21 @@ import {getDeeplinkingURL, openDeepLink, resizeScreen} from './utils';
 
 export const certificateErrorCallbacks = new Map();
 
+// We need this because of https://github.com/electron/electron/issues/18214
+app.commandLine.appendSwitch('disable-site-isolation-trials');
+
+// This allows BrowserWindow.setContentProtection(true) to work on macOS.
+// https://github.com/electron/electron/issues/19880
+app.commandLine.appendSwitch('disable-features', 'IOSurfaceCapturer');
+
 //
 // app event handlers
 //
 
 // activate first app instance, subsequent instances will quit themselves
 export function handleAppSecondInstance(event: Event, argv: string[]) {
+    log.debug('App.handleAppSecondInstance', argv);
+
     // Protocol handler for win32
     // argv: An array of the second instance’s (command line / deep linked) arguments
     const deeplinkingUrl = getDeeplinkingURL(argv);
@@ -27,6 +37,8 @@ export function handleAppSecondInstance(event: Event, argv: string[]) {
 }
 
 export function handleAppWindowAllClosed() {
+    log.debug('App.handleAppWindowAllClosed');
+
     // On OS X it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {
@@ -35,6 +47,8 @@ export function handleAppWindowAllClosed() {
 }
 
 export function handleAppBrowserWindowCreated(event: Event, newWindow: BrowserWindow) {
+    log.debug('App.handleAppBrowserWindowCreated');
+
     // Screen cannot be required before app is ready
     resizeScreen(newWindow);
 }
@@ -42,6 +56,21 @@ export function handleAppBrowserWindowCreated(event: Event, newWindow: BrowserWi
 export function handleAppWillFinishLaunching() {
     // Protocol handler for osx
     app.on('open-url', (event, url) => {
+        if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
+                
+                if (app.isReady()) {
+                    const currentServerURL = WindowManager.getCurrentServerUrl();
+
+                const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
+                    openDeepLink(newUrl);
+                } else {
+                    const currentServerURL = WindowManager.getCurrentServerUrl();
+
+                const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
+                    app.once('ready', () => openDeepLink(newUrl));
+                }
+            // return url;
+            }
         log.info(`Handling deeplinking url: ${url}`);
         event.preventDefault();
         const deeplinkingUrl = getDeeplinkingURL([url]);
@@ -56,12 +85,17 @@ export function handleAppWillFinishLaunching() {
 }
 
 export function handleAppBeforeQuit() {
+    log.debug('App.handleAppBeforeQuit');
+
     // Make sure tray icon gets removed if the user exits via CTRL-Q
     destroyTray();
     global.willAppQuit = true;
+    updateManager.handleOnQuit();
 }
 
 export async function handleAppCertificateError(event: Event, webContents: WebContents, url: string, error: string, certificate: Certificate, callback: (isTrusted: boolean) => void) {
+    log.verbose('App.handleAppCertificateError', {url, error, certificate});
+
     const parsedURL = urlUtils.parseURL(url);
     if (!parsedURL) {
         return;
@@ -98,7 +132,7 @@ export async function handleAppCertificateError(event: Event, webContents: WebCo
         try {
             let result = await dialog.showMessageBox(mainWindow, {
                 title: 'Certificate Error',
-                message: 'There is a configuration issue with this Mattermost server, or someone is trying to intercept your connection. You also may need to sign into the Wi-Fi you are connected to using your web browser.',
+                message: 'There is a configuration issue with this kChat server, or someone is trying to intercept your connection. You also may need to sign into the Wi-Fi you are connected to using your web browser.',
                 type: 'error',
                 detail,
                 buttons: ['More Details', 'Cancel Connection'],
@@ -124,7 +158,14 @@ export async function handleAppCertificateError(event: Event, webContents: WebCo
                 CertificateStore.add(origin, certificate);
                 CertificateStore.save();
                 certificateErrorCallbacks.get(errorID)(true);
-                webContents.loadURL(url);
+
+                const viewName = WindowManager.getViewNameByWebContentsId(webContents.id);
+                if (viewName) {
+                    const view = WindowManager.viewManager?.views.get(viewName);
+                    view?.load(url);
+                } else {
+                    webContents.loadURL(url);
+                }
             } else {
                 if (result.checkboxChecked) {
                     CertificateStore.add(origin, certificate, true);

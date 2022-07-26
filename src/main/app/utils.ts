@@ -1,19 +1,26 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {app, BrowserWindow, Menu, Rectangle, Session, session} from 'electron';
-import log from 'electron-log';
+import path from 'path';
 
-import {TeamWithTabs} from 'types/config';
+import fs from 'fs-extra';
+
+import {app, BrowserWindow, Menu, Rectangle, Session, session, dialog, nativeImage} from 'electron';
+import log, {LevelOption} from 'electron-log';
+
+import {MigrationInfo, TeamWithTabs} from 'types/config';
 import {RemoteInfo} from 'types/server';
 import {Boundaries} from 'types/utils';
 
 import Config from 'common/config';
+import JsonFileManager from 'common/JsonFileManager';
 import {MattermostServer} from 'common/servers/MattermostServer';
 import {TAB_FOCALBOARD, TAB_MESSAGING, TAB_PLAYBOOKS} from 'common/tabs/TabView';
 import urlUtils from 'common/utils/url';
 import Utils from 'common/utils/util';
 
+import updateManager from 'main/autoUpdater';
+import {migrationInfoPath, updatePaths} from 'main/constants';
 import {createMenu as createAppMenu} from 'main/menus/app';
 import {createMenu as createTrayMenu} from 'main/menus/tray';
 import {ServerInfo} from 'main/server/serverInfo';
@@ -21,6 +28,10 @@ import {setTrayMenu} from 'main/tray/tray';
 import WindowManager from 'main/windows/windowManager';
 
 import {mainProtocol} from './initialize';
+
+const assetsDir = path.resolve(app.getAppPath(), 'assets');
+const appIconURL = path.resolve(assetsDir, 'appicon_with_spacing_32.png');
+const appIcon = nativeImage.createFromPath(appIconURL);
 
 export function openDeepLink(deeplinkingUrl: string) {
     try {
@@ -44,11 +55,21 @@ export function updateServerInfos(teams: TeamWithTabs[]) {
     });
     Promise.all(serverInfos).then((data: Array<RemoteInfo | string | undefined>) => {
         const teams = Config.teams;
-        teams.forEach((team) => openExtraTabs(data, team));
+        teams.forEach((team) => {
+            updateServerURL(data, team);
+            openExtraTabs(data, team);
+        });
         Config.set('teams', teams);
     }).catch((reason: any) => {
         log.error('Error getting server infos', reason);
     });
+}
+
+function updateServerURL(data: Array<RemoteInfo | string | undefined>, team: TeamWithTabs) {
+    const remoteInfo = data.find((info) => info && typeof info !== 'string' && info.name === team.name) as RemoteInfo;
+    if (remoteInfo && remoteInfo.siteURL) {
+        team.url = remoteInfo.siteURL;
+    }
 }
 
 function openExtraTabs(data: Array<RemoteInfo | string | undefined>, team: TeamWithTabs) {
@@ -70,7 +91,9 @@ function openExtraTabs(data: Array<RemoteInfo | string | undefined>, team: TeamW
 }
 
 export function handleUpdateMenuEvent() {
-    const aMenu = createAppMenu(Config);
+    log.debug('Utils.handleUpdateMenuEvent');
+
+    const aMenu = createAppMenu(Config, updateManager);
     Menu.setApplicationMenu(aMenu);
     aMenu.addListener('menu-will-close', WindowManager.focusBrowserView);
 
@@ -84,8 +107,16 @@ export function handleUpdateMenuEvent() {
 export function getDeeplinkingURL(args: string[]) {
     if (Array.isArray(args) && args.length) {
     // deeplink urls should always be the last argument, but may not be the first (i.e. Windows with the app already running)
-        const url = args[args.length - 1];
+        let url = args[args.length - 1];
+// alert(args)
         if (url && mainProtocol && url.startsWith(mainProtocol) && urlUtils.isValidURI(url)) {
+            // if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
+            //     const currentServerURL = WindowManager.getCurrentServerUrl();
+
+            //     url = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
+
+            // // return url;
+            // }
             return url;
         }
     }
@@ -139,6 +170,7 @@ function getValidWindowPosition(state: Rectangle) {
 
 export function resizeScreen(browserWindow: BrowserWindow) {
     function handle() {
+        log.debug('Utils.resizeScreen.handle');
         const position = browserWindow.getPosition();
         const size = browserWindow.getSize();
         const validPosition = getValidWindowPosition({
@@ -154,11 +186,12 @@ export function resizeScreen(browserWindow: BrowserWindow) {
         }
     }
 
-    browserWindow.on('restore', handle);
+    browserWindow.once('restore', handle);
     handle();
 }
 
 function flushCookiesStore(session: Session) {
+    log.debug('Utils.flushCookiesStore');
     session.cookies.flushStore().catch((err) => {
         log.error(`There was a problem flushing cookies:\n${err}`);
     });
@@ -175,4 +208,63 @@ export function initCookieManager(session: Session) {
     app.on('browser-window-blur', () => {
         flushCookiesStore(session);
     });
+}
+
+export function migrateMacAppStore() {
+    const migrationPrefs = new JsonFileManager<MigrationInfo>(migrationInfoPath);
+    const oldPath = path.join(app.getPath('userData'), '../../../../../../../Library/Application Support/Mattermost');
+
+    // Check if we've already migrated
+    if (migrationPrefs.getValue('masConfigs')) {
+        return;
+    }
+
+    // Check if the files are there to migrate
+    try {
+        const exists = fs.existsSync(oldPath);
+        if (!exists) {
+            log.info('MAS: No files to migrate, skipping');
+            return;
+        }
+    } catch (e) {
+        log.error('MAS: Failed to check for existing Mattermost Desktop install, skipping', e);
+        return;
+    }
+
+    const cancelImport = dialog.showMessageBoxSync({
+        title: 'Mattermost',
+        message: 'Import Existing Configuration',
+        detail: 'It appears that an existing Mattermost configuration exists, would you like to import it? You will be asked to pick the correct configuration directory.',
+        icon: appIcon,
+        buttons: ['Select Directory and Import', 'Don\'t Import'],
+        type: 'info',
+        defaultId: 0,
+        cancelId: 1,
+    });
+
+    if (cancelImport) {
+        migrationPrefs.setValue('masConfigs', true);
+        return;
+    }
+
+    const result = dialog.showOpenDialogSync({
+        defaultPath: oldPath,
+        properties: ['openDirectory'],
+    });
+    if (!(result && result[0])) {
+        return;
+    }
+
+    try {
+        fs.copySync(result[0], app.getPath('userData'));
+        updatePaths(true);
+        migrationPrefs.setValue('masConfigs', true);
+    } catch (e) {
+        log.error('MAS: An error occurred importing the existing configuration', e);
+    }
+}
+
+export function setLoggingLevel(level: LevelOption) {
+    log.transports.console.level = level;
+    log.transports.file.level = level;
 }

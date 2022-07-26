@@ -9,6 +9,7 @@ import MessagingTabView from 'common/tabs/MessagingTabView';
 
 import * as WindowManager from '../windows/windowManager';
 import * as appState from '../appState';
+import Utils from '../utils';
 
 import {MattermostView} from './MattermostView';
 
@@ -29,11 +30,6 @@ jest.mock('electron', () => ({
     },
 }));
 
-jest.mock('electron-log', () => ({
-    info: jest.fn(),
-    error: jest.fn(),
-}));
-
 jest.mock('../windows/windowManager', () => ({
     sendToRenderer: jest.fn(),
     focusThreeDotMenu: jest.fn(),
@@ -49,6 +45,7 @@ jest.mock('../utils', () => ({
     getWindowBoundaries: jest.fn(),
     getLocalPreload: (file) => file,
     composeUserAgent: () => 'Mattermost/5.0.0',
+    shouldHaveBackBar: jest.fn(),
 }));
 
 const server = new MattermostServer('server_name', 'http://server-1.com');
@@ -100,17 +97,31 @@ describe('main/views/MattermostView', () => {
             expect(mattermostView.view.webContents.loadURL).toBeCalledWith('http://server-1.com/', expect.any(Object));
             expect(mattermostView.loadRetry).toBeCalledWith('http://server-1.com/', error);
         });
+
+        it('should not retry when failing to load due to cert error', async () => {
+            const error = new Error('test');
+            error.code = 'ERR_CERT_ERROR';
+            const promise = Promise.reject(error);
+            mattermostView.view.webContents.loadURL.mockImplementation(() => promise);
+            mattermostView.load('a-bad<url');
+            await expect(promise).rejects.toThrow(error);
+            expect(mattermostView.view.webContents.loadURL).toBeCalledWith('http://server-1.com/', expect.any(Object));
+            expect(mattermostView.loadRetry).not.toBeCalled();
+        });
     });
 
     describe('retry', () => {
         const window = {on: jest.fn()};
         const mattermostView = new MattermostView(tabView, {}, window, {});
+        const retryInBackgroundFn = jest.fn();
 
         beforeEach(() => {
+            jest.useFakeTimers();
             mattermostView.view.webContents.loadURL.mockImplementation(() => Promise.resolve());
             mattermostView.loadSuccess = jest.fn();
             mattermostView.loadRetry = jest.fn();
             mattermostView.emit = jest.fn();
+            mattermostView.retryInBackground = () => retryInBackgroundFn;
         });
 
         it('should do nothing when webcontents are destroyed', () => {
@@ -140,7 +151,7 @@ describe('main/views/MattermostView', () => {
             expect(mattermostView.loadRetry).toBeCalledWith('http://server-1.com', error);
         });
 
-        it('should set to error status when max retries are reached', async () => {
+        it('should set to error status and retry in the background when max retries are reached', async () => {
             mattermostView.maxRetries = 0;
             const error = new Error('test');
             const promise = Promise.reject(error);
@@ -151,6 +162,8 @@ describe('main/views/MattermostView', () => {
             expect(mattermostView.loadRetry).not.toBeCalled();
             expect(WindowManager.sendToRenderer).toBeCalledWith(LOAD_FAILED, mattermostView.tab.name, expect.any(String), expect.any(String));
             expect(mattermostView.status).toBe(-1);
+            jest.runAllTimers();
+            expect(retryInBackgroundFn).toBeCalled();
         });
     });
 
@@ -280,11 +293,13 @@ describe('main/views/MattermostView', () => {
         });
 
         it('should hide back button on internal url', () => {
+            Utils.shouldHaveBackBar.mockReturnValue(false);
             mattermostView.handleDidNavigate(null, 'http://server-1.com/path/to/channels');
             expect(WindowManager.sendToRenderer).toHaveBeenCalledWith(TOGGLE_BACK_BUTTON, false);
         });
 
         it('should show back button on external url', () => {
+            Utils.shouldHaveBackBar.mockReturnValue(true);
             mattermostView.handleDidNavigate(null, 'http://server-2.com/some/other/path');
             expect(WindowManager.sendToRenderer).toHaveBeenCalledWith(TOGGLE_BACK_BUTTON, true);
         });
@@ -311,7 +326,13 @@ describe('main/views/MattermostView', () => {
 
         it('should not emit tooltip URL if internal', () => {
             mattermostView.handleUpdateTarget(null, 'http://server-1.com/path/to/channels');
-            expect(mattermostView.emit).not.toHaveBeenCalled();
+            expect(mattermostView.emit).toHaveBeenCalled();
+            expect(mattermostView.emit).not.toHaveBeenCalledWith(UPDATE_TARGET_URL, 'http://server-1.com/path/to/channels');
+        });
+
+        it('should still emit even if URL is blank', () => {
+            mattermostView.handleUpdateTarget(null, '');
+            expect(mattermostView.emit).toHaveBeenCalled();
         });
     });
 

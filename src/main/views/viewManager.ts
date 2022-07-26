@@ -3,10 +3,11 @@
 import log from 'electron-log';
 import {BrowserView, BrowserWindow, dialog, ipcMain, IpcMainEvent} from 'electron';
 import {BrowserViewConstructorOptions} from 'electron/main';
+import {Tuple as tuple} from '@bloomberg/record-tuple-polyfill';
 
 import {Tab, TeamWithTabs} from 'types/config';
 
-import {SECOND} from 'common/utils/constants';
+import {SECOND, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import {
     UPDATE_TARGET_URL,
     LOAD_SUCCESS,
@@ -24,7 +25,7 @@ import Config from 'common/config';
 import urlUtils from 'common/utils/url';
 import Utils from 'common/utils/util';
 import {MattermostServer} from 'common/servers/MattermostServer';
-import {getServerView, getTabViewName} from 'common/tabs/TabView';
+import {getServerView, getTabViewName, TabTuple, TabType} from 'common/tabs/TabView';
 
 import {ServerInfo} from 'main/server/serverInfo';
 
@@ -35,7 +36,13 @@ import modalManager from './modalManager';
 import WebContentsEventManager from './webContentEvents';
 
 const URL_VIEW_DURATION = 10 * SECOND;
-const URL_VIEW_HEIGHT = 36;
+const URL_VIEW_HEIGHT = 20;
+
+enum LoadingScreenState {
+    VISIBLE = 1,
+    FADING = 2,
+    HIDDEN = 3,
+}
 
 export class ViewManager {
     configServers: TeamWithTabs[];
@@ -48,6 +55,7 @@ export class ViewManager {
     urlViewCancel?: () => void;
     mainWindow: BrowserWindow;
     loadingScreen?: BrowserView;
+    loadingScreenState: LoadingScreenState;
 
     constructor(mainWindow: BrowserWindow) {
         this.configServers = Config.teams.concat();
@@ -56,6 +64,7 @@ export class ViewManager {
         this.views = new Map(); // keep in mind that this doesn't need to hold server order, only tabs on the renderer need that.
         this.mainWindow = mainWindow;
         this.closedViews = new Map();
+        this.loadingScreenState = LoadingScreenState.HIDDEN;
     }
 
     updateMainWindow = (mainWindow: BrowserWindow) => {
@@ -72,26 +81,34 @@ export class ViewManager {
         server.tabs.forEach((tab) => this.loadView(srv, serverInfo, tab));
     }
 
-    loadView = (srv: MattermostServer, serverInfo: ServerInfo, tab: Tab, url?: string) => {
+    makeView = (srv: MattermostServer, serverInfo: ServerInfo, tab: Tab, url?: string): MattermostView => {
         const tabView = getServerView(srv, tab);
-        if (!tab.isOpen) {
-            this.closedViews.set(tabView.name, {srv, tab});
-            return;
-        }
-        if (this.closedViews.has(tabView.name)) {
-            this.closedViews.delete(tabView.name);
-        }
         const view = new MattermostView(tabView, serverInfo, this.mainWindow, this.viewOptions);
-        this.views.set(tabView.name, view);
-        this.showByName(tabView.name);
-        if (!this.loadingScreen) {
-            this.createLoadingScreen();
-        }
         view.once(LOAD_SUCCESS, this.activateView);
         view.load(url);
         view.on(UPDATE_TARGET_URL, this.showURLView);
         view.on(LOADSCREEN_END, this.finishLoading);
-        view.once(LOAD_FAILED, this.failLoading);
+        view.on(LOAD_FAILED, this.failLoading);
+        return view;
+    }
+
+    addView = (view: MattermostView): void => {
+        this.views.set(view.name, view);
+        if (this.closedViews.has(view.name)) {
+            this.closedViews.delete(view.name);
+        }
+        if (!this.loadingScreen) {
+            this.createLoadingScreen();
+        }
+    }
+
+    loadView = (srv: MattermostServer, serverInfo: ServerInfo, tab: Tab, url?: string) => {
+        if (!tab.isOpen) {
+            this.closedViews.set(getTabViewName(srv.name, tab.name), {srv, tab});
+            return;
+        }
+        const view = this.makeView(srv, serverInfo, tab, url);
+        this.addView(view);
     }
 
     reloadViewIfNeeded = (viewName: string) => {
@@ -105,32 +122,61 @@ export class ViewManager {
         this.configServers.forEach((server) => this.loadServer(server));
     }
 
+    /** Called when a new configuration is received
+     * Servers or tabs have been added or edited. We need to
+     * close, open, or reload tabs, taking care to reuse tabs and
+     * preserve focus on the currently selected tab. */
     reloadConfiguration = (configServers: TeamWithTabs[]) => {
-        this.configServers = configServers.concat();
-        const oldviews = this.views;
+        const focusedTuple: TabTuple | undefined = this.views.get(this.currentView as string)?.urlTypeTuple;
+
+        const current: Map<TabTuple, MattermostView> = new Map();
+        for (const view of this.views.values()) {
+            current.set(view.urlTypeTuple, view);
+        }
+
+        const views: Map<TabTuple, MattermostView> = new Map();
+        const closed: Map<TabTuple, {srv: MattermostServer; tab: Tab; name: string}> = new Map();
+
+        const sortedTabs = configServers.flatMap((x) => [...x.tabs].
+            sort((a, b) => a.order - b.order).
+            map((t): [TeamWithTabs, Tab] => [x, t]));
+
+        for (const [team, tab] of sortedTabs) {
+            const srv = new MattermostServer(team.name, team.url);
+            const info = new ServerInfo(srv);
+            const view = getServerView(srv, tab);
+            const tabTuple = tuple(new URL(team.url).href, tab.name as TabType);
+            const recycle = current.get(tabTuple);
+            if (!tab.isOpen) {
+                closed.set(tabTuple, {srv, tab, name: view.name});
+            } else if (recycle) {
+                recycle.updateServerInfo(srv);
+                views.set(tabTuple, recycle);
+            } else {
+                views.set(tabTuple, this.makeView(srv, info, tab, tabTuple[0]));
+            }
+        }
+
+        // commit the data to our local state
+        // destroy everything that no longer exists
+        for (const [k, v] of current) {
+            if (!views.has(k)) {
+                v.destroy();
+            }
+        }
+
+        // commit views
         this.views = new Map();
-        const sorted = this.configServers.sort((a, b) => a.order - b.order);
-        let setFocus;
-        sorted.forEach((server) => {
-            const srv = new MattermostServer(server.name, server.url);
-            const serverInfo = new ServerInfo(srv);
-            server.tabs.forEach((tab) => {
-                const tabView = getServerView(srv, tab);
-                const recycle = oldviews.get(tabView.name);
-                if (recycle && recycle.name === this.currentView) {
-                    setFocus = recycle.name;
-                }
-                if (!tab.isOpen) {
-                    this.closedViews.set(tabView.name, {srv, tab});
-                } else if (recycle && recycle.tab.name === tabView.name && recycle.tab.url.toString() === urlUtils.parseURL(tabView.url)!.toString()) {
-                    oldviews.delete(recycle.name);
-                    this.views.set(recycle.name, recycle);
-                } else {
-                    this.loadView(srv, serverInfo, tab);
-                }
-            });
-        });
-        if (this.currentView && (oldviews.has(this.currentView) || this.closedViews.has(this.currentView))) {
+        for (const x of views.values()) {
+            this.views.set(x.name, x);
+        }
+
+        // commit closed
+        for (const x of closed.values()) {
+            this.closedViews.set(x.name, {srv: x.srv, tab: x.tab});
+        }
+
+        if ((focusedTuple && closed.has(focusedTuple)) || (this.currentView && this.closedViews.has(this.currentView))) {
             if (configServers.length) {
                 delete this.currentView;
                 this.showInitial();
@@ -138,11 +184,15 @@ export class ViewManager {
                 this.mainWindow.webContents.send(SET_ACTIVE_VIEW);
             }
         }
-        oldviews.forEach((unused) => {
-            unused.destroy();
-        });
-        if (setFocus) {
-            this.showByName(setFocus);
+
+        // show the focused tab (or initial)
+        if (focusedTuple && views.has(focusedTuple)) {
+            const view = views.get(focusedTuple);
+            if (view) {
+                this.currentView = view.name;
+                this.showByName(view.name);
+                this.mainWindow.webContents.send(SET_ACTIVE_VIEW, view.tab.server.name, view.tab.type);
+            }
         } else {
             this.showInitial();
         }
@@ -166,6 +216,8 @@ export class ViewManager {
     }
 
     showByName = (name: string) => {
+        log.debug('viewManager.showByName', name);
+
         const newView = this.views.get(name);
         if (newView) {
             if (newView.isVisible) {
@@ -179,18 +231,16 @@ export class ViewManager {
             }
 
             this.currentView = name;
-            if (newView.needsLoadingScreen()) {
-                this.showLoadingScreen();
+            if (!newView.isErrored()) {
+                newView.show();
+                if (newView.needsLoadingScreen()) {
+                    this.showLoadingScreen();
+                }
             }
             newView.window.webContents.send(SET_ACTIVE_VIEW, newView.tab.server.name, newView.tab.type);
             ipcMain.emit(SET_ACTIVE_VIEW, true, newView.tab.server.name, newView.tab.type);
             if (newView.isReady()) {
-                // if view is not ready, the renderer will have something to display instead.
-                newView.show();
                 ipcMain.emit(UPDATE_LAST_ACTIVE, true, newView.tab.server.name, newView.tab.type);
-                if (!newView.needsLoadingScreen()) {
-                    this.fadeLoadingScreen();
-                }
             } else {
                 log.warn(`couldn't show ${name}, not ready`);
             }
@@ -213,6 +263,8 @@ export class ViewManager {
     }
 
     activateView = (viewName: string) => {
+        log.debug('viewManager.activateView', viewName);
+
         if (this.currentView === viewName) {
             this.showByName(this.currentView);
         }
@@ -225,6 +277,8 @@ export class ViewManager {
     }
 
     finishLoading = (server: string) => {
+        log.debug('viewManager.finishLoading', server);
+
         const view = this.views.get(server);
         if (view && this.getCurrentView() === view) {
             this.showByName(this.currentView!);
@@ -249,8 +303,13 @@ export class ViewManager {
         ipcMain.emit(OPEN_TAB, null, srv.name, tab.name);
     }
 
-    failLoading = () => {
+    failLoading = (tabName: string) => {
+        log.debug('viewManager.failLoading', tabName);
+
         this.fadeLoadingScreen();
+        if (this.currentView === tabName) {
+            this.getCurrentView()?.hide();
+        }
     }
 
     getCurrentView() {
@@ -285,6 +344,8 @@ export class ViewManager {
     }
 
     showURLView = (url: URL | string) => {
+        log.silly('viewManager.showURLView', url);
+
         if (this.urlViewCancel) {
             this.urlViewCancel();
         }
@@ -293,7 +354,6 @@ export class ViewManager {
             const preload = getLocalPreload('urlView.js');
             const urlView = new BrowserView({
                 webPreferences: {
-                    nativeWindowOpen: true,
                     preload,
 
                     // Workaround for this issue: https://github.com/electron/electron/issues/30993
@@ -305,7 +365,7 @@ export class ViewManager {
             const localURL = getLocalURLString('urlView.html', query);
             urlView.webContents.loadURL(localURL);
             this.mainWindow.addBrowserView(urlView);
-            const boundaries = this.mainWindow.getBounds();
+            const boundaries = this.views.get(this.currentView || '')?.view.getBounds() ?? this.mainWindow.getBounds();
 
             const hideView = () => {
                 delete this.urlViewCancel;
@@ -319,12 +379,17 @@ export class ViewManager {
             };
 
             const adjustWidth = (event: IpcMainEvent, width: number) => {
-                urlView.setBounds({
+                log.silly('showURLView.adjustWidth', width);
+
+                const bounds = {
                     x: 0,
-                    y: boundaries.height - URL_VIEW_HEIGHT,
+                    y: (boundaries.height + TAB_BAR_HEIGHT) - URL_VIEW_HEIGHT,
                     width: width + 5, // add some padding to ensure that we don't cut off the border
                     height: URL_VIEW_HEIGHT,
-                });
+                };
+
+                log.silly('showURLView setBounds', boundaries, bounds);
+                urlView.setBounds(bounds);
             };
 
             ipcMain.on(UPDATE_URL_VIEW_WIDTH, adjustWidth);
@@ -349,8 +414,12 @@ export class ViewManager {
     createLoadingScreen = () => {
         const preload = getLocalPreload('loadingScreenPreload.js');
         this.loadingScreen = new BrowserView({webPreferences: {
-            nativeWindowOpen: true,
             preload,
+
+            // Workaround for this issue: https://github.com/electron/electron/issues/30993
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            transparent: true,
         }});
         const localURL = getLocalURLString('loadingScreen.html');
         this.loadingScreen.webContents.loadURL(localURL);
@@ -361,7 +430,15 @@ export class ViewManager {
             this.createLoadingScreen();
         }
 
-        this.loadingScreen!.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, true);
+        this.loadingScreenState = LoadingScreenState.VISIBLE;
+
+        if (this.loadingScreen?.webContents.isLoading()) {
+            this.loadingScreen.webContents.once('did-finish-load', () => {
+                this.loadingScreen!.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, true);
+            });
+        } else {
+            this.loadingScreen!.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, true);
+        }
 
         if (this.mainWindow.getBrowserViews().includes(this.loadingScreen!)) {
             this.mainWindow.setTopBrowserView(this.loadingScreen!);
@@ -373,13 +450,15 @@ export class ViewManager {
     }
 
     fadeLoadingScreen = () => {
-        if (this.loadingScreen) {
+        if (this.loadingScreen && this.loadingScreenState === LoadingScreenState.VISIBLE) {
+            this.loadingScreenState = LoadingScreenState.FADING;
             this.loadingScreen.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, false);
         }
     }
 
     hideLoadingScreen = () => {
-        if (this.loadingScreen) {
+        if (this.loadingScreen && this.loadingScreenState !== LoadingScreenState.HIDDEN) {
+            this.loadingScreenState = LoadingScreenState.HIDDEN;
             this.mainWindow.removeBrowserView(this.loadingScreen);
         }
     }
@@ -401,6 +480,8 @@ export class ViewManager {
     }
 
     deeplinkSuccess = (viewName: string) => {
+        log.debug('viewManager.deeplinkSuccess', viewName);
+
         const view = this.views.get(viewName);
         if (!view) {
             return;
@@ -424,7 +505,7 @@ export class ViewManager {
             const parsedURL = urlUtils.parseURL(url)!;
             const tabView = urlUtils.getView(parsedURL, this.configServers, true);
             if (tabView) {
-                const urlWithSchema = `${urlUtils.parseURL(tabView.url)?.origin}${parsedURL.pathname}${parsedURL.search}`;
+                const urlWithSchema = `${urlUtils.parseURL(tabView.url)?.origin}${parsedURL.pathname}${parsedURL.search}${parsedURL.hash}`;
                 if (this.closedViews.has(tabView.name)) {
                     this.openClosedTab(tabView.name, urlWithSchema);
                 } else {

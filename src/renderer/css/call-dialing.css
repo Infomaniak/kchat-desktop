@@ -1,0 +1,44 @@
+body {
+    -webkit-app-region: drag;
+}
+html, body, body > div {
+    height: 100%;
+}
+.container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+div.actions {
+    display: flex;
+    justify-content: space-around;
+    margin-top: auto;
+    padding-bottom: 16px;
+}
+div.avatars {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    padding-top: 25%;
+}
+button {
+    color: white !important;
+}
+button span {
+    font-weight: 400;
+    font-size: 14px;
+}
+h6.grey {
+    align-self: center;
+    color: #666666;
+}
+button.accept {
+    background: var(--blue);
+} 
+button.decline {
+    background: var(--red);
+}
+.avatar {
+    border-radius: 50%;
+    border: 1px solid grey;
+}

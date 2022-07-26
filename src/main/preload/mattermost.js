@@ -4,9 +4,10 @@
 
 'use strict';
 
+/* eslint-disable import/no-commonjs */
 /* eslint-disable no-magic-numbers */
 
-import {contextBridge, ipcRenderer, webFrame, desktopCapturer} from 'electron';
+import {contextBridge, ipcRenderer, webFrame} from 'electron';
 
 // I've filed an issue in electron-log https://github.com/megahertz/electron-log/issues/267
 // we'll be able to use it again if there is a workaround for the 'os' import
@@ -27,6 +28,13 @@ import {
     APP_LOGGED_OUT,
     GET_VIEW_NAME,
     GET_VIEW_WEBCONTENTS_ID,
+    CALL_JOINED,
+    CALL_CLOSED,
+    CALL_COMMAND,
+    WINDOW_WILL_UNLOADED,
+    DISPATCH_GET_DESKTOP_SOURCES,
+    DESKTOP_SOURCES_RESULT,
+    CALL_RINGING,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -149,6 +157,29 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
         ipcRenderer.send(BROWSER_HISTORY_BUTTON, viewName);
         break;
     }
+    case 'call-joined': {
+        ipcRenderer.send(CALL_JOINED, message, viewName);
+        break;
+    }
+    case 'call-command': {
+        ipcRenderer.send(CALL_COMMAND, message, viewName);
+        break;
+    }
+    case 'window-will-unloaded': {
+        ipcRenderer.send(WINDOW_WILL_UNLOADED, viewName);
+        break;
+    }
+    case 'get-desktop-sources': {
+        ipcRenderer.send(DISPATCH_GET_DESKTOP_SOURCES, viewName, message);
+        break;
+    }
+    case 'call-dialing': {
+        ipcRenderer.send(CALL_RINGING, message, viewName);
+        break;
+    }
+    case 'call-focus': {
+        ipcRenderer.send('call-focus', message, viewName);
+    }
     }
 });
 
@@ -171,7 +202,7 @@ ipcRenderer.on('notification-clicked', (event, data) => {
 });
 
 const findUnread = (favicon) => {
-    const classes = ['team-container unreads', 'SidebarChannel unread', 'sidebar-item unread-title'];
+    const classes = ['team-container unread', 'SidebarChannel unread', 'sidebar-item unread-title'];
     const isUnread = classes.some((classPair) => {
         const result = document.getElementsByClassName(classPair);
         return result && result.length > 0;
@@ -240,6 +271,54 @@ window.addEventListener('click', () => {
     ipcRenderer.send(CLOSE_TEAMS_DROPDOWN);
 });
 
+ipcRenderer.on(CALL_CLOSED, (event, id) => {
+    window.postMessage(
+        {
+            type: 'call-closed',
+            message: {
+                id,
+            },
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on('call-audio-status-change', (event, status) => {
+    window.postMessage(
+        {
+            type: 'call-audio-status-change',
+            message: {
+                status,
+            },
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on('call-video-status-change', (event, status) => {
+    window.postMessage(
+        {
+            type: 'call-video-status-change',
+            message: {
+                status,
+            },
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on('call-ss-status-change', (event, status) => {
+    window.postMessage(
+        {
+            type: 'call-ss-status-change',
+            message: {
+                status,
+            },
+        },
+        window.location.origin,
+    );
+});
+
 ipcRenderer.on(BROWSER_HISTORY_PUSH, (event, pathName) => {
     window.postMessage(
         {
@@ -274,17 +353,14 @@ window.addEventListener('storage', (e) => {
     }
 });
 
-contextBridge.exposeInMainWorld('desktopCapturer', {
-    getSources: async (options) => {
-        const sources = await desktopCapturer.getSources(options);
-        return sources.map((source) => {
-            return {
-                id: source.id,
-                name: source.name,
-                thumbnailURL: source.thumbnail.toDataURL(),
-            };
-        });
-    },
+ipcRenderer.on(DESKTOP_SOURCES_RESULT, (event, sources) => {
+    window.postMessage(
+        {
+            type: 'desktop-sources-result',
+            message: sources,
+        },
+        window.location.origin,
+    );
 });
 
 /* eslint-enable no-magic-numbers */

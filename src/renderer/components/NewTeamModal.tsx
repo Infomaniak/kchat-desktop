@@ -8,11 +8,13 @@ import {Modal, Button, FormGroup, FormControl, FormLabel, FormText} from 'react-
 import {TeamWithIndex} from 'types/config';
 
 import urlUtils from 'common/utils/url';
+import {PING_DOMAIN, PING_DOMAIN_RESPONSE} from 'common/communication';
 
 type Props = {
     onClose?: () => void;
     onSave?: (team: TeamWithIndex) => void;
     team?: TeamWithIndex;
+    currentTeams?: TeamWithIndex[];
     editMode?: boolean;
     show?: boolean;
     restoreFocus?: boolean;
@@ -62,6 +64,15 @@ export default class NewTeamModal extends React.PureComponent<Props, State> {
         if (!this.state.saveStarted) {
             return null;
         }
+        if (this.props.currentTeams) {
+            const currentTeams = [...this.props.currentTeams];
+            if (this.props.editMode && this.props.team) {
+                currentTeams.splice(this.props.team.index, 1);
+            }
+            if (currentTeams.find((team) => team.name === this.state.teamName)) {
+                return 'A server with the same name already exists.';
+            }
+        }
         return this.state.teamName.length > 0 ? null : 'Name is required.';
     }
 
@@ -78,6 +89,15 @@ export default class NewTeamModal extends React.PureComponent<Props, State> {
     getTeamUrlValidationError() {
         if (!this.state.saveStarted) {
             return null;
+        }
+        if (this.props.currentTeams) {
+            const currentTeams = [...this.props.currentTeams];
+            if (this.props.editMode && this.props.team) {
+                currentTeams.splice(this.props.team.index, 1);
+            }
+            if (currentTeams.find((team) => team.url === this.state.teamUrl)) {
+                return 'A server with the same URL already exists.';
+            }
         }
         if (this.state.teamUrl.length === 0) {
             return 'URL is required.';
@@ -96,8 +116,29 @@ export default class NewTeamModal extends React.PureComponent<Props, State> {
     }
 
     handleTeamUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({
-            teamUrl: e.target.value,
+        const teamUrl = e.target.value;
+        this.setState({teamUrl});
+    }
+
+    addProtocolToUrl = (teamUrl: string): Promise<void> => {
+        if (teamUrl.startsWith('http://') || teamUrl.startsWith('https://')) {
+            return Promise.resolve(undefined);
+        }
+
+        return new Promise((resolve) => {
+            const handler = (event: {data: {type: string; data: string | Error}}) => {
+                if (event.data.type === PING_DOMAIN_RESPONSE) {
+                    if (event.data.data instanceof Error) {
+                        console.error(`Could not ping url: ${teamUrl}`);
+                    } else {
+                        this.setState({teamUrl: `${event.data.data}://${this.state.teamUrl}`});
+                    }
+                    window.removeEventListener('message', handler);
+                    resolve(undefined);
+                }
+            };
+            window.addEventListener('message', handler);
+            window.postMessage({type: PING_DOMAIN, data: teamUrl}, window.location.href);
         });
     }
 
@@ -106,7 +147,13 @@ export default class NewTeamModal extends React.PureComponent<Props, State> {
         const urlError = this.getTeamUrlValidationError();
 
         if (nameError && urlError) {
-            return 'Name and URL are required.';
+            return (
+                <>
+                    {nameError}
+                    <br/>
+                    {urlError}
+                </>
+            );
         } else if (nameError) {
             return nameError;
         } else if (urlError) {
@@ -120,7 +167,8 @@ export default class NewTeamModal extends React.PureComponent<Props, State> {
             this.getTeamUrlValidationState() === null;
     }
 
-    save = () => {
+    save = async () => {
+        await this.addProtocolToUrl(this.state.teamUrl);
         this.setState({
             saveStarted: true,
         }, () => {
