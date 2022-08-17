@@ -19,6 +19,7 @@
   "files": [
     "node_modules/bootstrap/dist/**",
     "node_modules/font-awesome/{css,fonts}/**",
+    "!**/node_modules/macos-notification-state/build/Release/.forge-meta",
     {
       "from": "dist",
       "to": ".",
@@ -27,18 +28,13 @@
   ],
   "protocols": [
     {
-      "name": "ktalk",
+      "name": "kchat",
       "schemes": [
-        "ktalk",
-        "mattermost",
-        "http",
-        "https",
-        "ftp",
-        "mailto",
-        "tel"
+        "kchat"
       ]
     }
   ],
+  "beforePack": "scripts/beforepack.js",
   "afterPack": "scripts/afterpack.js",
   "afterSign": "scripts/notarize.js",
   "afterAllArtifactBuild": "scripts/afterbuild.js",
@@ -55,6 +51,10 @@
     "category": "contrib/net",
     "priority": "optional"
   },
+  "asarUnpack": [
+    "./node_modules/macos-notification-state/**/*",
+    "./node_modules/windows-focus-assist/**/*"
+  ],
   "linux": {
     "category": "Network;InstantMessaging",
     "target": [
@@ -119,7 +119,8 @@
     "provisioningProfile": "./mas.provisionprofile",
     "extendInfo": {
       "ITSAppUsesNonExemptEncryption": false
-    }
+    },
+    "singleArchFiles": "*"
   },
   "masDev": {
     "provisioningProfile": "./mas-dev.provisionprofile"

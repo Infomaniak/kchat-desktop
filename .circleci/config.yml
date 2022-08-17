@@ -12,19 +12,19 @@ executors:
   check-image:
     working_directory: ~/mattermost-desktop
     docker:
-      - image: electronuserland/builder:wine-chrome
+      - image: electronuserland/builder:16-wine-chrome
         environment:
           TAR_OPTIONS: --no-same-owner
   wine-chrome:
     working_directory: ~/mattermost-desktop
     docker:
-      - image: electronuserland/builder:wine-chrome
+      - image: electronuserland/builder:16-wine-chrome
         environment:
           TAR_OPTIONS: --no-same-owner
   wine-mono:
     working_directory: ~/mattermost-desktop
     docker:
-      - image: electronuserland/builder:wine-mono
+      - image: electronuserland/builder:16-wine-mono
   mac:
     working_directory: ~/mattermost-desktop
     macos:
@@ -140,6 +140,13 @@ jobs:
       - update_image:
           apt_opts: "--no-install-recommends"
       - run: npm run check-types
+      - run: 
+          name: i18n check
+          command: |
+            cp i18n/en.json /tmp/en.json
+            npm run mmjstool -- i18n extract-desktop --desktop-dir .
+            diff /tmp/en.json i18n/en.json
+            rm -rf tmp
       - run: ELECTRON_DISABLE_SANDBOX=1 npm run test:unit-ci
       - run: mkdir -p /tmp/test-results
       - run: cp test-results.xml /tmp/test-results/
@@ -172,14 +179,20 @@ jobs:
             - "~/.cache/electron-builder"
 
   build-win-no-installer:
-    executor: wine-mono
+    executor: win/vs2019
     steps:
       - checkout
       - run: mkdir -p ./build
       - attach_workspace:
           at: ./build
-      - update_image:
-          apt_opts: "--no-install-recommends jq icnsutils graphicsmagick tzdata"
+      - run:
+          name: Install yq
+          command: choco install yq --version 4.15.1 -y
+      - run:
+          name: Install nodejs-lts
+          command: choco install nodejs-lts -y
+      # ignoring scripts for windows due to issues with node-gyp
+      - run: $env:PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = 1; npm ci --ignore-scripts
       - build:
           os: windows
           path: ./build/win
@@ -192,16 +205,18 @@ jobs:
             - "~/.cache/electron-builder"
 
   build-mac-no-dmg:
-    executor: wine-mono
+    executor: mac
     steps:
       - checkout
       - run: mkdir -p ./build
       - attach_workspace:
           at: ./build
-      - update_image:
-          apt_opts: "--no-install-recommends jq icnsutils graphicsmagick tzdata"
+      - run: brew install yq
+      - run:
+          name: Update node to v16
+          command: nvm install --lts && nvm use --lts
       - run: jq '.mac.target=["zip"]' electron-builder.json | jq '.mac.gatekeeperAssess=false' > /tmp/electron-builder.json && cp /tmp/electron-builder.json .
-
+      - run: PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
       - build:
           os: mac
           path: ./build/macos
@@ -222,11 +237,11 @@ jobs:
       - attach_workspace:
           at: ./build
       - run:
-          name: Update node to v16
-          command: choco install nodejs --version 16.8.0
-      - run:
           name: Install yq
-          command: choco install yq --version 4.15.1
+          command: choco install yq --version 4.15.1 -y
+      - run:
+          name: Install nodejs-lts
+          command: choco install nodejs-lts -y
       - win_make:
           operation: optimize
       - win_make:
@@ -242,14 +257,19 @@ jobs:
             - "./win-release/"
 
   build-windows-pr:
-    executor: wine-mono
+    executor: win/vs2019
     steps:
       - checkout
       - run: mkdir -p ./build
       - attach_workspace:
           at: ./build
-      - update_image:
-          apt_opts: "--no-install-recommends jq icnsutils graphicsmagick tzdata"
+      - run:
+          name: Install yq
+          command: choco install yq --version 4.15.1 -y
+      - run:
+          name: Install nodejs-lts
+          command: choco install nodejs-lts -y
+      - run: $env:PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = 1; npm ci --ignore-scripts
       - build:
           os: windows
           path: ./build/win
@@ -261,7 +281,7 @@ jobs:
             - "~/.cache/electron"
             - "~/.cache/electron-builder"
       - save:
-          filename: "$(jq -r .version package.json)/*.exe"
+          filename: "$(jq -r .version package.json)/*.zip"
 
   build-mac-pr:
     executor: mac
@@ -274,7 +294,7 @@ jobs:
       - run: brew install yq
       - run:
           name: Update node to v16
-          command: brew upgrade node || true
+          command: nvm install --lts && nvm use --lts
       - run:
           name: Installing npm dependencies
           command: npm ci
@@ -323,7 +343,7 @@ jobs:
           at: ./build
       - run:
           name: Update node to v16
-          command: brew upgrade node || true
+          command: nvm install --lts && nvm use --lts
       - run:
           name: Install yq
           command: brew install yq
@@ -358,7 +378,7 @@ jobs:
           at: ./build
       - run:
           name: Update node to v16
-          command: brew upgrade node || true
+          command: nvm install --lts && nvm use --lts
       - run:
           name: Install yq
           command: brew install yq

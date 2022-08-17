@@ -20,6 +20,7 @@ import {
     BROWSER_HISTORY_PUSH,
     UPDATE_LAST_ACTIVE,
     UPDATE_URL_VIEW_WIDTH,
+    MAIN_WINDOW_SHOWN,
 } from 'common/communication';
 import Config from 'common/config';
 import urlUtils from 'common/utils/url';
@@ -27,6 +28,7 @@ import Utils from 'common/utils/util';
 import {MattermostServer} from 'common/servers/MattermostServer';
 import {getServerView, getTabViewName, TabTuple, TabType} from 'common/tabs/TabView';
 
+import {localizeMessage} from 'main/i18nManager';
 import {ServerInfo} from 'main/server/serverInfo';
 
 import {getLocalURLString, getLocalPreload, getWindowBoundaries} from '../utils';
@@ -38,14 +40,13 @@ import WebContentsEventManager from './webContentEvents';
 const URL_VIEW_DURATION = 10 * SECOND;
 const URL_VIEW_HEIGHT = 20;
 
-enum LoadingScreenState {
+export enum LoadingScreenState {
     VISIBLE = 1,
     FADING = 2,
     HIDDEN = 3,
 }
 
 export class ViewManager {
-    configServers: TeamWithTabs[];
     lastActiveServer?: number;
     viewOptions: BrowserViewConstructorOptions;
     closedViews: Map<string, {srv: MattermostServer; tab: Tab}>;
@@ -58,7 +59,6 @@ export class ViewManager {
     loadingScreenState: LoadingScreenState;
 
     constructor(mainWindow: BrowserWindow) {
-        this.configServers = Config.teams.concat();
         this.lastActiveServer = Config.lastActiveTeam;
         this.viewOptions = {webPreferences: {spellcheck: Config.useSpellChecker}};
         this.views = new Map(); // keep in mind that this doesn't need to hold server order, only tabs on the renderer need that.
@@ -72,7 +72,7 @@ export class ViewManager {
     }
 
     getServers = () => {
-        return this.configServers;
+        return Config.teams.concat();
     }
 
     loadServer = (server: TeamWithTabs) => {
@@ -119,7 +119,7 @@ export class ViewManager {
     }
 
     load = () => {
-        this.configServers.forEach((server) => this.loadServer(server));
+        this.getServers().forEach((server) => this.loadServer(server));
     }
 
     /** Called when a new configuration is received
@@ -199,8 +199,9 @@ export class ViewManager {
     }
 
     showInitial = () => {
-        if (this.configServers.length) {
-            const element = this.configServers.find((e) => e.order === this.lastActiveServer) || this.configServers.find((e) => e.order === 0);
+        const servers = this.getServers();
+        if (servers.length) {
+            const element = servers.find((e) => e.order === this.lastActiveServer) || servers.find((e) => e.order === 0);
             if (element && element.tabs.length) {
                 let tab = element.tabs.find((tab) => tab.order === element.lastActiveTab) || element.tabs.find((tab) => tab.order === 0);
                 if (!tab?.isOpen) {
@@ -212,6 +213,9 @@ export class ViewManager {
                     this.showByName(tabView);
                 }
             }
+        } else {
+            this.mainWindow.webContents.send(SET_ACTIVE_VIEW, null, null);
+            ipcMain.emit(MAIN_WINDOW_SHOWN);
         }
     }
 
@@ -503,7 +507,7 @@ export class ViewManager {
         // TODO: fix for new tabs
         if (url) {
             const parsedURL = urlUtils.parseURL(url)!;
-            const tabView = urlUtils.getView(parsedURL, this.configServers, true);
+            const tabView = urlUtils.getView(parsedURL, this.getServers(), true);
             if (tabView) {
                 const urlWithSchema = `${urlUtils.parseURL(tabView.url)?.origin}${parsedURL.pathname}${parsedURL.search}${parsedURL.hash}`;
                 if (this.closedViews.has(tabView.name)) {
@@ -528,7 +532,10 @@ export class ViewManager {
                     }
                 }
             } else {
-                dialog.showErrorBox('No matching server', `there is no configured server in the app that matches the requested url: ${parsedURL.toString()}`);
+                dialog.showErrorBox(
+                    localizeMessage('main.views.viewManager.handleDeepLink.error.title', 'No matching server'),
+                    localizeMessage('main.views.viewManager.handleDeepLink.error.body', 'There is no configured server in the app that matches the requested url: {url}', {url: parsedURL.toString()}),
+                );
             }
         }
     };

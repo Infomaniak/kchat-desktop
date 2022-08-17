@@ -34,6 +34,7 @@ import {
     START_UPGRADE,
     START_DOWNLOAD,
     PING_DOMAIN,
+    MAIN_WINDOW_SHOWN,
 } from 'common/communication';
 import Config from 'common/config';
 import urlUtils from 'common/utils/url';
@@ -47,6 +48,7 @@ import {setupBadge} from 'main/badge';
 import CertificateManager from 'main/certificateManager';
 import {updatePaths} from 'main/constants';
 import CriticalErrorHandler from 'main/CriticalErrorHandler';
+import i18nManager, {localizeMessage} from 'main/i18nManager';
 import {displayDownloadCompleted} from 'main/notifications';
 import parseArgs from 'main/ParseArgs';
 import TrustedOriginsStore from 'main/trustedOrigins';
@@ -69,7 +71,7 @@ import {
 } from './app';
 import {handleConfigUpdate, handleDarkModeChange} from './config';
 import {
-    addNewServerModalWhenMainWindowIsShown,
+    handleMainWindowIsShown,
     handleAppVersion,
     handleCloseTab,
     handleEditServerModal,
@@ -253,6 +255,7 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(SHOW_NEW_SERVER_MODAL, handleNewServerModal);
     ipcMain.on(SHOW_EDIT_SERVER_MODAL, handleEditServerModal);
     ipcMain.on(SHOW_REMOVE_SERVER_MODAL, handleRemoveServerModal);
+    ipcMain.on(MAIN_WINDOW_SHOWN, handleMainWindowIsShown);
     ipcMain.on(WINDOW_CLOSE, WindowManager.close);
     ipcMain.on(WINDOW_MAXIMIZE, WindowManager.maximize);
     ipcMain.on(WINDOW_MINIMIZE, WindowManager.minimize);
@@ -383,7 +386,7 @@ function initializeAfterAppReady() {
         const filters = [];
         if (fileElements.length > 1) {
             filters.push({
-                name: 'All files',
+                name: localizeMessage('main.app.initialize.downloadBox.allFiles', 'All files'),
                 extensions: ['*'],
             });
         }
@@ -395,10 +398,18 @@ function initializeAfterAppReady() {
 
         item.on('done', (doneEvent, state) => {
             if (state === 'completed') {
-                displayDownloadCompleted(filename, item.savePath, WindowManager.getServerNameByWebContentsId(webContents.id) || '');
+                displayDownloadCompleted(path.basename(item.savePath), item.savePath, WindowManager.getServerNameByWebContentsId(webContents.id) || '');
             }
         });
     });
+
+    // needs to be done after app ready
+    // must be done before update menu
+    if (Config.appLanguage) {
+        i18nManager.setLocale(Config.appLanguage);
+    } else if (!i18nManager.setLocale(app.getLocale())) {
+        i18nManager.setLocale(app.getLocaleCountryCode());
+    }
 
     handleUpdateMenuEvent();
 
@@ -438,7 +449,7 @@ function initializeAfterAppReady() {
     // only check for non-Windows, as with Windows we have to wait for GPO teams
     if (process.platform !== 'win32' || typeof Config.registryConfigData !== 'undefined') {
         if (Config.teams.length === 0) {
-            addNewServerModalWhenMainWindowIsShown();
+            handleMainWindowIsShown();
         }
     }
 }

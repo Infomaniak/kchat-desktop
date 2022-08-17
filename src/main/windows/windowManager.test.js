@@ -58,6 +58,9 @@ jest.mock('../utils', () => ({
 }));
 jest.mock('../views/viewManager', () => ({
     ViewManager: jest.fn(),
+    LoadingScreenState: {
+        HIDDEN: 3,
+    },
 }));
 jest.mock('../CriticalErrorHandler', () => jest.fn());
 jest.mock('../views/teamDropdownView', () => jest.fn());
@@ -203,6 +206,7 @@ describe('main/windows/windowManager', () => {
         });
 
         afterEach(() => {
+            jest.runAllTimers();
             jest.resetAllMocks();
         });
 
@@ -212,15 +216,131 @@ describe('main/windows/windowManager', () => {
             expect(windowManager.teamDropdown.updateWindowBounds).toHaveBeenCalled();
         });
 
-        it('should use getContentBounds when the platform is not linux', () => {
+        it('should use getSize when the platform is linux', () => {
             const originalPlatform = process.platform;
             Object.defineProperty(process, 'platform', {
-                value: 'win32',
+                value: 'linux',
             });
+
             windowManager.handleResizeMainWindow();
+
             Object.defineProperty(process, 'platform', {
                 value: originalPlatform,
             });
+
+            expect(view.setBounds).not.toHaveBeenCalled();
+            jest.runAllTimers();
+            expect(view.setBounds).toHaveBeenCalledWith({width: 1000, height: 900});
+        });
+    });
+
+    describe('handleWillResizeMainWindow', () => {
+        const windowManager = new WindowManager();
+        const view = {
+            setBounds: jest.fn(),
+            tab: {
+                url: 'http://server-1.com',
+            },
+            view: {
+                webContents: {
+                    getURL: jest.fn(),
+                },
+            },
+        };
+        windowManager.viewManager = {
+            getCurrentView: () => view,
+            setLoadingScreenBounds: jest.fn(),
+            loadingScreenState: 3,
+        };
+        windowManager.mainWindow = {
+            getContentBounds: () => ({width: 800, height: 600}),
+            getSize: () => [1000, 900],
+        };
+        windowManager.teamDropdown = {
+            updateWindowBounds: jest.fn(),
+        };
+
+        beforeEach(() => {
+            getAdjustedWindowBoundaries.mockImplementation((width, height) => ({width, height}));
+        });
+
+        afterEach(() => {
+            windowManager.isResizing = false;
+            jest.resetAllMocks();
+        });
+
+        it('should update loading screen and team dropdown bounds', () => {
+            const event = {preventDefault: jest.fn()};
+            windowManager.handleWillResizeMainWindow(event, {width: 800, height: 600});
+            expect(windowManager.viewManager.setLoadingScreenBounds).toHaveBeenCalled();
+            expect(windowManager.teamDropdown.updateWindowBounds).toHaveBeenCalled();
+        });
+
+        it('should not resize if the app is already resizing', () => {
+            windowManager.isResizing = true;
+            const event = {preventDefault: jest.fn()};
+            windowManager.handleWillResizeMainWindow(event, {width: 800, height: 600});
+            expect(view.setBounds).not.toHaveBeenCalled();
+        });
+
+        it('should use provided bounds', () => {
+            const event = {preventDefault: jest.fn()};
+            windowManager.handleWillResizeMainWindow(event, {width: 800, height: 600});
+            expect(windowManager.isResizing).toBe(true);
+            expect(view.setBounds).toHaveBeenCalledWith({width: 800, height: 600});
+        });
+    });
+
+    describe('handleResizedMainWindow', () => {
+        const windowManager = new WindowManager();
+        const view = {
+            setBounds: jest.fn(),
+            tab: {
+                url: 'http://server-1.com',
+            },
+            view: {
+                webContents: {
+                    getURL: jest.fn(),
+                },
+            },
+        };
+        windowManager.mainWindow = {
+            getContentBounds: () => ({width: 800, height: 600}),
+            getSize: () => [1000, 900],
+        };
+
+        beforeEach(() => {
+            getAdjustedWindowBoundaries.mockImplementation((width, height) => ({width, height}));
+        });
+
+        afterEach(() => {
+            windowManager.isResizing = true;
+            jest.resetAllMocks();
+        });
+
+        it('should not handle bounds if no window available', () => {
+            windowManager.handleResizedMainWindow();
+            expect(windowManager.isResizing).toBe(false);
+            expect(view.setBounds).not.toHaveBeenCalled();
+        });
+
+        it('should use getContentBounds when the platform is different to linux', () => {
+            windowManager.viewManager = {
+                getCurrentView: () => view,
+            };
+
+            const originalPlatform = process.platform;
+            Object.defineProperty(process, 'platform', {
+                value: 'windows',
+            });
+
+            windowManager.handleResizedMainWindow();
+
+            Object.defineProperty(process, 'platform', {
+                value: originalPlatform,
+            });
+
+            expect(windowManager.isResizing).toBe(false);
             expect(view.setBounds).toHaveBeenCalledWith({width: 800, height: 600});
         });
 
@@ -229,12 +349,14 @@ describe('main/windows/windowManager', () => {
             Object.defineProperty(process, 'platform', {
                 value: 'linux',
             });
-            windowManager.handleResizeMainWindow();
+
+            windowManager.handleResizedMainWindow();
+
             Object.defineProperty(process, 'platform', {
                 value: originalPlatform,
             });
-            expect(view.setBounds).not.toHaveBeenCalled();
-            jest.runAllTimers();
+
+            expect(windowManager.isResizing).toBe(false);
             expect(view.setBounds).toHaveBeenCalledWith({width: 1000, height: 900});
         });
     });

@@ -35,6 +35,7 @@ import {
     DISPATCH_GET_DESKTOP_SOURCES,
     DESKTOP_SOURCES_RESULT,
     CALL_RINGING,
+    VIEW_FINISHED_RESIZING,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -365,3 +366,6 @@ ipcRenderer.on(DESKTOP_SOURCES_RESULT, (event, sources) => {
 
 /* eslint-enable no-magic-numbers */
 
+window.addEventListener('resize', () => {
+    ipcRenderer.send(VIEW_FINISHED_RESIZING);
+});

@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import React, {Fragment} from 'react';
 import {Container, Row} from 'react-bootstrap';
 import {DropResult} from 'react-beautiful-dnd';
+import {injectIntl, IntlShape} from 'react-intl';
 import {IpcRendererEvent} from 'electron/renderer';
 import prettyBytes from 'pretty-bytes';
 
@@ -82,6 +83,7 @@ type Props = {
     darkMode: boolean;
     appName: string;
     useNativeWindow: boolean;
+    intl: IntlShape;
 };
 
 type State = {
@@ -115,7 +117,7 @@ type TabViewStatus = {
     };
 }
 
-export default class MainPage extends React.PureComponent<Props, State> {
+class MainPage extends React.PureComponent<Props, State> {
     topBar: React.RefObject<HTMLDivElement>;
     threeDotMenu: React.RefObject<HTMLButtonElement>;
 
@@ -363,6 +365,7 @@ export default class MainPage extends React.PureComponent<Props, State> {
     }
 
     render() {
+        const {intl} = this.props;
         const currentTabs = this.props.teams.find((team) => team.name === this.state.activeServerName)?.tabs || [];
 
         const tabsRow = (
@@ -419,13 +422,20 @@ export default class MainPage extends React.PureComponent<Props, State> {
         let upgradeTooltip;
         switch (this.state.upgradeStatus) {
         case UpgradeStatus.AVAILABLE:
-            upgradeTooltip = 'Update available';
+            upgradeTooltip = intl.formatMessage({id: 'renderer.components.mainPage.updateAvailable', defaultMessage: 'Update available'});
             break;
         case UpgradeStatus.DOWNLOADED:
-            upgradeTooltip = 'Update ready to install';
+            upgradeTooltip = intl.formatMessage({id: 'renderer.components.mainPage.updateReady', defaultMessage: 'Update ready to install'});
             break;
         case UpgradeStatus.DOWNLOADING:
-            upgradeTooltip = `Downloading update. ${String(this.state.upgradeProgress?.percent).split('.')[0]}% of ${prettyBytes(this.state.upgradeProgress?.total || 0)} @ ${prettyBytes(this.state.upgradeProgress?.bytesPerSecond || 0)}/s`;
+            upgradeTooltip = intl.formatMessage({
+                id: 'renderer.components.mainPage.downloadingUpdate',
+                defaultMessage: 'Downloading update. {percentDone}% of {total} @ {speed}/s',
+            }, {
+                percentDone: String(this.state.upgradeProgress?.percent).split('.')[0],
+                total: prettyBytes(this.state.upgradeProgress?.total || 0),
+                speed: prettyBytes(this.state.upgradeProgress?.bytesPerSecond || 0),
+            });
             break;
         }
 
@@ -511,15 +521,21 @@ export default class MainPage extends React.PureComponent<Props, State> {
                     ref={this.topBar}
                     className={'topBar-bg'}
                 >
+                    {window.process.platform !== 'linux' && this.props.teams.length === 0 && (
+                        <div className='app-title'>
+                            {intl.formatMessage({id: 'renderer.components.mainPage.titleBar', defaultMessage: 'Mattermost'})}
+                        </div>
+                    )}
                     <button
                         className='three-dot-menu'
                         onClick={this.openMenu}
                         tabIndex={0}
                         ref={this.threeDotMenu}
-                        aria-label='Context menu'
+                        aria-label={intl.formatMessage({id: 'renderer.components.mainPage.contextMenu.ariaLabel', defaultMessage: 'Context menu'})}
                     >
                         <i className='icon-dots-vertical'/>
                     </button>
+                    {/* this.props.teams.length !== 0 */}
                     {process.env.NODE_ENV === 'dev' && (
                         <TeamDropdownButton
                             isDisabled={this.state.modalOpen}
@@ -594,3 +610,5 @@ export default class MainPage extends React.PureComponent<Props, State> {
         );
     }
 }
+
+export default injectIntl(MainPage);
