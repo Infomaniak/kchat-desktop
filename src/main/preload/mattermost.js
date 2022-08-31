@@ -34,7 +34,7 @@ import {
     WINDOW_WILL_UNLOADED,
     DISPATCH_GET_DESKTOP_SOURCES,
     DESKTOP_SOURCES_RESULT,
-    CALL_RINGING,
+    CALL_RINGING, TOKEN_REFRESHED, TOKEN_CLEARED,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -175,6 +175,14 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
     }
     case 'call-dialing': {
         ipcRenderer.send(CALL_RINGING, message, viewName);
+        break;
+    }
+    case 'token-refreshed': {
+        ipcRenderer.send(TOKEN_REFRESHED, message, viewName);
+        break;
+    }
+    case 'token-cleared': {
+        ipcRenderer.send(TOKEN_CLEARED, message, viewName);
         break;
     }
     case 'call-focus': {

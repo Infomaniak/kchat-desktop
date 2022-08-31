@@ -130,3 +130,6 @@ export const RELOAD_CURRENT_VIEW = 'reload-current-view';
 export const PING_DOMAIN = 'ping-domain';
 export const PING_DOMAIN_RESPONSE = 'ping-domain-response';
 export const CALL_RINGING = 'call-ringing';
+
+export const TOKEN_REFRESHED = 'token-refreshed';
+export const TOKEN_CLEARED = 'token-cleared';
