@@ -99,7 +99,6 @@ import {
 } from './utils';
 
 export const mainProtocol = protocols?.[0]?.schemes?.[0];
-
 /**
  * Main entry point for the application, ensures that everything initializes in the proper order
  */
@@ -269,7 +268,6 @@ function initializeAfterAppReady() {
     updateServerInfos(Config.teams);
     app.setAppUserModelId('Mattermost.Desktop'); // Use explicit AppUserModelID
     const defaultSession = session.defaultSession;
-
     defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
         (d, c) => {
             const currentServerURL = WindowManager.getCurrentServerUrl();
@@ -286,6 +284,24 @@ function initializeAfterAppReady() {
         },
     );
 
+    /*
+        Catch api/v4 call to inject token
+     */
+    defaultSession.webRequest.onBeforeSendHeaders({urls: ['https://*/api/v4/*', 'https://*/broadcasting/auth']},
+    (d, c) => {
+            const authHeader = d.requestHeaders['Authorization'] ? d.requestHeaders['Authorization'] : null;
+            const ikToken = WindowManager.mainStore?.get('IKToken')
+            // No Auhtorization header or bearer is empty
+            if(!authHeader || !authHeader?.split(' ')[1]) {
+                d.requestHeaders['Authorization'] = `Bearer ${ikToken}`;
+            }
+
+        c({
+            cancel: false,
+            requestHeaders: d.requestHeaders,
+        });
+    },
+        );
     if (process.platform !== 'darwin') {
         defaultSession.on('spellcheck-dictionary-download-failure', (event, lang) => {
             if (Config.spellCheckerURL) {
