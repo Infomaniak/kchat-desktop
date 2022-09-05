@@ -292,7 +292,7 @@ function initializeAfterAppReady() {
             const authHeader = d.requestHeaders['Authorization'] ? d.requestHeaders['Authorization'] : null;
             const ikToken = WindowManager.mainStore?.get('IKToken')
             // No Auhtorization header or bearer is empty
-            if(!authHeader || !authHeader?.split(' ')[1]) {
+            if((!authHeader || !authHeader?.split(' ')[1]) && ikToken ) {
                 d.requestHeaders['Authorization'] = `Bearer ${ikToken}`;
             }
 
