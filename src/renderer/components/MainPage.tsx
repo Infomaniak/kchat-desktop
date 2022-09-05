@@ -131,6 +131,10 @@ export default class MainPage extends React.PureComponent<Props, State> {
             const openTabs = firstServer?.tabs.filter((tab) => tab.isOpen) || [];
             firstTab = openTabs?.find((e) => e.order === 0) || openTabs[0];
         }
+        console.log('[DEBUG] Main page is loaded');
+        console.log('[DEBUG] Team => ', this.props.teams);
+        console.log('[DEBUG] First server => ', firstServer);
+        console.log('[DEBUG] First tab => ', firstTab);
 
         this.state = {
             activeServerName: firstServer?.name,
