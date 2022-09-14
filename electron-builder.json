@@ -146,9 +146,10 @@
   },
   "squirrelWindows": {
     "iconUrl": "file://src/assets/icon.ico",
-    "artifactName": "${version}/${name}-setup-${version}-${arch}.${ext}"
+    "artifactName": "${name}-setup-${version}-${arch}.${ext}"
   },
   "win": {
+    "certificateSubjectName": "INFOMANIAK NETWORK SA",
     "target": [
       "nsis",
       "zip"
@@ -161,9 +162,9 @@
         ]
       }
     ],
-    "publisherName": "CN=\"Mattermost, Inc.\", O=\"Mattermost, Inc.\", L=Palo Alto, S=California, C=US"
+    "publisherName": "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH"
   },
   "nsis": {
-    "artifactName": "${version}/${name}-setup-${version}-win.${ext}"
+    "artifactName": "${name}-setup-${version}-win.${ext}"
   }
 }
