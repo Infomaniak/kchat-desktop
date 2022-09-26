@@ -681,7 +681,9 @@ export class WindowManager {
 
             // setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
             ipcMain.on(CALL_CLOSED, () => {
-                this.callWindow.close();
+                if (this.callWindow?.close) {
+                    this.callWindow.close();
+                }
                 this.callWindow = undefined;
             });
 
@@ -707,7 +709,9 @@ export class WindowManager {
             ipcMain.on(WINDOW_WILL_UNLOADED, () => {
                 if (this.callWindow) {
                     this.callWindow.focus();
-                    this.callWindow.close();
+                    if (this.callWindow.close) {
+                        this.callWindow.close();
+                    }
                     delete this.callWindow;
                 }
             });
