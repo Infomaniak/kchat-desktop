@@ -1,7 +1,7 @@
 {
   "name": "kchat-desktop",
   "productName": "kChat",
-  "version": "1.0.0",
+  "version": "1.2.0-rc.1",
   "description": "kChat",
   "main": "dist/index.js",
   "author": "Infomaniak <kchat@infomaniak.com>",
@@ -185,8 +185,8 @@
     "webpack-merge": "5.8.0"
   },
   "dependencies": {
-    "@jitsi/electron-sdk": "^3.0.8",
     "@infomaniak/compass-icons": "0.5.0",
+    "@jitsi/electron-sdk": "^3.0.8",
     "auto-launch": "5.0.5",
     "bootstrap": "4.6.1",
     "bootstrap-dark": "1.0.3",
@@ -195,6 +195,7 @@
     "electron-devtools-installer": "3.2.0",
     "electron-is-dev": "2.0.0",
     "electron-log": "4.4.6",
+    "electron-store": "^8.1.0",
     "electron-updater": "5.0.0",
     "fs-extra": "10.0.1",
     "joi": "17.6.0",

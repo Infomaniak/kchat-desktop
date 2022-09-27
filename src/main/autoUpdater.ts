@@ -179,7 +179,7 @@ export class UpdateManager {
         if (this.lastCheck) {
             clearTimeout(this.lastCheck);
         }
-        if (!this.lastNotification || manually) {
+        if ((!this.lastNotification || manually) && !this.versionDownloaded) {
             if (manually) {
                 autoUpdater.once('update-not-available', this.displayNoUpgrade);
             }

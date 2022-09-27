@@ -137,3 +137,5 @@ export const RETRIEVED_LANGUAGE_INFORMATION = 'retrieved-language-information';
 export const GET_AVAILABLE_LANGUAGES = 'get-available-languages';
 
 export const VIEW_FINISHED_RESIZING = 'view-finished-resizing';
+export const TOKEN_REFRESHED = 'token-refreshed';
+export const TOKEN_CLEARED = 'token-cleared';

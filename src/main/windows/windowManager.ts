@@ -30,6 +30,8 @@ import {
     DESKTOP_SOURCES_RESULT,
     RELOAD_CURRENT_VIEW,
     CALL_RINGING,
+    TOKEN_REFRESHED,
+    TOKEN_CLEARED,
     VIEW_FINISHED_RESIZING,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
@@ -50,6 +52,7 @@ import {createSettingsWindow} from './settingsWindow';
 import createMainWindow from './mainWindow';
 import {createCallWindow} from './callWindow';
 import {createCallDialingWindow} from './callDialingWindow';
+import Store from 'electron-store'
 
 // eslint-disable-next-line import/no-commonjs
 const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@jitsi/electron-sdk');
@@ -66,11 +69,12 @@ export class WindowManager {
     viewManager?: ViewManager;
     teamDropdown?: TeamDropdownView;
     currentServerName?: string;
+    mainStore?: Store;
 
     constructor() {
         this.mainWindowReady = false;
         this.assetsDir = path.resolve(app.getAppPath(), 'assets');
-
+        this.mainStore = new Store();
         ipcMain.on(HISTORY, this.handleHistory);
         ipcMain.handle(GET_LOADING_SCREEN_DATA, this.handleLoadingScreenDataRequest);
         ipcMain.handle(GET_DARK_MODE, this.handleGetDarkMode);
@@ -87,6 +91,8 @@ export class WindowManager {
         ipcMain.on(DISPATCH_GET_DESKTOP_SOURCES, this.handleGetDesktopSources);
         ipcMain.on(RELOAD_CURRENT_VIEW, this.handleReloadCurrentView);
         ipcMain.on(VIEW_FINISHED_RESIZING, this.handleViewFinishedResizing);
+        ipcMain.on(TOKEN_REFRESHED, this.handleTokenRefreshed);
+        ipcMain.on(TOKEN_CLEARED, this.handleTokenCleared);
     }
 
     handleUpdateConfig = () => {
@@ -740,7 +746,9 @@ export class WindowManager {
 
             // setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
             ipcMain.on(CALL_CLOSED, () => {
-                this.callWindow.close();
+                if (this.callWindow?.close) {
+                    this.callWindow.close();
+                }
                 this.callWindow = undefined;
             });
 
@@ -766,7 +774,9 @@ export class WindowManager {
             ipcMain.on(WINDOW_WILL_UNLOADED, () => {
                 if (this.callWindow) {
                     this.callWindow.focus();
-                    this.callWindow.close();
+                    if (this.callWindow.close) {
+                        this.callWindow.close();
+                    }
                     delete this.callWindow;
                 }
             });
@@ -833,6 +843,13 @@ export class WindowManager {
         }
         view?.reload();
         this.viewManager?.showByName(view?.name);
+    }
+
+    handleTokenRefreshed = (event: IpcMainEvent, message: any, viewName: string) => {
+        this.mainStore?.set('IKToken', message.token);
+    }
+    handleTokenCleared = (event: IpcMainEvent, message: any, viewName: string) => {
+        this.mainStore?.delete('IKToken');
     }
 }
 

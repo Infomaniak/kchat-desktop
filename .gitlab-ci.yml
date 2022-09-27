@@ -1,0 +1,31 @@
+stages:
+  - release
+
+workflow:
+  rules:
+    - if: "$CI_COMMIT_TAG =~ /\\-rc.*/"
+      variables:
+        DEPLOY_VARIABLE: beta
+        SLACK_NOTIFY_CHANNEL: C03BA6564NP
+    - if: "$CI_COMMIT_TAG"
+      variables:
+        DEPLOY_VARIABLE: stable
+        SLACK_NOTIFY_CHANNEL: C02NHLU88MN
+    - if: $CI_COMMIT_BRANCH == "master"
+      variables:
+        DEPLOY_VARIABLE: prodsec
+    - when: never
+
+changelog:
+  stage: release
+  image: registry.infomaniak.com:443/leopold.jacquot/debian-toolbox:0.0.1
+  environment:
+    name: "$DEPLOY_VARIABLE"
+  rules:
+    - if: $DEPLOY_VARIABLE == "stable"
+      when: on_success
+    - if: $DEPLOY_VARIABLE == "beta"
+      when: on_success
+    - when: never
+  script:
+    - "./release.sh ${GITLAB_API_TOKEN} ${CI_COMMIT_TAG} ${CI_COMMIT_TAG:0:3} ${SLACK_API_TOKEN} ${SLACK_NOTIFY_CHANNEL}"
