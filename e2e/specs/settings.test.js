@@ -20,6 +20,7 @@ describe('Settings', function desc() {
         env.createTestUserDataDir();
         env.cleanTestConfig();
         fs.writeFileSync(env.configFilePath, JSON.stringify(config));
+        fs.writeFileSync(env.appUpdatePath, '');
         await asyncSleep(1000);
         this.app = await env.getApp();
     });
@@ -63,8 +64,8 @@ describe('Settings', function desc() {
                 existing.should.equal(expected);
             });
 
-            describe('MM-T4393_2 Save tray icon setting on mac', () => {
-                env.shouldTest(it, env.isOneOf(['darwin', 'linux']))('should be saved when it\'s selected', async () => {
+            describe('Save tray icon setting on mac', () => {
+                env.shouldTest(it, env.isOneOf(['darwin', 'linux']))('MM-T4393_2 should be saved when it\'s selected', async () => {
                     this.app.evaluate(({ipcMain}, showWindow) => {
                         ipcMain.emit(showWindow);
                     }, SHOW_SETTINGS_WINDOW);
@@ -88,8 +89,8 @@ describe('Settings', function desc() {
                 });
             });
 
-            describe('MM-T4393_3 Save tray icon theme on linux', () => {
-                env.shouldTest(it, process.platform === 'linux')('should be saved when it\'s selected', async () => {
+            describe('Save tray icon theme on linux', () => {
+                env.shouldTest(it, process.platform === 'linux')('MM-T4393_3 should be saved when it\'s selected', async () => {
                     this.app.evaluate(({ipcMain}, showWindow) => {
                         ipcMain.emit(showWindow);
                     }, SHOW_SETTINGS_WINDOW);

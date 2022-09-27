@@ -86,7 +86,10 @@ export function handleOpenTab(event: IpcMainEvent, serverName: string, tabName: 
 }
 
 export function handleMainWindowIsShown() {
-    const showWelcomeScreen = !Config.teams.length;
+    // eslint-disable-next-line no-undef
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const showWelcomeScreen = !(Boolean(__SKIP_ONBOARDING_SCREENS__) || Config.teams.length);
     const mainWindow = WindowManager.getMainWindow();
 
     if (mainWindow) {
@@ -270,10 +273,16 @@ export function handleWelcomeScreenModal() {
     if (!mainWindow) {
         return;
     }
-    const modalPromise = ModalManager.addModal('welcomeScreen', html, modalPreload, {}, mainWindow, true);
+    const modalPromise = ModalManager.addModal<TeamWithIndex[], Team>('welcomeScreen', html, modalPreload, Config.teams.map((team, index) => ({...team, index})), mainWindow, Config.teams.length === 0);
     if (modalPromise) {
-        modalPromise.then(() => {
-            handleNewServerModal();
+        modalPromise.then((data) => {
+            const teams = Config.teams;
+            const order = teams.length;
+            const newTeam = getDefaultTeamWithTabsFromTeam({...data, order});
+            teams.push(newTeam);
+            Config.set('teams', teams);
+            updateServerInfos([newTeam]);
+            WindowManager.switchServer(newTeam.name, true);
         }).catch((e) => {
             // e is undefined for user cancellation
             if (e) {

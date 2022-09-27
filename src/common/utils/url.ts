@@ -19,6 +19,10 @@ function isValidURI(testURL: string) {
     return Boolean(isUri(testURL));
 }
 
+function startsWithProtocol(testURL: string) {
+    return Boolean((/^https?:\/\/.*/).test(testURL.trim()));
+}
+
 function parseURL(inputURL: URL | string) {
     if (inputURL instanceof URL) {
         return inputURL;
@@ -250,4 +254,5 @@ export default {
     isChannelExportUrl,
     isUrlType,
     cleanPathName,
+    startsWithProtocol,
 };
