@@ -21,6 +21,7 @@ format1=${changelog//kchat\/desktop@/${commit_url}}
 format2=${format1//kchat\/desktop!/${mr_url}}
 
 links=$(cat << EOF
+Installers:
 mac: https://download.storage5.infomaniak.com/kchat/kchat-desktop-${GITLAB_PROJECT_TAG}-mac-x64.dmg
 linux: https://download.storage5.infomaniak.com/kchat/kchat-desktop-${GITLAB_PROJECT_TAG}-linux-x86_64.AppImage
 windows: https://download.storage5.infomaniak.com/kchat/kchat-desktop-setup-${GITLAB_PROJECT_TAG}-win.exe
