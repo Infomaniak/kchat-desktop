@@ -34,7 +34,6 @@
       ]
     }
   ],
-  "beforePack": "scripts/beforepack.js",
   "afterPack": "scripts/afterpack.js",
   "afterSign": "scripts/notarize.js",
   "afterAllArtifactBuild": "scripts/afterbuild.js",
@@ -102,7 +101,6 @@
     ],
     "icon": "src/assets/osx/osx_icon.icns",
     "hardenedRuntime": true,
-    "asarUnpack": "**/*.node",
     "entitlements": "./entitlements.mac.plist",
     "entitlementsInherit": "./entitlements.mac.plist",
     "extendInfo": {
@@ -119,8 +117,7 @@
     "provisioningProfile": "./mas.provisionprofile",
     "extendInfo": {
       "ITSAppUsesNonExemptEncryption": false
-    },
-    "singleArchFiles": "*"
+    }
   },
   "masDev": {
     "provisioningProfile": "./mas-dev.provisionprofile"

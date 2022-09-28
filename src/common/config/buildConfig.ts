@@ -29,11 +29,11 @@ const buildConfig: BuildConfig = {
         },
     ],
     helpLink: '',
-    enableServerManagement: true,
+    enableServerManagement: false,
     enableAutoUpdater: true,
     managedResources: ['trusted'],
     allowedProtocols: [
-        'mattermost',
+        'kchat',
         'ftp',
         'mailto',
         'tel',
