@@ -17,4 +17,4 @@ Categories=Network;InstantMessaging;
 EOS
 chmod +x kChat.desktop
 
-execSync('xdg-settings set default-url-scheme-handler ktalk kchat.desktop')
+execSync('xdg-settings set default-url-scheme-handler  kchat.desktop')
