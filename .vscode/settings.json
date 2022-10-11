@@ -1,0 +1,41 @@
+{
+    "i18n-ally.localesPaths": [
+        "i18n"
+    ],
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+    },
+    "cSpell.words": [
+        "automations",
+        "Autoupgrade",
+        "browserview",
+        "btns",
+        "chromedriver",
+        "chromedriverlog",
+        "deauthorize",
+        "deeplinking",
+        "diskimage",
+        "dont",
+        "favicons",
+        "filechooser",
+        "flac",
+        "FOCALBOARD",
+        "ICONNAME",
+        "loadscreen",
+        "mmjstool",
+        "NOSERVERS",
+        "Ochiai",
+        "officedocument",
+        "openxmlformats",
+        "presentationml",
+        "spreadsheetml",
+        "textbox",
+        "UNCLOSEABLE",
+        "Unmaximize",
+        "Unreads",
+        "webcontents",
+        "wordprocessingml",
+        "Yuya"
+    ],
+    "i18n-ally.keystyle": "nested"
+}

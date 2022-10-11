@@ -7,13 +7,15 @@ const fs = require('fs');
 
 const path = require('path');
 
+const ps = require('ps-node');
+
 const {_electron: electron} = require('playwright');
 const chai = require('chai');
 const {ipcRenderer} = require('electron');
 
 const {SHOW_SETTINGS_WINDOW} = require('../../src/common/communication');
 
-const {asyncSleep} = require('./utils');
+const {asyncSleep, mkDirAsync, rmDirAsync, unlinkAsync} = require('./utils');
 chai.should();
 
 const sourceRootDir = path.join(__dirname, '../..');
@@ -26,9 +28,17 @@ const electronBinaryPath = (() => {
 })();
 const userDataDir = path.join(sourceRootDir, 'e2e/testUserData/');
 const configFilePath = path.join(userDataDir, 'config.json');
+const downloadsFilePath = path.join(userDataDir, 'downloads.json');
+const downloadsLocation = path.join(userDataDir, 'Downloads');
 const boundsInfoPath = path.join(userDataDir, 'bounds-info.json');
+const appUpdatePath = path.join(userDataDir, 'app-update.yml');
 const exampleURL = 'http://example.com/';
-const mattermostURL = 'http://localhost:8065/';
+const mattermostURL = process.env.MM_TEST_SERVER_URL || 'http://localhost:8065/';
+
+if (process.platform === 'win32') {
+    const robot = require('robotjs');
+    robot.mouseClick();
+}
 
 const exampleTeam = {
     name: 'example',
@@ -43,12 +53,10 @@ const exampleTeam = {
         {
             name: 'TAB_FOCALBOARD',
             order: 1,
-            isOpen: true,
         },
         {
             name: 'TAB_PLAYBOOKS',
             order: 2,
-            isOpen: true,
         },
     ],
     lastActiveTab: 0,
@@ -92,9 +100,14 @@ const demoConfig = {
     useSpellChecker: true,
     enableHardwareAcceleration: true,
     autostart: true,
+    hideOnStart: false,
+    spellCheckerLocales: [],
     darkMode: false,
     lastActiveTeam: 0,
-    spellCheckerLocales: [],
+    startInFullscreen: false,
+    autoCheckForUpdates: false,
+    appLanguage: 'en',
+    logLevel: 'silly',
 };
 
 const demoMattermostConfig = {
@@ -110,16 +123,37 @@ const cmdOrCtrl = process.platform === 'darwin' ? 'command' : 'control';
 module.exports = {
     sourceRootDir,
     configFilePath,
+    downloadsFilePath,
+    downloadsLocation,
     userDataDir,
     boundsInfoPath,
+    appUpdatePath,
     exampleURL,
     mattermostURL,
     demoConfig,
     demoMattermostConfig,
     cmdOrCtrl,
 
+    async clearElectronInstances() {
+        return new Promise((resolve, reject) => {
+            ps.lookup({
+                command: process.platform === 'darwin' ? 'Electron' : 'electron',
+            }, (err, resultList) => {
+                if (err) {
+                    reject(err);
+                }
+                resultList.forEach((process) => {
+                    if (process && process.command === electronBinaryPath && !process.arguments.some((arg) => arg.includes('electron-mocha'))) {
+                        ps.kill(process.pid);
+                    }
+                });
+                resolve();
+            });
+        });
+    },
+
     cleanTestConfig() {
-        [configFilePath, boundsInfoPath].forEach((file) => {
+        [configFilePath, downloadsFilePath, boundsInfoPath].forEach((file) => {
             try {
                 fs.unlinkSync(file);
             } catch (err) {
@@ -129,6 +163,13 @@ module.exports = {
                 }
             }
         });
+    },
+    async cleanTestConfigAsync() {
+        await Promise.all(
+            [configFilePath, downloadsFilePath, boundsInfoPath].map((file) => {
+                return unlinkAsync(file);
+            }),
+        );
     },
 
     cleanDataDir() {
@@ -141,30 +182,47 @@ module.exports = {
             }
         }
     },
+    cleanDataDirAsync() {
+        return rmDirAsync(userDataDir);
+    },
 
     createTestUserDataDir() {
         if (!fs.existsSync(userDataDir)) {
             fs.mkdirSync(userDataDir);
         }
     },
+    async createTestUserDataDirAsync() {
+        await mkDirAsync(userDataDir);
+    },
 
     async getApp(args = []) {
         const options = {
+            downloadsPath: downloadsLocation,
+            env: {
+                ...process.env,
+                RESOURCES_PATH: userDataDir,
+            },
             executablePath: electronBinaryPath,
-            args: [`${path.join(sourceRootDir, 'dist')}`, `--data-dir=${userDataDir}`, '--disable-dev-mode', ...args],
+            args: [`${path.join(sourceRootDir, 'dist')}`, `--user-data-dir=${userDataDir}`, '--disable-dev-mode', ...args],
         };
 
         // if (process.env.MM_DEBUG_SETTINGS) {
         //     options.chromeDriverLogPath = './chromedriverlog.txt';
         // }
         // if (process.platform === 'darwin' || process.platform === 'linux') {
-        //     // on a mac, debbuging port might conflict with other apps
+        //     // on a mac, debugging port might conflict with other apps
         //     // this changes the default debugging port so chromedriver can run without issues.
         //     options.chromeDriverArgs.push('remote-debugging-port=9222');
         //}
         return electron.launch(options).then(async (app) => {
-            // Make sure the app has time to fully load
+            // Make sure the app has time to fully load and that the window is focused
             await asyncSleep(1000);
+            const mainWindow = app.windows().find((window) => window.url().includes('index'));
+            const browserWindow = await app.browserWindow(mainWindow);
+            await browserWindow.evaluate((win) => {
+                win.show();
+                return true;
+            });
             return app;
         });
     },
@@ -192,9 +250,37 @@ module.exports = {
         await window.waitForSelector('#input_loginId');
         await window.waitForSelector('#input_password-input');
         await window.waitForSelector('#saveSetting');
+
+        // Do this twice because sometimes the app likes to load the login screen, then go to Loading... again
+        await asyncSleep(1000);
+        await window.waitForSelector('#input_loginId');
+        await window.waitForSelector('#input_password-input');
+        await window.waitForSelector('#saveSetting');
+
         await window.type('#input_loginId', 'user-1');
         await window.type('#input_password-input', 'SampleUs@r-1');
         await window.click('#saveSetting');
+    },
+
+    async openDownloadsDropdown(app) {
+        const mainWindow = app.windows().find((window) => window.url().includes('index'));
+        await mainWindow.waitForLoadState();
+        await mainWindow.bringToFront();
+
+        const dlButtonLocator = await mainWindow.waitForSelector('.DownloadsDropdownButton');
+        await dlButtonLocator.click();
+        await asyncSleep(500);
+
+        const downloadsWindow = app.windows().find((window) => window.url().includes('downloadsDropdown'));
+        await downloadsWindow.waitForLoadState();
+        await downloadsWindow.bringToFront();
+        return downloadsWindow;
+    },
+
+    async downloadsDropdownIsOpen(app) {
+        const downloadsWindow = app.windows().find((window) => window.url().includes('downloadsDropdown'));
+        const result = await downloadsWindow.isVisible('.DownloadsDropdown');
+        return result;
     },
 
     addClientCommands(client) {

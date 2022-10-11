@@ -6,8 +6,6 @@
 /* eslint-disable import/no-commonjs */
 'use strict';
 
-const path = require('path');
-
 const {merge} = require('webpack-merge');
 
 const CopyPlugin = require('copy-webpack-plugin');
@@ -21,10 +19,17 @@ module.exports = merge(base, {
         call: './src/main/preload/call.js',
         callDial: './src/main/preload/callDial.js',
         dropdown: './src/main/preload/dropdown.js',
+        downloadsDropdown: './src/main/preload/downloadsDropdown.js',
+        downloadsDropdownMenu: './src/main/preload/downloadsDropdownMenu.js',
         preload: './src/main/preload/mattermost.js',
         modalPreload: './src/main/preload/modalPreload.js',
         loadingScreenPreload: './src/main/preload/loadingScreenPreload.js',
         urlView: './src/main/preload/urlView.js',
+    },
+    externals: {
+        'macos-notification-state': 'require("macos-notification-state")',
+        'windows-focus-assist': 'require("windows-focus-assist")',
+        '@jitsi/electron-sdk': 'require("@jitsi/electron-sdk")',
     },
     module: {
         noParse: /external_api\\.js/,
@@ -42,11 +47,7 @@ module.exports = merge(base, {
         },
         {
             test: /\.node$/,
-            loader: 'awesome-node-loader',
-            options: {
-                name: '[name].[ext]',
-                rewritePath: path.resolve(__dirname, 'dist'),
-            },
+            loader: 'node-loader',
         }],
     },
     plugins: [
@@ -60,9 +61,6 @@ module.exports = merge(base, {
     node: {
         __filename: true,
         __dirname: true,
-    },
-    externals: {
-        '@jitsi/electron-sdk': "require('@jitsi/electron-sdk')",
     },
     target: 'electron-main',
 });

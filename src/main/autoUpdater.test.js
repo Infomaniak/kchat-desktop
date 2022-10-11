@@ -31,6 +31,9 @@ jest.mock('electron-updater', () => ({
         downloadUpdate: jest.fn(),
         checkForUpdates: jest.fn(),
     },
+    CancellationToken: jest.fn().mockImplementation(() => {
+        return {};
+    }),
 }));
 
 jest.mock('common/config', () => ({
@@ -43,6 +46,10 @@ jest.mock('main/notifications', () => ({
 }));
 jest.mock('main/windows/windowManager', () => ({
     sendToRenderer: jest.fn(),
+}));
+
+jest.mock('main/i18nManager', () => ({
+    localizeMessage: jest.fn(),
 }));
 
 describe('main/autoUpdater', () => {

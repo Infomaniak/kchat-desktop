@@ -2,14 +2,17 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import classNames from 'classnames';
 import React, {Fragment} from 'react';
 import {Container, Row} from 'react-bootstrap';
 import {DropResult} from 'react-beautiful-dnd';
+import {injectIntl, IntlShape} from 'react-intl';
 import {IpcRendererEvent} from 'electron/renderer';
-import prettyBytes from 'pretty-bytes';
 
 import {TeamWithTabs} from 'types/config';
+import {DownloadedItems} from 'types/downloads';
 
 import {getTabViewName} from 'common/tabs/TabView';
 
@@ -37,13 +40,15 @@ import {
     CLOSE_TEAMS_DROPDOWN,
     OPEN_TEAMS_DROPDOWN,
     SWITCH_TAB,
-    UPDATE_AVAILABLE,
-    UPDATE_DOWNLOADED,
-    UPDATE_PROGRESS,
-    START_UPGRADE,
-    START_DOWNLOAD,
     CLOSE_TAB,
     RELOAD_CURRENT_VIEW,
+    CLOSE_DOWNLOADS_DROPDOWN,
+    OPEN_DOWNLOADS_DROPDOWN,
+    SHOW_DOWNLOADS_DROPDOWN_BUTTON_BADGE,
+    HIDE_DOWNLOADS_DROPDOWN_BUTTON_BADGE,
+    UPDATE_DOWNLOADS_DROPDOWN,
+    REQUEST_HAS_DOWNLOADS,
+    CLOSE_DOWNLOADS_DROPDOWN_MENU,
 } from 'common/communication';
 
 import restoreButton from '../../assets/titlebar/chrome-restore.svg';
@@ -57,6 +62,8 @@ import TabBar from './TabBar';
 import ExtraBar from './ExtraBar';
 import ErrorView from './ErrorView';
 import TeamDropdownButton from './TeamDropdownButton';
+import DownloadsDropdownButton from './DownloadsDropdown/DownloadsDropdownButton';
+
 import '../css/components/UpgradeButton.scss';
 
 enum Status {
@@ -67,13 +74,6 @@ enum Status {
     NOSERVERS = -2,
 }
 
-enum UpgradeStatus {
-    NONE = 0,
-    AVAILABLE = 1,
-    DOWNLOADING = 2,
-    DOWNLOADED = 3,
-}
-
 type Props = {
     teams: TeamWithTabs[];
     lastActiveTeam?: number;
@@ -82,6 +82,7 @@ type Props = {
     darkMode: boolean;
     appName: string;
     useNativeWindow: boolean;
+    intl: IntlShape;
 };
 
 type State = {
@@ -97,14 +98,9 @@ type State = {
     fullScreen?: boolean;
     showExtraBar?: boolean;
     isMenuOpen: boolean;
-    upgradeStatus: UpgradeStatus;
-    upgradeProgress?: {
-        total: number;
-        delta: number;
-        transferred: number;
-        percent: number;
-        bytesPerSecond: number;
-    };
+    isDownloadsDropdownOpen: boolean;
+    showDownloadsBadge: boolean;
+    hasDownloads: boolean;
 };
 
 type TabViewStatus = {
@@ -115,7 +111,7 @@ type TabViewStatus = {
     };
 }
 
-export default class MainPage extends React.PureComponent<Props, State> {
+class MainPage extends React.PureComponent<Props, State> {
     topBar: React.RefObject<HTMLDivElement>;
     threeDotMenu: React.RefObject<HTMLButtonElement>;
 
@@ -146,7 +142,9 @@ export default class MainPage extends React.PureComponent<Props, State> {
             tabViewStatus: new Map(this.props.teams.map((team) => team.tabs.map((tab) => getTabViewName(team.name, tab.name))).flat().map((tabViewName) => [tabViewName, {status: Status.LOADING}])),
             darkMode: this.props.darkMode,
             isMenuOpen: false,
-            upgradeStatus: UpgradeStatus.NONE,
+            isDownloadsDropdownOpen: false,
+            showDownloadsBadge: false,
+            hasDownloads: false,
         };
     }
 
@@ -163,7 +161,21 @@ export default class MainPage extends React.PureComponent<Props, State> {
         this.setState({tabViewStatus: status});
     }
 
+    async requestDownloadsLength() {
+        try {
+            const hasDownloads = await window.ipcRenderer.invoke(REQUEST_HAS_DOWNLOADS);
+            this.setState({
+                hasDownloads,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     componentDidMount() {
+        // request downloads
+        this.requestDownloadsLength();
+
         // set page on retry
         window.ipcRenderer.on(LOAD_RETRY, (_, viewName, retry, err, loadUrl) => {
             console.log(`${viewName}: failed to load ${err}, but retrying`);
@@ -249,24 +261,25 @@ export default class MainPage extends React.PureComponent<Props, State> {
             this.setState({isMenuOpen: true});
         });
 
-        window.ipcRenderer.on(UPDATE_AVAILABLE, () => {
-            this.setState({upgradeStatus: UpgradeStatus.AVAILABLE});
+        window.ipcRenderer.on(CLOSE_DOWNLOADS_DROPDOWN, () => {
+            this.setState({isDownloadsDropdownOpen: false});
         });
 
-        window.ipcRenderer.on(UPDATE_DOWNLOADED, () => {
-            this.setState({upgradeStatus: UpgradeStatus.DOWNLOADED});
+        window.ipcRenderer.on(OPEN_DOWNLOADS_DROPDOWN, () => {
+            this.setState({isDownloadsDropdownOpen: true});
         });
 
-        window.ipcRenderer.on(UPDATE_PROGRESS, (event, total, delta, transferred, percent, bytesPerSecond) => {
+        window.ipcRenderer.on(SHOW_DOWNLOADS_DROPDOWN_BUTTON_BADGE, () => {
+            this.setState({showDownloadsBadge: true});
+        });
+
+        window.ipcRenderer.on(HIDE_DOWNLOADS_DROPDOWN_BUTTON_BADGE, () => {
+            this.setState({showDownloadsBadge: false});
+        });
+
+        window.ipcRenderer.on(UPDATE_DOWNLOADS_DROPDOWN, (event, downloads: DownloadedItems) => {
             this.setState({
-                upgradeStatus: UpgradeStatus.DOWNLOADING,
-                upgradeProgress: {
-                    total,
-                    delta,
-                    transferred,
-                    percent,
-                    bytesPerSecond,
-                },
+                hasDownloads: (Object.values(downloads)?.length || 0) > 0,
             });
         });
 
@@ -278,15 +291,17 @@ export default class MainPage extends React.PureComponent<Props, State> {
             });
         }
 
-        window.addEventListener('click', this.handleCloseTeamsDropdown);
+        window.addEventListener('click', this.handleCloseDropdowns);
     }
 
     componentWillUnmount() {
-        window.removeEventListener('click', this.handleCloseTeamsDropdown);
+        window.removeEventListener('click', this.handleCloseDropdowns);
     }
 
-    handleCloseTeamsDropdown = () => {
+    handleCloseDropdowns = () => {
         window.ipcRenderer.send(CLOSE_TEAMS_DROPDOWN);
+        window.ipcRenderer.send(CLOSE_DOWNLOADS_DROPDOWN);
+        window.ipcRenderer.send(CLOSE_DOWNLOADS_DROPDOWN_MENU);
     }
 
     handleMaximizeState = (_: IpcRendererEvent, maximized: boolean) => {
@@ -359,14 +374,28 @@ export default class MainPage extends React.PureComponent<Props, State> {
 
     focusOnWebView = () => {
         window.ipcRenderer.send(FOCUS_BROWSERVIEW);
-        this.handleCloseTeamsDropdown();
+        this.handleCloseDropdowns();
     }
 
     reloadCurrentView = () => {
         window.ipcRenderer.send(RELOAD_CURRENT_VIEW);
     }
 
+    showHideDownloadsBadge(value = false) {
+        this.setState({showDownloadsBadge: value});
+    }
+
+    closeDownloadsDropdown() {
+        window.ipcRenderer.send(CLOSE_DOWNLOADS_DROPDOWN);
+        window.ipcRenderer.send(CLOSE_DOWNLOADS_DROPDOWN_MENU);
+    }
+
+    openDownloadsDropdown() {
+        window.ipcRenderer.send(OPEN_DOWNLOADS_DROPDOWN);
+    }
+
     render() {
+        const {intl} = this.props;
         const currentTabs = this.props.teams.find((team) => team.name === this.state.activeServerName)?.tabs || [];
 
         const tabsRow = (
@@ -393,6 +422,16 @@ export default class MainPage extends React.PureComponent<Props, State> {
             fullScreen: this.state.fullScreen,
         });
 
+        const downloadsDropdownButton = this.state.hasDownloads ? (
+            <DownloadsDropdownButton
+                darkMode={this.state.darkMode}
+                isDownloadsDropdownOpen={this.state.isDownloadsDropdownOpen}
+                showDownloadsBadge={this.state.showDownloadsBadge}
+                closeDownloadsDropdown={this.closeDownloadsDropdown}
+                openDownloadsDropdown={this.openDownloadsDropdown}
+            />
+        ) : null;
+
         let maxButton;
         if (this.state.maximized || this.state.fullScreen) {
             maxButton = (
@@ -417,51 +456,6 @@ export default class MainPage extends React.PureComponent<Props, State> {
                         draggable={false}
                     />
                 </div>
-            );
-        }
-
-        let upgradeTooltip;
-        switch (this.state.upgradeStatus) {
-        case UpgradeStatus.AVAILABLE:
-            upgradeTooltip = 'Update available';
-            break;
-        case UpgradeStatus.DOWNLOADED:
-            upgradeTooltip = 'Update ready to install';
-            break;
-        case UpgradeStatus.DOWNLOADING:
-            upgradeTooltip = `Downloading update. ${String(this.state.upgradeProgress?.percent).split('.')[0]}% of ${prettyBytes(this.state.upgradeProgress?.total || 0)} @ ${prettyBytes(this.state.upgradeProgress?.bytesPerSecond || 0)}/s`;
-            break;
-        }
-
-        let upgradeIcon;
-        if (this.state.upgradeStatus !== UpgradeStatus.NONE) {
-            upgradeIcon = (
-                <button
-                    className={classNames('upgrade-btns', {darkMode: this.state.darkMode})}
-                    onClick={() => {
-                        if (this.state.upgradeStatus === UpgradeStatus.DOWNLOADING) {
-                            return;
-                        }
-
-                        window.ipcRenderer.send(this.state.upgradeStatus === UpgradeStatus.DOWNLOADED ? START_UPGRADE : START_DOWNLOAD);
-                    }}
-                >
-                    <div
-                        className={classNames('button upgrade-button', {
-                            rotate: this.state.upgradeStatus === UpgradeStatus.DOWNLOADING,
-                        })}
-                        title={upgradeTooltip}
-                    >
-                        <i
-                            className={classNames({
-                                'icon-arrow-down-bold-circle-outline': this.state.upgradeStatus === UpgradeStatus.AVAILABLE,
-                                'icon-sync': this.state.upgradeStatus === UpgradeStatus.DOWNLOADING,
-                                'icon-arrow-up-bold-circle-outline': this.state.upgradeStatus === UpgradeStatus.DOWNLOADED,
-                            })}
-                        />
-                        {(this.state.upgradeStatus !== UpgradeStatus.DOWNLOADING) && <div className={'circle'}/>}
-                    </div>
-                </button>
             );
         }
 
@@ -515,15 +509,21 @@ export default class MainPage extends React.PureComponent<Props, State> {
                     ref={this.topBar}
                     className={'topBar-bg'}
                 >
+                    {window.process.platform !== 'linux' && this.props.teams.length === 0 && (
+                        <div className='app-title'>
+                            {intl.formatMessage({id: 'renderer.components.mainPage.titleBar', defaultMessage: 'Mattermost'})}
+                        </div>
+                    )}
                     <button
                         className='three-dot-menu'
                         onClick={this.openMenu}
                         tabIndex={0}
                         ref={this.threeDotMenu}
-                        aria-label='Context menu'
+                        aria-label={intl.formatMessage({id: 'renderer.components.mainPage.contextMenu.ariaLabel', defaultMessage: 'Context menu'})}
                     >
                         <i className='icon-dots-vertical'/>
                     </button>
+                    {/* this.props.teams.length !== 0 */}
                     {process.env.NODE_ENV === 'dev' && (
                         <TeamDropdownButton
                             isDisabled={this.state.modalOpen}
@@ -532,22 +532,24 @@ export default class MainPage extends React.PureComponent<Props, State> {
                             hasUnreads={totalUnreadCount > 0}
                             isMenuOpen={this.state.isMenuOpen}
                             darkMode={this.state.darkMode}
-                        />)}
+                        />
+                    )}
                     {tabsRow}
-                    {upgradeIcon}
+                    {downloadsDropdownButton}
                     {titleBarButtons}
                 </div>
             </Row>
         );
 
         const views = () => {
+            if (!this.props.teams.length) {
+                return null;
+            }
             let component;
             const tabStatus = this.getTabViewStatus();
             if (!tabStatus) {
-                if (this.state.activeTabName) {
+                if (this.state.activeTabName || this.state.activeServerName) {
                     console.error(`Not tabStatus for ${this.state.activeTabName}`);
-                } else {
-                    console.error('No tab status, tab doesn\'t exist anymore');
                 }
                 return null;
             }
@@ -598,3 +600,5 @@ export default class MainPage extends React.PureComponent<Props, State> {
         );
     }
 }
+
+export default injectIntl(MainPage);

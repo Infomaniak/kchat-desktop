@@ -18,6 +18,7 @@ import {BuildConfig} from 'types/config';
  *                                          Specify at least one server for "defaultTeams"
  *                                          when "enableServerManagement is set to false
  * @prop {[]} managedResources - Defines which paths are managed
+ * @prop {[]} allowedProtocols - Defines which protocols should be automatically allowed
  */
 const buildConfig: BuildConfig = {
     defaultTeams: [
@@ -28,9 +29,15 @@ const buildConfig: BuildConfig = {
         },
     ],
     helpLink: '',
-    enableServerManagement: true,
+    enableServerManagement: false,
     enableAutoUpdater: true,
     managedResources: ['trusted'],
+    allowedProtocols: [
+        'kchat',
+        'ftp',
+        'mailto',
+        'tel',
+    ],
 };
 
 export default buildConfig;

@@ -5,7 +5,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {app, BrowserWindow, Menu, Rectangle, Session, session, dialog, nativeImage} from 'electron';
+import {app, BrowserWindow, Menu, Rectangle, Session, session, dialog, nativeImage, screen} from 'electron';
 import log, {LevelOption} from 'electron-log';
 
 import {MigrationInfo, TeamWithTabs} from 'types/config';
@@ -21,6 +21,7 @@ import Utils from 'common/utils/util';
 
 import updateManager from 'main/autoUpdater';
 import {migrationInfoPath, updatePaths} from 'main/constants';
+import {localizeMessage} from 'main/i18nManager';
 import {createMenu as createAppMenu} from 'main/menus/app';
 import {createMenu as createTrayMenu} from 'main/menus/tray';
 import {ServerInfo} from 'main/server/serverInfo';
@@ -154,10 +155,25 @@ function isWithinDisplay(state: Rectangle, display: Boundaries) {
     return !(midX > display.maxX || midY > display.maxY);
 }
 
+function getDisplayBoundaries() {
+    const displays = screen.getAllDisplays();
+
+    return displays.map((display) => {
+        return {
+            maxX: display.workArea.x + display.workArea.width,
+            maxY: display.workArea.y + display.workArea.height,
+            minX: display.workArea.x,
+            minY: display.workArea.y,
+            maxWidth: display.workArea.width,
+            maxHeight: display.workArea.height,
+        };
+    });
+}
+
 function getValidWindowPosition(state: Rectangle) {
     // Check if the previous position is out of the viewable area
     // (e.g. because the screen has been plugged off)
-    const boundaries = Utils.getDisplayBoundaries();
+    const boundaries = getDisplayBoundaries();
     const display = boundaries.find((boundary) => {
         return isWithinDisplay(state, boundary);
     });
@@ -232,11 +248,14 @@ export function migrateMacAppStore() {
     }
 
     const cancelImport = dialog.showMessageBoxSync({
-        title: 'Mattermost',
-        message: 'Import Existing Configuration',
-        detail: 'It appears that an existing Mattermost configuration exists, would you like to import it? You will be asked to pick the correct configuration directory.',
+        title: app.name,
+        message: localizeMessage('main.app.utils.migrateMacAppStore.dialog.message', 'Import Existing Configuration'),
+        detail: localizeMessage('main.app.utils.migrateMacAppStore.dialog.detail', 'It appears that an existing {appName} configuration exists, would you like to import it? You will be asked to pick the correct configuration directory.', {appName: app.name}),
         icon: appIcon,
-        buttons: ['Select Directory and Import', 'Don\'t Import'],
+        buttons: [
+            localizeMessage('main.app.utils.migrateMacAppStore.button.selectAndImport', 'Select Directory and Import'),
+            localizeMessage('main.app.utils.migrateMacAppStore.button.dontImport', 'Don\'t Import'),
+        ],
         type: 'info',
         defaultId: 0,
         cancelId: 1,

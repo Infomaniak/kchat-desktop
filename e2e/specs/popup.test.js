@@ -28,6 +28,7 @@ describe('popup', function desc() {
         if (this.app) {
             await this.app.close();
         }
+        await env.clearElectronInstances();
     });
 
     // NOTE: These tests requires that the test server have the GitHub plugin configured
@@ -104,7 +105,7 @@ describe('popup', function desc() {
         const githubLink = await firstServer.waitForSelector('a.theme.markdown__link:has-text("GitHub account")');
         githubLink.click();
         const popupWindow = await this.app.waitForEvent('window');
-        popupWindow.focus();
+        await popupWindow.bringToFront();
         const currentURL = popupWindow.url();
 
         // Try and go back

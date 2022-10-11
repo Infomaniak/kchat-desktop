@@ -25,6 +25,8 @@ module.exports = merge(base, {
         call: './src/renderer/call.tsx',
         callDialing: './src/renderer/callDialing.tsx',
         dropdown: './src/renderer/dropdown.tsx',
+        downloadsDropdownMenu: './src/renderer/downloadsDropdownMenu.tsx',
+        downloadsDropdown: './src/renderer/downloadsDropdown.tsx',
         urlView: './src/renderer/modals/urlView/urlView.tsx',
         newServer: './src/renderer/modals/newServer/newServer.tsx',
         editServer: './src/renderer/modals/editServer/editServer.tsx',
@@ -33,6 +35,7 @@ module.exports = merge(base, {
         permissionModal: './src/renderer/modals/permission/permission.tsx',
         certificateModal: './src/renderer/modals/certificate/certificate.tsx',
         loadingScreen: './src/renderer/modals/loadingScreen/index.tsx',
+        welcomeScreen: './src/renderer/modals/welcomeScreen/welcomeScreen.tsx',
     },
     output: {
         path: path.resolve(__dirname, 'dist/renderer'),
@@ -69,6 +72,18 @@ module.exports = merge(base, {
             template: 'src/renderer/index.html',
             chunks: ['dropdown'],
             filename: 'dropdown.html',
+        }),
+        new HtmlWebpackPlugin({
+            title: 'kChat Desktop Downloads',
+            template: 'src/renderer/index.html',
+            chunks: ['downloadsDropdown'],
+            filename: 'downloadsDropdown.html',
+        }),
+        new HtmlWebpackPlugin({
+            title: 'kChat Desktop Downloads',
+            template: 'src/renderer/index.html',
+            chunks: ['downloadsDropdownMenu'],
+            filename: 'downloadsDropdownMenu.html',
         }),
         new HtmlWebpackPlugin({
             title: 'kChat Desktop Settings',
@@ -117,6 +132,12 @@ module.exports = merge(base, {
             template: 'src/renderer/index.html',
             chunks: ['loadingScreen'],
             filename: 'loadingScreen.html',
+        }),
+        new HtmlWebpackPlugin({
+            title: 'Mattermost Desktop Settings',
+            template: 'src/renderer/index.html',
+            chunks: ['welcomeScreen'],
+            filename: 'welcomeScreen.html',
         }),
         new MiniCssExtractPlugin({
             filename: 'styles.[contenthash].css',

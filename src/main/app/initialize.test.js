@@ -8,6 +8,7 @@ import {app, session} from 'electron';
 import Config from 'common/config';
 import urlUtils from 'common/utils/url';
 
+import {displayDownloadCompleted} from 'main/notifications';
 import parseArgs from 'main/ParseArgs';
 import WindowManager from 'main/windows/windowManager';
 
@@ -16,6 +17,10 @@ import {clearAppCache, getDeeplinkingURL, wasUpdated} from './utils';
 
 jest.mock('fs', () => ({
     unlinkSync: jest.fn(),
+    existsSync: jest.fn().mockReturnValue(false),
+    readFileSync: jest.fn().mockImplementation((text) => text),
+    writeFile: jest.fn(),
+
 }));
 
 jest.mock('path', () => {
@@ -39,6 +44,8 @@ jest.mock('electron', () => ({
         setAppUserModelId: jest.fn(),
         getVersion: jest.fn(),
         whenReady: jest.fn(),
+        getLocale: jest.fn(),
+        getLocaleCountryCode: jest.fn(),
     },
     ipcMain: {
         on: jest.fn(),
@@ -52,6 +59,11 @@ jest.mock('electron', () => ({
             on: jest.fn(),
         },
     },
+}));
+
+jest.mock('main/i18nManager', () => ({
+    localizeMessage: jest.fn(),
+    setLocale: jest.fn(),
 }));
 
 jest.mock('electron-devtools-installer', () => {
@@ -90,7 +102,7 @@ jest.mock('main/app/config', () => ({
     handleConfigUpdate: jest.fn(),
 }));
 jest.mock('main/app/intercom', () => ({
-    addNewServerModalWhenMainWindowIsShown: jest.fn(),
+    handleMainWindowIsShown: jest.fn(),
 }));
 jest.mock('main/app/utils', () => ({
     clearAppCache: jest.fn(),
@@ -135,8 +147,9 @@ jest.mock('main/windows/windowManager', () => ({
     getMainWindow: jest.fn(),
     showMainWindow: jest.fn(),
     sendToMattermostViews: jest.fn(),
+    sendToRenderer: jest.fn(),
+    getServerNameByWebContentsId: jest.fn(),
 }));
-
 describe('main/app/initialize', () => {
     beforeEach(() => {
         parseArgs.mockReturnValue({});
@@ -217,27 +230,6 @@ describe('main/app/initialize', () => {
             });
 
             expect(WindowManager.showMainWindow).toHaveBeenCalledWith('mattermost://server-1.com');
-        });
-
-        it('should setup save dialog correctly', async () => {
-            const item = {
-                getFilename: () => 'filename.txt',
-                on: jest.fn(),
-                setSaveDialogOptions: jest.fn(),
-            };
-            Config.downloadLocation = '/some/dir';
-            path.resolve.mockImplementation((base, p) => `${base}/${p}`);
-            session.defaultSession.on.mockImplementation((event, cb) => {
-                if (event === 'will-download') {
-                    cb(null, item, {id: 0, getURL: jest.fn()});
-                }
-            });
-
-            await initialize();
-            expect(item.setSaveDialogOptions).toHaveBeenCalledWith(expect.objectContaining({
-                title: 'filename.txt',
-                defaultPath: '/some/dir/filename.txt',
-            }));
         });
 
         it('should allow permission requests for supported types from trusted URLs', async () => {
