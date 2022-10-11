@@ -19,6 +19,8 @@ module.exports = merge(base, {
         call: './src/main/preload/call.js',
         callDial: './src/main/preload/callDial.js',
         dropdown: './src/main/preload/dropdown.js',
+        downloadsDropdown: './src/main/preload/downloadsDropdown.js',
+        downloadsDropdownMenu: './src/main/preload/downloadsDropdownMenu.js',
         preload: './src/main/preload/mattermost.js',
         modalPreload: './src/main/preload/modalPreload.js',
         loadingScreenPreload: './src/main/preload/loadingScreenPreload.js',

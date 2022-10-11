@@ -120,7 +120,6 @@ class Root extends React.PureComponent<Record<string, never>, State> {
             console.log('[DEBUG] config is not loaded');
             return null;
         }
-        console.log('[DEBUG] config is loaded => ', config);
         return (
             <IntlProvider>
                 <MainPage

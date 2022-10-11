@@ -32,7 +32,7 @@ import {
     GET_AVAILABLE_SPELL_CHECKER_LANGUAGES,
     USER_ACTIVITY_UPDATE,
     START_UPGRADE,
-    START_DOWNLOAD,
+    START_UPDATE_DOWNLOAD,
     PING_DOMAIN,
     MAIN_WINDOW_SHOWN,
 } from 'common/communication';
@@ -48,8 +48,8 @@ import {setupBadge} from 'main/badge';
 import CertificateManager from 'main/certificateManager';
 import {updatePaths} from 'main/constants';
 import CriticalErrorHandler from 'main/CriticalErrorHandler';
-import i18nManager, {localizeMessage} from 'main/i18nManager';
-import {displayDownloadCompleted} from 'main/notifications';
+import downloadsManager from 'main/downloadsManager';
+import i18nManager from 'main/i18nManager';
 import parseArgs from 'main/ParseArgs';
 import TrustedOriginsStore from 'main/trustedOrigins';
 import {refreshTrayImages, setupTray} from 'main/tray/tray';
@@ -101,6 +101,7 @@ import {
 } from './utils';
 
 export const mainProtocol = protocols?.[0]?.schemes?.[0];
+
 /**
  * Main entry point for the application, ensures that everything initializes in the proper order
  */
@@ -193,6 +194,7 @@ function initializeBeforeAppReady() {
         log.error('No config loaded');
         return;
     }
+
     // if (process.env.NODE_ENV !== 'test') {
     //     app.enableSandbox();
     // }
@@ -265,7 +267,7 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(SHOW_SETTINGS_WINDOW, WindowManager.showSettingsWindow);
     ipcMain.handle(GET_AVAILABLE_SPELL_CHECKER_LANGUAGES, () => session.defaultSession.availableSpellCheckerLanguages);
     ipcMain.handle(GET_DOWNLOAD_LOCATION, handleSelectDownload);
-    ipcMain.on(START_DOWNLOAD, handleStartDownload);
+    ipcMain.on(START_UPDATE_DOWNLOAD, handleStartDownload);
     ipcMain.on(START_UPGRADE, handleStartUpgrade);
     ipcMain.handle(PING_DOMAIN, handlePingDomain);
 }
@@ -294,24 +296,25 @@ function initializeAfterAppReady() {
         Catch api/v4 call to inject token
      */
     defaultSession.webRequest.onBeforeSendHeaders({urls: ['https://*/api/v4/*', 'https://*/broadcasting/auth']},
-    (d, c) => {
-            const authHeader = d.requestHeaders['Authorization'] ? d.requestHeaders['Authorization'] : null;
-            const ikToken = WindowManager.mainStore?.get('IKToken')
+        (d, c) => {
+            const authHeader = d.requestHeaders.Authorization ? d.requestHeaders.Authorization : null;
+            const ikToken = WindowManager.mainStore?.get('IKToken');
+
             // No Auhtorization header or bearer is empty
-            if((!authHeader || !authHeader?.split(' ')[1]) && ikToken ) {
-                d.requestHeaders['Authorization'] = `Bearer ${ikToken}`;
+            if ((!authHeader || !authHeader?.split(' ')[1]) && ikToken) {
+                d.requestHeaders.Authorization = `Bearer ${ikToken}`;
             }
 
-        c({
-            cancel: false,
-            requestHeaders: d.requestHeaders,
-        });
-    },
-        );
+            c({
+                cancel: false,
+                requestHeaders: d.requestHeaders,
+            });
+        },
+    );
     if (process.platform !== 'darwin') {
         defaultSession.on('spellcheck-dictionary-download-failure', (event, lang) => {
             if (Config.spellCheckerURL) {
-                log.error(`There was an error while trying to load the dictionary definitions for ${lang} fromfully the specified url. Please review you have access to the needed files. Url used was ${Config.spellCheckerURL}`);
+                log.error(`There was an error while trying to load the dictionary definitions for ${lang} from fully the specified url. Please review you have access to the needed files. Url used was ${Config.spellCheckerURL}`);
             } else {
                 log.warn(`There was an error while trying to download the dictionary definitions for ${lang}, spellchecking might not work properly.`);
             }
@@ -398,29 +401,15 @@ function initializeAfterAppReady() {
     }
     setupBadge();
 
-    defaultSession.on('will-download', (event, item, webContents) => {
-        log.debug('Initialize.will-download', {item, sourceURL: webContents.getURL()});
-        const filename = item.getFilename();
-        const fileElements = filename.split('.');
-        const filters = [];
-        if (fileElements.length > 1) {
-            filters.push({
-                name: localizeMessage('main.app.initialize.downloadBox.allFiles', 'All files'),
-                extensions: ['*'],
-            });
-        }
-        item.setSaveDialogOptions({
-            title: filename,
-            defaultPath: Config.downloadLocation ? path.resolve(Config.downloadLocation, filename) : undefined,
-            filters,
-        });
+    defaultSession.on('will-download', downloadsManager.handleNewDownload);
 
-        item.on('done', (doneEvent, state) => {
-            if (state === 'completed') {
-                displayDownloadCompleted(path.basename(item.savePath), item.savePath, WindowManager.getServerNameByWebContentsId(webContents.id) || '');
-            }
-        });
-    });
+    // needs to be done after app ready
+    // must be done before update menu
+    if (Config.appLanguage) {
+        i18nManager.setLocale(Config.appLanguage);
+    } else if (!i18nManager.setLocale(app.getLocale())) {
+        i18nManager.setLocale(app.getLocaleCountryCode());
+    }
 
     // needs to be done after app ready
     // must be done before update menu

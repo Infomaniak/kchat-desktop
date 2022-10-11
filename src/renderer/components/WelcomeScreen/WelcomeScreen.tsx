@@ -75,6 +75,7 @@ function WelcomeScreen({
                 />
             ),
         },
+
         // {
         //     key: 'playbooks',
         //     title: formatMessage({id: 'renderer.components.welcomeScreen.slides.playbooks.title', defaultMessage: 'Playbooks'}),

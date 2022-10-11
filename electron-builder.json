@@ -34,6 +34,7 @@
       ]
     }
   ],
+  "beforePack": "scripts/beforepack.js",
   "afterPack": "scripts/afterpack.js",
   "afterSign": "scripts/notarize.js",
   "afterAllArtifactBuild": "scripts/afterbuild.js",
@@ -117,7 +118,8 @@
     "provisioningProfile": "./mas.provisionprofile",
     "extendInfo": {
       "ITSAppUsesNonExemptEncryption": false
-    }
+    },
+    "singleArchFiles": "*"
   },
   "masDev": {
     "provisioningProfile": "./mas-dev.provisionprofile"
