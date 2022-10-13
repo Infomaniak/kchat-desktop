@@ -30,7 +30,11 @@
     {
       "name": "kchat",
       "schemes": [
-        "kchat"
+        "kchat",
+        "ktalk",
+        "mattermost",
+        "http",
+        "https"
       ]
     }
   ],
