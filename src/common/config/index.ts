@@ -59,7 +59,6 @@ function checkWriteableApp() {
         return __CAN_UPGRADE__; // prevent showing the option if the path is not writeable, like in a managed environment.
     }
 
-    // process.platform !== 'darwin' &&
     // temporarily disabling auto updater for macOS due to security issues
     // eslint-disable-next-line no-undef
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -322,7 +321,7 @@ export class Config extends EventEmitter {
     }
 
     get canUpgrade() {
-        return this.canUpgradeValue && this.buildConfigData?.enableAutoUpdater && !(process.platform === 'linux' && !process.env.APPIMAGE) && !(process.platform === 'win32' && this.registryConfigData?.enableAutoUpdater === false);
+        return true; //this.canUpgradeValue && this.buildConfigData?.enableAutoUpdater && !(process.platform === 'linux' && !process.env.APPIMAGE) && !(process.platform === 'win32' && this.registryConfigData?.enableAutoUpdater === false);
     }
 
     get autoCheckForUpdates() {

@@ -106,6 +106,7 @@
     ],
     "icon": "src/assets/osx/osx_icon.icns",
     "hardenedRuntime": true,
+    "gatekeeperAssess": false,
     "entitlements": "./entitlements.mac.plist",
     "entitlementsInherit": "./entitlements.mac.plist",
     "extendInfo": {
