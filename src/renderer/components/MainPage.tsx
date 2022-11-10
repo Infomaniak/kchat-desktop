@@ -534,7 +534,9 @@ class MainPage extends React.PureComponent<Props, State> {
                             darkMode={this.state.darkMode}
                         />
                     )}
+{/*
                     {tabsRow}
+*/}
                     {downloadsDropdownButton}
                     {titleBarButtons}
                 </div>
