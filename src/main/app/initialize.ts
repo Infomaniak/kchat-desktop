@@ -282,7 +282,8 @@ function initializeAfterAppReady() {
             if (currentServerURL && d.url.includes('/token') && d.responseHeaders) {
                 d.responseHeaders['Access-Control-Allow-Origin'] = [currentServerURL];
                 d.responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
-                d.responseHeaders['Access-Control-Allow-Headers'] = ['x-requested-with'];
+                d.responseHeaders['Access-Control-Allow-Headers'] = ['X-Requested-With, Authorization'];
+                d.responseHeaders['Access-Control-Allow-Methods'] = ['GET, POST, OPTIONS, PUT, DELETE'];
             }
 
             c({
