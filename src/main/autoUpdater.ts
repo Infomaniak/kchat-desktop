@@ -8,6 +8,7 @@ import log from 'electron-log';
 
 import {autoUpdater, CancellationToken, ProgressInfo, UpdateInfo} from 'electron-updater';
 
+import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
 import {displayUpgrade, displayRestartToUpgrade} from 'main/notifications';
 
@@ -57,6 +58,7 @@ export class UpdateManager {
     lastCheck?: NodeJS.Timeout;
     versionAvailable?: string;
     versionDownloaded?: string;
+    downloadedInfo?: UpdateInfo;
 
     constructor() {
         this.cancellationToken = new CancellationToken();
@@ -75,6 +77,7 @@ export class UpdateManager {
 
         autoUpdater.on('update-downloaded', (info: UpdateInfo) => {
             this.versionDownloaded = info.version;
+            this.downloadedInfo = info;
             ipcMain.emit(UPDATE_SHORTCUT_MENU);
             log.info(`[kChat] downloaded version ${info.version}`);
             this.notifyDownloaded();
@@ -114,7 +117,7 @@ export class UpdateManager {
     }
 
     notifyDownloaded = (): void => {
-        ipcMain.emit(UPDATE_DOWNLOADED, null, this.versionDownloaded);
+        ipcMain.emit(UPDATE_DOWNLOADED, null, this.downloadedInfo);
         displayRestartToUpgrade(this.versionDownloaded || 'unknown', this.handleUpdate);
     }
 
@@ -141,6 +144,7 @@ export class UpdateManager {
     }
 
     handleUpdate = (): void => {
+        downloadsManager.removeUpdateBeforeRestart();
         autoUpdater.quitAndInstall();
     }
 
