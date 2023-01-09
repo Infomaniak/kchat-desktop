@@ -1,7 +1,7 @@
 {
   "name": "kchat-desktop",
   "productName": "kChat",
-  "version": "1.2.0",
+  "version": "1.4.3-beta",
   "description": "kChat",
   "main": "dist/index.js",
   "author": "Infomaniak <kchat@infomaniak.com>",
@@ -205,7 +205,7 @@
     "electron-updater": "5.2.1",
     "fs-extra": "10.0.1",
     "joi": "17.6.0",
-    "macos-notification-state": "2.0.1",
+    "macos-notification-state": "2.0.2",
     "pretty-bytes": "6.0.0",
     "react": "16.14.0",
     "react-beautiful-dnd": "13.1.0",
