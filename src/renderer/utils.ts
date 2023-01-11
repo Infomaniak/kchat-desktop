@@ -45,7 +45,7 @@ const getDownloadingFileStatus = (item: DownloadedItem) => {
 
 const getIconClassName = (file: DownloadedItem) => {
     if (file.type === 'update') {
-        return 'mattermost';
+        return 'kchat';
     }
 
     if (!file.mimeType) {

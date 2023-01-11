@@ -82,7 +82,7 @@ body {
                     width: 100%;
                     height: 100%;
 
-                    &.mattermost {
+                    &.kchat {
                         @include file-icon('./thumbnails/mattermost.svg');
                         background-size: 32px 32px;
                     }
