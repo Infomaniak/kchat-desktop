@@ -83,7 +83,7 @@ body {
                     height: 100%;
 
                     &.kchat {
-                        @include file-icon('./thumbnails/mattermost.svg');
+                        @include file-icon('./thumbnails/kchat.svg');
                         background-size: 32px 32px;
                     }
                     &.text {
