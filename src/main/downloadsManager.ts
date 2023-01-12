@@ -184,12 +184,12 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
                     }
                 }
                 const file = downloads[fileId];
-                if ((file.state === 'completed')) {
+                if ((file && file.state === 'completed')) {
                     if (!file.location || !fs.existsSync(file.location)) {
                         downloads[fileId].state = 'deleted';
                         modified = true;
                     }
-                } else if (file.state === 'progressing') {
+                } else if (file && file.state === 'progressing') {
                     downloads[fileId].state = 'interrupted';
                     modified = true;
                 }
