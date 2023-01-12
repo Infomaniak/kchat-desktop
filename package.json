@@ -1,7 +1,7 @@
 {
   "name": "kchat-desktop",
   "productName": "kChat",
-  "version": "1.4.3-beta",
+  "version": "1.4.0",
   "description": "kChat",
   "main": "dist/index.js",
   "author": "Infomaniak <kchat@infomaniak.com>",
