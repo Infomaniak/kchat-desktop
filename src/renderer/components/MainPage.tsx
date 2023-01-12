@@ -429,6 +429,7 @@ class MainPage extends React.PureComponent<Props, State> {
                 showDownloadsBadge={this.state.showDownloadsBadge}
                 closeDownloadsDropdown={this.closeDownloadsDropdown}
                 openDownloadsDropdown={this.openDownloadsDropdown}
+                style={{ marginLeft: 'auto'}}
             />
         ) : null;
 
@@ -534,9 +535,9 @@ class MainPage extends React.PureComponent<Props, State> {
                             darkMode={this.state.darkMode}
                         />
                     )}
-{/*
+
                     {tabsRow}
-*/}
+
                     {downloadsDropdownButton}
                     {titleBarButtons}
                 </div>

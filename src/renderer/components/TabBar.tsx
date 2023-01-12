@@ -162,7 +162,7 @@ class TabBar extends React.PureComponent<Props> {
                             variant='tabs'
                             {...provided.droppableProps}
                         >
-                            {tabs}
+                            {/*{tabs}*/}
                             {this.props.isMenuOpen ? <span className='TabBar-nonDrag'/> : null}
                             {provided.placeholder}
                         </Nav>
