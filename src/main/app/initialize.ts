@@ -3,7 +3,7 @@
 
 import path from 'path';
 
-import {app, ipcMain, session} from 'electron';
+import {app, ipcMain, screen, session} from 'electron';
 import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-devtools-installer';
 import isDev from 'electron-is-dev';
 import log from 'electron-log';
@@ -35,6 +35,7 @@ import {
     START_UPDATE_DOWNLOAD,
     PING_DOMAIN,
     MAIN_WINDOW_SHOWN,
+    OPEN_APP_MENU,
 } from 'common/communication';
 import Config from 'common/config';
 import urlUtils from 'common/utils/url';
@@ -64,10 +65,10 @@ import {
     handleAppBeforeQuit,
     handleAppBrowserWindowCreated,
     handleAppCertificateError,
-    handleAppGPUProcessCrashed,
     handleAppSecondInstance,
     handleAppWillFinishLaunching,
     handleAppWindowAllClosed,
+    handleChildProcessGone,
 } from './app';
 import {handleConfigUpdate, handleDarkModeChange} from './config';
 import {
@@ -119,6 +120,8 @@ export async function initialize() {
     await Promise.all([
         app.whenReady(),
     ]);
+
+    initializeScreenEventListeners();
 
     // no need to continue initializing if app is quitting
     if (global.willAppQuit) {
@@ -184,9 +187,14 @@ function initializeAppEventListeners() {
     app.on('before-quit', handleAppBeforeQuit);
     app.on('certificate-error', handleAppCertificateError);
     app.on('select-client-certificate', CertificateManager.handleSelectCertificate);
-    app.on('gpu-process-crashed', handleAppGPUProcessCrashed);
+    app.on('child-process-gone', handleChildProcessGone);
     app.on('login', AuthManager.handleAppLogin);
     app.on('will-finish-launching', handleAppWillFinishLaunching);
+}
+
+function initializeScreenEventListeners() {
+    screen.on('display-removed', WindowManager.displayRemoved);
+    screen.on('display-metrics-changed', WindowManager.displayMetricsChanged);
 }
 
 function initializeBeforeAppReady() {
@@ -244,7 +252,7 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(UPDATE_LAST_ACTIVE, handleUpdateLastActive);
 
     if (process.platform !== 'darwin') {
-        ipcMain.on('open-app-menu', handleOpenAppMenu);
+        ipcMain.on(OPEN_APP_MENU, handleOpenAppMenu);
     }
 
     ipcMain.on(SWITCH_SERVER, handleSwitchServer);
@@ -412,14 +420,6 @@ function initializeAfterAppReady() {
         i18nManager.setLocale(app.getLocaleCountryCode());
     }
 
-    // needs to be done after app ready
-    // must be done before update menu
-    if (Config.appLanguage) {
-        i18nManager.setLocale(Config.appLanguage);
-    } else if (!i18nManager.setLocale(app.getLocale())) {
-        i18nManager.setLocale(app.getLocaleCountryCode());
-    }
-
     handleUpdateMenuEvent();
 
     ipcMain.emit('update-dict');
@@ -457,9 +457,7 @@ function initializeAfterAppReady() {
 
     // only check for non-Windows, as with Windows we have to wait for GPO teams
     if (process.platform !== 'win32' || typeof Config.registryConfigData !== 'undefined') {
-        if (Config.teams.length === 0) {
-            handleMainWindowIsShown();
-        }
+        handleMainWindowIsShown();
     }
 }
 

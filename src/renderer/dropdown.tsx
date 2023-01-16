@@ -7,7 +7,7 @@ import {FormattedMessage} from 'react-intl';
 import classNames from 'classnames';
 import {DragDropContext, Draggable, DraggingStyle, Droppable, DropResult, NotDraggingStyle} from 'react-beautiful-dnd';
 
-import {Team, TeamWithTabs} from 'types/config';
+import {Team, TeamWithTabs, TeamWithTabsAndGpo} from 'types/config';
 
 import {
     CLOSE_TEAMS_DROPDOWN,
@@ -27,8 +27,8 @@ import './css/dropdown.scss';
 import IntlProvider from './intl_provider';
 
 type State = {
-    teams?: TeamWithTabs[];
-    orderedTeams?: TeamWithTabs[];
+    teams?: TeamWithTabsAndGpo[];
+    orderedTeams?: TeamWithTabsAndGpo[];
     activeTeam?: string;
     darkMode?: boolean;
     enableServerManagement?: boolean;
@@ -212,20 +212,30 @@ class TeamDropdown extends React.PureComponent<Record<string, never>, State> {
         }
     }
 
-    editServer = (team: string) => {
+    editServer = (teamName: string) => {
+        if (this.teamIsGpo(teamName)) {
+            return () => {};
+        }
         return (event: React.MouseEvent<HTMLButtonElement>) => {
             event.stopPropagation();
-            window.postMessage({type: SHOW_EDIT_SERVER_MODAL, data: {name: team}}, window.location.href);
+            window.postMessage({type: SHOW_EDIT_SERVER_MODAL, data: {name: teamName}}, window.location.href);
             this.closeMenu();
         };
     }
 
-    removeServer = (team: string) => {
+    removeServer = (teamName: string) => {
+        if (this.teamIsGpo(teamName)) {
+            return () => {};
+        }
         return (event: React.MouseEvent<HTMLButtonElement>) => {
             event.stopPropagation();
-            window.postMessage({type: SHOW_REMOVE_SERVER_MODAL, data: {name: team}}, window.location.href);
+            window.postMessage({type: SHOW_REMOVE_SERVER_MODAL, data: {name: teamName}}, window.location.href);
             this.closeMenu();
         };
+    }
+
+    teamIsGpo = (teamName: string) => {
+        return this.state.orderedTeams?.some((team) => team.name === teamName && team.isGpo);
     }
 
     render() {

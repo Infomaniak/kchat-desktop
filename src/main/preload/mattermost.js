@@ -38,6 +38,11 @@ import {
     TOKEN_REFRESHED,
     TOKEN_CLEARED,
     VIEW_FINISHED_RESIZING,
+    CALLS_JOIN_CALL,
+    CALLS_JOINED_CALL,
+    CALLS_LEAVE_CALL,
+    DESKTOP_SOURCES_MODAL_REQUEST,
+    CALLS_WIDGET_SHARE_SCREEN,
     CLOSE_DOWNLOADS_DROPDOWN,
 } from 'common/communication';
 
@@ -191,6 +196,19 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
     }
     case 'call-focus': {
         ipcRenderer.send('call-focus', message, viewName);
+        break;
+    }
+    case CALLS_JOIN_CALL: {
+        ipcRenderer.send(CALLS_JOIN_CALL, viewName, message);
+        break;
+    }
+    case CALLS_WIDGET_SHARE_SCREEN: {
+        ipcRenderer.send(CALLS_WIDGET_SHARE_SCREEN, viewName, message);
+        break;
+    }
+    case CALLS_LEAVE_CALL: {
+        ipcRenderer.send(CALLS_LEAVE_CALL, viewName, message);
+        break;
     }
     }
 });
@@ -385,6 +403,25 @@ ipcRenderer.on(DESKTOP_SOURCES_RESULT, (event, sources) => {
         {
             type: 'desktop-sources-result',
             message: sources,
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on(DESKTOP_SOURCES_MODAL_REQUEST, () => {
+    window.postMessage(
+        {
+            type: DESKTOP_SOURCES_MODAL_REQUEST,
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on(CALLS_JOINED_CALL, (event, message) => {
+    window.postMessage(
+        {
+            type: CALLS_JOINED_CALL,
+            message,
         },
         window.location.origin,
     );

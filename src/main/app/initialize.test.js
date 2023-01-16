@@ -51,6 +51,11 @@ jest.mock('electron', () => ({
         on: jest.fn(),
         handle: jest.fn(),
         emit: jest.fn(),
+        removeHandler: jest.fn(),
+        removeListener: jest.fn(),
+    },
+    screen: {
+        on: jest.fn(),
     },
     session: {
         defaultSession: {

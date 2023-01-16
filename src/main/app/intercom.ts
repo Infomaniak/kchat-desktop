@@ -4,10 +4,11 @@
 import {app, dialog, IpcMainEvent, IpcMainInvokeEvent, Menu} from 'electron';
 import log from 'electron-log';
 
-import {Team, TeamWithIndex} from 'types/config';
+import {Team, TeamWithIndex, RegistryConfig as RegistryConfigType} from 'types/config';
 import {MentionData} from 'types/notification';
 
 import Config from 'common/config';
+import {REGISTRY_READ_EVENT} from 'common/config/RegistryConfig';
 import {getDefaultTeamWithTabsFromTeam} from 'common/tabs/TabView';
 import {ping} from 'common/utils/requests';
 
@@ -85,31 +86,51 @@ export function handleOpenTab(event: IpcMainEvent, serverName: string, tabName: 
     Config.set('teams', teams);
 }
 
+export function handleShowOnboardingScreens(showWelcomeScreen: boolean, showNewServerModal: boolean, mainWindowIsVisible: boolean) {
+    log.debug('Intercom.handleShowOnboardingScreens', {showWelcomeScreen, showNewServerModal, mainWindowIsVisible});
+
+    const showWelcomeScreenFunc = () => {
+        if (showWelcomeScreen) {
+            handleWelcomeScreenModal();
+            return;
+        }
+        if (showNewServerModal) {
+            handleNewServerModal();
+        }
+    };
+
+    if (process.platform === 'win32' && !Config.registryConfigData) {
+        Config.registryConfig.once(REGISTRY_READ_EVENT, (data: Partial<RegistryConfigType>) => {
+            if (data.teams?.length === 0) {
+                showWelcomeScreenFunc();
+            }
+        });
+    } else {
+        showWelcomeScreenFunc();
+    }
+}
+
 export function handleMainWindowIsShown() {
     // eslint-disable-next-line no-undef
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const showWelcomeScreen = !(Boolean(__SKIP_ONBOARDING_SCREENS__) || Config.teams.length);
+    const showWelcomeScreen = () => !(Boolean(__SKIP_ONBOARDING_SCREENS__) || Config.teams.length);
+    const showNewServerModal = () => Config.teams.length === 0;
+
+    /**
+     * The 2 lines above need to be functions, otherwise the mainWindow.once() callback from previous
+     * calls of this function will notification re-evaluate the booleans passed to "handleShowOnboardingScreens".
+    */
+
     const mainWindow = WindowManager.getMainWindow();
 
-    if (mainWindow) {
-        if (mainWindow.isVisible()) {
-            if (showWelcomeScreen) {
-                handleWelcomeScreenModal();
-            } else {
-                handleNewServerModal();
-            }
-        } else {
-            mainWindow.once('show', () => {
-                if (showWelcomeScreen) {
-                    log.debug('Intercom.handleMainWindowIsShown.show.welcomeScreenModal');
-                    handleWelcomeScreenModal();
-                } else {
-                    log.debug('Intercom.handleMainWindowIsShown.show.newServerModal');
-                    handleNewServerModal();
-                }
-            });
-        }
+    log.debug('intercom.handleMainWindowIsShown', {configTeams: Config.teams, showWelcomeScreen, showNewServerModal, mainWindow: Boolean(mainWindow)});
+    if (mainWindow?.isVisible()) {
+        handleShowOnboardingScreens(showWelcomeScreen(), showNewServerModal(), true);
+    } else {
+        mainWindow?.once('show', () => {
+            handleShowOnboardingScreens(showWelcomeScreen(), showNewServerModal(), false);
+        });
     }
 }
 
@@ -335,8 +356,10 @@ export function handleUpdateLastActive(event: IpcMainEvent, serverName: string, 
             team.lastActiveTab = viewOrder;
         }
     });
-    Config.set('teams', teams);
-    Config.set('lastActiveTeam', teams.find((team) => team.name === serverName)?.order || 0);
+    Config.setMultiple({
+        teams,
+        lastActiveTeam: teams.find((team) => team.name === serverName)?.order || 0,
+    });
 }
 
 export function handlePingDomain(event: IpcMainInvokeEvent, url: string): Promise<string> {

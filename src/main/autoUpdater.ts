@@ -145,16 +145,7 @@ export class UpdateManager {
 
     handleUpdate = (): void => {
         downloadsManager.removeUpdateBeforeRestart();
-
-        try {
-            autoUpdater.quitAndInstall();
-            setTimeout(() => {
-                app.relaunch();
-                app.exit(0);
-            }, 6000);
-        } catch (e) {
-            dialog.showErrorBox('Error', 'Failed to install updates');
-        }
+        autoUpdater.quitAndInstall();
     }
 
     displayNoUpgrade = (): void => {

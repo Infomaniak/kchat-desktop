@@ -28,7 +28,7 @@ const buildConfig: BuildConfig = {
             order: 0,
         },
     ],
-    helpLink: '',
+    helpLink: null,
     enableServerManagement: false,
     enableAutoUpdater: true,
     managedResources: ['trusted'],

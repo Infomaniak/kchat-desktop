@@ -14,6 +14,7 @@ import {localizeMessage} from 'main/i18nManager';
 import WindowManager from 'main/windows/windowManager';
 import {UpdateManager} from 'main/autoUpdater';
 import downloadsManager from 'main/downloadsManager';
+import Diagnostics from 'main/diagnostics';
 
 export function createTemplate(config: Config, updateManager: UpdateManager) {
     const separatorItem: MenuItemConstructorOptions = {
@@ -255,13 +256,16 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             role: 'close',
             label: isMac ? localizeMessage('main.menus.app.window.closeWindow', 'Close Window') : localizeMessage('main.menus.app.window.close', 'Close'),
             accelerator: 'CmdOrCtrl+W',
-        }, separatorItem, // {
-        //     label: localizeMessage('main.menus.app.window.showServers', 'Show Servers'),
-        //     accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+S`,
-        //     click() {
-        //         ipcMain.emit(OPEN_TEAMS_DROPDOWN);
-        //     },
-        // }, ...teams.sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).map((team, i) => {
+        }, separatorItem,
+        ...(config.data?.teams.length ? [{
+            label: localizeMessage('main.menus.app.window.showServers', 'Show Servers'),
+            accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+S`,
+            click() {
+                ipcMain.emit(OPEN_TEAMS_DROPDOWN);
+            },
+        }] : []),
+
+        // ...teams.sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).map((team, i) => {
         //     const items = [];
         //     items.push({
         //         label: team.name,
@@ -296,12 +300,10 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         //         WindowManager.selectPreviousTab();
         //     },
         //     enabled: (teams.length > 1),
-        // },
-
-        ...(isMac ? [separatorItem, {
-            role: 'front',
-            label: localizeMessage('main.menus.app.window.bringAllToFront', 'Bring All to Front'),
-        }] : []),
+        // }, ...(isMac ? [separatorItem, {
+        //     role: 'front',
+        //     label: localizeMessage('main.menus.app.window.bringAllToFront', 'Bring All to Front'),
+        // }] : []),
         ],
     };
     template.push(windowMenu);
@@ -330,16 +332,24 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             });
         }
     }
+    if (config.data?.helpLink) {
+        submenu.push({
+            label: localizeMessage('main.menus.app.help.learnMore', 'Learn More...'),
+            click() {
+                shell.openExternal(config.data!.helpLink);
+            },
+        });
+        submenu.push(separatorItem);
+    }
 
-    // if (config.data?.helpLink) {
-    //     submenu.push({
-    //         label: localizeMessage('main.menus.app.help.learnMore', 'Learn More...'),
-    //         click() {
-    //             shell.openExternal(config.data!.helpLink);
-    //         },
-    //     });
-    //     submenu.push(separatorItem);
-    // }
+    submenu.push({
+        id: 'diagnostics',
+        label: localizeMessage('main.menus.app.help.RunDiagnostics', 'Run diagnostics'),
+        click() {
+            Diagnostics.run();
+        },
+    });
+    submenu.push(separatorItem);
 
     const version = localizeMessage('main.menus.app.help.versionString', 'Version {version}{commit}', {
         version: app.getVersion(),

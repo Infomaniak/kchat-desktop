@@ -4,10 +4,14 @@
 /* eslint-disable max-lines */
 import path from 'path';
 
-import {app, BrowserWindow, nativeImage, systemPreferences, ipcMain, IpcMainEvent, IpcMainInvokeEvent, desktopCapturer} from 'electron';
+import {app, BrowserWindow, nativeImage, systemPreferences, ipcMain, IpcMainEvent, IpcMainInvokeEvent, desktopCapturer, Display, screen} from 'electron';
 import log from 'electron-log';
 
 import Store from 'electron-store';
+
+import {
+    CallsJoinCallMessage,
+} from 'types/calls';
 
 import {
     MAXIMIZE_CHANGE,
@@ -35,6 +39,10 @@ import {
     TOKEN_REFRESHED,
     TOKEN_CLEARED,
     VIEW_FINISHED_RESIZING,
+    CALLS_JOIN_CALL,
+    CALLS_LEAVE_CALL,
+    DESKTOP_SOURCES_MODAL_REQUEST,
+    CALLS_WIDGET_CHANNEL_LINK_CLICK,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import {SECOND} from 'common/utils/constants';
@@ -60,6 +68,8 @@ import {createCallWindow} from './callWindow';
 import {createCallDialingWindow} from './callDialingWindow';
 
 // eslint-disable-next-line import/no-commonjs
+import CallsWidgetWindow from './callsWidgetWindow';
+
 const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@jitsi/electron-sdk');
 
 // singleton module to manage application's windows
@@ -71,6 +81,7 @@ export class WindowManager {
     mainWindowReady: boolean;
     settingsWindow?: BrowserWindow;
     callWindow?: BrowserWindow;
+    callsWidgetWindow?: CallsWidgetWindow;
     viewManager?: ViewManager;
     teamDropdown?: TeamDropdownView;
     downloadsDropdown?: DownloadsDropdownView;
@@ -100,11 +111,62 @@ export class WindowManager {
         ipcMain.on(VIEW_FINISHED_RESIZING, this.handleViewFinishedResizing);
         ipcMain.on(TOKEN_REFRESHED, this.handleTokenRefreshed);
         ipcMain.on(TOKEN_CLEARED, this.handleTokenCleared);
+        ipcMain.on(CALLS_JOIN_CALL, this.createCallsWidgetWindow);
+        ipcMain.on(CALLS_LEAVE_CALL, () => this.callsWidgetWindow?.close());
+        ipcMain.on(DESKTOP_SOURCES_MODAL_REQUEST, this.handleDesktopSourcesModalRequest);
+        ipcMain.on(CALLS_WIDGET_CHANNEL_LINK_CLICK, this.handleCallsWidgetChannelLinkClick);
     }
 
     handleUpdateConfig = () => {
         if (this.viewManager) {
             this.viewManager.reloadConfiguration(Config.teams || []);
+        }
+    }
+
+    createCallsWidgetWindow = (event: IpcMainEvent, viewName: string, msg: CallsJoinCallMessage) => {
+        log.debug('WindowManager.createCallsWidgetWindow');
+        if (this.callsWidgetWindow) {
+            // trying to join again the call we are already in should not be allowed.
+            if (this.callsWidgetWindow.getCallID() === msg.callID) {
+                return;
+            }
+            this.callsWidgetWindow.close();
+        }
+        const currentView = this.viewManager?.views.get(viewName);
+        if (!currentView) {
+            log.error('unable to create calls widget window: currentView is missing');
+            return;
+        }
+
+        this.callsWidgetWindow = new CallsWidgetWindow(this.mainWindow!, currentView, {
+            siteURL: currentView.serverInfo.remoteInfo.siteURL!,
+            callID: msg.callID,
+            title: msg.title,
+            serverName: this.currentServerName!,
+            channelURL: msg.channelURL,
+        });
+
+        this.callsWidgetWindow.on('closed', () => delete this.callsWidgetWindow);
+    }
+
+    handleDesktopSourcesModalRequest = () => {
+        log.debug('WindowManager.handleDesktopSourcesModalRequest');
+
+        if (this.callsWidgetWindow) {
+            this.switchServer(this.callsWidgetWindow?.getServerName());
+            this.mainWindow?.focus();
+            const currentView = this.viewManager?.getCurrentView();
+            currentView?.view.webContents.send(DESKTOP_SOURCES_MODAL_REQUEST);
+        }
+    }
+
+    handleCallsWidgetChannelLinkClick = () => {
+        log.debug('WindowManager.handleCallsWidgetChannelLinkClick');
+        if (this.callsWidgetWindow) {
+            this.switchServer(this.callsWidgetWindow.getServerName());
+            this.mainWindow?.focus();
+            const currentView = this.viewManager?.getCurrentView();
+            currentView?.view.webContents.send(BROWSER_HISTORY_PUSH, this.callsWidgetWindow.getChannelURL());
         }
     }
 
@@ -212,6 +274,42 @@ export class WindowManager {
         this.sendToRenderer(MAXIMIZE_CHANGE, false);
     }
 
+    maximizeMainWindow = () => {
+        if (!(this.viewManager && this.mainWindow)) {
+            return;
+        }
+        this.mainWindow.maximize?.();
+    }
+
+    displayRemoved = (event: Event, oldDisplay: Display) => {
+        log.debug('WindowManager.displayRemoved', {oldDisplay});
+
+        if (!oldDisplay) {
+            return;
+        }
+
+        if (this.isActiveScreen(oldDisplay.id)) {
+            this.maximizeMainWindow();
+        }
+    }
+
+    displayMetricsChanged = (event: Event, display: Display, changedMetrics: string[]) => {
+        log.debug('WindowManager.displayMetricsChanged', {display, changedMetrics});
+
+        this.maximizeMainWindow();
+    }
+
+    isActiveScreen = (id: Display['id']): boolean => {
+        if (!(this.viewManager && this.mainWindow)) {
+            return false;
+        }
+
+        const mainWindowBounds = this.mainWindow.getBounds();
+        const currentDisplay = screen.getDisplayNearestPoint({x: mainWindowBounds.x, y: mainWindowBounds.y});
+        log.debug('WindowManager.isActiveScreen', {id, currentDisplay});
+        return currentDisplay.id === id;
+    }
+
     isResizing = false;
 
     handleWillResizeMainWindow = (event: Event, newBounds: Electron.Rectangle) => {
@@ -221,8 +319,17 @@ export class WindowManager {
             return;
         }
 
+        /**
+         * Fixes an issue on win11 related to Snap where the first "will-resize" event would return the same bounds
+         * causing the "resize" event to not fire
+         */
+        const prevBounds = this.getBounds();
+        if (prevBounds.height === newBounds.height && prevBounds.width === newBounds.width) {
+            return;
+        }
+
         if (this.isResizing && this.viewManager.loadingScreenState === LoadingScreenState.HIDDEN && this.viewManager.getCurrentView()) {
-            log.silly('prevented resize');
+            log.debug('prevented resize');
             event.preventDefault();
             return;
         }
@@ -242,6 +349,9 @@ export class WindowManager {
             const bounds = this.getBounds();
             this.throttledWillResize(bounds);
             ipcMain.emit(RESIZE_MODAL, null, bounds);
+            this.teamDropdown?.updateWindowBounds();
+            this.downloadsDropdown?.updateWindowBounds();
+            this.downloadsDropdownMenu?.updateWindowBounds();
         }
         this.isResizing = false;
     }
@@ -251,6 +361,8 @@ export class WindowManager {
     }
 
     private throttledWillResize = (newBounds: Electron.Rectangle) => {
+        log.silly('WindowManager.throttledWillResize', {newBounds});
+
         this.isResizing = true;
         this.setCurrentViewBounds(newBounds);
     }
@@ -273,10 +385,13 @@ export class WindowManager {
         this.viewManager.setLoadingScreenBounds();
         this.teamDropdown?.updateWindowBounds();
         this.downloadsDropdown?.updateWindowBounds();
+        this.downloadsDropdownMenu?.updateWindowBounds();
         ipcMain.emit(RESIZE_MODAL, null, bounds);
     };
 
     setCurrentViewBounds = (bounds: {width: number; height: number}) => {
+        log.debug('WindowManager.setCurrentViewBounds', {bounds});
+
         const currentView = this.viewManager?.getCurrentView();
         if (currentView) {
             const adjustedBounds = getAdjustedWindowBoundaries(bounds.width, bounds.height, shouldHaveBackBar(currentView.tab.url, currentView.view.webContents.getURL()));
@@ -494,6 +609,7 @@ export class WindowManager {
     }
 
     switchServer = (serverName: string, waitForViewToExist = false) => {
+        log.debug('windowManager.switchServer');
         this.showMainWindow();
         const server = Config.teams.find((team) => team.name === serverName);
         if (!server) {
@@ -521,6 +637,7 @@ export class WindowManager {
     }
 
     switchTab = (serverName: string, tabName: string) => {
+        log.debug('windowManager.switchTab');
         this.showMainWindow();
         const tabViewName = getTabViewName(serverName, tabName);
         this.viewManager?.showByName(tabViewName);
@@ -834,19 +951,26 @@ export class WindowManager {
     handleGetDesktopSources = async (event: IpcMainEvent, viewName: string, opts: Electron.SourcesOptions) => {
         log.debug('WindowManager.handleGetDesktopSources', {viewName, opts});
 
+        const globalWidget = viewName === 'widget' && this.callsWidgetWindow;
         const view = this.viewManager?.views.get(viewName);
-        if (!view) {
+        if (!view && !globalWidget) {
             return;
         }
 
         desktopCapturer.getSources(opts).then((sources) => {
-            view.view.webContents.send(DESKTOP_SOURCES_RESULT, sources.map((source) => {
+            const message = sources.map((source) => {
                 return {
                     id: source.id,
                     name: source.name,
                     thumbnailURL: source.thumbnail.toDataURL(),
                 };
-            }));
+            });
+
+            if (view) {
+                view.view.webContents.send(DESKTOP_SOURCES_RESULT, message);
+            } else {
+                this.callsWidgetWindow?.win.webContents.send(DESKTOP_SOURCES_RESULT, message);
+            }
         });
     }
 
@@ -864,6 +988,7 @@ export class WindowManager {
     handleTokenRefreshed = (event: IpcMainEvent, message: any, viewName: string) => {
         this.mainStore?.set('IKToken', message.token);
     }
+
     handleTokenCleared = (event: IpcMainEvent, message: any, viewName: string) => {
         this.mainStore?.delete('IKToken');
     }

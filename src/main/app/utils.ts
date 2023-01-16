@@ -18,6 +18,7 @@ import {MattermostServer} from 'common/servers/MattermostServer';
 import {TAB_FOCALBOARD, TAB_MESSAGING, TAB_PLAYBOOKS} from 'common/tabs/TabView';
 import urlUtils from 'common/utils/url';
 import Utils from 'common/utils/util';
+import {APP_MENU_WILL_CLOSE} from 'common/communication';
 
 import updateManager from 'main/autoUpdater';
 import {migrationInfoPath, updatePaths} from 'main/constants';
@@ -49,6 +50,7 @@ export function updateSpellCheckerLocales() {
 }
 
 export function updateServerInfos(teams: TeamWithTabs[]) {
+    log.silly('app.utils.updateServerInfos');
     const serverInfos: Array<Promise<RemoteInfo | string | undefined>> = [];
     teams.forEach((team) => {
         const serverInfo = new ServerInfo(new MattermostServer(team.name, team.url));
@@ -56,11 +58,14 @@ export function updateServerInfos(teams: TeamWithTabs[]) {
     });
     Promise.all(serverInfos).then((data: Array<RemoteInfo | string | undefined>) => {
         const teams = Config.teams;
+        let hasUpdates = false;
         teams.forEach((team) => {
-            updateServerURL(data, team);
-            openExtraTabs(data, team);
+            hasUpdates = hasUpdates || updateServerURL(data, team);
+            hasUpdates = hasUpdates || openExtraTabs(data, team);
         });
-        Config.set('teams', teams);
+        if (hasUpdates) {
+            Config.set('teams', teams);
+        }
     }).catch((reason: any) => {
         log.error('Error getting server infos', reason);
     });
@@ -68,27 +73,33 @@ export function updateServerInfos(teams: TeamWithTabs[]) {
 
 function updateServerURL(data: Array<RemoteInfo | string | undefined>, team: TeamWithTabs) {
     const remoteInfo = data.find((info) => info && typeof info !== 'string' && info.name === team.name) as RemoteInfo;
-    if (remoteInfo && remoteInfo.siteURL) {
+    if (remoteInfo && remoteInfo.siteURL && team.url !== remoteInfo.siteURL) {
         team.url = remoteInfo.siteURL;
+        return true;
     }
+    return false;
 }
 
 function openExtraTabs(data: Array<RemoteInfo | string | undefined>, team: TeamWithTabs) {
+    let hasUpdates = false;
     const remoteInfo = data.find((info) => info && typeof info !== 'string' && info.name === team.name) as RemoteInfo;
     if (remoteInfo) {
         team.tabs.forEach((tab) => {
             if (tab.name !== TAB_MESSAGING && remoteInfo.serverVersion && Utils.isVersionGreaterThanOrEqualTo(remoteInfo.serverVersion, '6.0.0')) {
-                if (tab.name === TAB_PLAYBOOKS && remoteInfo.hasPlaybooks && tab.isOpen !== false) {
+                if (tab.name === TAB_PLAYBOOKS && remoteInfo.hasPlaybooks && typeof tab.isOpen === 'undefined') {
                     log.info(`opening ${team.name}___${tab.name} on hasPlaybooks`);
                     tab.isOpen = true;
+                    hasUpdates = true;
                 }
-                if (tab.name === TAB_FOCALBOARD && remoteInfo.hasFocalboard && tab.isOpen !== false) {
+                if (tab.name === TAB_FOCALBOARD && remoteInfo.hasFocalboard && typeof tab.isOpen === 'undefined') {
                     log.info(`opening ${team.name}___${tab.name} on hasFocalboard`);
                     tab.isOpen = true;
+                    hasUpdates = true;
                 }
             }
         });
     }
+    return hasUpdates;
 }
 
 export function handleUpdateMenuEvent() {
@@ -96,7 +107,10 @@ export function handleUpdateMenuEvent() {
 
     const aMenu = createAppMenu(Config, updateManager);
     Menu.setApplicationMenu(aMenu);
-    aMenu.addListener('menu-will-close', WindowManager.focusBrowserView);
+    aMenu.addListener('menu-will-close', () => {
+        WindowManager.focusBrowserView();
+        WindowManager.sendToRenderer(APP_MENU_WILL_CLOSE);
+    });
 
     // set up context menu for tray icon
     if (shouldShowTrayIcon()) {

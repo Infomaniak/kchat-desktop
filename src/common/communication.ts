@@ -24,6 +24,9 @@ export const GET_DARK_MODE = 'get-dark-mode';
 export const USER_ACTIVITY_UPDATE = 'user-activity-update';
 export const UPDATE_SHORTCUT_MENU = 'update-shortcut-menu';
 
+export const OPEN_APP_MENU = 'open-app-menu';
+export const APP_MENU_WILL_CLOSE = 'app-menu-will-close';
+
 export const LOAD_RETRY = 'load_retry';
 export const LOAD_SUCCESS = 'load_success';
 export const LOAD_FAILED = 'load_fail';
@@ -143,6 +146,17 @@ export const VIEW_FINISHED_RESIZING = 'view-finished-resizing';
 export const TOKEN_REFRESHED = 'token-refreshed';
 export const TOKEN_CLEARED = 'token-cleared';
 
+// Mattermost Calls
+// export const DISPATCH_GET_DESKTOP_SOURCES = 'dispatch-get-desktop-sources';
+// export const DESKTOP_SOURCES_RESULT = 'desktop-sources-result';
+export const DESKTOP_SOURCES_MODAL_REQUEST = 'desktop-sources-modal-request';
+export const CALLS_JOIN_CALL = 'calls-join-call';
+export const CALLS_LEAVE_CALL = 'calls-leave-call';
+export const CALLS_WIDGET_RESIZE = 'calls-widget-resize';
+export const CALLS_WIDGET_SHARE_SCREEN = 'calls-widget-share-screen';
+export const CALLS_WIDGET_CHANNEL_LINK_CLICK = 'calls-widget-channel-link-click';
+export const CALLS_JOINED_CALL = 'calls-joined-call';
+
 export const REQUEST_CLEAR_DOWNLOADS_DROPDOWN = 'request-clear-downloads-dropdown';
 export const CLOSE_DOWNLOADS_DROPDOWN = 'close-downloads-dropdown';
 export const OPEN_DOWNLOADS_DROPDOWN = 'open-downloads-dropdown';
@@ -155,6 +169,7 @@ export const REQUEST_HAS_DOWNLOADS = 'request-has-downloads';
 export const DOWNLOADS_DROPDOWN_FOCUSED = 'downloads-dropdown-focused';
 export const RECEIVE_DOWNLOADS_DROPDOWN_SIZE = 'receive-downloads-dropdown-size';
 export const SEND_DOWNLOADS_DROPDOWN_SIZE = 'send-downloads-dropdown-size';
+export const GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION = 'get-downloaded-image-thumbnail-location';
 
 export const OPEN_DOWNLOADS_DROPDOWN_MENU = 'open-downloads-dropdown-menu';
 export const CLOSE_DOWNLOADS_DROPDOWN_MENU = 'close-downloads-dropdown-menu';

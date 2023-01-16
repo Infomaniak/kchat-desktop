@@ -25,6 +25,11 @@ module.exports = merge(base, {
         modalPreload: './src/main/preload/modalPreload.js',
         loadingScreenPreload: './src/main/preload/loadingScreenPreload.js',
         urlView: './src/main/preload/urlView.js',
+        callsWidget: './src/main/preload/callsWidget.js',
+    },
+    externals: {
+        'macos-notification-state': 'require("macos-notification-state")',
+        'windows-focus-assist': 'require("windows-focus-assist")',
     },
     externals: {
         'macos-notification-state': 'require("macos-notification-state")',

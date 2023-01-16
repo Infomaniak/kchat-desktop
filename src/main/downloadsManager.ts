@@ -77,9 +77,21 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
         this.checkForDeletedFiles();
         this.reloadFilesForMAS();
 
+        this.loadIPCHandlers();
+    };
+
+    private loadIPCHandlers = () => {
+        ipcMain.removeHandler(REQUEST_HAS_DOWNLOADS);
         ipcMain.handle(REQUEST_HAS_DOWNLOADS, () => {
             return this.hasDownloads();
         });
+
+        ipcMain.removeListener(DOWNLOADS_DROPDOWN_FOCUSED, this.clearAutoCloseTimeout);
+        ipcMain.removeListener(UPDATE_AVAILABLE, this.onUpdateAvailable);
+        ipcMain.removeListener(UPDATE_DOWNLOADED, this.onUpdateDownloaded);
+        ipcMain.removeListener(UPDATE_PROGRESS, this.onUpdateProgress);
+        ipcMain.removeListener(NO_UPDATE_AVAILABLE, this.noUpdateAvailable);
+
         ipcMain.on(DOWNLOADS_DROPDOWN_FOCUSED, this.clearAutoCloseTimeout);
         ipcMain.on(UPDATE_AVAILABLE, this.onUpdateAvailable);
         ipcMain.on(UPDATE_DOWNLOADED, this.onUpdateDownloaded);
@@ -174,17 +186,26 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
 
         for (const fileId in downloads) {
             if (Object.prototype.hasOwnProperty.call(downloads, fileId)) {
+                const file = downloads[fileId];
+
+                if (this.isInvalidFile(file)) {
+                    delete downloads[fileId];
+                    modified = true;
+                    continue;
+                }
+
                 // Remove update if app was updated and restarted
                 if (fileId === APP_UPDATE_KEY) {
-                    if (appVersionManager.lastAppVersion === downloads[APP_UPDATE_KEY].filename) {
+                    if (appVersionManager.lastAppVersion === file.filename) {
                         delete downloads[APP_UPDATE_KEY];
                         modified = true;
+                        continue;
                     } else {
                         continue;
                     }
                 }
-                const file = downloads[fileId];
-                if ((file && file.state === 'completed')) {
+
+                if (file && file.state === 'completed') {
                     if (!file.location || !fs.existsSync(file.location)) {
                         downloads[fileId].state = 'deleted';
                         modified = true;
@@ -401,7 +422,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     private showSaveDialog = (item: DownloadItem) => {
         const filename = item.getFilename();
         const fileElements = filename.split('.');
-        const filters = this.getFileFilters(fileElements);
+        const filters = this.getFileFilters(fileElements.slice(fileElements.length - 1));
 
         return dialog.showSaveDialog({
             title: filename,
@@ -590,14 +611,15 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     };
 
     private getFileFilters = (fileElements: string[]): FileFilter[] => {
-        const filters = [];
+        const filters = fileElements.map((element) => ({
+            name: `${element.toUpperCase()} (*.${element})`,
+            extensions: [element],
+        }));
 
-        if (fileElements.length > 1) {
-            filters.push({
-                name: localizeMessage('main.app.initialize.downloadBox.allFiles', 'All files'),
-                extensions: ['*'],
-            });
-        }
+        filters.push({
+            name: localizeMessage('main.app.initialize.downloadBox.allFiles', 'All files'),
+            extensions: ['*'],
+        });
 
         return filters;
     };
@@ -631,6 +653,13 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     private isAppUpdate = (item: DownloadedItem): boolean => {
         return item.type === DownloadItemTypeEnum.UPDATE;
     };
+
+    private isInvalidFile(file: DownloadedItem) {
+        return (typeof file !== 'object') ||
+            !file.filename ||
+            !file.state ||
+            !file.type;
+    }
 }
 
 let downloadsManager = new DownloadsManager(downloadsJson);
