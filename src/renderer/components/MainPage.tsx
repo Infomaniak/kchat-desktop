@@ -93,10 +93,6 @@ class MainPage extends React.PureComponent<Props, State> {
             const openTabs = firstServer?.tabs.filter((tab) => tab.isOpen) || [];
             firstTab = openTabs?.find((e) => e.order === 0) || openTabs[0];
         }
-        console.log('[DEBUG] Main page is loaded');
-        console.log('[DEBUG] Team => ', this.props.teams);
-        console.log('[DEBUG] First server => ', firstServer);
-        console.log('[DEBUG] First tab => ', firstTab);
 
         this.state = {
             activeServerName: firstServer?.name,
@@ -373,19 +369,6 @@ class MainPage extends React.PureComponent<Props, State> {
         this.setState({
             threeDotsIsFocused: false,
         });
-    }
-
-    showHideDownloadsBadge(value = false) {
-        this.setState({showDownloadsBadge: value});
-    }
-
-    closeDownloadsDropdown() {
-        window.ipcRenderer.send(CLOSE_DOWNLOADS_DROPDOWN);
-        window.ipcRenderer.send(CLOSE_DOWNLOADS_DROPDOWN_MENU);
-    }
-
-    openDownloadsDropdown() {
-        window.ipcRenderer.send(OPEN_DOWNLOADS_DROPDOWN);
     }
 
     render() {
