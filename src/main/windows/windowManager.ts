@@ -38,11 +38,14 @@ import {
     CALL_RINGING,
     TOKEN_REFRESHED,
     TOKEN_CLEARED,
+    TOKEN_REQUEST,
     VIEW_FINISHED_RESIZING,
     CALLS_JOIN_CALL,
     CALLS_LEAVE_CALL,
     DESKTOP_SOURCES_MODAL_REQUEST,
     CALLS_WIDGET_CHANNEL_LINK_CLICK,
+    REFRESH_TOKEN,
+    RESET_TOKEN,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import {SECOND} from 'common/utils/constants';
@@ -61,6 +64,8 @@ import DownloadsDropdownView from '../views/downloadsDropdownView';
 import DownloadsDropdownMenuView from '../views/downloadsDropdownMenuView';
 
 import downloadsManager from 'main/downloadsManager';
+
+import TokenManager from 'main/tokenManager';
 
 import {createSettingsWindow} from './settingsWindow';
 import createMainWindow from './mainWindow';
@@ -109,12 +114,15 @@ export class WindowManager {
         ipcMain.on(DISPATCH_GET_DESKTOP_SOURCES, this.handleGetDesktopSources);
         ipcMain.on(RELOAD_CURRENT_VIEW, this.handleReloadCurrentView);
         ipcMain.on(VIEW_FINISHED_RESIZING, this.handleViewFinishedResizing);
-        ipcMain.on(TOKEN_REFRESHED, this.handleTokenRefreshed);
-        ipcMain.on(TOKEN_CLEARED, this.handleTokenCleared);
         ipcMain.on(CALLS_JOIN_CALL, this.createCallsWidgetWindow);
         ipcMain.on(CALLS_LEAVE_CALL, () => this.callsWidgetWindow?.close());
         ipcMain.on(DESKTOP_SOURCES_MODAL_REQUEST, this.handleDesktopSourcesModalRequest);
         ipcMain.on(CALLS_WIDGET_CHANNEL_LINK_CLICK, this.handleCallsWidgetChannelLinkClick);
+        ipcMain.handle(TOKEN_REQUEST, this.handleTokenRequest);
+        ipcMain.handle(REFRESH_TOKEN, this.handleTokenRefresh);
+        ipcMain.on(TOKEN_REFRESHED, this.handleTokenRefreshed);
+        ipcMain.on(TOKEN_CLEARED, this.handleTokenCleared);
+        ipcMain.on(RESET_TOKEN, this.handleResetToken);
     }
 
     handleUpdateConfig = () => {
@@ -598,7 +606,10 @@ export class WindowManager {
             this.viewManager = new ViewManager(this.mainWindow);
             this.viewManager.load();
             this.viewManager.showInitial();
-            this.initializeCurrentServerName();
+
+            TokenManager.load().finally((r) => {
+                this.initializeCurrentServerName();
+            });
         }
     }
 
@@ -986,11 +997,37 @@ export class WindowManager {
     }
 
     handleTokenRefreshed = (event: IpcMainEvent, message: any, viewName: string) => {
-        this.mainStore?.set('IKToken', message.token);
+        // console.log(message.token);
+        // if (message.token) {
+        //     this.mainStore?.set('IKToken', message.token);
+        // }
+        if (message.token) {
+            TokenManager.handleStoreToken(event, message);
+        }
     }
 
     handleTokenCleared = (event: IpcMainEvent, message: any, viewName: string) => {
-        this.mainStore?.delete('IKToken');
+        // TODO: delete
+
+        // this.mainStore?.delete('IKToken');
+    }
+
+    handleResetToken = () => {
+        TokenManager.reset();
+    }
+
+    handleTokenRequest = () => {
+        const token = TokenManager.getToken();
+        return token;
+    }
+
+    handleTokenRefresh = () => {
+        const callback = () => {
+            const token = TokenManager.getToken();
+            console.log(token);
+        };
+
+        TokenManager.handleRefreshToken(callback);
     }
 }
 

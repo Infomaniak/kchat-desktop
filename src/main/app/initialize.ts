@@ -36,6 +36,7 @@ import {
     PING_DOMAIN,
     MAIN_WINDOW_SHOWN,
     OPEN_APP_MENU,
+    TOKEN_REFRESHED,
 } from 'common/communication';
 import Config from 'common/config';
 import urlUtils from 'common/utils/url';
@@ -56,6 +57,7 @@ import TrustedOriginsStore from 'main/trustedOrigins';
 import {refreshTrayImages, setupTray} from 'main/tray/tray';
 import UserActivityMonitor from 'main/UserActivityMonitor';
 import WindowManager from 'main/windows/windowManager';
+import TokenManager from 'main/tokenManager';
 
 import {protocols} from '../../../electron-builder.json';
 
@@ -278,6 +280,8 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(START_UPDATE_DOWNLOAD, handleStartDownload);
     ipcMain.on(START_UPGRADE, handleStartUpgrade);
     ipcMain.handle(PING_DOMAIN, handlePingDomain);
+
+    ipcMain.on(TOKEN_REFRESHED, TokenManager.handleStoreToken);
 }
 
 function initializeAfterAppReady() {
@@ -286,9 +290,8 @@ function initializeAfterAppReady() {
     const defaultSession = session.defaultSession;
     defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
         (d, c) => {
-            const currentServerURL = WindowManager.getCurrentServerUrl();
-            if (currentServerURL && d.url.includes('/token') && d.responseHeaders) {
-                d.responseHeaders['Access-Control-Allow-Origin'] = [currentServerURL];
+            if (d.url.includes('/token') && d.responseHeaders) {
+                d.responseHeaders['Access-Control-Allow-Origin'] = ['https://kchat.preprod.dev.infomaniak.ch'];
                 d.responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
                 d.responseHeaders['Access-Control-Allow-Headers'] = ['X-Requested-With, Authorization'];
                 d.responseHeaders['Access-Control-Allow-Methods'] = ['GET, POST, OPTIONS, PUT, DELETE'];
@@ -307,11 +310,11 @@ function initializeAfterAppReady() {
     defaultSession.webRequest.onBeforeSendHeaders({urls: ['https://*/api/v4/*', 'https://*/broadcasting/auth']},
         (d, c) => {
             const authHeader = d.requestHeaders.Authorization ? d.requestHeaders.Authorization : null;
-            const ikToken = WindowManager.mainStore?.get('IKToken');
+            const ikToken = TokenManager.getToken(); // WindowManager.mainStore?.get('IKToken');
 
             // No Auhtorization header or bearer is empty
-            if ((!authHeader || !authHeader?.split(' ')[1]) && ikToken) {
-                d.requestHeaders.Authorization = `Bearer ${ikToken}`;
+            if ((!authHeader || !authHeader?.split(' ')[1]) && ikToken.token) {
+                d.requestHeaders.Authorization = `Bearer ${ikToken.token}`;
             }
 
             c({

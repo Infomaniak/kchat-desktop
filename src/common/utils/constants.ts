@@ -46,6 +46,7 @@ export const DOWNLOADS_DROPDOWN_AUTOCLOSE_TIMEOUT = 4000; // 4 sec
 
 // supported custom login paths (oath, saml)
 export const customLoginRegexPaths = [
+    /^\/authorize$/i,
     /^\/oauth\/authorize$/i,
     /^\/oauth\/deauthorize$/i,
     /^\/oauth\/access_token$/i,

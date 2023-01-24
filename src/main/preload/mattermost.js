@@ -44,6 +44,11 @@ import {
     DESKTOP_SOURCES_MODAL_REQUEST,
     CALLS_WIDGET_SHARE_SCREEN,
     CLOSE_DOWNLOADS_DROPDOWN,
+    UPDATE_TEAMS,
+    TOKEN_REQUEST,
+    REFRESH_TOKEN,
+    RESET_TOKEN,
+    SWITCH_SERVER,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -63,6 +68,12 @@ if (process.env.NODE_ENV === 'test') {
         getWebContentsId: () => ipcRenderer.invoke(GET_VIEW_WEBCONTENTS_ID),
     });
 }
+
+contextBridge.exposeInMainWorld('authManager', {
+    tokenRequest: () => ipcRenderer.invoke(TOKEN_REQUEST),
+    refreshToken: () => ipcRenderer.invoke(REFRESH_TOKEN),
+    resetToken: () => ipcRenderer.invoke(RESET_TOKEN),
+});
 
 ipcRenderer.invoke('get-app-version').then(({name, version}) => {
     appVersion = version;
@@ -198,6 +209,38 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
         ipcRenderer.send('call-focus', message, viewName);
         break;
     }
+    case 'reset-teams': {
+        ipcRenderer.invoke(UPDATE_TEAMS, [{
+            name: '.',
+            url: 'https://kchat.preprod.dev.infomaniak.ch',
+            order: 0,
+            tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+        }]);
+        break;
+    }
+    case 'update-teams': {
+        // ipcRenderer.send(UPDATE_TEAMS_DROPDOWN, message.teams, viewName);
+        const teams = message.teams.reduce((acc, item, idx) => {
+            acc.push({
+                name: item.display_name,
+                url: item.url,
+                order: idx,
+                tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+            });
+
+            return acc;
+        }, []);
+
+        console.log(teams);
+
+        if (teams.length) {
+            ipcRenderer.invoke(UPDATE_TEAMS, teams);
+        }
+        break;
+    }
+    case SWITCH_SERVER:
+        ipcRenderer.send(SWITCH_SERVER, event.data.data);
+        break;
     case CALLS_JOIN_CALL: {
         ipcRenderer.send(CALLS_JOIN_CALL, viewName, message);
         break;
