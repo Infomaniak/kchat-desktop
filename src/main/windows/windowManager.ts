@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 import path from 'path';
 
-import {app, BrowserWindow, nativeImage, systemPreferences, ipcMain, IpcMainEvent, IpcMainInvokeEvent, desktopCapturer, Display, screen} from 'electron';
+import {app, BrowserWindow, nativeImage, systemPreferences, ipcMain, IpcMainEvent, IpcMainInvokeEvent, desktopCapturer, Display, screen, ipcRenderer} from 'electron';
 import log from 'electron-log';
 
 import Store from 'electron-store';
@@ -46,6 +46,9 @@ import {
     CALLS_WIDGET_CHANNEL_LINK_CLICK,
     REFRESH_TOKEN,
     RESET_TOKEN,
+    SERVER_ADDED,
+    SERVER_DELETED,
+    UPDATE_TEAMS,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import {SECOND} from 'common/utils/constants';
@@ -67,6 +70,8 @@ import downloadsManager from 'main/downloadsManager';
 
 import TokenManager from 'main/tokenManager';
 
+import {updateServerInfos} from 'main/app/utils';
+
 import {createSettingsWindow} from './settingsWindow';
 import createMainWindow from './mainWindow';
 import {createCallWindow} from './callWindow';
@@ -76,6 +81,30 @@ import {createCallDialingWindow} from './callDialingWindow';
 import CallsWidgetWindow from './callsWidgetWindow';
 
 const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@jitsi/electron-sdk');
+
+type SuiteTeam = {
+    id: string;
+    create_at: number;
+    update_at: number;
+    delete_at: number;
+    display_name: string;
+    name: string;
+    product_id: number;
+    account_id: number;
+    description: string;
+    email: string;
+    type: string;
+    company_name: string;
+    allowed_domains: string;
+    invite_id: string;
+    scheme_id: string | void;
+    policy_id: string | void;
+    allow_open_invite: boolean;
+    group_constrained: number | void;
+    url: string;
+    pack_name: string;
+    last_team_icon_update: number;
+}
 
 // singleton module to manage application's windows
 
@@ -123,6 +152,8 @@ export class WindowManager {
         ipcMain.on(TOKEN_REFRESHED, this.handleTokenRefreshed);
         ipcMain.on(TOKEN_CLEARED, this.handleTokenCleared);
         ipcMain.on(RESET_TOKEN, this.handleResetToken);
+        ipcMain.handle(SERVER_ADDED, this.handleAddServer);
+        ipcMain.handle(SERVER_DELETED, this.handleDeleteServer);
     }
 
     handleUpdateConfig = () => {
@@ -1028,6 +1059,31 @@ export class WindowManager {
         };
 
         TokenManager.handleRefreshToken(callback);
+    }
+
+    handleAddServer = (event: IpcMainInvokeEvent, message: SuiteTeam) => {
+        const newTeams = Config.teams;
+
+        const team = {
+            name: message.display_name,
+            url: message.url,
+            order: newTeams.length,
+            tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+        };
+
+        newTeams.push(team);
+        updateServerInfos(newTeams, true);
+    }
+
+    handleDeleteServer = (_: IpcMainInvokeEvent, message: SuiteTeam) => {
+        let newTeams = Config.teams;
+
+        // filter out predefined teams
+        newTeams = newTeams.filter((newTeam) => {
+            return newTeam.url === message.url; // eslint-disable-line max-nested-callbacks
+        });
+
+        updateServerInfos(newTeams, true);
     }
 }
 

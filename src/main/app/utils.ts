@@ -49,7 +49,7 @@ export function updateSpellCheckerLocales() {
     }
 }
 
-export function updateServerInfos(teams: TeamWithTabs[]) {
+export function updateServerInfos(teams: TeamWithTabs[], hardUpdate = false) {
     log.silly('app.utils.updateServerInfos');
     const serverInfos: Array<Promise<RemoteInfo | string | undefined>> = [];
     teams.forEach((team) => {
@@ -63,7 +63,7 @@ export function updateServerInfos(teams: TeamWithTabs[]) {
             hasUpdates = hasUpdates || updateServerURL(data, team);
             hasUpdates = hasUpdates || openExtraTabs(data, team);
         });
-        if (hasUpdates) {
+        if (hasUpdates || hardUpdate) {
             Config.set('teams', teams);
         }
     }).catch((reason: any) => {
@@ -122,8 +122,9 @@ export function handleUpdateMenuEvent() {
 export function getDeeplinkingURL(args: string[]) {
     if (Array.isArray(args) && args.length) {
     // deeplink urls should always be the last argument, but may not be the first (i.e. Windows with the app already running)
-        let url = args[args.length - 1];
-// alert(args)
+        const url = args[args.length - 1];
+
+        // alert(args)
         if (url && mainProtocol && url.startsWith(mainProtocol) && urlUtils.isValidURI(url)) {
             // if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
             //     const currentServerURL = WindowManager.getCurrentServerUrl();

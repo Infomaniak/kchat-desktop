@@ -58,21 +58,22 @@ export function handleAppBrowserWindowCreated(event: Event, newWindow: BrowserWi
 export function handleAppWillFinishLaunching() {
     // Protocol handler for osx
     app.on('open-url', (event, url) => {
-        if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
-            if (app.isReady()) {
-                const currentServerURL = WindowManager.getCurrentServerUrl();
+        // if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
+        //     if (app.isReady()) {
+        //         const currentServerURL = WindowManager.getCurrentServerUrl();
 
-                const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
-                openDeepLink(newUrl);
-            } else {
-                const currentServerURL = WindowManager.getCurrentServerUrl();
+        //         const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
+        //         openDeepLink(newUrl);
+        //     } else {
+        //         const currentServerURL = WindowManager.getCurrentServerUrl();
 
-                const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
-                app.once('ready', () => openDeepLink(newUrl));
-            }
+        //         const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
+        //         app.once('ready', () => openDeepLink(newUrl));
+        //     }
 
-        // return url;
-        }
+        // // return url;
+        // }
+
         log.info(`Handling deeplinking url: ${url}`);
         event.preventDefault();
         const deeplinkingUrl = getDeeplinkingURL([url]);

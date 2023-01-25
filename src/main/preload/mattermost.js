@@ -49,6 +49,8 @@ import {
     REFRESH_TOKEN,
     RESET_TOKEN,
     SWITCH_SERVER,
+    SERVER_ADDED,
+    SERVER_DELETED,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -73,6 +75,8 @@ contextBridge.exposeInMainWorld('authManager', {
     tokenRequest: () => ipcRenderer.invoke(TOKEN_REQUEST),
     refreshToken: () => ipcRenderer.invoke(REFRESH_TOKEN),
     resetToken: () => ipcRenderer.invoke(RESET_TOKEN),
+    addTeam: (d) => ipcRenderer.invoke(SERVER_ADDED, d),
+    deleteTeam: () => ipcRenderer.invoke(SERVER_DELETED),
 });
 
 ipcRenderer.invoke('get-app-version').then(({name, version}) => {

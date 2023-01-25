@@ -134,14 +134,14 @@ function getView(inputURL: URL | string, teams: TeamWithTabs[], ignoreScheme = f
 
     // TODO: add check for IK server (prod, preprod dev..)
     // Match for ktalk protocol and redirect to IK server
-    if (parsedURL.protocol === 'ktalk:') {
-        const srv = new MattermostServer(teams[0].name, teams[0].url);
-        const tabView = getServerView(srv, teams[0].tabs[0]);
-        const ktalkParsedUrl = parseURL(tabView.url);
-        if (ktalkParsedUrl) {
-            return {name: tabView.name, url: ktalkParsedUrl.toString()};
-        }
-    }
+    // if (parsedURL.protocol === 'ktalk:') {
+    //     const srv = new MattermostServer(teams[0].name, teams[0].url);
+    //     const tabView = getServerView(srv, teams[0].tabs[0]);
+    //     const ktalkParsedUrl = parseURL(tabView.url);
+    //     if (ktalkParsedUrl) {
+    //         return {name: tabView.name, url: ktalkParsedUrl.toString()};
+    //     }
+    // }
 
     // If not ktalk protocol and maybe another server than IK server
     let firstOption;

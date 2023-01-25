@@ -149,6 +149,8 @@ export const TOKEN_CLEARED = 'token-cleared';
 export const TOKEN_REQUEST = 'token-request';
 export const REFRESH_TOKEN = 'refresh-token';
 export const RESET_TOKEN = 'reset-token';
+export const SERVER_ADDED = 'server-added';
+export const SERVER_DELETED = 'server-deleted';
 
 // Mattermost Calls
 // export const DISPATCH_GET_DESKTOP_SOURCES = 'dispatch-get-desktop-sources';
