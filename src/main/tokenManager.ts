@@ -2,13 +2,11 @@
 // See LICENSE.txt for license information.
 /* eslint-disable no-console */
 
-import nodeCrypto from 'crypto';
-
 import fs from 'fs';
 
 import log from 'electron-log';
 
-import {IpcMainEvent, net, session, ClientRequest, ipcMain} from 'electron';
+import {IpcMainEvent, net, session, ipcMain} from 'electron';
 
 import {UPDATE_PATHS} from 'common/communication';
 
@@ -26,6 +24,8 @@ export class TokenManager {
     clientID: string;
     storeFile: string;
     data: Token | Record<string, never>;
+    isRefreshing: boolean;
+    requestPromise: Promise<Token> | void;
 
     constructor(tokensStorePath: string) {
         this.clientID = 'A7376A6D-9A79-4B06-A837-7D92DB93965B';
@@ -36,6 +36,8 @@ export class TokenManager {
             `https://login.preprod.dev.infomaniak.ch/authorize?access_type=offline&code_challenge_method=S256&client_id=${this.clientID}&response_type=code`;
         this.storeFile = tokensStorePath;
         this.data = {};
+        this.isRefreshing = false;
+        this.requestPromise = undefined;
     }
 
     load = (): Promise<Token | Error> => {
@@ -45,7 +47,8 @@ export class TokenManager {
             try {
                 // const result = Validator.validateCertificateStore(storeStr);
 
-                console.log(tokensStorePath);
+                // console.log(tokensStorePath);
+
                 storeStr = fs.readFileSync(tokensStorePath, 'utf-8');
                 const jsonData = (typeof storeStr === 'object' ? storeStr as Token : JSON.parse(storeStr) as Token);
                 if (!jsonData) {
@@ -54,7 +57,7 @@ export class TokenManager {
                 this.data = jsonData;
                 const tokenExpired = this.checkValidity();
                 if (tokenExpired) {
-                    this.handleRefreshToken(resolve);
+                    this.handleRefreshToken().then((token) => resolve(token));
                 } else {
                     resolve(this.data);
                 }
@@ -72,8 +75,12 @@ export class TokenManager {
             throw new Error('missing refresh token');
         }
 
-        const isExpired = this.data.expiresAt <= Date.now() / 1000;
-        return !isExpired;
+        console.log(Date.now() / 1000);
+        console.log(this.data.expiresAt);
+
+        const isExpired = this.data.expiresAt <= (Date.now() / 1000);
+        console.log('isExpired', isExpired);
+        return isExpired;
     }
 
     // Returns available token data.
@@ -104,71 +111,95 @@ export class TokenManager {
 
     // Setup api request for token refresh.
     handleRefreshToken = (callback?: (...args: any[]) => void) => {
-        const data = new URLSearchParams();
-        data.append('grant_type', 'refresh_token');
-        data.append('refresh_token', this.data.refreshToken as string);
-        data.append('client_id', this.clientID);
+        if (this.requestPromise) {
+            return this.requestPromise as Promise<Token>;
+        }
 
-        const req = net.request({
-            url: this.tokenApiEndpoint,
-            session: session.defaultSession,
-            useSessionCookies: false,
-            method: 'POST',
-        });
+        this.requestPromise = new Promise((resolve, reject) => {
+            console.log('REFRESHING TOKEN');
 
-        this.handlePostToken(req, data, callback);
-    }
+            // only allow refresh once.
+            this.isRefreshing = true;
+            const data = new URLSearchParams();
+            data.append('grant_type', 'refresh_token');
+            data.append('refresh_token', this.data.refreshToken as string);
+            data.append('client_id', this.clientID);
 
-    // Do token api request.
-    handlePostToken = (req: ClientRequest, data: URLSearchParams, callback?: (...args: any[]) => void) => {
-        req.on('response', (response: Electron.IncomingMessage) => {
-            log.silly('handlePostToken.response', response);
+            const req = net.request({
+                url: this.tokenApiEndpoint,
+                session: session.defaultSession,
+                useSessionCookies: false,
+                method: 'POST',
+            });
 
-            if (response.statusCode === 200) {
-                response.on('data', (chunk: Buffer) => {
-                    log.silly('handlePostToken.response.data', `${chunk}`);
-                    const raw = `${chunk}`;
-                    try {
-                        const data = JSON.parse(raw) as Record<string, string>;
-                        // eslint-disable-next-line @typescript-eslint/naming-convention
-                        const {access_token, expires_in, refresh_token} = data;
-                        this.data = {
-                            token: access_token,
-                            refreshToken: refresh_token,
-                            expiresAt: (Date.now() / 1000) + parseInt(expires_in, 10),
-                        } as Token;
-                        this.save();
-                        if (callback) {
-                            callback(this.data);
+            req.on('response', (response: Electron.IncomingMessage) => {
+                log.silly('handlePostToken.response', response);
+
+                if (response.statusCode === 200) {
+                    response.on('data', (chunk: Buffer) => {
+                        log.silly('handlePostToken.response.data', `${chunk}`);
+                        const raw = `${chunk}`;
+                        try {
+                            const data = JSON.parse(raw) as Record<string, string>;
+                            // eslint-disable-next-line @typescript-eslint/naming-convention
+                            const {access_token, expires_in, refresh_token} = data;
+                            this.data = {
+                                token: access_token,
+                                refreshToken: refresh_token,
+                                expiresAt: (Date.now() / 1000) + parseInt(expires_in, 10),
+                            } as Token;
+                            this.save();
+                            if (callback) {
+                                callback(this.data);
+                            }
+                            this.isRefreshing = false;
+                            this.requestPromise = undefined;
+                            resolve(this.data);
+                        } catch (e) {
+                            const error = `Error parsing server data from ${this.tokenApiEndpoint}`;
+                            log.error(error);
+                            if (callback) {
+                                callback(error);
+                            }
+                            this.isRefreshing = false;
+                            this.requestPromise = undefined;
+                            reject(error);
                         }
-                    } catch (e) {
-                        const error = `Error parsing server data from ${this.tokenApiEndpoint}`;
-                        log.error(error);
-                        if (callback) {
-                            callback(error);
-                        }
+                    });
+                } else {
+                    const error = new Error(`Bad status code requesting from token refresh ${JSON.stringify(response)}`);
+                    log.error(error);
+                    this.reset();
+                    if (callback) {
+                        callback(error);
                     }
-                });
-            } else {
-                const error = new Error(`Bad status code requesting from token refresh ${JSON.stringify(response)}`);
-                log.error(error);
-                this.reset();
-                if (callback) {
-                    callback(error);
+                    this.isRefreshing = false;
+                    this.requestPromise = undefined;
+                    reject(error);
                 }
-            }
-            response.on('error', (() => {}));
-        });
-        req.on('abort', () => console.log('token refresh aborted'));
-        req.on('error', (e: Error) => {
-            console.log(e);
+                response.on('error', (() => {}));
+            });
+            req.on('abort', () => {
+                const error = new Error('token refresh aborted');
+                this.isRefreshing = false;
+                this.requestPromise = undefined;
+                reject(error);
+            });
+            req.on('error', (e: Error) => {
+                console.log(e);
+                this.isRefreshing = false;
+                this.requestPromise = undefined;
+                reject(e);
+            });
+
+            // Using form-data since login doesn't support json yet.
+            req.setHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            req.write(data.toString());
+            req.end();
         });
 
-        // Using form-data since login doesn't support json yet.
-        req.setHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-        req.write(data.toString());
-        req.end();
+        return this.requestPromise;
     }
 
     /**

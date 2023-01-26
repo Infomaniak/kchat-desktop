@@ -148,7 +148,10 @@ export class WindowManager {
         ipcMain.on(DESKTOP_SOURCES_MODAL_REQUEST, this.handleDesktopSourcesModalRequest);
         ipcMain.on(CALLS_WIDGET_CHANNEL_LINK_CLICK, this.handleCallsWidgetChannelLinkClick);
         ipcMain.handle(TOKEN_REQUEST, this.handleTokenRequest);
-        ipcMain.handle(REFRESH_TOKEN, this.handleTokenRefresh);
+        ipcMain.handle(REFRESH_TOKEN, async () => {
+            const token = await TokenManager.handleRefreshToken();
+            return token;
+        });
         ipcMain.on(TOKEN_REFRESHED, this.handleTokenRefreshed);
         ipcMain.on(TOKEN_CLEARED, this.handleTokenCleared);
         ipcMain.on(RESET_TOKEN, this.handleResetToken);
@@ -1050,15 +1053,6 @@ export class WindowManager {
     handleTokenRequest = () => {
         const token = TokenManager.getToken();
         return token;
-    }
-
-    handleTokenRefresh = () => {
-        const callback = () => {
-            const token = TokenManager.getToken();
-            console.log(token);
-        };
-
-        TokenManager.handleRefreshToken(callback);
     }
 
     handleAddServer = (event: IpcMainInvokeEvent, message: SuiteTeam) => {
