@@ -118,6 +118,10 @@ export class TokenManager {
         this.requestPromise = new Promise((resolve, reject) => {
             console.log('REFRESHING TOKEN');
 
+            if (!this.data.token || !this.data.refreshToken) {
+                reject(new Error('refresh failed because token or refresh token is missing'));
+            }
+
             // only allow refresh once.
             this.isRefreshing = true;
             const data = new URLSearchParams();
