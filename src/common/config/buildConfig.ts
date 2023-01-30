@@ -24,7 +24,7 @@ const buildConfig: BuildConfig = {
     defaultTeams: [
         {
             name: '.',
-            url: 'https://kchat.preprod.dev.infomaniak.ch',
+            url: 'https://kchat.infomaniak.com',
             order: 0,
         },
     ],

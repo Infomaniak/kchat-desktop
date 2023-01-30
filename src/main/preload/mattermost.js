@@ -216,7 +216,7 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
     case 'reset-teams': {
         ipcRenderer.invoke(UPDATE_TEAMS, [{
             name: '.',
-            url: 'https://kchat.preprod.dev.infomaniak.ch',
+            url: 'https://kchat.infomaniak.com',
             order: 0,
             tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
         }]);

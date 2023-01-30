@@ -153,7 +153,6 @@ export class WindowManager {
             return token;
         });
         ipcMain.on(TOKEN_REFRESHED, this.handleTokenRefreshed);
-        ipcMain.on(TOKEN_CLEARED, this.handleTokenCleared);
         ipcMain.on(RESET_TOKEN, this.handleResetToken);
         ipcMain.handle(SERVER_ADDED, this.handleAddServer);
         ipcMain.handle(SERVER_DELETED, this.handleDeleteServer);
@@ -1030,20 +1029,15 @@ export class WindowManager {
         this.viewManager?.showByName(view?.name);
     }
 
-    handleTokenRefreshed = (event: IpcMainEvent, message: any, viewName: string) => {
-        // console.log(message.token);
-        // if (message.token) {
-        //     this.mainStore?.set('IKToken', message.token);
-        // }
+    handleTokenRefreshed = (event: IpcMainEvent, message: any) => {
         if (message.token) {
             TokenManager.handleStoreToken(event, message);
         }
     }
 
-    handleTokenCleared = (event: IpcMainEvent, message: any, viewName: string) => {
-        // TODO: delete
-
-        // this.mainStore?.delete('IKToken');
+    resetTeams = () => {
+        TokenManager.reset();
+        this.reload();
     }
 
     handleResetToken = () => {
