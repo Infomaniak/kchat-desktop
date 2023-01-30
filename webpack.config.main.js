@@ -30,11 +30,8 @@ module.exports = merge(base, {
     externals: {
         'macos-notification-state': 'require("macos-notification-state")',
         'windows-focus-assist': 'require("windows-focus-assist")',
-    },
-    externals: {
-        'macos-notification-state': 'require("macos-notification-state")',
-        'windows-focus-assist': 'require("windows-focus-assist")',
         '@jitsi/electron-sdk': 'require("@jitsi/electron-sdk")',
+        '@sentry/electron': 'require("@sentry/electron")',
     },
     module: {
         noParse: /external_api\\.js/,

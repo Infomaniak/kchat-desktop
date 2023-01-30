@@ -8,6 +8,8 @@ import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-devtools-install
 import isDev from 'electron-is-dev';
 import log from 'electron-log';
 
+import {init} from '@sentry/electron';
+
 import {
     SWITCH_SERVER,
     FOCUS_BROWSERVIEW,
@@ -114,6 +116,11 @@ export async function initialize() {
 
     // initialization that can run before the app is ready
     initializeArgs();
+
+    init({
+        dsn: 'https://8a8c0ed6e4fe45eaa3f1a26bbe037a27@sentry.infomaniak.com/53',
+    });
+
     await initializeConfig();
     initializeAppEventListeners();
     initializeBeforeAppReady();
@@ -280,8 +287,6 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(START_UPDATE_DOWNLOAD, handleStartDownload);
     ipcMain.on(START_UPGRADE, handleStartUpgrade);
     ipcMain.handle(PING_DOMAIN, handlePingDomain);
-
-    ipcMain.on(TOKEN_REFRESHED, TokenManager.handleStoreToken);
 }
 
 function initializeAfterAppReady() {
@@ -291,7 +296,7 @@ function initializeAfterAppReady() {
     defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
         (d, c) => {
             if (d.url.includes('/token') && d.responseHeaders) {
-                d.responseHeaders['Access-Control-Allow-Origin'] = ['https://kchat.preprod.dev.infomaniak.ch'];
+                d.responseHeaders['Access-Control-Allow-Origin'] = ['https://kchat.infomaniak.com'];
                 d.responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
                 d.responseHeaders['Access-Control-Allow-Headers'] = ['X-Requested-With, Authorization'];
                 d.responseHeaders['Access-Control-Allow-Methods'] = ['GET, POST, OPTIONS, PUT, DELETE'];

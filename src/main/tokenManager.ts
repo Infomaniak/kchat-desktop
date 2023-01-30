@@ -29,7 +29,7 @@ export class TokenManager {
 
     constructor(tokensStorePath: string) {
         this.clientID = 'A7376A6D-9A79-4B06-A837-7D92DB93965B';
-        this.tokenApiEndpoint = 'https://login.preprod.dev.infomaniak.ch/token';
+        this.tokenApiEndpoint = 'https://login.infomaniak.com/token';
 
         // &code_challenge=${codeChallenge}
         this.tokenProvisioningEndpoint =
@@ -90,6 +90,7 @@ export class TokenManager {
 
     // Store token from api response and write to disk.
     handleStoreToken = (_: IpcMainEvent, message: Token) => {
+        console.log('HANDLE STORE TOKEN FROM CODE');
         this.data = {
             token: message.token,
             refreshToken: message.refreshToken,
