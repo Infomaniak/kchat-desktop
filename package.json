@@ -1,7 +1,7 @@
 {
   "name": "kchat-desktop",
   "productName": "kChat",
-  "version": "2.0.0-beta.3",
+  "version": "2.0.0-beta.5",
   "description": "kChat",
   "main": "dist/index.js",
   "author": "Infomaniak <kchat@infomaniak.com>",
@@ -229,7 +229,7 @@
     "yargs": "17.4.0"
   },
   "dependencies": {
-    "@jitsi/electron-sdk": "^3.0.8",
+    "@jitsi/electron-sdk": "^5.0.1",
     "@sentry/electron": "^4.2.0",
     "macos-notification-state": "2.0.2",
     "windows-focus-assist": "1.3.0"
