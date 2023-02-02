@@ -33,7 +33,7 @@ const UpdateAvailable = ({item}: OwnProps) => {
                 <Thumbnail item={item}/>
                 <div className='DownloadsDropdown__File__Body__Details'>
                     <div className='DownloadsDropdown__File__Body__Details__Filename'>
-                        {translate.formatMessage({id: 'renderer.downloadsDropdown.Update.MattermostVersionX', defaultMessage: `Mattermost version ${item.filename}`}, {version: item.filename})}
+                        {translate.formatMessage({id: 'renderer.downloadsDropdown.Update.MattermostVersionX', defaultMessage: `Kchat version ${item.filename}`}, {version: item.filename})}
                     </div>
                     <div
                         className={classNames('DownloadsDropdown__File__Body__Details__FileSizeAndStatus', {

@@ -138,14 +138,28 @@ export class UpdateManager {
     }
 
     handleOnQuit = (): void => {
+        log.info(`Handle app will quit with version downloaded => ${this.versionDownloaded}`);
         if (this.versionDownloaded) {
+            log.info('this version downloaded');
             autoUpdater.quitAndInstall(true, false);
         }
     }
 
     handleUpdate = (): void => {
         downloadsManager.removeUpdateBeforeRestart();
-        autoUpdater.quitAndInstall();
+
+        try {
+            autoUpdater.quitAndInstall();
+            log.info('autoupdater quit & install processing');
+            setTimeout(() => {
+                log.info('autoupdater timeout expired. App will quit');
+                app.quit();
+                app.exit(0);
+            }, 1000);
+        } catch (e) {
+            log.error(`Error during autoUpdate => ${e}`);
+            dialog.showErrorBox('Error', 'Failed to install updates');
+        }
     }
 
     displayNoUpgrade = (): void => {
