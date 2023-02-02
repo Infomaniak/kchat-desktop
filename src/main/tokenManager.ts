@@ -20,24 +20,20 @@ type Token = {
 
 export class TokenManager {
     tokenApiEndpoint: string;
-    tokenProvisioningEndpoint: string;
     clientID: string;
     storeFile: string;
     data: Token | Record<string, never>;
-    isRefreshing: boolean;
     requestPromise: Promise<Token> | void;
+    revokePromise: Promise<any> | void;
 
     constructor(tokensStorePath: string) {
         this.clientID = 'A7376A6D-9A79-4B06-A837-7D92DB93965B';
         this.tokenApiEndpoint = 'https://login.infomaniak.com/token';
 
-        // &code_challenge=${codeChallenge}
-        this.tokenProvisioningEndpoint =
-            `https://login.preprod.dev.infomaniak.ch/authorize?access_type=offline&code_challenge_method=S256&client_id=${this.clientID}&response_type=code`;
         this.storeFile = tokensStorePath;
         this.data = {};
-        this.isRefreshing = false;
         this.requestPromise = undefined;
+        this.revokePromise = undefined;
     }
 
     load = (): Promise<Token | Error> => {
@@ -90,7 +86,7 @@ export class TokenManager {
 
     // Store token from api response and write to disk.
     handleStoreToken = (_: IpcMainEvent, message: Token) => {
-        console.log('HANDLE STORE TOKEN FROM CODE');
+        log.silly('tokenManager.handleStoreToken');
         this.data = {
             token: message.token,
             refreshToken: message.refreshToken,
@@ -117,14 +113,13 @@ export class TokenManager {
         }
 
         this.requestPromise = new Promise((resolve, reject) => {
-            console.log('REFRESHING TOKEN');
+            log.silly('handleRefreshToken.handleRefresh.newPromise');
 
             if (!this.data.token || !this.data.refreshToken) {
                 reject(new Error('refresh failed because token or refresh token is missing'));
             }
 
             // only allow refresh once.
-            this.isRefreshing = true;
             const data = new URLSearchParams();
             data.append('grant_type', 'refresh_token');
             data.append('refresh_token', this.data.refreshToken as string);
@@ -157,7 +152,6 @@ export class TokenManager {
                             if (callback) {
                                 callback(this.data);
                             }
-                            this.isRefreshing = false;
                             this.requestPromise = undefined;
                             resolve(this.data);
                         } catch (e) {
@@ -166,7 +160,6 @@ export class TokenManager {
                             if (callback) {
                                 callback(error);
                             }
-                            this.isRefreshing = false;
                             this.requestPromise = undefined;
                             reject(error);
                         }
@@ -178,7 +171,6 @@ export class TokenManager {
                     if (callback) {
                         callback(error);
                     }
-                    this.isRefreshing = false;
                     this.requestPromise = undefined;
                     reject(error);
                 }
@@ -186,13 +178,10 @@ export class TokenManager {
             });
             req.on('abort', () => {
                 const error = new Error('token refresh aborted');
-                this.isRefreshing = false;
                 this.requestPromise = undefined;
                 reject(error);
             });
             req.on('error', (e: Error) => {
-                console.log(e);
-                this.isRefreshing = false;
                 this.requestPromise = undefined;
                 reject(e);
             });
@@ -207,33 +196,78 @@ export class TokenManager {
         return this.requestPromise;
     }
 
-    /**
-     * get code_verifier for challenge
-     * @returns string
-     */
-    // getCodeVerifier = () => {
-    //     const ramdonByte = nodeCrypto.randomBytes(33);
-    //     const hash =
-    //         nodeCrypto.createHash('sha256').update(ramdonByte).digest();
-    //     return hash.toString('base64').
-    //         replace(/\+/g, '-').
-    //         replace(/\//g, '_').
-    //         replace(/[=]/g, '');
-    // }
+    // Revoke existing token
+    handleRevokeToken = (callback?: (...args: any[]) => void) => {
+        log.silly('tokenManager.handleRevokeToken');
 
-    /**
-     * Generate code_challenge for oauth
-     * @param codeVerifier string
-     * @returns string
-     */
-    // generateCodeChallenge = (codeVerifier: string) => {
-    //     const hash =
-    //         nodeCrypto.createHash('sha256').update(codeVerifier).digest();
-    //     return hash.toString('base64').
-    //         replace(/\+/g, '-').
-    //         replace(/\//g, '_').
-    //         replace(/[=]/g, '');
-    // }
+        // only allow revoke once.
+        if (this.revokePromise) {
+            return this.revokePromise as Promise<any>;
+        }
+
+        this.revokePromise = new Promise((resolve, reject) => {
+            if (!this.data.token) {
+                reject(new Error('no token to revoke'));
+            }
+
+            const data = new URLSearchParams();
+            data.append('token_type_hint', 'access_token');
+            data.append('token', this.data.token);
+            console.log(data);
+
+            const req = net.request({
+                url: this.tokenApiEndpoint,
+                session: session.defaultSession,
+                useSessionCookies: false,
+                method: 'DELETE',
+            });
+
+            req.on('response', (response: Electron.IncomingMessage) => {
+                log.silly('handleRevokeToken.response', response);
+
+                if (response.statusCode === 200) {
+                    response.on('data', (chunk: Buffer) => {
+                        log.silly('handleRevokeToken.response.data', `${chunk}`);
+                        this.reset();
+                        if (callback) {
+                            callback();
+                        }
+                        this.revokePromise = undefined;
+                        resolve();
+                    });
+                } else {
+                    const error = new Error(`Bad status code requesting from token revoke ${JSON.stringify(response)}`);
+                    log.error(error);
+                    if (callback) {
+                        callback(error);
+                    }
+                    this.revokePromise = undefined;
+                    reject(error);
+                }
+                response.on('error', (() => {
+                    this.revokePromise = undefined;
+                    reject(new Error('handleRevokeToken.responseError'));
+                }));
+            });
+            req.on('abort', () => {
+                const error = new Error('handleRevokeToken.req.abort');
+                this.revokePromise = undefined;
+                reject(error);
+            });
+            req.on('error', (e: Error) => {
+                this.revokePromise = undefined;
+                reject(e);
+            });
+
+            // Using form-data since login doesn't support json yet.
+            req.setHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            req.write(data.toString());
+            req.end();
+        });
+
+        return this.revokePromise;
+    }
 }
 
 let tokenManager = new TokenManager(tokensStorePath);

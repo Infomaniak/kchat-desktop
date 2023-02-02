@@ -223,7 +223,6 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
         break;
     }
     case 'update-teams': {
-        // ipcRenderer.send(UPDATE_TEAMS_DROPDOWN, message.teams, viewName);
         const teams = message.teams.reduce((acc, item, idx) => {
             acc.push({
                 name: item.display_name,
@@ -235,10 +234,10 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
             return acc;
         }, []);
 
-        console.log(teams);
-
         if (teams.length) {
             ipcRenderer.invoke(UPDATE_TEAMS, teams);
+        } else {
+            ipcRenderer.invoke(UPDATE_TEAMS, []);
         }
         break;
     }

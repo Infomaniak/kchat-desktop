@@ -37,7 +37,6 @@ import {
     RELOAD_CURRENT_VIEW,
     CALL_RINGING,
     TOKEN_REFRESHED,
-    TOKEN_CLEARED,
     TOKEN_REQUEST,
     VIEW_FINISHED_RESIZING,
     CALLS_JOIN_CALL,
@@ -48,7 +47,8 @@ import {
     RESET_TOKEN,
     SERVER_ADDED,
     SERVER_DELETED,
-    UPDATE_TEAMS,
+    RESET_AUTH,
+    RESET_TEAMS,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import {SECOND} from 'common/utils/constants';
@@ -156,6 +156,8 @@ export class WindowManager {
         ipcMain.on(RESET_TOKEN, this.handleResetToken);
         ipcMain.handle(SERVER_ADDED, this.handleAddServer);
         ipcMain.handle(SERVER_DELETED, this.handleDeleteServer);
+        ipcMain.handle(RESET_AUTH, this.handleRevokeToken);
+        ipcMain.handle(RESET_TEAMS, this.resetTeams);
     }
 
     handleUpdateConfig = () => {
@@ -1037,6 +1039,12 @@ export class WindowManager {
 
     resetTeams = () => {
         TokenManager.reset();
+        Config.set('teams', [{
+            name: '.',
+            url: 'https://kchat.infomaniak.com',
+            order: 0,
+            tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+        }]);
         this.reload();
     }
 
@@ -1072,6 +1080,13 @@ export class WindowManager {
         });
 
         updateServerInfos(newTeams, true);
+    }
+
+    handleRevokeToken = async () => {
+        const token = TokenManager.getToken();
+        if (Object.keys(token).length) {
+            await TokenManager.handleRevokeToken();
+        }
     }
 }
 

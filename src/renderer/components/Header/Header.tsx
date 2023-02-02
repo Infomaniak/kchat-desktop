@@ -24,9 +24,9 @@ const Header = ({
         )}
     >
         <div className='Header__main'>
-            <div className='Header__logo'>
+            {/* <div className='Header__logo'>
                 <Logo/>
-            </div>
+            </div> */}
             {alternateLink}
         </div>
     </div>

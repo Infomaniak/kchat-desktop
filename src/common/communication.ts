@@ -151,6 +151,8 @@ export const REFRESH_TOKEN = 'refresh-token';
 export const RESET_TOKEN = 'reset-token';
 export const SERVER_ADDED = 'server-added';
 export const SERVER_DELETED = 'server-deleted';
+export const RESET_AUTH = 'reset-auth';
+export const RESET_TEAMS = 'reset-teams-hard';
 
 // Mattermost Calls
 // export const DISPATCH_GET_DESKTOP_SOURCES = 'dispatch-get-desktop-sources';
