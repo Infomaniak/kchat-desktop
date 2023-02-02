@@ -38,7 +38,6 @@ import {
     PING_DOMAIN,
     MAIN_WINDOW_SHOWN,
     OPEN_APP_MENU,
-    TOKEN_REFRESHED,
 } from 'common/communication';
 import Config from 'common/config';
 import urlUtils from 'common/utils/url';
@@ -298,7 +297,7 @@ function initializeAfterAppReady() {
             if (d.url.includes('/token') && d.responseHeaders) {
                 d.responseHeaders['Access-Control-Allow-Origin'] = ['https://kchat.infomaniak.com'];
                 d.responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
-                d.responseHeaders['Access-Control-Allow-Headers'] = ['X-Requested-With, Authorization'];
+                d.responseHeaders['Access-Control-Allow-Headers'] = ['X-Requested-With, Authorization', 'Webapp-Version'];
                 d.responseHeaders['Access-Control-Allow-Methods'] = ['GET, POST, OPTIONS, PUT, DELETE'];
             }
 
