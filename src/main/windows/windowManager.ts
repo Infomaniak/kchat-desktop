@@ -1038,7 +1038,7 @@ export class WindowManager {
     }
 
     resetTeams = () => {
-        TokenManager.reset();
+        // TokenManager.reset();
         Config.set('teams', [{
             name: '.',
             url: 'https://kchat.infomaniak.com',
