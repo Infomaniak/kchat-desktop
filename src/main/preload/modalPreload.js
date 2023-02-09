@@ -80,14 +80,9 @@ window.addEventListener('message', async (event) => {
         window.postMessage({type: RETRIEVED_LANGUAGE_INFORMATION, data: await ipcRenderer.invoke(GET_LANGUAGE_INFORMATION)});
         break;
     case RESET_AUTH:
-        // await ipcRenderer.invoke(RESET_AUTH);
-        // ipcRenderer.invoke(UPDATE_TEAMS, [{
-        //     name: '.',
-        //     url: 'https://kchat.preprod.dev.infomaniak.ch',
-        //     order: 0,
-        //     tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
-        // }]);
+        await ipcRenderer.invoke(RESET_AUTH);
         ipcRenderer.invoke(RESET_TEAMS);
+        ipcRenderer.send(MODAL_CANCEL, {});
         break;
     default:
         console.log(`got a message: ${event}`);

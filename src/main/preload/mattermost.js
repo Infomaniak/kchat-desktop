@@ -51,6 +51,8 @@ import {
     SWITCH_SERVER,
     SERVER_ADDED,
     SERVER_DELETED,
+    RESET_AUTH,
+    RESET_TEAMS,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -77,6 +79,10 @@ contextBridge.exposeInMainWorld('authManager', {
     resetToken: () => ipcRenderer.invoke(RESET_TOKEN),
     addTeam: (d) => ipcRenderer.invoke(SERVER_ADDED, d),
     deleteTeam: () => ipcRenderer.invoke(SERVER_DELETED),
+    logout: async () => {
+        await ipcRenderer.invoke(RESET_AUTH);
+        ipcRenderer.invoke(RESET_TEAMS);
+    },
 });
 
 ipcRenderer.invoke('get-app-version').then(({name, version}) => {
