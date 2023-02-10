@@ -141,7 +141,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             WindowManager.reload();
         },
     }, {
-        label: 'Reset teams',
+        label: 'Update teams',
         accelerator: 'Shift+CmdOrCtrl+T',
         click() {
             WindowManager.resetTeams();
