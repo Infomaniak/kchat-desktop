@@ -540,6 +540,9 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
 
         const {version} = info;
         const update = this.downloads[APP_UPDATE_KEY];
+        if (!update) {
+            return;
+        }
         update.state = 'completed';
         update.progress = 100;
         update.filename = version;
