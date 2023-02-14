@@ -290,7 +290,7 @@ function initializeInterCommunicationEventListeners() {
 
 function initializeAfterAppReady() {
     updateServerInfos(Config.teams);
-    app.setAppUserModelId('Mattermost.Desktop'); // Use explicit AppUserModelID
+    app.setAppUserModelId('Kchat.Desktop'); // Use explicit AppUserModelID
     const defaultSession = session.defaultSession;
     defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
         (d, c) => {
