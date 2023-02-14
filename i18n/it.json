@@ -15,5 +15,6 @@
     "common.tabs.TAB_FOCALBOARD": "Boards",
     "common.permissions.canBasicAuth": "Autenticazione WEB",
     "renderer.components.welcomeScreen.slides.welcome.message": "Se non avete kChat, scopritelo con kSuite.",
-    "renderer.components.welcomeScreen.button.login": "Effettuare nuovamente il login"
+    "renderer.components.welcomeScreen.button.login": "Effettuare nuovamente il login",
+    "main.menus.app.view.updateTeams": "Aggiornamento dei team"
 }
