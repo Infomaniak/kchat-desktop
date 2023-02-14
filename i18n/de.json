@@ -33,6 +33,7 @@
     "main.menus.app.view.devToolsCurrentServer": "Developer Tools für den aktuellen Server",
     "main.menus.app.view.devToolsAppWrapper": "Developer Tools für den Application Wrapper",
     "main.menus.app.view.clearCacheAndReload": "Cache leeren und neu laden",
+    "main.menus.app.view.updateTeams": "Teams aktualisieren",
     "main.menus.app.view.actualSize": "Tatsächliche Größe",
     "main.menus.app.view": "Zeigen (&V)",
     "main.menus.app.history.forward": "Weiter",
