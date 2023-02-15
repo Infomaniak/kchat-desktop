@@ -1,7 +1,7 @@
 {
   "publish": {
     "provider": "s3",
-    "channel": "stable",
+    "channel": "latest",
     "bucket": "kchat",
     "endpoint": "https://download.storage5.infomaniak.com",
     "path": "/"
