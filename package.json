@@ -175,7 +175,6 @@
     "electron-mocha": "11.0.2",
     "electron-notarize": "1.2.1",
     "electron-rebuild": "3.2.9",
-    "electron-store": "^8.1.0",
     "electron-updater": "5.2.1",
     "eslint": "7.29.0",
     "eslint-import-resolver-webpack": "0.13.2",
