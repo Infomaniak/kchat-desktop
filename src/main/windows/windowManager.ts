@@ -7,8 +7,6 @@ import path from 'path';
 import {app, BrowserWindow, nativeImage, systemPreferences, ipcMain, IpcMainEvent, IpcMainInvokeEvent, desktopCapturer} from 'electron';
 import log from 'electron-log';
 
-import Store from 'electron-store';
-
 import {
     CallsJoinCallMessage,
 } from 'types/calls';
@@ -121,12 +119,10 @@ export class WindowManager {
     downloadsDropdown?: DownloadsDropdownView;
     downloadsDropdownMenu?: DownloadsDropdownMenuView;
     currentServerName?: string;
-    mainStore?: Store;
 
     constructor() {
         this.mainWindowReady = false;
         this.assetsDir = path.resolve(app.getAppPath(), 'assets');
-        this.mainStore = new Store();
         ipcMain.on(HISTORY, this.handleHistory);
         ipcMain.handle(GET_LOADING_SCREEN_DATA, this.handleLoadingScreenDataRequest);
         ipcMain.handle(GET_DARK_MODE, this.handleGetDarkMode);
