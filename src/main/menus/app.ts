@@ -263,13 +263,6 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             label: isMac ? localizeMessage('main.menus.app.window.closeWindow', 'Close Window') : localizeMessage('main.menus.app.window.close', 'Close'),
             accelerator: 'CmdOrCtrl+W',
         }, separatorItem,
-        ...(config.data?.teams.length ? [{
-            label: localizeMessage('main.menus.app.window.showServers', 'Show Servers'),
-            accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+S`,
-            click() {
-                ipcMain.emit(OPEN_TEAMS_DROPDOWN);
-            },
-        }] : []),
 
         // ...teams.sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).map((team, i) => {
         //     const items = [];
