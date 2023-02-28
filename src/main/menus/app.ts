@@ -5,9 +5,8 @@
 
 import {app, ipcMain, Menu, MenuItemConstructorOptions, MenuItem, session, shell, WebContents, clipboard} from 'electron';
 
-import {BROWSER_HISTORY_BUTTON, OPEN_TEAMS_DROPDOWN, SHOW_NEW_SERVER_MODAL} from 'common/communication';
+import {BROWSER_HISTORY_BUTTON, SHOW_NEW_SERVER_MODAL} from 'common/communication';
 import {t} from 'common/utils/util';
-import {getTabDisplayName, TabType} from 'common/tabs/TabView';
 import {Config} from 'common/config';
 
 import {localizeMessage} from 'main/i18nManager';
