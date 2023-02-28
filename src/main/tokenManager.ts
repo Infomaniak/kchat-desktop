@@ -71,10 +71,13 @@ export class TokenManager {
             throw new Error('missing refresh token');
         }
 
-        console.log(Date.now() / 1000);
+        const now = new Date();
+        const utcTimestamp = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+
+        console.log(utcTimestamp / 1000);
         console.log(this.data.expiresAt);
 
-        const isExpired = this.data.expiresAt <= (Date.now() / 1000);
+        const isExpired = this.data.expiresAt <= (utcTimestamp / 1000);
         console.log('isExpired', isExpired);
         return isExpired;
     }
@@ -143,10 +146,12 @@ export class TokenManager {
                             const data = JSON.parse(raw) as Record<string, string>;
                             // eslint-disable-next-line @typescript-eslint/naming-convention
                             const {access_token, expires_in, refresh_token} = data;
+                            const now = new Date();
+                            const utcTimestamp = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
                             this.data = {
                                 token: access_token,
                                 refreshToken: refresh_token,
-                                expiresAt: (Date.now() / 1000) + parseInt(expires_in, 10),
+                                expiresAt: (utcTimestamp / 1000) + parseInt(expires_in, 10),
                             } as Token;
                             this.save();
                             if (callback) {
