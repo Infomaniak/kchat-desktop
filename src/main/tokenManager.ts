@@ -74,9 +74,10 @@ export class TokenManager {
         const now = new Date();
         const utcTimestamp = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
 
+        console.log('token validity check');
         console.log('date.now: ', Date.now());
-        console.log('utc time: ', utcTimestamp / 1000);
-        console.log('expires at: ', this.data.expiresAt);
+        console.log('utc time: ', utcTimestamp);
+        console.log('token expires at: ', this.data.expiresAt);
 
         const isExpired = this.data.expiresAt <= (utcTimestamp / 1000);
         console.log('isExpired: ', isExpired);
@@ -148,7 +149,9 @@ export class TokenManager {
                             // eslint-disable-next-line @typescript-eslint/naming-convention
                             const {access_token, expires_in, refresh_token} = data;
                             const now = new Date();
-                            const utcTimestamp = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+                            const offsetInMs = now.getTimezoneOffset() * 60000;
+                            const utcTimestamp = Date.now() + offsetInMs;
+                            console.log('refreshed token');
                             console.log('date.now: ', Date.now());
                             console.log('utc time: ', utcTimestamp);
                             console.log('token expires at: ', (utcTimestamp / 1000) + parseInt(expires_in, 10));
