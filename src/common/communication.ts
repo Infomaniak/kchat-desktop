@@ -100,6 +100,7 @@ export const UPDATE_REMIND_LATER = 'update-remind-later';
 export const CANCEL_UPDATE_DOWNLOAD = 'cancel-update-download';
 export const CANCEL_UPGRADE = 'cancel-upgrade';
 export const START_UPDATE_DOWNLOAD = 'start-update-download';
+export const START_UPDATE_DOWNLOAD_MANUAL = 'start-update-download-manual';
 export const START_UPGRADE = 'start-upgrade';
 export const CHECK_FOR_UPDATES = 'check-for-updates';
 export const NO_UPDATE_AVAILABLE = 'no-update-available';
