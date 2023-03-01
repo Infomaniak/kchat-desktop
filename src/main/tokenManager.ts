@@ -74,11 +74,12 @@ export class TokenManager {
         const now = new Date();
         const utcTimestamp = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
 
-        console.log(utcTimestamp / 1000);
-        console.log(this.data.expiresAt);
+        console.log('date.now: ', Date.now());
+        console.log('utc time: ', utcTimestamp / 1000);
+        console.log('expires at: ', this.data.expiresAt);
 
         const isExpired = this.data.expiresAt <= (utcTimestamp / 1000);
-        console.log('isExpired', isExpired);
+        console.log('isExpired: ', isExpired);
         return isExpired;
     }
 
@@ -148,6 +149,9 @@ export class TokenManager {
                             const {access_token, expires_in, refresh_token} = data;
                             const now = new Date();
                             const utcTimestamp = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
+                            console.log('date.now: ', Date.now());
+                            console.log('utc time: ', utcTimestamp);
+                            console.log('token expires at: ', (utcTimestamp / 1000) + parseInt(expires_in, 10));
                             this.data = {
                                 token: access_token,
                                 refreshToken: refresh_token,

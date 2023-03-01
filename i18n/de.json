@@ -272,6 +272,7 @@
     "renderer.downloadsDropdown.Update.DownloadUpdate": "Aktualisierung runterladen",
     "renderer.downloadsDropdown.Update.ManualUpdate": "Manuelle Aktualisierung",
     "renderer.downloadsDropdown.Update.ANewVersionIsAvailableToInstall": "Eine neue Version der kChat Desktop App (Version {Version}) steht zur Installation bereit.",
+    "renderer.downloadsDropdown.Update.automaticOrManual": "*Wenn Sie dieses Popup nach dem Herunterladen und Neustart der App wiederholt sehen, laden Sie sie stattdessen über die manuelle Option herunter.",
     "renderer.downloadsDropdown.remaining": "verbleibend",
     "renderer.downloadsDropdown.Downloads": "Downloads",
     "renderer.downloadsDropdown.ClearAll": "Alle löschen",
