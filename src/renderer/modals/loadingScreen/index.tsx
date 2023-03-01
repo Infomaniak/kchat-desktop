@@ -6,6 +6,8 @@ import ReactDOM from 'react-dom';
 
 import {ModalMessage} from 'types/modals';
 
+import * as Sentry from '@sentry/electron/renderer';
+
 import {RECEIVED_LOADING_SCREEN_DATA, GET_LOADING_SCREEN_DATA, LOADING_SCREEN_ANIMATION_FINISHED, TOGGLE_LOADING_SCREEN_VISIBILITY} from 'common/communication';
 
 import LoadingScreen from '../../components/LoadingScreen';
@@ -14,6 +16,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'renderer/css/modals.css';
 import 'renderer/css/components/LoadingAnimation.css';
 import 'renderer/css/components/LoadingScreen.css';
+
+Sentry.init({
+    dsn: 'https://8a8c0ed6e4fe45eaa3f1a26bbe037a27@sentry.infomaniak.com/53',
+});
 
 type Props = Record<string, never>;
 
