@@ -9,10 +9,16 @@ import 'renderer/css/settings.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import * as Sentry from '@sentry/electron/renderer';
+
 import darkStyles from 'renderer/css/lazy/settings-dark.lazy.css';
 
 import SettingsPage from './components/SettingsPage';
 import IntlProvider from './intl_provider';
+
+Sentry.init({
+    dsn: 'https://8a8c0ed6e4fe45eaa3f1a26bbe037a27@sentry.infomaniak.com/53',
+});
 
 const setDarkMode = (darkMode: boolean) => {
     if (darkMode) {
