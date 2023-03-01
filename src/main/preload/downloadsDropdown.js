@@ -21,6 +21,7 @@ import {
     TOGGLE_DOWNLOADS_DROPDOWN_MENU,
     UPDATE_DOWNLOADS_DROPDOWN,
     GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION,
+    START_UPDATE_DOWNLOAD_MANUAL,
 } from 'common/communication';
 
 console.log('preloaded for the downloadsDropdown!');
@@ -66,6 +67,9 @@ window.addEventListener('message', async (event) => {
         break;
     case START_UPDATE_DOWNLOAD:
         ipcRenderer.send(START_UPDATE_DOWNLOAD);
+        break;
+    case START_UPDATE_DOWNLOAD_MANUAL:
+        ipcRenderer.send(START_UPDATE_DOWNLOAD_MANUAL);
         break;
     case START_UPGRADE:
         ipcRenderer.send(START_UPGRADE);
