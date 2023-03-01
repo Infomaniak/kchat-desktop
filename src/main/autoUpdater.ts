@@ -3,10 +3,10 @@
 
 import path from 'path';
 
-import {dialog, ipcMain, app, nativeImage} from 'electron';
+import {dialog, ipcMain, app, nativeImage, shell} from 'electron';
 import log from 'electron-log';
 
-import {autoUpdater, CancellationToken, ProgressInfo, UpdateInfo} from 'electron-updater';
+import {autoUpdater, CancellationToken, ProgressInfo, UpdateFileInfo, UpdateInfo} from 'electron-updater';
 
 import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
@@ -59,6 +59,7 @@ export class UpdateManager {
     versionAvailable?: string;
     versionDownloaded?: string;
     downloadedInfo?: UpdateInfo;
+    macosLink?: UpdateFileInfo;
 
     constructor() {
         this.cancellationToken = new CancellationToken();
@@ -70,6 +71,9 @@ export class UpdateManager {
         autoUpdater.on('update-available', (info: UpdateInfo) => {
             autoUpdater.removeListener('update-not-available', this.displayNoUpgrade);
             this.versionAvailable = info.version;
+            if (process.platform === 'darwin') {
+                this.macosLink = info.files.find((file) => file.url.includes('.dmg'));
+            }
             ipcMain.emit(UPDATE_SHORTCUT_MENU);
             log.info(`[kChat] available version ${info.version}`);
             this.notify();
@@ -121,10 +125,20 @@ export class UpdateManager {
         displayRestartToUpgrade(this.versionDownloaded || 'unknown', this.handleUpdate);
     }
 
+    handleDownloadManual = (): void => {
+        if (this.lastCheck) {
+            clearTimeout(this.lastCheck);
+        }
+        if (this.macosLink?.url) {
+            shell.openExternal(`https://download.storage5.infomaniak.com/kchat/${this.macosLink.url}`);
+        }
+    }
+
     handleDownload = (): void => {
         if (this.lastCheck) {
             clearTimeout(this.lastCheck);
         }
+
         autoUpdater.downloadUpdate(this.cancellationToken);
     }
 

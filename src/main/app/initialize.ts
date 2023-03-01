@@ -35,6 +35,7 @@ import {
     USER_ACTIVITY_UPDATE,
     START_UPGRADE,
     START_UPDATE_DOWNLOAD,
+    START_UPDATE_DOWNLOAD_MANUAL,
     PING_DOMAIN,
     MAIN_WINDOW_SHOWN,
     OPEN_APP_MENU,
@@ -277,6 +278,7 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.handle(GET_AVAILABLE_SPELL_CHECKER_LANGUAGES, () => session.defaultSession.availableSpellCheckerLanguages);
     ipcMain.handle(GET_DOWNLOAD_LOCATION, handleSelectDownload);
     ipcMain.on(START_UPDATE_DOWNLOAD, handleStartDownload);
+    ipcMain.on(START_UPDATE_DOWNLOAD_MANUAL, handleStartDownloadManual);
     ipcMain.on(START_UPGRADE, handleStartUpgrade);
     ipcMain.handle(PING_DOMAIN, handlePingDomain);
 }
@@ -464,6 +466,12 @@ function initializeAfterAppReady() {
 function handleStartDownload() {
     if (updateManager) {
         updateManager.handleDownload();
+    }
+}
+
+function handleStartDownloadManual() {
+    if (updateManager) {
+        updateManager.handleDownloadManual();
     }
 }
 
