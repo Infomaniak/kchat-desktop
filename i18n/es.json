@@ -260,6 +260,7 @@
     "renderer.downloadsDropdown.Update.NewDesktopVersionAvailable": "Nueva versión Desktop disponible",
     "renderer.downloadsDropdown.Update.MattermostVersionX": "Versión de kChat {version}",
     "renderer.downloadsDropdown.Update.DownloadUpdate": "Descargar Actualización",
+    "renderer.downloadsDropdown.Update.ManualUpdate": "Actualización manual",
     "renderer.downloadsDropdown.Update.ANewVersionIsAvailableToInstall": "Hay una nueva versión de la aplicación Desktop de kChat (versión {version}) disponible para instalar.",
     "renderer.downloadsDropdown.Downloads": "Descargas",
     "renderer.downloadsDropdown.ClearAll": "Limpiar Todo",

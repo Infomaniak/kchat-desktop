@@ -125,15 +125,20 @@ export class UpdateManager {
         displayRestartToUpgrade(this.versionDownloaded || 'unknown', this.handleUpdate);
     }
 
+    handleDownloadManual = (): void => {
+        if (this.lastCheck) {
+            clearTimeout(this.lastCheck);
+        }
+        if (this.macosLink?.url) {
+            shell.openExternal(`https://download.storage5.infomaniak.com/kchat/${this.macosLink.url}`);
+        }
+    }
+
     handleDownload = (): void => {
         if (this.lastCheck) {
             clearTimeout(this.lastCheck);
         }
-        if (process.platform === 'darwin' && this.macosLink?.url) {
-            shell.openExternal(`https://download.storage5.infomaniak.com/kchat/${this.macosLink.url}`);
 
-            return;
-        }
         autoUpdater.downloadUpdate(this.cancellationToken);
     }
 
