@@ -210,11 +210,6 @@ export class TokenManager {
                 reject(new Error('no token to revoke'));
             }
 
-            const data = new URLSearchParams();
-            data.append('token_type_hint', 'access_token');
-            data.append('token', this.data.token);
-            console.log(data);
-
             const req = net.request({
                 url: this.tokenApiEndpoint,
                 session: session.defaultSession,
@@ -226,15 +221,12 @@ export class TokenManager {
                 log.silly('handleRevokeToken.response', response);
 
                 if (response.statusCode === 200) {
-                    response.on('data', (chunk: Buffer) => {
-                        log.silly('handleRevokeToken.response.data', `${chunk}`);
-                        this.reset();
-                        if (callback) {
-                            callback();
-                        }
-                        this.revokePromise = undefined;
-                        resolve();
-                    });
+                    this.reset();
+                    if (callback) {
+                        callback();
+                    }
+                    this.revokePromise = undefined;
+                    resolve();
                 } else {
                     const error = new Error(`Bad status code requesting from token revoke ${JSON.stringify(response)}`);
                     log.error(error);
@@ -259,10 +251,10 @@ export class TokenManager {
                 reject(e);
             });
 
-            // Using form-data since login doesn't support json yet.
-            req.setHeader('Content-Type', 'application/x-www-form-urlencoded');
+            console.log('DELETING', this.data.token);
+            req.setHeader('Authorization', `Bearer ${this.data.token}`);
+            session.defaultSession.clearStorageData();
 
-            req.write(data.toString());
             req.end();
         });
 

@@ -8,6 +8,8 @@ import {FormattedMessage} from 'react-intl';
 
 import {DownloadedItem} from 'types/downloads';
 
+import * as Sentry from '@sentry/electron/renderer';
+
 import {
     CLOSE_DOWNLOADS_DROPDOWN,
     REQUEST_CLEAR_DOWNLOADS_DROPDOWN,
@@ -20,6 +22,10 @@ import IntlProvider from './intl_provider';
 import DownloadsDropdownItem from './components/DownloadsDropdown/DownloadsDropdownItem';
 
 import './css/downloadsDropdown.scss';
+
+Sentry.init({
+    dsn: 'https://8a8c0ed6e4fe45eaa3f1a26bbe037a27@sentry.infomaniak.com/53',
+});
 
 type State = {
     downloads: DownloadedItem[];

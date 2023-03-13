@@ -357,9 +357,24 @@ body {
                             letter-spacing: 0.02em;
                             line-height: 16px;
                             max-width: 200px;
+                            &--space {
+                                margin-top: 5px;
+                            }
+                        }
+                        
+                        .DownloadsDropdown__Update__Details__DescriptionManual {
+                            color: rgba(63, 67, 80, 0.64);
+                            font-size: 9px;
+                            font-style: normal;
+                            font-weight: 400;
+                            letter-spacing: 0.02em;
+                            line-height: 15px;
+                            max-width: 200px;
+                            margin-top: 5px;
+                            margin-bottom: 5px;
                         }
 
-                        button#downloadUpdateButton {
+                        button#downloadUpdateButton, button#manualUpdateButton {
                             font-style: normal;
                             font-weight: 600;
                             font-size: 12px;
@@ -456,7 +471,7 @@ body {
                             color: rgba(221, 223, 228, 1);
                         }
 
-                        .DownloadsDropdown__Update__Details__Description {
+                        .DownloadsDropdown__Update__Details__Description, .DownloadsDropdown__Update__Details__DescriptionManual {
                             color: rgba(221, 223, 228, 0.64);
                         }
                     }

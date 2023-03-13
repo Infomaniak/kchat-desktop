@@ -39,6 +39,45 @@
     }
 }
 
+.secondary-button {
+    cursor: pointer;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: rgba(var(--center-channel-color-rgb), 0.72);
+    border-radius: 4px;
+    color: var(--center-channel-text-rgb);
+    font-weight: 600;
+    font-family: 'Open Sans';
+
+    &:hover {
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.08)), var(--center-channel-color-rgb);
+    }
+
+    &:active {
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.16)), var(--center-channel-color-rgb);
+    }
+
+    &:focus {
+        box-sizing: border-box;
+        border: 2px solid var(--sidebar-text-active-border);
+        outline: none;
+    }
+
+    &:disabled {
+        background: rgba(var(--center-channel-color-rgb), 0.08);
+        color: rgba(var(--center-channel-color-rgb), 0.32);
+        cursor: not-allowed;
+    }
+
+    i {
+        display: flex;
+        font-size: 18px;
+    }
+}
+
 .primary-button-inverted {
     background: var(--button-color);
     color: var(--denim-button-bg);

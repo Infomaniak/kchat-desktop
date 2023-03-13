@@ -3,7 +3,7 @@
 
 import path from 'path';
 
-import {app, ipcMain, screen, session} from 'electron';
+import {app, ipcMain, session} from 'electron';
 import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-devtools-installer';
 import isDev from 'electron-is-dev';
 import log from 'electron-log';
@@ -35,6 +35,7 @@ import {
     USER_ACTIVITY_UPDATE,
     START_UPGRADE,
     START_UPDATE_DOWNLOAD,
+    START_UPDATE_DOWNLOAD_MANUAL,
     PING_DOMAIN,
     MAIN_WINDOW_SHOWN,
     OPEN_APP_MENU,
@@ -129,8 +130,6 @@ export async function initialize() {
         app.whenReady(),
     ]);
 
-    initializeScreenEventListeners();
-
     // no need to continue initializing if app is quitting
     if (global.willAppQuit) {
         return;
@@ -198,11 +197,6 @@ function initializeAppEventListeners() {
     app.on('child-process-gone', handleChildProcessGone);
     app.on('login', AuthManager.handleAppLogin);
     app.on('will-finish-launching', handleAppWillFinishLaunching);
-}
-
-function initializeScreenEventListeners() {
-    screen.on('display-removed', WindowManager.displayRemoved);
-    screen.on('display-metrics-changed', WindowManager.displayMetricsChanged);
 }
 
 function initializeBeforeAppReady() {
@@ -284,13 +278,14 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.handle(GET_AVAILABLE_SPELL_CHECKER_LANGUAGES, () => session.defaultSession.availableSpellCheckerLanguages);
     ipcMain.handle(GET_DOWNLOAD_LOCATION, handleSelectDownload);
     ipcMain.on(START_UPDATE_DOWNLOAD, handleStartDownload);
+    ipcMain.on(START_UPDATE_DOWNLOAD_MANUAL, handleStartDownloadManual);
     ipcMain.on(START_UPGRADE, handleStartUpgrade);
     ipcMain.handle(PING_DOMAIN, handlePingDomain);
 }
 
 function initializeAfterAppReady() {
     updateServerInfos(Config.teams);
-    app.setAppUserModelId('Mattermost.Desktop'); // Use explicit AppUserModelID
+    app.setAppUserModelId('Kchat.Desktop'); // Use explicit AppUserModelID
     const defaultSession = session.defaultSession;
     defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
         (d, c) => {
@@ -471,6 +466,12 @@ function initializeAfterAppReady() {
 function handleStartDownload() {
     if (updateManager) {
         updateManager.handleDownload();
+    }
+}
+
+function handleStartDownloadManual() {
+    if (updateManager) {
+        updateManager.handleDownloadManual();
     }
 }
 

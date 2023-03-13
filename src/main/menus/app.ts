@@ -5,9 +5,8 @@
 
 import {app, ipcMain, Menu, MenuItemConstructorOptions, MenuItem, session, shell, WebContents, clipboard} from 'electron';
 
-import {BROWSER_HISTORY_BUTTON, OPEN_TEAMS_DROPDOWN, SHOW_NEW_SERVER_MODAL} from 'common/communication';
+import {BROWSER_HISTORY_BUTTON, SHOW_NEW_SERVER_MODAL} from 'common/communication';
 import {t} from 'common/utils/util';
-import {getTabDisplayName, TabType} from 'common/tabs/TabView';
 import {Config} from 'common/config';
 
 import {localizeMessage} from 'main/i18nManager';
@@ -15,6 +14,7 @@ import WindowManager from 'main/windows/windowManager';
 import {UpdateManager} from 'main/autoUpdater';
 import downloadsManager from 'main/downloadsManager';
 import Diagnostics from 'main/diagnostics';
+import TokenManager from 'main/tokenManager';
 
 export function createTemplate(config: Config, updateManager: UpdateManager) {
     const separatorItem: MenuItemConstructorOptions = {
@@ -138,10 +138,12 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         accelerator: 'Shift+CmdOrCtrl+R',
         click() {
             session.defaultSession.clearCache();
+            session.defaultSession.clearStorageData();
+            TokenManager.reset();
             WindowManager.reload();
         },
     }, {
-        label: 'Reset teams',
+        label: localizeMessage('main.menus.app.view.updateTeams', 'Update teams'),
         accelerator: 'Shift+CmdOrCtrl+T',
         click() {
             WindowManager.resetTeams();
@@ -263,13 +265,6 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             label: isMac ? localizeMessage('main.menus.app.window.closeWindow', 'Close Window') : localizeMessage('main.menus.app.window.close', 'Close'),
             accelerator: 'CmdOrCtrl+W',
         }, separatorItem,
-        ...(config.data?.teams.length ? [{
-            label: localizeMessage('main.menus.app.window.showServers', 'Show Servers'),
-            accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+S`,
-            click() {
-                ipcMain.emit(OPEN_TEAMS_DROPDOWN);
-            },
-        }] : []),
 
         // ...teams.sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).map((team, i) => {
         //     const items = [];

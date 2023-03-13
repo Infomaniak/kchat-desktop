@@ -9,7 +9,13 @@ const urlParams = new URLSearchParams(queryString);
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import * as Sentry from '@sentry/electron/renderer';
+
 import UrlDescription from '../../components/urlDescription';
+
+Sentry.init({
+    dsn: 'https://8a8c0ed6e4fe45eaa3f1a26bbe037a27@sentry.infomaniak.com/53',
+});
 
 const start = async () => {
     ReactDOM.render(
