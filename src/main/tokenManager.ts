@@ -15,7 +15,8 @@ import {tokensStorePath} from './constants';
 type Token = {
     token: string;
     refreshToken: string;
-    expiresAt: number;
+
+    // expiresAt: number;
 }
 
 export class TokenManager {
@@ -51,12 +52,14 @@ export class TokenManager {
                     reject(new Error('Provided tokens store file does not validate, using defaults instead.'));
                 }
                 this.data = jsonData;
-                const tokenExpired = this.checkValidity();
-                if (tokenExpired) {
-                    this.handleRefreshToken().then((token) => resolve(token));
-                } else {
-                    resolve(this.data);
-                }
+
+                // const tokenExpired = this.checkValidity();
+                // if (tokenExpired) {
+                //     this.handleRefreshToken().then((token) => resolve(token));
+                // } else {
+                //     resolve(this.data);
+                // }
+                resolve(this.data);
             } catch (e) {
                 this.data = {};
             }
@@ -66,18 +69,18 @@ export class TokenManager {
     }
 
     // Returns if token is still valid.
-    checkValidity = () => {
-        if (!this.data.refreshToken) {
-            throw new Error('missing refresh token');
-        }
+    // checkValidity = () => {
+    //     if (!this.data.refreshToken) {
+    //         throw new Error('missing refresh token');
+    //     }
 
-        console.log(Date.now() / 1000);
-        console.log(this.data.expiresAt);
+    //     console.log(Date.now() / 1000);
+    //     console.log(this.data.expiresAt);
 
-        const isExpired = this.data.expiresAt <= (Date.now() / 1000);
-        console.log('isExpired', isExpired);
-        return isExpired;
-    }
+    //     const isExpired = this.data.expiresAt <= (Date.now() / 1000);
+    //     console.log('isExpired', isExpired);
+    //     return isExpired;
+    // }
 
     // Returns available token data.
     getToken = () => {
@@ -86,12 +89,17 @@ export class TokenManager {
 
     // Store token from api response and write to disk.
     handleStoreToken = (_: IpcMainEvent, message: Token) => {
-        log.silly('tokenManager.handleStoreToken');
+        // log.silly('tokenManager.handleStoreToken');
+
+        // refreshToken: message.refreshToken,
+        // expiresAt: message.expiresAt,
+
         this.data = {
             token: message.token,
             refreshToken: message.refreshToken,
-            expiresAt: message.expiresAt,
         };
+
+        log.silly('tokenManager.handleStoreToken', this.data);
 
         this.save();
     }
