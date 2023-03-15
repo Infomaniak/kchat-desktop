@@ -1,7 +1,7 @@
 {
   "publish": {
     "provider": "s3",
-    "channel": "beta",
+    "channel": "alpha",
     "bucket": "kchat",
     "endpoint": "https://download.storage5.infomaniak.com",
     "path": "/"
