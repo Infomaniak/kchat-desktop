@@ -14,8 +14,8 @@ import {tokensStorePath} from './constants';
 
 type Token = {
     token: string;
-    refreshToken: string;
 
+    // refreshToken: string;
     // expiresAt: number;
 }
 
@@ -93,10 +93,10 @@ export class TokenManager {
 
         // refreshToken: message.refreshToken,
         // expiresAt: message.expiresAt,
+        // refreshToken: message.refreshToken,
 
         this.data = {
             token: message.token,
-            refreshToken: message.refreshToken,
         };
 
         log.silly('tokenManager.handleStoreToken', this.data);
