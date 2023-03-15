@@ -149,7 +149,7 @@ export class WindowManager {
             return token;
         });
         ipcMain.on(TOKEN_REFRESHED, this.handleTokenRefreshed);
-        ipcMain.on(RESET_TOKEN, this.handleResetToken);
+        ipcMain.handle(RESET_TOKEN, this.handleResetToken);
         ipcMain.handle(SERVER_ADDED, this.handleAddServer);
         ipcMain.handle(SERVER_DELETED, this.handleDeleteServer);
         ipcMain.handle(RESET_AUTH, this.handleRevokeToken);
