@@ -26,6 +26,7 @@ workflow:
     - when: never
 
 sentry_release:
+  stage: release
   rules:
     - if: $DEPLOY_VARIABLE == "beta" || $DEPLOY_VARIABLE == "alpha" || $DEPLOY_VARIABLE == "stable"
       when: on_success
