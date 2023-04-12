@@ -97,7 +97,7 @@
     "main.menus.app.view.devToolsCurrentServer": "Herramientas de desarrollo para el servidor actual",
     "main.menus.app.view.devToolsAppWrapper": "Herramientas de desarrollador para la aplicación",
     "main.menus.app.view.clearCacheAndReload": "Limpiar caché y recargar",
-    "main.menus.app.view.updateTeams": "Actualizar equipos",
+    "main.menus.app.view.updateTeams": "Actualizar las organizaciones",
     "main.menus.app.view.actualSize": "Tamaño real",
     "main.menus.app.view": "&Ver",
     "main.menus.app.history.forward": "Adelante",

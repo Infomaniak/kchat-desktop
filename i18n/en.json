@@ -75,7 +75,7 @@
   "main.menus.app.view": "&View",
   "main.menus.app.view.actualSize": "Actual Size",
   "main.menus.app.view.clearCacheAndReload": "Clear Cache and Reload",
-  "main.menus.app.view.updateTeams": "Update teams",
+  "main.menus.app.view.updateTeams": "Update organisations",
   "main.menus.app.view.devToolsAppWrapper": "Developer Tools for Application Wrapper",
   "main.menus.app.view.devToolsCurrentServer": "Developer Tools for Current Server",
   "main.menus.app.view.downloads": "Downloads",

@@ -143,7 +143,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             WindowManager.reload();
         },
     }, {
-        label: localizeMessage('main.menus.app.view.updateTeams', 'Update teams'),
+        label: localizeMessage('main.menus.app.view.updateTeams', 'Update organisations'),
         accelerator: 'Shift+CmdOrCtrl+T',
         click() {
             WindowManager.resetTeams();
