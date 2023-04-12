@@ -24,7 +24,7 @@ import DownloadsDropdownItem from './components/DownloadsDropdown/DownloadsDropd
 import './css/downloadsDropdown.scss';
 
 Sentry.init({
-    dsn: 'https://8a8c0ed6e4fe45eaa3f1a26bbe037a27@sentry.infomaniak.com/53',
+    dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
 });
 
 type State = {
