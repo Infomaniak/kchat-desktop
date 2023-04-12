@@ -3,7 +3,7 @@
 
 import path from 'path';
 
-import {dialog, ipcMain, app, nativeImage, shell} from 'electron';
+import {dialog, ipcMain, app, nativeImage, shell, BrowserWindow} from 'electron';
 import log from 'electron-log';
 
 import {autoUpdater, CancellationToken, ProgressInfo, UpdateFileInfo, UpdateInfo} from 'electron-updater';
@@ -24,6 +24,8 @@ import {
     UPDATE_REMIND_LATER,
 } from 'common/communication';
 import Config from 'common/config';
+
+import {destroyTray} from './tray/tray';
 
 const NEXT_NOTIFY = 86400000; // 24 hours
 const NEXT_CHECK = 3600000; // 1 hour
@@ -162,18 +164,22 @@ export class UpdateManager {
     handleUpdate = (): void => {
         downloadsManager.removeUpdateBeforeRestart();
 
-        try {
-            autoUpdater.quitAndInstall();
-            log.info('autoupdater quit & install processing');
-            setTimeout(() => {
-                log.info('autoupdater timeout expired. App will quit');
-                app.quit();
-                app.exit(0);
-            }, 1000);
-        } catch (e) {
-            log.error(`Error during autoUpdate => ${e}`);
-            dialog.showErrorBox('Error', 'Failed to install updates');
-        }
+        // long history of this not working well
+        // https://github.com/electron-userland/electron-builder/issues/3271
+        // https://github.com/electron-userland/electron-builder/issues/3269
+        // do it just like develar says: https://github.com/electron-userland/electron-builder/issues/1604#issuecomment-306709572
+        log.info('quitting and installing now');
+        setImmediate(() => {
+            destroyTray();
+            global.willAppQuit = true;
+            app.removeAllListeners('window-all-closed');
+            const browserWindows = BrowserWindow.getAllWindows();
+            log.info(`closing ${browserWindows.length} BrowserWindows for autoUpdater.quitAndInstall`);
+            for (const browserWindow of browserWindows) {
+                browserWindow.close();
+            }
+            autoUpdater.quitAndInstall(false);
+        });
     }
 
     displayNoUpgrade = (): void => {

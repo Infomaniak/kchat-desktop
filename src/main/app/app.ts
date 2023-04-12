@@ -93,7 +93,8 @@ export function handleAppBeforeQuit() {
     // Make sure tray icon gets removed if the user exits via CTRL-Q
     destroyTray();
     global.willAppQuit = true;
-    updateManager.handleOnQuit();
+
+    // updateManager.handleOnQuit();
 }
 
 export async function handleAppCertificateError(event: Event, webContents: WebContents, url: string, error: string, certificate: Certificate, callback: (isTrusted: boolean) => void) {
