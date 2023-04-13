@@ -133,17 +133,23 @@ export class UpdateManager {
     }
 
     handleDownloadManual = (): void => {
-        if (this.lastCheck) {
-            clearTimeout(this.lastCheck);
-        }
-        if (this.lastNotification) {
-            clearTimeout(this.lastNotification);
-            this.lastNotification = undefined;
-        }
-        if (this.versionDownloaded) {
-            this.versionDownloaded = undefined;
-        }
         if (this.macosLink?.url) {
+            // remove notification.
+            if (this.lastNotification) {
+                clearTimeout(this.lastNotification);
+                this.lastNotification = undefined;
+            }
+
+            // remove queued update so it doesn't repop when user restarts manually.
+            downloadsManager.removeUpdateBeforeRestart();
+
+            // requeue check in an hour in case user doesn't end up updating after downloading.
+            if (this.lastCheck) {
+                clearTimeout(this.lastCheck);
+                this.lastCheck = setTimeout(() => this.checkForUpdates(false), NEXT_CHECK);
+            }
+
+            // download update manually through browser.
             shell.openExternal(`https://download.storage5.infomaniak.com/kchat/${this.macosLink.url}`);
         }
     }
