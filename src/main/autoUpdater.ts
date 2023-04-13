@@ -66,6 +66,12 @@ export class UpdateManager {
     constructor() {
         this.cancellationToken = new CancellationToken();
 
+        // clear any pending update when the app starts to prevent any cached updates getting stuck.
+        // before this was only triggering when a new update was available on restart,
+        // and downloadsManager was handling clearing updates on startup, however the check there
+        // doesn't seem to catch all cases.
+        downloadsManager.removeUpdateBeforeRestart();
+
         autoUpdater.on('error', (err: Error) => {
             log.error(`[kChat] There was an error while trying to update: ${err}`);
         });
@@ -133,17 +139,23 @@ export class UpdateManager {
     }
 
     handleDownloadManual = (): void => {
-        if (this.lastCheck) {
-            clearTimeout(this.lastCheck);
-        }
-        if (this.lastNotification) {
-            clearTimeout(this.lastNotification);
-            this.lastNotification = undefined;
-        }
-        if (this.versionDownloaded) {
-            this.versionDownloaded = undefined;
-        }
         if (this.macosLink?.url) {
+            // remove notification.
+            if (this.lastNotification) {
+                clearTimeout(this.lastNotification);
+                this.lastNotification = undefined;
+            }
+
+            // remove queued update so it doesn't repop when user restarts manually.
+            downloadsManager.removeUpdateBeforeRestart();
+
+            // requeue check in an hour in case user doesn't end up updating after downloading.
+            if (this.lastCheck) {
+                clearTimeout(this.lastCheck);
+                this.lastCheck = setTimeout(() => this.checkForUpdates(false), NEXT_CHECK);
+            }
+
+            // download update manually through browser.
             shell.openExternal(`https://download.storage5.infomaniak.com/kchat/${this.macosLink.url}`);
         }
     }
