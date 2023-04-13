@@ -66,6 +66,12 @@ export class UpdateManager {
     constructor() {
         this.cancellationToken = new CancellationToken();
 
+        // clear any pending update when the app starts to prevent any cached updates getting stuck.
+        // before this was only triggering when a new update was available on restart,
+        // and downloadsManager was handling clearing updates on startup, however the check there
+        // doesn't seem to catch all cases.
+        downloadsManager.removeUpdateBeforeRestart();
+
         autoUpdater.on('error', (err: Error) => {
             log.error(`[kChat] There was an error while trying to update: ${err}`);
         });

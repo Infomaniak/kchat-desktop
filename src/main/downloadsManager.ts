@@ -195,6 +195,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
                 }
 
                 // Remove update if app was updated and restarted
+                // TODO: maybe don't need this since now autoUpdate is clearing updates on construct, check what is better.
                 if (fileId === APP_UPDATE_KEY) {
                     if (appVersionManager.lastAppVersion === file.filename) {
                         delete downloads[APP_UPDATE_KEY];
