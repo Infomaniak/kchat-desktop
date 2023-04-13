@@ -80,8 +80,6 @@ export class UpdateManager {
             autoUpdater.removeListener('update-not-available', this.displayNoUpgrade);
             this.versionAvailable = info.version;
             if (process.platform === 'darwin') {
-                log.info('autoupdate files: ', JSON.stringify(info.files));
-
                 const arch = process.arch;
                 const archFilter = arch === 'arm64' ? '-arm64.' : '-x64.';
 
