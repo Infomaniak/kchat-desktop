@@ -136,6 +136,13 @@ export class UpdateManager {
         if (this.lastCheck) {
             clearTimeout(this.lastCheck);
         }
+        if (this.lastNotification) {
+            clearTimeout(this.lastNotification);
+            this.lastNotification = undefined;
+        }
+        if (this.versionDownloaded) {
+            this.versionDownloaded = undefined;
+        }
         if (this.macosLink?.url) {
             shell.openExternal(`https://download.storage5.infomaniak.com/kchat/${this.macosLink.url}`);
         }
