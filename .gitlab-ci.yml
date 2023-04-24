@@ -4,6 +4,7 @@ include:
     file: '/sentry-release.yaml'
 
 stages:
+  - test
   - release
 
 workflow:
@@ -23,6 +24,9 @@ workflow:
     - if: $CI_COMMIT_BRANCH == "master"
       variables:
         DEPLOY_VARIABLE: prodsec
+    - if: "$CI_MERGE_REQUEST_ID"
+      variables:
+        DEPLOY_VARIABLE: "staging/${CI_COMMIT_REF_SLUG}"
     - when: never
 
 sentry_release:
@@ -32,6 +36,41 @@ sentry_release:
       when: on_success
       allow_failure: false
     - when: never
+
+unit_test:
+  stage: test
+  image: node:16.10.0
+  tags:
+    - docker-executor
+    - kubernetes
+    - shared
+  environment:
+    name: "$DEPLOY_VARIABLE"
+  rules:
+    - if: $DEPLOY_VARIABLE == "staging/${CI_COMMIT_REF_SLUG}"
+      when: on_success
+    - if: $DEPLOY_VARIABLE == "prodsec"
+      when: on_success
+    - when: never
+  artifacts:
+    paths:
+      - coverage/
+    when: on_success
+    reports:
+      junit:
+        - coverage/junit.xml
+  coverage: /All files[^|]*\|[^|]*\s+([\d\.]+)/
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - coverage/
+  before_script:
+    - npm install
+  script:
+    # unit tests
+    - npm run test:unit-ci
 
 # changelog:
 #   stage: release
