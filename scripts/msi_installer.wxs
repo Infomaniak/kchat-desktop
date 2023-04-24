@@ -71,7 +71,7 @@
               <Condition><![CDATA[ADDSTARTMENUSHORTCUT = "true"]]></Condition>
               <RegistryValue Id="RegShortcutStartMenu" Root="HKCU" Key="SOFTWARE\kChat\Desktop\settings" Name="kChatDesktopShortcutStartMenu" Value="1" Type="integer" KeyPath="yes" />
               <Shortcut Id="kChatDesktopShortcutStartMenu" Directory="ProgramMenuDir" Name="kChat" WorkingDirectory="INSTALLDIR" Icon="kChat.ico" IconIndex="0" Advertise="no" Target="[INSTALLDIR]kChat.exe">
-                <ShortcutProperty Key="System.AppUserModel.ID" Value="kChat.Desktop" />
+                <ShortcutProperty Key="System.AppUserModel.ID" Value="com.infomaniak.chat" />
               </Shortcut>
             </Component>
             <Directory Id="GPOFiles" Name="gpo">

@@ -7,7 +7,7 @@
     "path": "/"
   },
   "generateUpdatesFilesForAllChannels": true,
-  "appId": "com.infomaniak.kchat",
+  "appId": "com.infomaniak.chat",
   "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
   "directories": {
     "buildResources": "src/assets",

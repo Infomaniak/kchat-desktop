@@ -205,9 +205,9 @@ function initializeBeforeAppReady() {
         return;
     }
 
-    // if (process.env.NODE_ENV !== 'test') {
-    //     app.enableSandbox();
-    // }
+    if (process.env.NODE_ENV !== 'test') {
+        app.enableSandbox();
+    }
     TrustedOriginsStore.load();
 
     // prevent using a different working directory, which happens on windows running after installation.

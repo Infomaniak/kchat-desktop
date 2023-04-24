@@ -28,8 +28,9 @@ import {
     APP_LOGGED_OUT,
     BROWSER_HISTORY_BUTTON,
     CALL_JOINED,
-    CALL_CLOSED,
-    WINDOW_WILL_UNLOADED,
+
+    // CALL_CLOSED,
+    // WINDOW_WILL_UNLOADED,
     DISPATCH_GET_DESKTOP_SOURCES,
     DESKTOP_SOURCES_RESULT,
     RELOAD_CURRENT_VIEW,
@@ -72,13 +73,14 @@ import {updateServerInfos} from 'main/app/utils';
 
 import {createSettingsWindow} from './settingsWindow';
 import createMainWindow from './mainWindow';
-import {createCallWindow} from './callWindow';
-import {createCallDialingWindow} from './callDialingWindow';
+
+// import {createCallWindow} from './callWindow';
+// import {createCallDialingWindow} from './callDialingWindow';
 
 // eslint-disable-next-line import/no-commonjs
 import CallsWidgetWindow from './callsWidgetWindow';
 
-const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@jitsi/electron-sdk');
+// const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@jitsi/electron-sdk');
 
 type SuiteTeam = {
     id: string;
@@ -862,70 +864,71 @@ export class WindowManager {
     }
 
     handleCallDialing = (event: IpcMainEvent, message, viewName: string) => {
-        const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
+        // const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
 
         // this.dialingWindow = createCallDialingWindow(this.mainWindow!, withDevTools);
-        createCallDialingWindow(this.mainWindow!, withDevTools, message.calling);
+        // createCallDialingWindow(this.mainWindow!, withDevTools, message.calling);
     }
 
     handleCallJoined = (event: IpcMainEvent, message, viewName: string) => {
-        if (this.callWindow) {
-            this.callWindow.show();
-        } else {
-            // if (!this.mainWindow) {
-            //     this.showMainWindow();
-            // }
-            const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
+        // if (this.callWindow) {
+        //     this.callWindow.show();
+        // } else {
+        //     if (!this.mainWindow) {
+        //         this.showMainWindow();
+        //     }
+        //     const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
 
-            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar, message.username);
-            initPopupsConfigurationMain(this.callWindow);
-            setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.kchat');
-            setupAlwaysOnTopMain(this.callWindow);
-            setupPowerMonitorMain(this.callWindow);
+        //     this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar, message.username);
+        //     initPopupsConfigurationMain(this.callWindow);
 
-            // setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
-            ipcMain.on(CALL_CLOSED, () => {
-                if (this.callWindow?.close) {
-                    this.callWindow.close();
-                }
-                this.callWindow = undefined;
-            });
+        //     setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.kchat');
+        //     setupAlwaysOnTopMain(this.callWindow);
+        //     setupPowerMonitorMain(this.callWindow);
 
-            ipcMain.on('call-focus', () => {
-                this.callWindow?.focus();
-            });
+        //     setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
+        //     ipcMain.on(CALL_CLOSED, () => {
+        //         if (this.callWindow?.close) {
+        //             this.callWindow.close();
+        //         }
+        //         this.callWindow = undefined;
+        //     });
 
-            ipcMain.on('call-audio-status-change', (_, status) => {
-                const currentView = this.viewManager?.views.get(viewName);
-                currentView?.view.webContents.send('call-audio-status-change', status.muted);
-            });
+        //     ipcMain.on('call-focus', () => {
+        //         this.callWindow?.focus();
+        //     });
 
-            ipcMain.on('call-video-status-change', (_, status) => {
-                const currentView = this.viewManager?.views.get(viewName);
-                currentView?.view.webContents.send('call-video-status-change', status.muted);
-            });
+        //     ipcMain.on('call-audio-status-change', (_, status) => {
+        //         const currentView = this.viewManager?.views.get(viewName);
+        //         currentView?.view.webContents.send('call-audio-status-change', status.muted);
+        //     });
 
-            ipcMain.on('call-ss-status-change', (_, status) => {
-                const currentView = this.viewManager?.views.get(viewName);
-                currentView?.view.webContents.send('call-ss-status-change', status.on);
-            });
+        //     ipcMain.on('call-video-status-change', (_, status) => {
+        //         const currentView = this.viewManager?.views.get(viewName);
+        //         currentView?.view.webContents.send('call-video-status-change', status.muted);
+        //     });
 
-            ipcMain.on(WINDOW_WILL_UNLOADED, () => {
-                if (this.callWindow) {
-                    this.callWindow.focus();
-                    if (this.callWindow.close) {
-                        this.callWindow.close();
-                    }
-                    delete this.callWindow;
-                }
-            });
+        //     ipcMain.on('call-ss-status-change', (_, status) => {
+        //         const currentView = this.viewManager?.views.get(viewName);
+        //         currentView?.view.webContents.send('call-ss-status-change', status.on);
+        //     });
 
-            this.callWindow.on('closed', () => {
-                delete this.callWindow;
-                const currentView = this.viewManager?.views.get(viewName);
-                currentView?.view.webContents.send(CALL_CLOSED, message.id);
-            });
-        }
+        //     ipcMain.on(WINDOW_WILL_UNLOADED, () => {
+        //         if (this.callWindow) {
+        //             this.callWindow.focus();
+        //             if (this.callWindow.close) {
+        //                 this.callWindow.close();
+        //             }
+        //             delete this.callWindow;
+        //         }
+        //     });
+
+        //     this.callWindow.on('closed', () => {
+        //         delete this.callWindow;
+        //         const currentView = this.viewManager?.views.get(viewName);
+        //         currentView?.view.webContents.send(CALL_CLOSED, message.id);
+        //     });
+        // }
     }
 
     handleAppLoggedOut = (event: IpcMainEvent, viewName: string) => {

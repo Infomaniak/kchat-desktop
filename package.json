@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "author": "Infomaniak <kchat@infomaniak.com>",
   "license": "proprietary",
-  "desktopName": "kchat.Desktop",
+  "desktopName": "com.infomaniak.chat",
   "homepage": "https://infomaniak.com/kchat",
   "engines": {
     "node": ">=16.16.0"
@@ -54,8 +54,8 @@
     "package:windows-nsis": "npm-run-all build-prod-upgrade && electron-builder --win zip nsis --x64 --ia32 --arm64 --publish=never",
     "package:mac": "npm-run-all build-prod && electron-builder --mac --x64 --arm64 --publish=always",
     "package:mac-with-universal": "npm-run-all build-prod && electron-builder --mac --x64 --arm64 --universal --publish=never",
-    "package:mas": "cross-env NODE_ENV=production IS_MAC_APP_STORE=false npm-run-all check-build-config build && electron-builder --mac mas --universal --publish=never",
-    "package:mas-dev": "cross-env NODE_ENV=production IS_MAC_APP_STORE=false npm-run-all check-build-config build && electron-builder --mac mas-dev --universal --publish=never",
+    "package:mas": "cross-env NODE_ENV=production IS_MAC_APP_STORE=true npm-run-all check-build-config build && electron-builder --mac mas --universal --publish=never",
+    "package:mas-dev": "cross-env NODE_ENV=production IS_MAC_APP_STORE=true npm-run-all check-build-config build && electron-builder --mac mas-dev --universal --publish=never",
     "package:linux": "npm-run-all package:linux-all package:linux-appImage",
     "package:linux-appImage": "npm-run-all build-prod-upgrade package:linux-appImage-x64 package:linux-appImage-arm64",
     "package:linux-appImage-x64": "electron-builder --linux tar.gz appimage --x64 --publish=never",
@@ -102,9 +102,9 @@
     ],
     "globals": {
       "__HASH_VERSION__": "5.0.0",
-      "__CAN_UPGRADE__": true,
+      "__CAN_UPGRADE__": false,
       "__IS_NIGHTLY_BUILD__": false,
-      "__IS_MAC_APP_STORE__": false,
+      "__IS_MAC_APP_STORE__": true,
       "__DISABLE_GPU__": false,
       "__SKIP_ONBOARDING_SCREENS__": false
     },
@@ -228,7 +228,6 @@
     "yargs": "17.4.0"
   },
   "dependencies": {
-    "@jitsi/electron-sdk": "^5.0.1",
     "@sentry/electron": "^4.4.0",
     "macos-notification-state": "2.0.2",
     "windows-focus-assist": "1.3.0"
