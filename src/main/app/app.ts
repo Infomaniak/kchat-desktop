@@ -17,12 +17,14 @@ import {getDeeplinkingURL, openDeepLink, resizeScreen} from './utils';
 
 export const certificateErrorCallbacks = new Map();
 
+// Jitsi
 // We need this because of https://github.com/electron/electron/issues/18214
-app.commandLine.appendSwitch('disable-site-isolation-trials');
+// app.commandLine.appendSwitch('disable-site-isolation-trials');
 
+// Jitsi
 // This allows BrowserWindow.setContentProtection(true) to work on macOS.
 // https://github.com/electron/electron/issues/19880
-app.commandLine.appendSwitch('disable-features', 'IOSurfaceCapturer');
+// app.commandLine.appendSwitch('disable-features', 'IOSurfaceCapturer');
 
 //
 // app event handlers
