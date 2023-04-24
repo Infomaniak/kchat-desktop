@@ -7,7 +7,6 @@ import log from 'electron-log';
 import urlUtils from 'common/utils/url';
 import Config from 'common/config';
 
-import updateManager from 'main/autoUpdater';
 import CertificateStore from 'main/certificateStore';
 import {localizeMessage} from 'main/i18nManager';
 import {destroyTray} from 'main/tray/tray';

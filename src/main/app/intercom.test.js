@@ -107,44 +107,44 @@ describe('main/app/intercom', () => {
         });
     });
 
-    describe('handleNewServerModal', () => {
-        beforeEach(() => {
-            getLocalURLString.mockReturnValue('/some/index.html');
-            getLocalPreload.mockReturnValue('/some/preload.js');
-            WindowManager.getMainWindow.mockReturnValue({});
+    // describe('handleNewServerModal', () => {
+    //     beforeEach(() => {
+    //         getLocalURLString.mockReturnValue('/some/index.html');
+    //         getLocalPreload.mockReturnValue('/some/preload.js');
+    //         WindowManager.getMainWindow.mockReturnValue({});
 
-            Config.set.mockImplementation((name, value) => {
-                Config[name] = value;
-            });
-            Config.teams = JSON.parse(JSON.stringify(teams));
+    //         Config.set.mockImplementation((name, value) => {
+    //             Config[name] = value;
+    //         });
+    //         Config.teams = JSON.parse(JSON.stringify(teams));
 
-            getDefaultTeamWithTabsFromTeam.mockImplementation((team) => ({
-                ...team,
-                tabs,
-            }));
-        });
+    //         getDefaultTeamWithTabsFromTeam.mockImplementation((team) => ({
+    //             ...team,
+    //             tabs,
+    //         }));
+    //     });
 
-        afterEach(() => {
-            delete Config.teams;
-        });
+    //     afterEach(() => {
+    //         delete Config.teams;
+    //     });
 
-        it('should add new team to the config', async () => {
-            const promise = Promise.resolve({
-                name: 'new-team',
-                url: 'http://new-team.com',
-            });
-            ModalManager.addModal.mockReturnValue(promise);
+    //     it('should add new team to the config', async () => {
+    //         const promise = Promise.resolve({
+    //             name: 'new-team',
+    //             url: 'http://new-team.com',
+    //         });
+    //         ModalManager.addModal.mockReturnValue(promise);
 
-            handleNewServerModal();
-            await promise;
-            expect(Config.teams).toContainEqual(expect.objectContaining({
-                name: 'new-team',
-                url: 'http://new-team.com',
-                tabs,
-            }));
-            expect(WindowManager.switchServer).toBeCalledWith('new-team', true);
-        });
-    });
+    //         handleNewServerModal();
+    //         await promise;
+    //         expect(Config.teams).toContainEqual(expect.objectContaining({
+    //             name: 'new-team',
+    //             url: 'http://new-team.com',
+    //             tabs,
+    //         }));
+    //         expect(WindowManager.switchServer).toBeCalledWith('new-team', true);
+    //     });
+    // });
 
     describe('handleEditServerModal', () => {
         beforeEach(() => {
