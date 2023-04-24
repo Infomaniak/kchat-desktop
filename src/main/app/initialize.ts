@@ -8,7 +8,7 @@ import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-devtools-install
 import isDev from 'electron-is-dev';
 import log from 'electron-log';
 
-import {init} from '@sentry/electron';
+import {init} from '@sentry/electron/main';
 
 import {
     SWITCH_SERVER,
