@@ -18,6 +18,7 @@ import createMainWindow from './mainWindow';
 
 jest.mock('path', () => ({
     join: jest.fn(),
+    resolve: jest.fn(),
 }));
 
 jest.mock('electron', () => ({
@@ -25,6 +26,7 @@ jest.mock('electron', () => ({
         getPath: jest.fn(),
         hide: jest.fn(),
         quit: jest.fn(),
+        getAppPath: () => '/path/to/app',
     },
     dialog: {
         showMessageBox: jest.fn(),

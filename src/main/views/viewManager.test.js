@@ -31,6 +31,17 @@ jest.mock('electron', () => ({
 jest.mock('common/tabs/TabView', () => ({
     getServerView: jest.fn(),
     getTabViewName: jest.fn((a, b) => `${a}-${b}`),
+    getDefaultTeamWithTabsFromTeam: (value) => ({
+        ...value,
+        tabs: [
+            {
+                name: 'tab1',
+            },
+            {
+                name: 'tab2',
+            },
+        ],
+    }),
 }));
 
 jest.mock('common/servers/MattermostServer', () => ({

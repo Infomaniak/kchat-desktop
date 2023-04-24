@@ -7,19 +7,21 @@
 
 // eslint-disable-next-line import/no-commonjs
 const {ipcRenderer} = require('electron');
-// eslint-disable-next-line import/no-commonjs
-const {setupScreenSharingRender, setupAlwaysOnTopRender, setupWiFiStats, setupPowerMonitorRender, initPopupsConfigurationRender} = require('@jitsi/electron-sdk');
-// eslint-disable-next-line import/no-commonjs
-const {platform} = require('process');
 
-const whitelistedIpcChannels = [
-    'protocol-data-msg',
-    'protocol-data-homepage',
-    'protocol-data-create-meeting',
-    'protocol-data-join-meeting',
-    'protocol-data-plan-meeting',
-    'renderer-ready',
-];
+// eslint-disable-next-line import/no-commonjs
+// const {setupScreenSharingRender, setupAlwaysOnTopRender, setupWiFiStats, setupPowerMonitorRender, initPopupsConfigurationRender} = require('@jitsi/electron-sdk');
+
+// eslint-disable-next-line import/no-commonjs
+// const {platform} = require('process');
+
+// const whitelistedIpcChannels = [
+//     'protocol-data-msg',
+//     'protocol-data-homepage',
+//     'protocol-data-create-meeting',
+//     'protocol-data-join-meeting',
+//     'protocol-data-plan-meeting',
+//     'renderer-ready',
+// ];
 
 /**
  * Setup the renderer process.
@@ -28,31 +30,31 @@ const whitelistedIpcChannels = [
  * @param {*} options - Options for what to enable.
  * @returns {void}
  */
-function setupRenderer(api, options = {}) {
-    // initPopupsConfigurationRender(api);
+// function setupRenderer(api, options = {}) {
+//     // initPopupsConfigurationRender(api);
 
-    const iframe = api.getIFrame();
+//     const iframe = api.getIFrame();
 
-    initPopupsConfigurationRender(api);
+//     initPopupsConfigurationRender(api);
 
-    setupScreenSharingRender(api);
+//     setupScreenSharingRender(api);
 
-    // if (options.enableRemoteControl) {
-    //     new RemoteControl(iframe); // eslint-disable-line no-new
-    // }
+//     // if (options.enableRemoteControl) {
+//     //     new RemoteControl(iframe); // eslint-disable-line no-new
+//     // }
 
-    // // Allow window to be on top if enabled in settings
-    if (options.enableAlwaysOnTopWindow) {
-        setupAlwaysOnTopRender(api);
-    }
+//     // // Allow window to be on top if enabled in settings
+//     if (options.enableAlwaysOnTopWindow) {
+//         setupAlwaysOnTopRender(api);
+//     }
 
-    // // Disable WiFiStats on mac due to jitsi-meet-electron#585
-    if (platform !== 'darwin') {
-        setupWiFiStats(iframe);
-    }
+//     // // Disable WiFiStats on mac due to jitsi-meet-electron#585
+//     if (platform !== 'darwin') {
+//         setupWiFiStats(iframe);
+//     }
 
-    setupPowerMonitorRender(api);
-}
+//     setupPowerMonitorRender(api);
+// }
 
 window.ipcRenderer = {
     send: ipcRenderer.send,
@@ -60,29 +62,29 @@ window.ipcRenderer = {
     invoke: ipcRenderer.invoke,
 };
 
-window.jitsiNodeAPI = {
-    setupRenderer,
-    ipc: {
-        on: (channel, listener) => {
-            if (!whitelistedIpcChannels.includes(channel)) {
-                return;
-            }
+// window.jitsiNodeAPI = {
+//     setupRenderer,
+//     ipc: {
+//         on: (channel, listener) => {
+//             if (!whitelistedIpcChannels.includes(channel)) {
+//                 return;
+//             }
 
-            return ipcRenderer.on(channel, listener);
-        },
-        send: (channel) => {
-            if (!whitelistedIpcChannels.includes(channel)) {
-                return;
-            }
+//             return ipcRenderer.on(channel, listener);
+//         },
+//         send: (channel) => {
+//             if (!whitelistedIpcChannels.includes(channel)) {
+//                 return;
+//             }
 
-            return ipcRenderer.send(channel);
-        },
-        removeListener: (channel, listener) => {
-            if (!whitelistedIpcChannels.includes(channel)) {
-                return;
-            }
+//             return ipcRenderer.send(channel);
+//         },
+//         removeListener: (channel, listener) => {
+//             if (!whitelistedIpcChannels.includes(channel)) {
+//                 return;
+//             }
 
-            return ipcRenderer.removeListener(channel, listener);
-        },
-    },
-};
+//             return ipcRenderer.removeListener(channel, listener);
+//         },
+//     },
+// };

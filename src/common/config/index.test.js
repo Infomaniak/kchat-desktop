@@ -7,7 +7,7 @@ const configPath = '/fake/config/path';
 
 jest.mock('electron', () => ({
     app: {
-        name: 'Mattermost',
+        name: 'kChat',
         getPath: jest.fn(),
         getAppPath: () => '/path/to/app',
     },
@@ -291,7 +291,7 @@ describe('common/config', () => {
             expect(config.combinedData).toStrictEqual({
                 teams: [],
                 registryTeams: [],
-                appName: 'Mattermost',
+                appName: 'kChat',
                 useNativeWindow: false,
                 darkMode: false,
                 otherBuildSetting: 'registry',
@@ -346,7 +346,7 @@ describe('common/config', () => {
                     },
                 ],
                 registryTeams: [],
-                appName: 'Mattermost',
+                appName: 'kChat',
                 useNativeWindow: false,
                 darkMode: false,
                 enableServerManagement: true,
@@ -376,7 +376,7 @@ describe('common/config', () => {
             expect(config.combinedData).toStrictEqual({
                 teams: [team],
                 registryTeams: [],
-                appName: 'Mattermost',
+                appName: 'kChat',
                 useNativeWindow: false,
                 darkMode: false,
                 enableServerManagement: false,

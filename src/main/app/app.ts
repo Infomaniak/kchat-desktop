@@ -7,7 +7,6 @@ import log from 'electron-log';
 import urlUtils from 'common/utils/url';
 import Config from 'common/config';
 
-import updateManager from 'main/autoUpdater';
 import CertificateStore from 'main/certificateStore';
 import {localizeMessage} from 'main/i18nManager';
 import {destroyTray} from 'main/tray/tray';
@@ -17,12 +16,14 @@ import {getDeeplinkingURL, openDeepLink, resizeScreen} from './utils';
 
 export const certificateErrorCallbacks = new Map();
 
+// Jitsi
 // We need this because of https://github.com/electron/electron/issues/18214
-app.commandLine.appendSwitch('disable-site-isolation-trials');
+// app.commandLine.appendSwitch('disable-site-isolation-trials');
 
+// Jitsi
 // This allows BrowserWindow.setContentProtection(true) to work on macOS.
 // https://github.com/electron/electron/issues/19880
-app.commandLine.appendSwitch('disable-features', 'IOSurfaceCapturer');
+// app.commandLine.appendSwitch('disable-features', 'IOSurfaceCapturer');
 
 //
 // app event handlers
