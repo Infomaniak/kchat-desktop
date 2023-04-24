@@ -69,6 +69,35 @@ jest.mock('electron', () => ({
     },
 }));
 
+jest.mock('@sentry/electron/main', () => ({
+    init: jest.fn(),
+    captureException: () => {},
+    Integrations: {
+        Console: class {},
+        Http: class {},
+        OnUncaughtException: class {},
+        OnUnhandledRejection: class {},
+        LinkedErrors: class {},
+        InboundFilters: class {},
+        FunctionToString: class {},
+        Breadcrumbs: class {},
+        GlobalHandlers: class {},
+        Dedupe: class {},
+        Release: class {},
+        RewriteFrames: class {},
+    },
+    Handlers: {
+        requestHandler: () => (req, res, next) => next(),
+        errorHandler: () => (err, req, res, next) => next(),
+    },
+    withScope: (callback) => {
+        callback();
+    },
+    configureScope: (callback) => {
+        callback();
+    },
+}));
+
 jest.mock('main/i18nManager', () => ({
     localizeMessage: jest.fn(),
     setLocale: jest.fn(),

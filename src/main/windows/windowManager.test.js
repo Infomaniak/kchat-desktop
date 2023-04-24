@@ -117,7 +117,7 @@ jest.mock('electron', () => {
     };
 });
 
-jest.mock('@sentry/electron', () => ({
+jest.mock('@sentry/electron/main', () => ({
     init: jest.fn(),
     captureException: () => {},
     Integrations: {
