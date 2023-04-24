@@ -8,7 +8,6 @@ import {app, session} from 'electron';
 import Config from 'common/config';
 import urlUtils from 'common/utils/url';
 
-import {displayDownloadCompleted} from 'main/notifications';
 import parseArgs from 'main/ParseArgs';
 import WindowManager from 'main/windows/windowManager';
 
@@ -62,6 +61,10 @@ jest.mock('electron', () => ({
             setSpellCheckerDictionaryDownloadURL: jest.fn(),
             setPermissionRequestHandler: jest.fn(),
             on: jest.fn(),
+            webRequest: {
+                onHeadersReceived: jest.fn(),
+                onBeforeSendHeaders: jest.fn(),
+            },
         },
     },
 }));
