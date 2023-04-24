@@ -3,11 +3,12 @@
 
 import path from 'path';
 
-import {dialog, ipcMain, app, nativeImage} from 'electron';
+import {dialog, ipcMain, app, nativeImage, shell, BrowserWindow} from 'electron';
 import log from 'electron-log';
 
-import {autoUpdater, CancellationToken, ProgressInfo, UpdateInfo} from 'electron-updater';
+import {autoUpdater, CancellationToken, ProgressInfo, UpdateFileInfo, UpdateInfo} from 'electron-updater';
 
+import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
 import {displayUpgrade, displayRestartToUpgrade} from 'main/notifications';
 
@@ -23,6 +24,8 @@ import {
     UPDATE_REMIND_LATER,
 } from 'common/communication';
 import Config from 'common/config';
+
+import {destroyTray} from './tray/tray';
 
 const NEXT_NOTIFY = 86400000; // 24 hours
 const NEXT_CHECK = 3600000; // 1 hour
@@ -57,9 +60,17 @@ export class UpdateManager {
     lastCheck?: NodeJS.Timeout;
     versionAvailable?: string;
     versionDownloaded?: string;
+    downloadedInfo?: UpdateInfo;
+    macosLink?: UpdateFileInfo;
 
     constructor() {
         this.cancellationToken = new CancellationToken();
+
+        // clear any pending update when the app starts to prevent any cached updates getting stuck.
+        // before this was only triggering when a new update was available on restart,
+        // and downloadsManager was handling clearing updates on startup, however the check there
+        // doesn't seem to catch all cases.
+        downloadsManager.removeUpdateBeforeRestart();
 
         autoUpdater.on('error', (err: Error) => {
             log.error(`[kChat] There was an error while trying to update: ${err}`);
@@ -68,6 +79,12 @@ export class UpdateManager {
         autoUpdater.on('update-available', (info: UpdateInfo) => {
             autoUpdater.removeListener('update-not-available', this.displayNoUpgrade);
             this.versionAvailable = info.version;
+            if (process.platform === 'darwin') {
+                const arch = process.arch;
+                const archFilter = arch === 'arm64' ? '-arm64.' : '-x64.';
+
+                this.macosLink = info.files.find((file) => file.url.includes('.dmg') && file.url.includes(archFilter));
+            }
             ipcMain.emit(UPDATE_SHORTCUT_MENU);
             log.info(`[kChat] available version ${info.version}`);
             this.notify();
@@ -75,6 +92,7 @@ export class UpdateManager {
 
         autoUpdater.on('update-downloaded', (info: UpdateInfo) => {
             this.versionDownloaded = info.version;
+            this.downloadedInfo = info;
             ipcMain.emit(UPDATE_SHORTCUT_MENU);
             log.info(`[kChat] downloaded version ${info.version}`);
             this.notifyDownloaded();
@@ -114,14 +132,37 @@ export class UpdateManager {
     }
 
     notifyDownloaded = (): void => {
-        ipcMain.emit(UPDATE_DOWNLOADED, null, this.versionDownloaded);
+        ipcMain.emit(UPDATE_DOWNLOADED, null, this.downloadedInfo);
         displayRestartToUpgrade(this.versionDownloaded || 'unknown', this.handleUpdate);
+    }
+
+    handleDownloadManual = (): void => {
+        if (this.macosLink?.url) {
+            // remove notification.
+            if (this.lastNotification) {
+                clearTimeout(this.lastNotification);
+                this.lastNotification = undefined;
+            }
+
+            // remove queued update so it doesn't repop when user restarts manually.
+            downloadsManager.removeUpdateBeforeRestart();
+
+            // requeue check in an hour in case user doesn't end up updating after downloading.
+            if (this.lastCheck) {
+                clearTimeout(this.lastCheck);
+                this.lastCheck = setTimeout(() => this.checkForUpdates(false), NEXT_CHECK);
+            }
+
+            // download update manually through browser.
+            shell.openExternal(`https://download.storage5.infomaniak.com/kchat/${this.macosLink.url}`);
+        }
     }
 
     handleDownload = (): void => {
         if (this.lastCheck) {
             clearTimeout(this.lastCheck);
         }
+
         autoUpdater.downloadUpdate(this.cancellationToken);
     }
 
@@ -135,13 +176,32 @@ export class UpdateManager {
     }
 
     handleOnQuit = (): void => {
+        log.info(`Handle app will quit with version downloaded => ${this.versionDownloaded}`);
         if (this.versionDownloaded) {
+            log.info('this version downloaded');
             autoUpdater.quitAndInstall(true, false);
         }
     }
 
     handleUpdate = (): void => {
-        autoUpdater.quitAndInstall();
+        downloadsManager.removeUpdateBeforeRestart();
+
+        // long history of this not working well
+        // https://github.com/electron-userland/electron-builder/issues/3271
+        // https://github.com/electron-userland/electron-builder/issues/3269
+        // do it just like develar says: https://github.com/electron-userland/electron-builder/issues/1604#issuecomment-306709572
+        log.info('quitting and installing now');
+        setImmediate(() => {
+            destroyTray();
+            global.willAppQuit = true;
+            app.removeAllListeners('window-all-closed');
+            const browserWindows = BrowserWindow.getAllWindows();
+            log.info(`closing ${browserWindows.length} BrowserWindows for autoUpdater.quitAndInstall`);
+            for (const browserWindow of browserWindows) {
+                browserWindow.close();
+            }
+            autoUpdater.quitAndInstall(false);
+        });
     }
 
     displayNoUpgrade = (): void => {

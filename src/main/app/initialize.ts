@@ -8,6 +8,8 @@ import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-devtools-install
 import isDev from 'electron-is-dev';
 import log from 'electron-log';
 
+import {init} from '@sentry/electron/main';
+
 import {
     SWITCH_SERVER,
     FOCUS_BROWSERVIEW,
@@ -33,8 +35,10 @@ import {
     USER_ACTIVITY_UPDATE,
     START_UPGRADE,
     START_UPDATE_DOWNLOAD,
+    START_UPDATE_DOWNLOAD_MANUAL,
     PING_DOMAIN,
     MAIN_WINDOW_SHOWN,
+    OPEN_APP_MENU,
 } from 'common/communication';
 import Config from 'common/config';
 import urlUtils from 'common/utils/url';
@@ -55,6 +59,7 @@ import TrustedOriginsStore from 'main/trustedOrigins';
 import {refreshTrayImages, setupTray} from 'main/tray/tray';
 import UserActivityMonitor from 'main/UserActivityMonitor';
 import WindowManager from 'main/windows/windowManager';
+import TokenManager from 'main/tokenManager';
 
 import {protocols} from '../../../electron-builder.json';
 
@@ -64,10 +69,10 @@ import {
     handleAppBeforeQuit,
     handleAppBrowserWindowCreated,
     handleAppCertificateError,
-    handleAppGPUProcessCrashed,
     handleAppSecondInstance,
     handleAppWillFinishLaunching,
     handleAppWindowAllClosed,
+    handleChildProcessGone,
 } from './app';
 import {handleConfigUpdate, handleDarkModeChange} from './config';
 import {
@@ -111,6 +116,11 @@ export async function initialize() {
 
     // initialization that can run before the app is ready
     initializeArgs();
+
+    init({
+        dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
+    });
+
     await initializeConfig();
     initializeAppEventListeners();
     initializeBeforeAppReady();
@@ -184,7 +194,7 @@ function initializeAppEventListeners() {
     app.on('before-quit', handleAppBeforeQuit);
     app.on('certificate-error', handleAppCertificateError);
     app.on('select-client-certificate', CertificateManager.handleSelectCertificate);
-    app.on('gpu-process-crashed', handleAppGPUProcessCrashed);
+    app.on('child-process-gone', handleChildProcessGone);
     app.on('login', AuthManager.handleAppLogin);
     app.on('will-finish-launching', handleAppWillFinishLaunching);
 }
@@ -244,7 +254,7 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(UPDATE_LAST_ACTIVE, handleUpdateLastActive);
 
     if (process.platform !== 'darwin') {
-        ipcMain.on('open-app-menu', handleOpenAppMenu);
+        ipcMain.on(OPEN_APP_MENU, handleOpenAppMenu);
     }
 
     ipcMain.on(SWITCH_SERVER, handleSwitchServer);
@@ -268,21 +278,21 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.handle(GET_AVAILABLE_SPELL_CHECKER_LANGUAGES, () => session.defaultSession.availableSpellCheckerLanguages);
     ipcMain.handle(GET_DOWNLOAD_LOCATION, handleSelectDownload);
     ipcMain.on(START_UPDATE_DOWNLOAD, handleStartDownload);
+    ipcMain.on(START_UPDATE_DOWNLOAD_MANUAL, handleStartDownloadManual);
     ipcMain.on(START_UPGRADE, handleStartUpgrade);
     ipcMain.handle(PING_DOMAIN, handlePingDomain);
 }
 
 function initializeAfterAppReady() {
     updateServerInfos(Config.teams);
-    app.setAppUserModelId('Mattermost.Desktop'); // Use explicit AppUserModelID
+    app.setAppUserModelId('Kchat.Desktop'); // Use explicit AppUserModelID
     const defaultSession = session.defaultSession;
     defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
         (d, c) => {
-            const currentServerURL = WindowManager.getCurrentServerUrl();
-            if (currentServerURL && d.url.includes('/token') && d.responseHeaders) {
-                d.responseHeaders['Access-Control-Allow-Origin'] = [currentServerURL];
+            if (d.url.includes('/token') && d.responseHeaders) {
+                d.responseHeaders['Access-Control-Allow-Origin'] = ['https://kchat.infomaniak.com'];
                 d.responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
-                d.responseHeaders['Access-Control-Allow-Headers'] = ['X-Requested-With, Authorization'];
+                d.responseHeaders['Access-Control-Allow-Headers'] = ['X-Requested-With, Authorization', 'Webapp-Version'];
                 d.responseHeaders['Access-Control-Allow-Methods'] = ['GET, POST, OPTIONS, PUT, DELETE'];
             }
 
@@ -299,11 +309,11 @@ function initializeAfterAppReady() {
     defaultSession.webRequest.onBeforeSendHeaders({urls: ['https://*/api/v4/*', 'https://*/broadcasting/auth']},
         (d, c) => {
             const authHeader = d.requestHeaders.Authorization ? d.requestHeaders.Authorization : null;
-            const ikToken = WindowManager.mainStore?.get('IKToken');
+            const ikToken = TokenManager.getToken(); // WindowManager.mainStore?.get('IKToken');
 
             // No Auhtorization header or bearer is empty
-            if ((!authHeader || !authHeader?.split(' ')[1]) && ikToken) {
-                d.requestHeaders.Authorization = `Bearer ${ikToken}`;
+            if ((!authHeader || !authHeader?.split(' ')[1]) && ikToken.token) {
+                d.requestHeaders.Authorization = `Bearer ${ikToken.token}`;
             }
 
             c({
@@ -412,14 +422,6 @@ function initializeAfterAppReady() {
         i18nManager.setLocale(app.getLocaleCountryCode());
     }
 
-    // needs to be done after app ready
-    // must be done before update menu
-    if (Config.appLanguage) {
-        i18nManager.setLocale(Config.appLanguage);
-    } else if (!i18nManager.setLocale(app.getLocale())) {
-        i18nManager.setLocale(app.getLocaleCountryCode());
-    }
-
     handleUpdateMenuEvent();
 
     ipcMain.emit('update-dict');
@@ -457,15 +459,19 @@ function initializeAfterAppReady() {
 
     // only check for non-Windows, as with Windows we have to wait for GPO teams
     if (process.platform !== 'win32' || typeof Config.registryConfigData !== 'undefined') {
-        if (Config.teams.length === 0) {
-            handleMainWindowIsShown();
-        }
+        handleMainWindowIsShown();
     }
 }
 
 function handleStartDownload() {
     if (updateManager) {
         updateManager.handleDownload();
+    }
+}
+
+function handleStartDownloadManual() {
+    if (updateManager) {
+        updateManager.handleDownloadManual();
     }
 }
 

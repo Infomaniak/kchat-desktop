@@ -7,7 +7,7 @@ const configPath = '/fake/config/path';
 
 jest.mock('electron', () => ({
     app: {
-        name: 'Mattermost',
+        name: 'kChat',
         getPath: jest.fn(),
         getAppPath: () => '/path/to/app',
     },
@@ -24,6 +24,7 @@ jest.mock('main/Validator', () => ({
     validateV1ConfigData: (configData) => (configData.version === 1 ? configData : null),
     validateV2ConfigData: (configData) => (configData.version === 2 ? configData : null),
     validateV3ConfigData: (configData) => (configData.version === 3 ? configData : null),
+    validateConfigData: (configData) => (configData.version === 3 ? configData : null),
 }));
 
 jest.mock('common/tabs/TabView', () => ({
@@ -290,7 +291,7 @@ describe('common/config', () => {
             expect(config.combinedData).toStrictEqual({
                 teams: [],
                 registryTeams: [],
-                appName: 'Mattermost',
+                appName: 'kChat',
                 useNativeWindow: false,
                 darkMode: false,
                 otherBuildSetting: 'registry',
@@ -345,7 +346,7 @@ describe('common/config', () => {
                     },
                 ],
                 registryTeams: [],
-                appName: 'Mattermost',
+                appName: 'kChat',
                 useNativeWindow: false,
                 darkMode: false,
                 enableServerManagement: true,
@@ -375,7 +376,7 @@ describe('common/config', () => {
             expect(config.combinedData).toStrictEqual({
                 teams: [team],
                 registryTeams: [],
-                appName: 'Mattermost',
+                appName: 'kChat',
                 useNativeWindow: false,
                 darkMode: false,
                 enableServerManagement: false,

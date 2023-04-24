@@ -1,3 +1,8 @@
+include:
+  - project: 'docker-public/gitlab-ci-dev-scripts'
+    ref: master
+    file: '/sentry-release.yaml'
+
 stages:
   - release
 
@@ -6,6 +11,10 @@ workflow:
     - if: "$CI_COMMIT_TAG =~ /\\-beta.*/"
       variables:
         DEPLOY_VARIABLE: beta
+        SLACK_NOTIFY_CHANNEL: C03BA6564NP
+    - if: "$CI_COMMIT_TAG =~ /\\-alpha.*/"
+      variables:
+        DEPLOY_VARIABLE: alpha
         SLACK_NOTIFY_CHANNEL: C03BA6564NP
     - if: "$CI_COMMIT_TAG"
       variables:
@@ -16,16 +25,24 @@ workflow:
         DEPLOY_VARIABLE: prodsec
     - when: never
 
-changelog:
+sentry_release:
   stage: release
-  image: registry.infomaniak.com:443/leopold.jacquot/debian-toolbox:0.0.1
-  environment:
-    name: "$DEPLOY_VARIABLE"
   rules:
-    - if: $DEPLOY_VARIABLE == "stable"
+    - if: $DEPLOY_VARIABLE == "beta" || $DEPLOY_VARIABLE == "alpha" || $DEPLOY_VARIABLE == "stable"
       when: on_success
-    - if: $DEPLOY_VARIABLE == "beta"
-      when: on_success
+      allow_failure: false
     - when: never
-  script:
-    - "./release.sh ${GITLAB_API_TOKEN} ${CI_COMMIT_TAG} ${CI_COMMIT_TAG:0:3} ${SLACK_API_TOKEN} ${SLACK_NOTIFY_CHANNEL}"
+
+# changelog:
+#   stage: release
+#   image: registry.infomaniak.com:443/leopold.jacquot/debian-toolbox:0.0.1
+#   environment:
+#     name: "$DEPLOY_VARIABLE"
+#   rules:
+#     - if: $DEPLOY_VARIABLE == "stable"
+#       when: on_success
+#     - if: $DEPLOY_VARIABLE == "beta"
+#       when: on_success
+#     - when: never
+#   script:
+#     - "./release.sh ${GITLAB_API_TOKEN} ${CI_COMMIT_TAG} ${CI_COMMIT_TAG:0:3} ${SLACK_API_TOKEN} ${SLACK_NOTIFY_CHANNEL}"

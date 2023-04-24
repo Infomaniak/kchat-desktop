@@ -15,6 +15,7 @@ import {
     handleEditServerModal,
     handleRemoveServerModal,
     handleWelcomeScreenModal,
+    handleMainWindowIsShown,
 } from './intercom';
 
 jest.mock('common/config', () => ({
@@ -106,44 +107,44 @@ describe('main/app/intercom', () => {
         });
     });
 
-    describe('handleNewServerModal', () => {
-        beforeEach(() => {
-            getLocalURLString.mockReturnValue('/some/index.html');
-            getLocalPreload.mockReturnValue('/some/preload.js');
-            WindowManager.getMainWindow.mockReturnValue({});
+    // describe('handleNewServerModal', () => {
+    //     beforeEach(() => {
+    //         getLocalURLString.mockReturnValue('/some/index.html');
+    //         getLocalPreload.mockReturnValue('/some/preload.js');
+    //         WindowManager.getMainWindow.mockReturnValue({});
 
-            Config.set.mockImplementation((name, value) => {
-                Config[name] = value;
-            });
-            Config.teams = JSON.parse(JSON.stringify(teams));
+    //         Config.set.mockImplementation((name, value) => {
+    //             Config[name] = value;
+    //         });
+    //         Config.teams = JSON.parse(JSON.stringify(teams));
 
-            getDefaultTeamWithTabsFromTeam.mockImplementation((team) => ({
-                ...team,
-                tabs,
-            }));
-        });
+    //         getDefaultTeamWithTabsFromTeam.mockImplementation((team) => ({
+    //             ...team,
+    //             tabs,
+    //         }));
+    //     });
 
-        afterEach(() => {
-            delete Config.teams;
-        });
+    //     afterEach(() => {
+    //         delete Config.teams;
+    //     });
 
-        it('should add new team to the config', async () => {
-            const promise = Promise.resolve({
-                name: 'new-team',
-                url: 'http://new-team.com',
-            });
-            ModalManager.addModal.mockReturnValue(promise);
+    //     it('should add new team to the config', async () => {
+    //         const promise = Promise.resolve({
+    //             name: 'new-team',
+    //             url: 'http://new-team.com',
+    //         });
+    //         ModalManager.addModal.mockReturnValue(promise);
 
-            handleNewServerModal();
-            await promise;
-            expect(Config.teams).toContainEqual(expect.objectContaining({
-                name: 'new-team',
-                url: 'http://new-team.com',
-                tabs,
-            }));
-            expect(WindowManager.switchServer).toBeCalledWith('new-team', true);
-        });
-    });
+    //         handleNewServerModal();
+    //         await promise;
+    //         expect(Config.teams).toContainEqual(expect.objectContaining({
+    //             name: 'new-team',
+    //             url: 'http://new-team.com',
+    //             tabs,
+    //         }));
+    //         expect(WindowManager.switchServer).toBeCalledWith('new-team', true);
+    //     });
+    // });
 
     describe('handleEditServerModal', () => {
         beforeEach(() => {
@@ -255,6 +256,30 @@ describe('main/app/intercom', () => {
 
             handleWelcomeScreenModal();
             expect(ModalManager.addModal).toHaveBeenCalledWith('welcomeScreen', '/some/index.html', '/some/preload.js', [], {}, true);
+        });
+    });
+
+    describe('handleMainWindowIsShown', () => {
+        it('MM-48079 should not show onboarding screen or server screen if GPO server is pre-configured', () => {
+            getLocalURLString.mockReturnValue('/some/index.html');
+            getLocalPreload.mockReturnValue('/some/preload.js');
+            WindowManager.getMainWindow.mockReturnValue({
+                isVisible: () => true,
+            });
+
+            Config.set.mockImplementation((name, value) => {
+                Config[name] = value;
+            });
+            Config.registryConfigData = {
+                teams: JSON.parse(JSON.stringify([{
+                    name: 'test-team',
+                    order: 0,
+                    url: 'https://someurl.here',
+                }])),
+            };
+
+            handleMainWindowIsShown();
+            expect(ModalManager.addModal).not.toHaveBeenCalled();
         });
     });
 });

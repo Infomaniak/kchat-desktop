@@ -20,6 +20,10 @@ import {
     PING_DOMAIN_RESPONSE,
     GET_LANGUAGE_INFORMATION,
     RETRIEVED_LANGUAGE_INFORMATION,
+    RESET_AUTH,
+    RESET_TEAMS,
+
+    // UPDATE_TEAMS,
 } from 'common/communication';
 
 console.log('preloaded for the modal!');
@@ -74,6 +78,11 @@ window.addEventListener('message', async (event) => {
         break;
     case GET_LANGUAGE_INFORMATION:
         window.postMessage({type: RETRIEVED_LANGUAGE_INFORMATION, data: await ipcRenderer.invoke(GET_LANGUAGE_INFORMATION)});
+        break;
+    case RESET_AUTH:
+        await ipcRenderer.invoke(RESET_AUTH);
+        ipcRenderer.invoke(RESET_TEAMS);
+        ipcRenderer.send(MODAL_CANCEL, {});
         break;
     default:
         console.log(`got a message: ${event}`);

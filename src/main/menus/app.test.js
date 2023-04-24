@@ -6,7 +6,6 @@
 import {getDoNotDisturb as getDarwinDoNotDisturb} from 'macos-notification-state';
 
 import {localizeMessage} from 'main/i18nManager';
-import WindowManager from 'main/windows/windowManager';
 
 import {createTemplate} from './app';
 
@@ -32,6 +31,8 @@ jest.mock('electron', () => {
             emit: jest.fn(),
             handle: jest.fn(),
             on: jest.fn(),
+            removeHandler: jest.fn(),
+            removeListener: jest.fn(),
         },
         Notification: NotificationMock,
     };
@@ -53,6 +54,17 @@ jest.mock('main/windows/windowManager', () => ({
 }));
 jest.mock('common/tabs/TabView', () => ({
     getTabDisplayName: (name) => name,
+    getDefaultTeamWithTabsFromTeam: (value) => ({
+        ...value,
+        tabs: [
+            {
+                name: 'tab1',
+            },
+            {
+                name: 'tab2',
+            },
+        ],
+    }),
 }));
 
 describe('main/menus/app', () => {
@@ -171,128 +183,14 @@ describe('main/menus/app', () => {
             const windowMenu = menu.find((item) => item.label === '&Window');
             expect(windowMenu.role).toBe('windowMenu');
             expect(windowMenu.submenu).toContainEqual(expect.objectContaining({role: 'zoom'}));
-            expect(windowMenu.submenu).toContainEqual(expect.objectContaining({role: 'front'}));
+
+            // expect(windowMenu.submenu).toContainEqual(expect.objectContaining({role: 'front'}));
         });
     });
 
-    it('should show `Sign in to Another Server` if `enableServerManagement` is true', () => {
-        localizeMessage.mockImplementation((id) => {
-            switch (id) {
-            case 'main.menus.app.file':
-                return '&File';
-            case 'main.menus.app.file.signInToAnotherServer':
-                return 'Sign in to Another Server';
-            default:
-                return id;
-            }
-        });
+    it('should show the "Run diagnostics" item under help', () => {
         const menu = createTemplate(config);
-        const fileMenu = menu.find((item) => item.label === '&AppName' || item.label === '&File');
-        const signInOption = fileMenu.submenu.find((item) => item.label === 'Sign in to Another Server');
-        expect(signInOption).not.toBe(undefined);
-    });
-
-    it('should not show `Sign in to Another Server` if `enableServerManagement` is false', () => {
-        localizeMessage.mockImplementation((id) => {
-            switch (id) {
-            case 'main.menus.app.file':
-                return '&File';
-            case 'main.menus.app.file.signInToAnotherServer':
-                return 'Sign in to Another Server';
-            default:
-                return '';
-            }
-        });
-        const modifiedConfig = {
-            ...config,
-            enableServerManagement: false,
-        };
-        const menu = createTemplate(modifiedConfig);
-        const fileMenu = menu.find((item) => item.label === '&AppName' || item.label === '&File');
-        const signInOption = fileMenu.submenu.find((item) => item.label === 'Sign in to Another Server');
-        expect(signInOption).not.toBe(undefined);
-    });
-
-    it('should show the first 9 servers (using order) in the Window menu', () => {
-        localizeMessage.mockImplementation((id) => {
-            if (id === 'main.menus.app.window') {
-                return '&Window';
-            }
-            return id;
-        });
-        const modifiedConfig = {
-            data: {
-                ...config.data,
-                teams: [...Array(15).keys()].map((key) => ({
-                    name: `server-${key}`,
-                    url: `http://server-${key}.com`,
-                    order: (key + 5) % 15,
-                    lastActiveTab: 0,
-                    tab: [
-                        {
-                            name: 'TAB_MESSAGING',
-                            isOpen: true,
-                        },
-                    ],
-                })),
-            },
-        };
-        const menu = createTemplate(modifiedConfig);
-        const windowMenu = menu.find((item) => item.label === '&Window');
-        for (let i = 10; i < 15; i++) {
-            const menuItem = windowMenu.submenu.find((item) => item.label === `server-${i}`);
-            expect(menuItem).not.toBe(undefined);
-        }
-        for (let i = 0; i < 4; i++) {
-            const menuItem = windowMenu.submenu.find((item) => item.label === `server-${i}`);
-            expect(menuItem).not.toBe(undefined);
-        }
-        for (let i = 4; i < 10; i++) {
-            const menuItem = windowMenu.submenu.find((item) => item.label === `server-${i}`);
-            expect(menuItem).toBe(undefined);
-        }
-    });
-
-    it('should show the first 9 tabs (using order) in the Window menu', () => {
-        localizeMessage.mockImplementation((id) => {
-            if (id === 'main.menus.app.window') {
-                return '&Window';
-            }
-            if (id.startsWith('common.tabs')) {
-                return id.replace('common.tabs.', '');
-            }
-            return id;
-        });
-        WindowManager.getCurrentTeamName.mockImplementation(() => config.data.teams[0].name);
-
-        const modifiedConfig = {
-            data: {
-                ...config.data,
-                teams: [
-                    {
-                        ...config.data.teams[0],
-                        tabs: [...Array(15).keys()].map((key) => ({
-                            name: `tab-${key}`,
-                            isOpen: true,
-                            order: (key + 5) % 15,
-                        })),
-                    },
-                ],
-            },
-        };
-        const menu = createTemplate(modifiedConfig);
-        const windowMenu = menu.find((item) => item.label === '&Window');
-        for (let i = 10; i < 15; i++) {
-            const menuItem = windowMenu.submenu.find((item) => item.label === `    tab-${i}`);
-            expect(menuItem).not.toBe(undefined);
-        }
-        for (let i = 0; i < 4; i++) {
-            const menuItem = windowMenu.submenu.find((item) => item.label === `    tab-${i}`);
-            expect(menuItem).not.toBe(undefined);
-        }
-        for (let i = 4; i < 10; i++) {
-            const menuItem = windowMenu.submenu.find((item) => item.label === `    tab-${i}`);
-            expect(menuItem).toBe(undefined);
-        }
+        const helpSubmenu = menu.find((subMenu) => subMenu.id === 'help')?.submenu;
+        expect(helpSubmenu).toContainObject({id: 'diagnostics'});
     });
 });

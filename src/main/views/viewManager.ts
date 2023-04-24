@@ -127,6 +127,8 @@ export class ViewManager {
      * close, open, or reload tabs, taking care to reuse tabs and
      * preserve focus on the currently selected tab. */
     reloadConfiguration = (configServers: TeamWithTabs[]) => {
+        log.debug('viewManager.reloadConfiguration');
+
         const focusedTuple: TabTuple | undefined = this.views.get(this.currentView as string)?.urlTypeTuple;
 
         const current: Map<TabTuple, MattermostView> = new Map();
@@ -199,6 +201,8 @@ export class ViewManager {
     }
 
     showInitial = () => {
+        log.verbose('viewManager.showInitial');
+
         const servers = this.getServers();
         if (servers.length) {
             const element = servers.find((e) => e.order === this.lastActiveServer) || servers.find((e) => e.order === 0);
@@ -373,7 +377,11 @@ export class ViewManager {
 
             const hideView = () => {
                 delete this.urlViewCancel;
-                this.mainWindow.removeBrowserView(urlView);
+                try {
+                    this.mainWindow.removeBrowserView(urlView);
+                } catch (e) {
+                    log.error('Failed to remove URL view', e);
+                }
 
                 // workaround to eliminate zombie processes
                 // https://github.com/mattermost/desktop/pull/1519

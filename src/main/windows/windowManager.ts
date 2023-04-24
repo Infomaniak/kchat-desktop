@@ -7,7 +7,9 @@ import path from 'path';
 import {app, BrowserWindow, nativeImage, systemPreferences, ipcMain, IpcMainEvent, IpcMainInvokeEvent, desktopCapturer} from 'electron';
 import log from 'electron-log';
 
-import Store from 'electron-store';
+import {
+    CallsJoinCallMessage,
+} from 'types/calls';
 
 import {
     MAXIMIZE_CHANGE,
@@ -33,8 +35,18 @@ import {
     RELOAD_CURRENT_VIEW,
     CALL_RINGING,
     TOKEN_REFRESHED,
-    TOKEN_CLEARED,
+    TOKEN_REQUEST,
     VIEW_FINISHED_RESIZING,
+    CALLS_JOIN_CALL,
+    CALLS_LEAVE_CALL,
+    DESKTOP_SOURCES_MODAL_REQUEST,
+    CALLS_WIDGET_CHANNEL_LINK_CLICK,
+    REFRESH_TOKEN,
+    RESET_TOKEN,
+    SERVER_ADDED,
+    SERVER_DELETED,
+    RESET_AUTH,
+    RESET_TEAMS,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import {SECOND} from 'common/utils/constants';
@@ -54,13 +66,45 @@ import DownloadsDropdownMenuView from '../views/downloadsDropdownMenuView';
 
 import downloadsManager from 'main/downloadsManager';
 
+import TokenManager from 'main/tokenManager';
+
+import {updateServerInfos} from 'main/app/utils';
+
 import {createSettingsWindow} from './settingsWindow';
 import createMainWindow from './mainWindow';
-import {createCallWindow} from './callWindow';
+
+// import {createCallWindow} from './callWindow';
+
 import {createCallDialingWindow} from './callDialingWindow';
 
 // eslint-disable-next-line import/no-commonjs
-const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@jitsi/electron-sdk');
+import CallsWidgetWindow from './callsWidgetWindow';
+
+// const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@jitsi/electron-sdk');
+
+type SuiteTeam = {
+    id: string;
+    create_at: number;
+    update_at: number;
+    delete_at: number;
+    display_name: string;
+    name: string;
+    product_id: number;
+    account_id: number;
+    description: string;
+    email: string;
+    type: string;
+    company_name: string;
+    allowed_domains: string;
+    invite_id: string;
+    scheme_id: string | void;
+    policy_id: string | void;
+    allow_open_invite: boolean;
+    group_constrained: number | void;
+    url: string;
+    pack_name: string;
+    last_team_icon_update: number;
+}
 
 // singleton module to manage application's windows
 
@@ -71,17 +115,16 @@ export class WindowManager {
     mainWindowReady: boolean;
     settingsWindow?: BrowserWindow;
     callWindow?: BrowserWindow;
+    callsWidgetWindow?: CallsWidgetWindow;
     viewManager?: ViewManager;
     teamDropdown?: TeamDropdownView;
     downloadsDropdown?: DownloadsDropdownView;
     downloadsDropdownMenu?: DownloadsDropdownMenuView;
     currentServerName?: string;
-    mainStore?: Store;
 
     constructor() {
         this.mainWindowReady = false;
         this.assetsDir = path.resolve(app.getAppPath(), 'assets');
-        this.mainStore = new Store();
         ipcMain.on(HISTORY, this.handleHistory);
         ipcMain.handle(GET_LOADING_SCREEN_DATA, this.handleLoadingScreenDataRequest);
         ipcMain.handle(GET_DARK_MODE, this.handleGetDarkMode);
@@ -98,13 +141,73 @@ export class WindowManager {
         ipcMain.on(DISPATCH_GET_DESKTOP_SOURCES, this.handleGetDesktopSources);
         ipcMain.on(RELOAD_CURRENT_VIEW, this.handleReloadCurrentView);
         ipcMain.on(VIEW_FINISHED_RESIZING, this.handleViewFinishedResizing);
+        ipcMain.on(CALLS_JOIN_CALL, this.createCallsWidgetWindow);
+        ipcMain.on(CALLS_LEAVE_CALL, () => this.callsWidgetWindow?.close());
+        ipcMain.on(DESKTOP_SOURCES_MODAL_REQUEST, this.handleDesktopSourcesModalRequest);
+        ipcMain.on(CALLS_WIDGET_CHANNEL_LINK_CLICK, this.handleCallsWidgetChannelLinkClick);
+        ipcMain.handle(TOKEN_REQUEST, this.handleTokenRequest);
+        ipcMain.handle(REFRESH_TOKEN, async () => {
+            const token = await TokenManager.handleRefreshToken();
+            return token;
+        });
         ipcMain.on(TOKEN_REFRESHED, this.handleTokenRefreshed);
-        ipcMain.on(TOKEN_CLEARED, this.handleTokenCleared);
+        ipcMain.handle(RESET_TOKEN, this.handleResetToken);
+        ipcMain.handle(SERVER_ADDED, this.handleAddServer);
+        ipcMain.handle(SERVER_DELETED, this.handleDeleteServer);
+        ipcMain.handle(RESET_AUTH, this.handleRevokeToken);
+        ipcMain.handle(RESET_TEAMS, this.resetTeams);
     }
 
     handleUpdateConfig = () => {
         if (this.viewManager) {
             this.viewManager.reloadConfiguration(Config.teams || []);
+        }
+    }
+
+    createCallsWidgetWindow = (event: IpcMainEvent, viewName: string, msg: CallsJoinCallMessage) => {
+        log.debug('WindowManager.createCallsWidgetWindow');
+        if (this.callsWidgetWindow) {
+            // trying to join again the call we are already in should not be allowed.
+            if (this.callsWidgetWindow.getCallID() === msg.callID) {
+                return;
+            }
+            this.callsWidgetWindow.close();
+        }
+        const currentView = this.viewManager?.views.get(viewName);
+        if (!currentView) {
+            log.error('unable to create calls widget window: currentView is missing');
+            return;
+        }
+
+        this.callsWidgetWindow = new CallsWidgetWindow(this.mainWindow!, currentView, {
+            siteURL: currentView.serverInfo.remoteInfo.siteURL!,
+            callID: msg.callID,
+            title: msg.title,
+            serverName: this.currentServerName!,
+            channelURL: msg.channelURL,
+        });
+
+        this.callsWidgetWindow.on('closed', () => delete this.callsWidgetWindow);
+    }
+
+    handleDesktopSourcesModalRequest = () => {
+        log.debug('WindowManager.handleDesktopSourcesModalRequest');
+
+        if (this.callsWidgetWindow) {
+            this.switchServer(this.callsWidgetWindow?.getServerName());
+            this.mainWindow?.focus();
+            const currentView = this.viewManager?.getCurrentView();
+            currentView?.view.webContents.send(DESKTOP_SOURCES_MODAL_REQUEST);
+        }
+    }
+
+    handleCallsWidgetChannelLinkClick = () => {
+        log.debug('WindowManager.handleCallsWidgetChannelLinkClick');
+        if (this.callsWidgetWindow) {
+            this.switchServer(this.callsWidgetWindow.getServerName());
+            this.mainWindow?.focus();
+            const currentView = this.viewManager?.getCurrentView();
+            currentView?.view.webContents.send(BROWSER_HISTORY_PUSH, this.callsWidgetWindow.getChannelURL());
         }
     }
 
@@ -221,8 +324,17 @@ export class WindowManager {
             return;
         }
 
+        /**
+         * Fixes an issue on win11 related to Snap where the first "will-resize" event would return the same bounds
+         * causing the "resize" event to not fire
+         */
+        const prevBounds = this.getBounds();
+        if (prevBounds.height === newBounds.height && prevBounds.width === newBounds.width) {
+            return;
+        }
+
         if (this.isResizing && this.viewManager.loadingScreenState === LoadingScreenState.HIDDEN && this.viewManager.getCurrentView()) {
-            log.silly('prevented resize');
+            log.debug('prevented resize');
             event.preventDefault();
             return;
         }
@@ -242,6 +354,9 @@ export class WindowManager {
             const bounds = this.getBounds();
             this.throttledWillResize(bounds);
             ipcMain.emit(RESIZE_MODAL, null, bounds);
+            this.teamDropdown?.updateWindowBounds();
+            this.downloadsDropdown?.updateWindowBounds();
+            this.downloadsDropdownMenu?.updateWindowBounds();
         }
         this.isResizing = false;
     }
@@ -251,6 +366,8 @@ export class WindowManager {
     }
 
     private throttledWillResize = (newBounds: Electron.Rectangle) => {
+        log.silly('WindowManager.throttledWillResize', {newBounds});
+
         this.isResizing = true;
         this.setCurrentViewBounds(newBounds);
     }
@@ -273,10 +390,13 @@ export class WindowManager {
         this.viewManager.setLoadingScreenBounds();
         this.teamDropdown?.updateWindowBounds();
         this.downloadsDropdown?.updateWindowBounds();
+        this.downloadsDropdownMenu?.updateWindowBounds();
         ipcMain.emit(RESIZE_MODAL, null, bounds);
     };
 
     setCurrentViewBounds = (bounds: {width: number; height: number}) => {
+        log.debug('WindowManager.setCurrentViewBounds', {bounds});
+
         const currentView = this.viewManager?.getCurrentView();
         if (currentView) {
             const adjustedBounds = getAdjustedWindowBoundaries(bounds.width, bounds.height, shouldHaveBackBar(currentView.tab.url, currentView.view.webContents.getURL()));
@@ -483,7 +603,10 @@ export class WindowManager {
             this.viewManager = new ViewManager(this.mainWindow);
             this.viewManager.load();
             this.viewManager.showInitial();
-            this.initializeCurrentServerName();
+
+            TokenManager.load().finally((r) => {
+                this.initializeCurrentServerName();
+            });
         }
     }
 
@@ -494,6 +617,7 @@ export class WindowManager {
     }
 
     switchServer = (serverName: string, waitForViewToExist = false) => {
+        log.debug('windowManager.switchServer');
         this.showMainWindow();
         const server = Config.teams.find((team) => team.name === serverName);
         if (!server) {
@@ -521,6 +645,7 @@ export class WindowManager {
     }
 
     switchTab = (serverName: string, tabName: string) => {
+        log.debug('windowManager.switchTab');
         this.showMainWindow();
         const tabViewName = getTabViewName(serverName, tabName);
         this.viewManager?.showByName(tabViewName);
@@ -752,56 +877,57 @@ export class WindowManager {
             // if (!this.mainWindow) {
             //     this.showMainWindow();
             // }
-            const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
 
-            this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar, message.username);
-            initPopupsConfigurationMain(this.callWindow);
-            setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.kchat');
-            setupAlwaysOnTopMain(this.callWindow);
-            setupPowerMonitorMain(this.callWindow);
+            // const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
 
-            // setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
-            ipcMain.on(CALL_CLOSED, () => {
-                if (this.callWindow?.close) {
-                    this.callWindow.close();
-                }
-                this.callWindow = undefined;
-            });
+            // this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar, message.username);
+            // initPopupsConfigurationMain(this.callWindow);
+            // setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.kchat');
+            // setupAlwaysOnTopMain(this.callWindow);
+            // setupPowerMonitorMain(this.callWindow);
 
-            ipcMain.on('call-focus', () => {
-                this.callWindow?.focus();
-            });
+            // // setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
+            // ipcMain.on(CALL_CLOSED, () => {
+            //     if (this.callWindow?.close) {
+            //         this.callWindow.close();
+            //     }
+            //     this.callWindow = undefined;
+            // });
 
-            ipcMain.on('call-audio-status-change', (_, status) => {
-                const currentView = this.viewManager?.views.get(viewName);
-                currentView?.view.webContents.send('call-audio-status-change', status.muted);
-            });
+            // ipcMain.on('call-focus', () => {
+            //     this.callWindow?.focus();
+            // });
 
-            ipcMain.on('call-video-status-change', (_, status) => {
-                const currentView = this.viewManager?.views.get(viewName);
-                currentView?.view.webContents.send('call-video-status-change', status.muted);
-            });
+            // ipcMain.on('call-audio-status-change', (_, status) => {
+            //     const currentView = this.viewManager?.views.get(viewName);
+            //     currentView?.view.webContents.send('call-audio-status-change', status.muted);
+            // });
 
-            ipcMain.on('call-ss-status-change', (_, status) => {
-                const currentView = this.viewManager?.views.get(viewName);
-                currentView?.view.webContents.send('call-ss-status-change', status.on);
-            });
+            // ipcMain.on('call-video-status-change', (_, status) => {
+            //     const currentView = this.viewManager?.views.get(viewName);
+            //     currentView?.view.webContents.send('call-video-status-change', status.muted);
+            // });
 
-            ipcMain.on(WINDOW_WILL_UNLOADED, () => {
-                if (this.callWindow) {
-                    this.callWindow.focus();
-                    if (this.callWindow.close) {
-                        this.callWindow.close();
-                    }
-                    delete this.callWindow;
-                }
-            });
+            // ipcMain.on('call-ss-status-change', (_, status) => {
+            //     const currentView = this.viewManager?.views.get(viewName);
+            //     currentView?.view.webContents.send('call-ss-status-change', status.on);
+            // });
 
-            this.callWindow.on('closed', () => {
-                delete this.callWindow;
-                const currentView = this.viewManager?.views.get(viewName);
-                currentView?.view.webContents.send(CALL_CLOSED, message.id);
-            });
+            // ipcMain.on(WINDOW_WILL_UNLOADED, () => {
+            //     if (this.callWindow) {
+            //         this.callWindow.focus();
+            //         if (this.callWindow.close) {
+            //             this.callWindow.close();
+            //         }
+            //         delete this.callWindow;
+            //     }
+            // });
+
+            // this.callWindow.on('closed', () => {
+            //     delete this.callWindow;
+            //     const currentView = this.viewManager?.views.get(viewName);
+            //     currentView?.view.webContents.send(CALL_CLOSED, message.id);
+            // });
         }
     }
 
@@ -834,19 +960,26 @@ export class WindowManager {
     handleGetDesktopSources = async (event: IpcMainEvent, viewName: string, opts: Electron.SourcesOptions) => {
         log.debug('WindowManager.handleGetDesktopSources', {viewName, opts});
 
+        const globalWidget = viewName === 'widget' && this.callsWidgetWindow;
         const view = this.viewManager?.views.get(viewName);
-        if (!view) {
+        if (!view && !globalWidget) {
             return;
         }
 
         desktopCapturer.getSources(opts).then((sources) => {
-            view.view.webContents.send(DESKTOP_SOURCES_RESULT, sources.map((source) => {
+            const message = sources.map((source) => {
                 return {
                     id: source.id,
                     name: source.name,
                     thumbnailURL: source.thumbnail.toDataURL(),
                 };
-            }));
+            });
+
+            if (view) {
+                view.view.webContents.send(DESKTOP_SOURCES_RESULT, message);
+            } else {
+                this.callsWidgetWindow?.win.webContents.send(DESKTOP_SOURCES_RESULT, message);
+            }
         });
     }
 
@@ -861,11 +994,62 @@ export class WindowManager {
         this.viewManager?.showByName(view?.name);
     }
 
-    handleTokenRefreshed = (event: IpcMainEvent, message: any, viewName: string) => {
-        this.mainStore?.set('IKToken', message.token);
+    handleTokenRefreshed = (event: IpcMainEvent, message: any) => {
+        if (message.token) {
+            TokenManager.handleStoreToken(event, message);
+        }
     }
-    handleTokenCleared = (event: IpcMainEvent, message: any, viewName: string) => {
-        this.mainStore?.delete('IKToken');
+
+    resetTeams = () => {
+        // TokenManager.reset();
+        Config.set('teams', [{
+            name: '.',
+            url: 'https://kchat.infomaniak.com',
+            order: 0,
+            tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+        }]);
+        this.reload();
+    }
+
+    handleResetToken = () => {
+        TokenManager.reset();
+    }
+
+    handleTokenRequest = () => {
+        const token = TokenManager.getToken();
+        return token;
+    }
+
+    handleAddServer = (event: IpcMainInvokeEvent, message: SuiteTeam) => {
+        const newTeams = Config.teams;
+
+        const team = {
+            name: message.display_name,
+            url: message.url,
+            order: newTeams.length,
+            tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+        };
+
+        newTeams.push(team);
+        updateServerInfos(newTeams, true);
+    }
+
+    handleDeleteServer = (_: IpcMainInvokeEvent, message: SuiteTeam) => {
+        let newTeams = Config.teams;
+
+        // filter out predefined teams
+        newTeams = newTeams.filter((newTeam) => {
+            return newTeam.url === message.url; // eslint-disable-line max-nested-callbacks
+        });
+
+        updateServerInfos(newTeams, true);
+    }
+
+    handleRevokeToken = async () => {
+        const token = TokenManager.getToken();
+        if (Object.keys(token).length) {
+            await TokenManager.handleRevokeToken();
+        }
     }
 }
 

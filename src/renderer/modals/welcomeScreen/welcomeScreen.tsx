@@ -8,29 +8,21 @@ import {TeamWithIndex} from 'types/config';
 import {ModalMessage} from 'types/modals';
 
 import {
-    MODAL_RESULT,
     GET_MODAL_UNCLOSEABLE,
     GET_DARK_MODE,
     DARK_MODE_CHANGE,
-    MODAL_INFO,
+    RESET_AUTH,
 } from 'common/communication';
 import IntlProvider from 'renderer/intl_provider';
 import WelcomeScreen from '../../components/WelcomeScreen';
-import ConfigureServer from '../../components/ConfigureServer';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const MOBILE_SCREEN_WIDTH = 1200;
 
-const onConnect = (data: TeamWithIndex) => {
-    window.postMessage({type: MODAL_RESULT, data}, window.location.href);
-};
-
 const WelcomeScreenModalWrapper = () => {
     const [darkMode, setDarkMode] = useState(false);
-    const [getStarted, setGetStarted] = useState(false);
     const [mobileView, setMobileView] = useState(false);
-    const [currentTeams, setCurrentTeams] = useState<TeamWithIndex[]>([]);
 
     const handleWindowResize = () => {
         setMobileView(window.innerWidth < MOBILE_SCREEN_WIDTH);
@@ -55,33 +47,21 @@ const WelcomeScreenModalWrapper = () => {
         case DARK_MODE_CHANGE:
             setDarkMode(event.data.data as boolean);
             break;
-        case MODAL_INFO:
-            setCurrentTeams(event.data.data as TeamWithIndex[]);
-            break;
         default:
             break;
         }
     };
 
     const onGetStarted = () => {
-        setGetStarted(true);
+        window.postMessage({type: RESET_AUTH}, window.location.href);
     };
 
     return (
         <IntlProvider>
-            {getStarted ? (
-                <ConfigureServer
-                    mobileView={mobileView}
-                    darkMode={darkMode}
-                    currentTeams={currentTeams}
-                    onConnect={onConnect}
-                />
-            ) : (
-                <WelcomeScreen
-                    darkMode={darkMode}
-                    onGetStarted={onGetStarted}
-                />
-            )}
+            <WelcomeScreen
+                darkMode={darkMode}
+                onGetStarted={onGetStarted}
+            />
         </IntlProvider>
     );
 };

@@ -6,6 +6,8 @@
 
 import {app, systemPreferences} from 'electron';
 
+import {getDoNotDisturb as getDarwinDoNotDisturb} from 'macos-notification-state';
+
 import Config from 'common/config';
 import {getTabViewName, TAB_MESSAGING} from 'common/tabs/TabView';
 import urlUtils from 'common/utils/url';
@@ -16,28 +18,146 @@ import {WindowManager} from './windowManager';
 import createMainWindow from './mainWindow';
 import {createSettingsWindow} from './settingsWindow';
 
-jest.mock('path', () => ({
-    resolve: jest.fn(),
-    join: jest.fn(),
+jest.mock('path', () => {
+    const original = jest.requireActual('path');
+    return {
+        ...original,
+        resolve: jest.fn(),
+        join: jest.fn(),
+        parse: jest.fn(),
+    };
+});
+
+jest.mock('yargs', () => ({
+    command: () => jest.fn(),
+    demandCommand: () => jest.fn(),
+    help: () => jest.fn(),
+    alias: () => jest.fn(),
+    argv: {},
 }));
 
-jest.mock('electron', () => ({
-    ipcMain: {
-        handle: jest.fn(),
-        on: jest.fn(),
-        emit: jest.fn(),
-    },
-    app: {
-        getAppPath: jest.fn(),
-        quit: jest.fn(),
-        dock: {
-            show: jest.fn(),
-            bounce: jest.fn(),
+jest.mock('macos-notification-state', () => ({
+    getDoNotDisturb: jest.fn(),
+}));
+
+const mentions = [];
+
+jest.mock('auto-launch', () => {
+    class AutoLaunchMock {
+        constructor(options) {
+            // AutoLaunchMock.didConstruct();
+            this.options = options;
+        }
+
+        enable = jest.fn().mockImplementation(() => {
+            return Promise.resolve();
+        })
+
+        disable = jest.fn().mockImplementation(() => {
+            return Promise.resolve();
+        })
+
+        isEnabled = jest.fn().mockImplementation(() => {
+            return Promise.resolve(false);
+        })
+    }
+
+    return AutoLaunchMock;
+});
+
+jest.mock('electron', () => {
+    class NotificationMock {
+        static isSupported = jest.fn();
+        static didConstruct = jest.fn();
+
+        constructor(options) {
+            NotificationMock.didConstruct();
+            this.callbackMap = new Map();
+            mentions.push({body: options.body, value: this});
+        }
+
+        on = (event, callback) => {
+            this.callbackMap.set(event, callback);
+        }
+
+        show = jest.fn().mockImplementation(() => {
+            this.callbackMap.get('show')();
+        });
+
+        click = jest.fn().mockImplementation(() => {
+            this.callbackMap.get('click')();
+        });
+
+        close = jest.fn();
+    }
+    return {
+        ipcMain: {
+            handle: jest.fn(),
+            on: jest.fn(),
+            emit: jest.fn(),
         },
+        app: {
+            name: 'kChat',
+            getVersion: () => '5.0.0',
+            getAppPath: jest.fn(),
+            getPath: jest.fn(),
+            quit: jest.fn(),
+            dock: {
+                show: jest.fn(),
+                bounce: jest.fn(),
+            },
+        },
+        nativeImage: {
+            createFromPath: jest.fn(),
+        },
+        Notification: NotificationMock,
+        systemPreferences: {
+            getUserDefault: jest.fn(),
+        },
+    };
+});
+
+jest.mock('@sentry/electron/main', () => ({
+    init: jest.fn(),
+    captureException: () => {},
+    Integrations: {
+        Console: class {},
+        Http: class {},
+        OnUncaughtException: class {},
+        OnUnhandledRejection: class {},
+        LinkedErrors: class {},
+        InboundFilters: class {},
+        FunctionToString: class {},
+        Breadcrumbs: class {},
+        GlobalHandlers: class {},
+        Dedupe: class {},
+        Release: class {},
+        RewriteFrames: class {},
     },
-    systemPreferences: {
-        getUserDefault: jest.fn(),
+    Handlers: {
+        requestHandler: () => (req, res, next) => next(),
+        errorHandler: () => (err, req, res, next) => next(),
     },
+    withScope: (callback) => {
+        callback();
+    },
+    configureScope: (callback) => {
+        callback();
+    },
+}));
+
+jest.mock('electron-updater', () => ({
+    autoUpdater: {
+        on: jest.fn(),
+        once: jest.fn(),
+        removeListener: jest.fn(),
+        quitAndInstall: jest.fn(),
+        downloadUpdate: jest.fn(),
+        checkForUpdates: jest.fn(),
+    },
+    CancellationToken: jest.fn().mockImplementation(() => {
+        return {};
+    }),
 }));
 
 jest.mock('common/config', () => ({}));
@@ -55,6 +175,8 @@ jest.mock('common/tabs/TabView', () => ({
 jest.mock('../utils', () => ({
     getAdjustedWindowBoundaries: jest.fn(),
     shouldHaveBackBar: jest.fn(),
+    getLocalPreload: (file) => file,
+    getLocalURLString: (file) => file,
 }));
 jest.mock('../views/viewManager', () => ({
     ViewManager: jest.fn(),
@@ -72,7 +194,10 @@ jest.mock('./settingsWindow', () => ({
 jest.mock('./mainWindow', () => jest.fn());
 jest.mock('../downloadsManager', () => ({
     getDownloads: () => {},
+    removeUpdateBeforeRestart: jest.fn(),
 }));
+
+jest.mock('./callsWidgetWindow');
 
 describe('main/windows/windowManager', () => {
     describe('handleUpdateConfig', () => {
@@ -82,6 +207,7 @@ describe('main/windows/windowManager', () => {
             windowManager.viewManager = {
                 reloadConfiguration: jest.fn(),
             };
+            getDarwinDoNotDisturb.mockReturnValue(false);
         });
 
         it('should reload config', () => {
@@ -208,6 +334,7 @@ describe('main/windows/windowManager', () => {
         beforeEach(() => {
             jest.useFakeTimers();
             getAdjustedWindowBoundaries.mockImplementation((width, height) => ({width, height}));
+            getDarwinDoNotDisturb.mockReturnValue(false);
         });
 
         afterEach(() => {
@@ -258,7 +385,7 @@ describe('main/windows/windowManager', () => {
             loadingScreenState: 3,
         };
         windowManager.mainWindow = {
-            getContentBounds: () => ({width: 800, height: 600}),
+            getContentBounds: () => ({width: 1000, height: 900}),
             getSize: () => [1000, 900],
         };
         windowManager.teamDropdown = {
@@ -267,6 +394,7 @@ describe('main/windows/windowManager', () => {
 
         beforeEach(() => {
             getAdjustedWindowBoundaries.mockImplementation((width, height) => ({width, height}));
+            getDarwinDoNotDisturb.mockReturnValue(false);
         });
 
         afterEach(() => {
@@ -316,6 +444,7 @@ describe('main/windows/windowManager', () => {
 
         beforeEach(() => {
             getAdjustedWindowBoundaries.mockImplementation((width, height) => ({width, height}));
+            getDarwinDoNotDisturb.mockReturnValue(false);
         });
 
         afterEach(() => {
@@ -443,6 +572,7 @@ describe('main/windows/windowManager', () => {
 
         beforeEach(() => {
             Config.notifications = {};
+            getDarwinDoNotDisturb.mockReturnValue(false);
         });
 
         afterEach(() => {
@@ -528,6 +658,7 @@ describe('main/windows/windowManager', () => {
 
         beforeEach(() => {
             systemPreferences.getUserDefault.mockReturnValue('Maximize');
+            getDarwinDoNotDisturb.mockReturnValue(false);
         });
 
         afterEach(() => {
@@ -589,6 +720,7 @@ describe('main/windows/windowManager', () => {
         beforeEach(() => {
             jest.useFakeTimers();
             getTabViewName.mockImplementation((server, tab) => `${server}_${tab}`);
+            getDarwinDoNotDisturb.mockReturnValue(false);
 
             Config.teams = [
                 {
@@ -745,6 +877,7 @@ describe('main/windows/windowManager', () => {
         windowManager.switchTab = jest.fn();
 
         beforeEach(() => {
+            getDarwinDoNotDisturb.mockReturnValue(false);
             Config.teams = [
                 {
                     name: 'server-1',
@@ -874,6 +1007,7 @@ describe('main/windows/windowManager', () => {
         windowManager.handleBrowserHistoryButton = jest.fn();
 
         beforeEach(() => {
+            getDarwinDoNotDisturb.mockReturnValue(false);
             Config.teams = [
                 {
                     name: 'server-1',
@@ -961,6 +1095,7 @@ describe('main/windows/windowManager', () => {
         };
 
         beforeEach(() => {
+            getDarwinDoNotDisturb.mockReturnValue(false);
             Config.teams = [
                 {
                     name: 'server-1',
@@ -989,6 +1124,45 @@ describe('main/windows/windowManager', () => {
             windowManager.handleBrowserHistoryButton(null, 'server-1_tab-messaging');
             expect(view1.view.webContents.clearHistory).toHaveBeenCalled();
             expect(view1.isAtRoot).toBe(true);
+        });
+    });
+
+    describe('createCallsWidgetWindow', () => {
+        const view = {
+            name: 'server-1_tab-messaging',
+            serverInfo: {
+                remoteInfo: {
+                    siteURL: 'http://server-1.com',
+                },
+            },
+        };
+        const windowManager = new WindowManager();
+        windowManager.viewManager = {
+            views: new Map([
+                ['server-1_tab-messaging', view],
+            ]),
+        };
+
+        it('should create calls widget window', () => {
+            expect(windowManager.callsWidgetWindow).toBeUndefined();
+            windowManager.createCallsWidgetWindow(null, 'server-1_tab-messaging', {callID: 'test'});
+            expect(windowManager.callsWidgetWindow).toBeDefined();
+        });
+
+        it('should not create a new window if call is the same', () => {
+            const widgetWindow = windowManager.callsWidgetWindow;
+            expect(widgetWindow).toBeDefined();
+            widgetWindow.getCallID = jest.fn(() => 'test');
+            windowManager.createCallsWidgetWindow(null, 'server-1_tab-messaging', {callID: 'test'});
+            expect(windowManager.callsWidgetWindow).toEqual(widgetWindow);
+        });
+
+        it('should create a new window if switching calls', () => {
+            const widgetWindow = windowManager.callsWidgetWindow;
+            expect(widgetWindow).toBeDefined();
+            widgetWindow.getCallID = jest.fn(() => 'test');
+            windowManager.createCallsWidgetWindow(null, 'server-1_tab-messaging', {callID: 'test2'});
+            expect(windowManager.callsWidgetWindow).not.toEqual(widgetWindow);
         });
     });
 });

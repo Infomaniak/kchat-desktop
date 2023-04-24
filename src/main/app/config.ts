@@ -24,6 +24,13 @@ let didCheckForAddServerModal = false;
 //
 
 export function handleConfigUpdate(newConfig: CombinedConfig) {
+    if (log.transports.file.level !== newConfig.logLevel) {
+        log.error('Log level set to:', newConfig.logLevel);
+    }
+    if (newConfig.logLevel) {
+        setLoggingLevel(newConfig.logLevel as LogLevel);
+    }
+
     log.debug('App.Config.handleConfigUpdate');
     log.silly('App.Config.handleConfigUpdate', newConfig);
 
@@ -60,15 +67,14 @@ export function handleConfigUpdate(newConfig: CombinedConfig) {
         didCheckForAddServerModal = true;
         updateServerInfos(newConfig.teams);
         WindowManager.initializeCurrentServerName();
-        if (newConfig.teams.length === 0) {
-            handleMainWindowIsShown();
-        }
+        handleMainWindowIsShown();
     }
 
-    log.info('Log level set to:', newConfig.logLevel);
-    setLoggingLevel(newConfig.logLevel as LogLevel);
-
     handleUpdateMenuEvent();
+    if (newConfig.trayIconTheme) {
+        refreshTrayImages(newConfig.trayIconTheme);
+    }
+
     ipcMain.emit(EMIT_CONFIGURATION, true, newConfig);
 }
 

@@ -301,8 +301,27 @@ function ConfigureServer({
                                 </p>
                                 <div className='ConfigureServer__card-form'>
                                     <Input
+                                        name='url'
+                                        className='ConfigureServer__card-form-input'
+                                        type='text'
+                                        inputSize={SIZE.LARGE}
+                                        value={url}
+                                        onChange={handleURLOnChange}
+                                        customMessage={urlError ? ({
+                                            type: STATUS.ERROR,
+                                            value: urlError,
+                                        }) : ({
+                                            type: STATUS.INFO,
+                                            value: formatMessage({id: 'renderer.components.configureServer.url.info', defaultMessage: 'The URL of your kChat server'}),
+                                        })}
+                                        placeholder={formatMessage({id: 'renderer.components.configureServer.url.placeholder', defaultMessage: 'Server URL'})}
+                                        disabled={waiting}
+                                        darkMode={darkMode}
+                                    />
+                                    <Input
                                         name='name'
                                         className='ConfigureServer__card-form-input'
+                                        containerClassName='ConfigureServer__card-form-input-container'
                                         type='text'
                                         inputSize={SIZE.LARGE}
                                         value={name}
@@ -315,25 +334,6 @@ function ConfigureServer({
                                             value: formatMessage({id: 'renderer.components.configureServer.name.info', defaultMessage: 'The name that will be displayed in your server list'}),
                                         })}
                                         placeholder={formatMessage({id: 'renderer.components.configureServer.name.placeholder', defaultMessage: 'Server display name'})}
-                                        disabled={waiting}
-                                        darkMode={darkMode}
-                                    />
-                                    <Input
-                                        name='url'
-                                        className='ConfigureServer__card-form-input'
-                                        containerClassName='ConfigureServer__card-form-input-container'
-                                        type='text'
-                                        inputSize={SIZE.LARGE}
-                                        value={url}
-                                        onChange={handleURLOnChange}
-                                        customMessage={urlError ? ({
-                                            type: STATUS.ERROR,
-                                            value: urlError,
-                                        }) : ({
-                                            type: STATUS.INFO,
-                                            value: formatMessage({id: 'renderer.components.configureServer.url.info', defaultMessage: 'The URL of your Mattermost server'}),
-                                        })}
-                                        placeholder={formatMessage({id: 'renderer.components.configureServer.url.placeholder', defaultMessage: 'Server URL'})}
                                         disabled={waiting}
                                         darkMode={darkMode}
                                     />

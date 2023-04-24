@@ -25,6 +25,11 @@ export const DEFAULT_WINDOW_HEIGHT = 800;
 export const MINIMUM_WINDOW_WIDTH = 700;
 export const MINIMUM_WINDOW_HEIGHT = 240;
 
+// Calls
+export const MINIMUM_CALLS_WIDGET_WIDTH = 284;
+export const MINIMUM_CALLS_WIDGET_HEIGHT = 90;
+export const CALLS_PLUGIN_ID = 'com.mattermost.calls';
+
 export const DOWNLOADS_DROPDOWN_HEIGHT = 360;
 export const DOWNLOADS_DROPDOWN_WIDTH = 280;
 export const DOWNLOADS_DROPDOWN_PADDING = 24;
@@ -41,6 +46,7 @@ export const DOWNLOADS_DROPDOWN_AUTOCLOSE_TIMEOUT = 4000; // 4 sec
 
 // supported custom login paths (oath, saml)
 export const customLoginRegexPaths = [
+    /^\/authorize$/i,
     /^\/oauth\/authorize$/i,
     /^\/oauth\/deauthorize$/i,
     /^\/oauth\/access_token$/i,

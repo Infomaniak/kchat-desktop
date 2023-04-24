@@ -23,13 +23,13 @@ import {BuildConfig} from 'types/config';
 const buildConfig: BuildConfig = {
     defaultTeams: [
         {
-            name: 'Infomaniak',
+            name: '.',
             url: 'https://kchat.infomaniak.com',
             order: 0,
         },
     ],
-    helpLink: '',
-    enableServerManagement: false,
+    helpLink: null,
+    enableServerManagement: true,
     enableAutoUpdater: true,
     managedResources: ['trusted'],
     allowedProtocols: [

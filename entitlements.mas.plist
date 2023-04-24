@@ -32,11 +32,15 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>UQ8HT4Q2XM.Mattermost.Desktop</string>
+		<string>864VDCS2QY.kChat.Desktop</string>
 	</array>
 	<key>com.apple.application-identifier</key>
-	<string>UQ8HT4Q2XM.Mattermost.Desktop</string>
+	<string>864VDCS2QY.kChat.Desktop</string>
 	<key>com.apple.developer.team-identifier</key>
-	<string>UQ8HT4Q2XM</string>
+	<string>864VDCS2QY</string>
+	<key>com.apple.security.files.bookmarks.app-scope</key>
+	<true/>
+	<key>com.apple.security.files.bookmarks.document-scope</key>
+	<true/>
 </dict>
 </plist>

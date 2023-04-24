@@ -1,13 +1,12 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {app, BrowserWindow, Event, dialog, WebContents, Certificate} from 'electron';
+import {app, BrowserWindow, Event, dialog, WebContents, Certificate, Details} from 'electron';
 import log from 'electron-log';
 
 import urlUtils from 'common/utils/url';
 import Config from 'common/config';
 
-import updateManager from 'main/autoUpdater';
 import CertificateStore from 'main/certificateStore';
 import {localizeMessage} from 'main/i18nManager';
 import {destroyTray} from 'main/tray/tray';
@@ -17,12 +16,14 @@ import {getDeeplinkingURL, openDeepLink, resizeScreen} from './utils';
 
 export const certificateErrorCallbacks = new Map();
 
+// Jitsi
 // We need this because of https://github.com/electron/electron/issues/18214
-app.commandLine.appendSwitch('disable-site-isolation-trials');
+// app.commandLine.appendSwitch('disable-site-isolation-trials');
 
+// Jitsi
 // This allows BrowserWindow.setContentProtection(true) to work on macOS.
 // https://github.com/electron/electron/issues/19880
-app.commandLine.appendSwitch('disable-features', 'IOSurfaceCapturer');
+// app.commandLine.appendSwitch('disable-features', 'IOSurfaceCapturer');
 
 //
 // app event handlers
@@ -58,21 +59,22 @@ export function handleAppBrowserWindowCreated(event: Event, newWindow: BrowserWi
 export function handleAppWillFinishLaunching() {
     // Protocol handler for osx
     app.on('open-url', (event, url) => {
-        if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
-                
-                if (app.isReady()) {
-                    const currentServerURL = WindowManager.getCurrentServerUrl();
+        // if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
+        //     if (app.isReady()) {
+        //         const currentServerURL = WindowManager.getCurrentServerUrl();
 
-                const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
-                    openDeepLink(newUrl);
-                } else {
-                    const currentServerURL = WindowManager.getCurrentServerUrl();
+        //         const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
+        //         openDeepLink(newUrl);
+        //     } else {
+        //         const currentServerURL = WindowManager.getCurrentServerUrl();
 
-                const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
-                    app.once('ready', () => openDeepLink(newUrl));
-                }
-            // return url;
-            }
+        //         const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
+        //         app.once('ready', () => openDeepLink(newUrl));
+        //     }
+
+        // // return url;
+        // }
+
         log.info(`Handling deeplinking url: ${url}`);
         event.preventDefault();
         const deeplinkingUrl = getDeeplinkingURL([url]);
@@ -92,7 +94,8 @@ export function handleAppBeforeQuit() {
     // Make sure tray icon gets removed if the user exits via CTRL-Q
     destroyTray();
     global.willAppQuit = true;
-    updateManager.handleOnQuit();
+
+    // updateManager.handleOnQuit();
 }
 
 export async function handleAppCertificateError(event: Event, webContents: WebContents, url: string, error: string, certificate: Certificate, callback: (isTrusted: boolean) => void) {
@@ -200,6 +203,6 @@ export async function handleAppCertificateError(event: Event, webContents: WebCo
     }
 }
 
-export function handleAppGPUProcessCrashed(event: Event, killed: boolean) {
-    log.error(`The GPU process has crashed (killed = ${killed})`);
+export function handleChildProcessGone(event: Event, details: Details) {
+    log.error('"child-process-gone" The child process has crashed. Details: ', details);
 }

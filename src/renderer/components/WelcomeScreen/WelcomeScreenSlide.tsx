@@ -30,9 +30,9 @@ const WelcomeScreenSlide = ({
             },
         )}
     >
-        <div className='WelcomeScreenSlide__image'>
+        {/* <div className='WelcomeScreenSlide__image'>
             {image}
-        </div>
+        </div> */}
         <div className='WelcomeScreenSlide__title'>
             {title}
         </div>

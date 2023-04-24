@@ -21,7 +21,7 @@ type Props = {
     onCloseTab: (name: string) => void;
     tabs: Tab[];
     sessionsExpired: Record<string, boolean>;
-    unreadCounts: Record<string, number>;
+    unreadCounts: Record<string, boolean>;
     mentionCounts: Record<string, number>;
     onDrop: (result: DropResult) => void;
     tabsDisabled?: boolean;
@@ -162,7 +162,7 @@ class TabBar extends React.PureComponent<Props> {
                             variant='tabs'
                             {...provided.droppableProps}
                         >
-                            {tabs}
+                            {/*{tabs}*/}
                             {this.props.isMenuOpen ? <span className='TabBar-nonDrag'/> : null}
                             {provided.placeholder}
                         </Nav>

@@ -30,7 +30,7 @@ const DownloadsDropdownItemFile = ({item, activeItem}: OwnProps) => {
     };
 
     const itemFilename = item.type === 'update' ?
-        translate.formatMessage({id: 'renderer.downloadsDropdown.Update.MattermostVersionX', defaultMessage: `Mattermost version ${item.filename}`}, {version: item.filename}) :
+        translate.formatMessage({id: 'renderer.downloadsDropdown.Update.MattermostVersionX', defaultMessage: `kChat version ${item.filename}`}, {version: item.filename}) :
         item.filename;
 
     return (

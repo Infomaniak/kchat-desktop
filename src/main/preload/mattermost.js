@@ -38,7 +38,21 @@ import {
     TOKEN_REFRESHED,
     TOKEN_CLEARED,
     VIEW_FINISHED_RESIZING,
+    CALLS_JOIN_CALL,
+    CALLS_JOINED_CALL,
+    CALLS_LEAVE_CALL,
+    DESKTOP_SOURCES_MODAL_REQUEST,
+    CALLS_WIDGET_SHARE_SCREEN,
     CLOSE_DOWNLOADS_DROPDOWN,
+    UPDATE_TEAMS,
+    TOKEN_REQUEST,
+    REFRESH_TOKEN,
+    RESET_TOKEN,
+    SWITCH_SERVER,
+    SERVER_ADDED,
+    SERVER_DELETED,
+    RESET_AUTH,
+    RESET_TEAMS,
 } from 'common/communication';
 
 const UNREAD_COUNT_INTERVAL = 1000;
@@ -58,6 +72,18 @@ if (process.env.NODE_ENV === 'test') {
         getWebContentsId: () => ipcRenderer.invoke(GET_VIEW_WEBCONTENTS_ID),
     });
 }
+
+contextBridge.exposeInMainWorld('authManager', {
+    tokenRequest: () => ipcRenderer.invoke(TOKEN_REQUEST),
+    refreshToken: () => ipcRenderer.invoke(REFRESH_TOKEN),
+    resetToken: () => ipcRenderer.invoke(RESET_TOKEN),
+    addTeam: (d) => ipcRenderer.invoke(SERVER_ADDED, d),
+    deleteTeam: () => ipcRenderer.invoke(SERVER_DELETED),
+    logout: async () => {
+        await ipcRenderer.invoke(RESET_AUTH);
+        ipcRenderer.invoke(RESET_TEAMS);
+    },
+});
 
 ipcRenderer.invoke('get-app-version').then(({name, version}) => {
     appVersion = version;
@@ -191,6 +217,50 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
     }
     case 'call-focus': {
         ipcRenderer.send('call-focus', message, viewName);
+        break;
+    }
+    case 'reset-teams': {
+        ipcRenderer.invoke(UPDATE_TEAMS, [{
+            name: '.',
+            url: 'https://kchat.infomaniak.com',
+            order: 0,
+            tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+        }]);
+        break;
+    }
+    case 'update-teams': {
+        const teams = message.teams.reduce((acc, item, idx) => {
+            acc.push({
+                name: item.display_name,
+                url: item.url,
+                order: idx,
+                tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+            });
+
+            return acc;
+        }, []);
+
+        if (teams.length) {
+            ipcRenderer.invoke(UPDATE_TEAMS, teams);
+        } else {
+            ipcRenderer.invoke(UPDATE_TEAMS, []);
+        }
+        break;
+    }
+    case SWITCH_SERVER:
+        ipcRenderer.send(SWITCH_SERVER, event.data.data);
+        break;
+    case CALLS_JOIN_CALL: {
+        ipcRenderer.send(CALLS_JOIN_CALL, viewName, message);
+        break;
+    }
+    case CALLS_WIDGET_SHARE_SCREEN: {
+        ipcRenderer.send(CALLS_WIDGET_SHARE_SCREEN, viewName, message);
+        break;
+    }
+    case CALLS_LEAVE_CALL: {
+        ipcRenderer.send(CALLS_LEAVE_CALL, viewName, message);
+        break;
     }
     }
 });
@@ -385,6 +455,25 @@ ipcRenderer.on(DESKTOP_SOURCES_RESULT, (event, sources) => {
         {
             type: 'desktop-sources-result',
             message: sources,
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on(DESKTOP_SOURCES_MODAL_REQUEST, () => {
+    window.postMessage(
+        {
+            type: DESKTOP_SOURCES_MODAL_REQUEST,
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on(CALLS_JOINED_CALL, (event, message) => {
+    window.postMessage(
+        {
+            type: CALLS_JOINED_CALL,
+            message,
         },
         window.location.origin,
     );

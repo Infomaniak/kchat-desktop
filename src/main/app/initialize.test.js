@@ -8,7 +8,6 @@ import {app, session} from 'electron';
 import Config from 'common/config';
 import urlUtils from 'common/utils/url';
 
-import {displayDownloadCompleted} from 'main/notifications';
 import parseArgs from 'main/ParseArgs';
 import WindowManager from 'main/windows/windowManager';
 
@@ -51,13 +50,51 @@ jest.mock('electron', () => ({
         on: jest.fn(),
         handle: jest.fn(),
         emit: jest.fn(),
+        removeHandler: jest.fn(),
+        removeListener: jest.fn(),
+    },
+    screen: {
+        on: jest.fn(),
     },
     session: {
         defaultSession: {
             setSpellCheckerDictionaryDownloadURL: jest.fn(),
             setPermissionRequestHandler: jest.fn(),
             on: jest.fn(),
+            webRequest: {
+                onHeadersReceived: jest.fn(),
+                onBeforeSendHeaders: jest.fn(),
+            },
         },
+    },
+}));
+
+jest.mock('@sentry/electron/main', () => ({
+    init: jest.fn(),
+    captureException: () => {},
+    Integrations: {
+        Console: class {},
+        Http: class {},
+        OnUncaughtException: class {},
+        OnUnhandledRejection: class {},
+        LinkedErrors: class {},
+        InboundFilters: class {},
+        FunctionToString: class {},
+        Breadcrumbs: class {},
+        GlobalHandlers: class {},
+        Dedupe: class {},
+        Release: class {},
+        RewriteFrames: class {},
+    },
+    Handlers: {
+        requestHandler: () => (req, res, next) => next(),
+        errorHandler: () => (err, req, res, next) => next(),
+    },
+    withScope: (callback) => {
+        callback();
+    },
+    configureScope: (callback) => {
+        callback();
     },
 }));
 

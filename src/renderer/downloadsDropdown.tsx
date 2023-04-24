@@ -8,6 +8,8 @@ import {FormattedMessage} from 'react-intl';
 
 import {DownloadedItem} from 'types/downloads';
 
+import * as Sentry from '@sentry/electron/renderer';
+
 import {
     CLOSE_DOWNLOADS_DROPDOWN,
     REQUEST_CLEAR_DOWNLOADS_DROPDOWN,
@@ -20,6 +22,10 @@ import IntlProvider from './intl_provider';
 import DownloadsDropdownItem from './components/DownloadsDropdown/DownloadsDropdownItem';
 
 import './css/downloadsDropdown.scss';
+
+Sentry.init({
+    dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
+});
 
 type State = {
     downloads: DownloadedItem[];
@@ -58,7 +64,7 @@ class DownloadsDropdown extends React.PureComponent<Record<string, never>, State
                 } else if (b.type === 'update') {
                     return 1;
                 }
-                return b.addedAt - a.addedAt;
+                return b?.addedAt - a?.addedAt;
             });
             this.setState({
                 downloads: newDownloads,
@@ -74,7 +80,13 @@ class DownloadsDropdown extends React.PureComponent<Record<string, never>, State
     }
 
     clearAll = () => {
-        window.postMessage({type: REQUEST_CLEAR_DOWNLOADS_DROPDOWN}, window.location.href);
+        if (!this.clearAllButtonDisabled()) {
+            window.postMessage({type: REQUEST_CLEAR_DOWNLOADS_DROPDOWN}, window.location.href);
+        }
+    }
+
+    clearAllButtonDisabled = () => {
+        return this.state.downloads?.length === 1 && this.state.downloads[0]?.type === 'update';
     }
 
     render() {
@@ -93,7 +105,9 @@ class DownloadsDropdown extends React.PureComponent<Record<string, never>, State
                             />
                         </div>
                         <div
-                            className={'DownloadsDropdown__clearAllButton'}
+                            className={classNames('DownloadsDropdown__clearAllButton', {
+                                disabled: this.clearAllButtonDisabled(),
+                            })}
                             onClick={this.clearAll}
                         >
                             <FormattedMessage
