@@ -123,6 +123,7 @@ export const UPDATE_PATHS = 'update-paths';
 
 export const UPDATE_URL_VIEW_WIDTH = 'update-url-view-width';
 
+export const CALL_JOINED_BROWSER = 'call-joined-browser';
 export const CALL_JOINED = 'call-joined';
 export const CALL_COMMAND = 'call-command';
 export const CALL_CLOSED = 'call-closed';

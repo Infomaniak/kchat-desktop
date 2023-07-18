@@ -32,3 +32,9 @@ export const playSound = (soundName: string) => {
         audio.play();
     }
 };
+
+export const playSoundLoop = (soundName: string) => {
+    const audio = new Audio(notificationSounds.get(soundName));
+    audio.loop = true;
+    audio.play();
+};

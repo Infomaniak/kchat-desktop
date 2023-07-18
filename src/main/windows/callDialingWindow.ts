@@ -13,27 +13,29 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
     const preload = getLocalPreload('callDial.js');
     const spellcheck = (typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker);
     const callDialWindow = new BrowserWindow({
-        width: 230,
-        height: 260,
+        width: 247,
+        height: 267,
+
         // parent: mainWindow,
-        // title: 'Call 🔉',
-        titleBarStyle: 'hidden',
+     
+        titleBarStyle: 'hiddenInset',
+        hasShadow: true,
         minimizable: false,
         maximizable: false,
-        resizable: true,
-        // alwaysOnTop: true,
+        resizable: false,
+        alwaysOnTop: true,
         fullscreen: false,
         fullscreenable: false,
-        skipTaskbar: true,
-        frame: false,
+
+        // skipTaskbar: true,
+        // frame: false,
         webPreferences: {
-            nativeWindowOpen: true,
             preload,
-            spellcheck,
             partition: 'persist:main',
             nodeIntegration: true,
-            contextIsolation: false,
-        }});
+            contextIsolation: false},
+    });
+    callDialWindow.setTitle('kChat');
 
     // const contextMenu = new ContextMenu({}, callDialWindow);
     // contextMenu.reload();

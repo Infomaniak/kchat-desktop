@@ -11,6 +11,8 @@ import {
     CallsJoinCallMessage,
 } from 'types/calls';
 
+import {ModalTitle} from 'react-bootstrap';
+
 import {
     MAXIMIZE_CHANGE,
     HISTORY,
@@ -70,6 +72,8 @@ import TokenManager from 'main/tokenManager';
 
 import {updateServerInfos} from 'main/app/utils';
 
+import {JitsiMeetExternalAPI} from 'renderer/external_api';
+
 import {createSettingsWindow} from './settingsWindow';
 import createMainWindow from './mainWindow';
 
@@ -79,6 +83,7 @@ import {createCallDialingWindow} from './callDialingWindow';
 
 // eslint-disable-next-line import/no-commonjs
 import CallsWidgetWindow from './callsWidgetWindow';
+import {createCallWindow} from './callWindow';
 
 // const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@jitsi/electron-sdk');
 
@@ -871,64 +876,66 @@ export class WindowManager {
     }
 
     handleCallJoined = (event: IpcMainEvent, message, viewName: string) => {
-        if (this.callWindow) {
-            this.callWindow.show();
-        } else {
-            // if (!this.mainWindow) {
-            //     this.showMainWindow();
-            // }
+        // if (this.callWindow) {
+        //     this.callWindow.show();
+        // } else {
+        //     if (!this.mainWindow) {
+        //         this.showMainWindow();
+        //     }
 
-            // const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
+        const withDevTools = true;
+        this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar, message.username);
+        this.callWindow.loadURL(message.url);
+        this.callWindow.title = '🔉' + message.name;
+        // this.callWindow.webContents.openDevTools({mode: 'right'});
 
-            // this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar, message.username);
-            // initPopupsConfigurationMain(this.callWindow);
-            // setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.kchat');
-            // setupAlwaysOnTopMain(this.callWindow);
-            // setupPowerMonitorMain(this.callWindow);
+        // setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.kchat');
+        // setupAlwaysOnTopMain(this.callWindow);
+        // setupPowerMonitorMain(this.callWindow);
 
-            // // setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
-            // ipcMain.on(CALL_CLOSED, () => {
-            //     if (this.callWindow?.close) {
-            //         this.callWindow.close();
-            //     }
-            //     this.callWindow = undefined;
-            // });
+        // // setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
+        // ipcMain.on(CALL_CLOSED, () => {
+        //     if (this.callWindow?.close) {
+        //         this.callWindow.close();
+        //     }
+        //     this.callWindow = undefined;
+        // });
 
-            // ipcMain.on('call-focus', () => {
-            //     this.callWindow?.focus();
-            // });
+        // ipcMain.on('call-focus', () => {
+        //     this.callWindow?.focus();
+        // });
 
-            // ipcMain.on('call-audio-status-change', (_, status) => {
-            //     const currentView = this.viewManager?.views.get(viewName);
-            //     currentView?.view.webContents.send('call-audio-status-change', status.muted);
-            // });
+        // ipcMain.on('call-audio-status-change', (_, status) => {
+        //     const currentView = this.viewManager?.views.get(viewName);
+        //     currentView?.view.webContents.send('call-audio-status-change', status.muted);
+        // });
 
-            // ipcMain.on('call-video-status-change', (_, status) => {
-            //     const currentView = this.viewManager?.views.get(viewName);
-            //     currentView?.view.webContents.send('call-video-status-change', status.muted);
-            // });
+        // ipcMain.on('call-video-status-change', (_, status) => {
+        //     const currentView = this.viewManager?.views.get(viewName);
+        //     currentView?.view.webContents.send('call-video-status-change', status.muted);
+        // });
 
-            // ipcMain.on('call-ss-status-change', (_, status) => {
-            //     const currentView = this.viewManager?.views.get(viewName);
-            //     currentView?.view.webContents.send('call-ss-status-change', status.on);
-            // });
+        // ipcMain.on('call-ss-status-change', (_, status) => {
+        //     const currentView = this.viewManager?.views.get(viewName);
+        //     currentView?.view.webContents.send('call-ss-status-change', status.on);
+        // });
 
-            // ipcMain.on(WINDOW_WILL_UNLOADED, () => {
-            //     if (this.callWindow) {
-            //         this.callWindow.focus();
-            //         if (this.callWindow.close) {
-            //             this.callWindow.close();
-            //         }
-            //         delete this.callWindow;
-            //     }
-            // });
+        // ipcMain.on(WINDOW_WILL_UNLOADED, () => {
+        //     if (this.callWindow) {
+        //         this.callWindow.focus();
+        //         if (this.callWindow.close) {
+        //             this.callWindow.close();
+        //         }
+        //         delete this.callWindow;
+        //     }
+        // });
 
-            // this.callWindow.on('closed', () => {
-            //     delete this.callWindow;
-            //     const currentView = this.viewManager?.views.get(viewName);
-            //     currentView?.view.webContents.send(CALL_CLOSED, message.id);
-            // });
-        }
+        // this.callWindow.on('closed', () => {
+        //     delete this.callWindow;
+        //     const currentView = this.viewManager?.views.get(viewName);
+        //     currentView?.view.webContents.send(CALL_CLOSED, message.id);
+        // });
+        // }
     }
 
     handleAppLoggedOut = (event: IpcMainEvent, viewName: string) => {

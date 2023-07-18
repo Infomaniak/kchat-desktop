@@ -8,6 +8,9 @@ html, body, body > div {
     height: 100%;
     display: flex;
     flex-direction: column;
+    max-height: 267px;
+    max-width: 247px; 
+    overflow: hidden;
 }
 div.actions {
     display: flex;
@@ -19,7 +22,15 @@ div.avatars {
     justify-content: center;
     align-items: center;
     display: flex;
-    padding-top: 25%;
+    padding-top: 30px;
+    margin-left: 18px;
+}
+
+.AvatarRoot {
+    position: relative;
+    z-index: 0;
+    margin-left: -34px;
+
 }
 button {
     color: white !important;

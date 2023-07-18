@@ -22,7 +22,7 @@ function countMeta<T>(
 }
 
 type Props = {
-    users: {[userID: string]: any};
+    users: {[user_id: string]: any};
     totalUsers?: number;
     breakAt?: number;
     size?: 'md' | 'xxs' | 'xs' | 'sm' | 'lg' | 'xl' | 'xxl';
@@ -58,12 +58,12 @@ function Avatars({
 
     return (
         <div
-            className={`Avatars Avatars___${size}`}
+            className={'avatars'}
             onMouseLeave={() => setImmediate(false)}
         >
             {displayUserIds.map((id) => (
                 <Avatar
-                    style={{background: '#333'}}
+                    // style={{background: '#FFF'}}
                     key={id}
                     name={users[id].nickname}
                     userId={id}
@@ -98,7 +98,7 @@ function Avatars({
             // </SimpleTooltip>
 
                 <Avatar
-                    style={{background: '#333'}}
+                    // style={{background: '#FFF'}}
                     size={size}
                     tabIndex={0}
                     text={nonDisplayCount > OTHERS_DISPLAY_LIMIT ? `${OTHERS_DISPLAY_LIMIT}+` : `+${nonDisplayCount}`}
