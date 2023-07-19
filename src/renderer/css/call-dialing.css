@@ -37,7 +37,9 @@ div.content-calling-user {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    width: 200px;
     font-size: 14px;
+    margin-left: 8px;
 }
 div.content-calling-info {
     color: #666666;
@@ -50,13 +52,13 @@ div.avatars {
     align-items: center;
     display: flex;
     padding-top: 30px;
-    margin-left: 18px;
+    margin-left: 6px;
 }
 
 .AvatarRoot {
     position: relative;
     z-index: 0;
-    margin-left: -24px;
+    margin-left: -12px;
 
 }
 button {
