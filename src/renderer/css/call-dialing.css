@@ -5,19 +5,44 @@ html, body, body > div {
     height: 100%;
 }
 .container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    max-height: 267px;
-    max-width: 247px; 
+    max-width: 270px;
+    height: 267px;
+    width: 267px;
+    padding: 16px;
     overflow: hidden;
+    padding-top: 32px;
 }
 div.actions {
+    padding: 0;
+    padding-top: 15px;
     display: flex;
-    justify-content: space-around;
-    margin-top: auto;
-    padding-bottom: 16px;
-    flex: auto;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    
+}
+div.content-body {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 8px;
+    margin-left: 12px;
+}
+div.content-calling {
+    text-align: center;
+    padding: 8px;
+}
+div.content-calling-user {
+    color: #333333;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+}
+div.content-calling-info {
+    color: #666666;
+    font-size: 14px;
+    padding-top: 8px;
     
 }
 div.avatars {
@@ -31,18 +56,16 @@ div.avatars {
 .AvatarRoot {
     position: relative;
     z-index: 0;
-    margin-left: -34px;
+    margin-left: -24px;
 
 }
 button {
-    color: white !important;
+    flex: auto;
     min-height: 44px;
-    min-width: 90px;
+    min-width: 66px;
+    color: white !important;
 }
-button span {
-    font-weight: 600;
-    font-size: 14px;
-}
+
 h6.grey {
     align-self: center;
     color: #666666;

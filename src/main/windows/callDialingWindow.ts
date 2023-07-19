@@ -13,7 +13,7 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
     const preload = getLocalPreload('callDial.js');
     const spellcheck = (typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker);
     const callDialWindow = new BrowserWindow({
-        width: 247,
+        width: 267,
         height: 267,
 
         // parent: mainWindow,

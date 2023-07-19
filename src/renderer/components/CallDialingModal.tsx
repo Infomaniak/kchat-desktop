@@ -90,6 +90,7 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
 
     render() {
         const {callInfo} = this.state;
+
         // const trad = localizeMessage('label.ok', 'OK').toString();
         if (!callInfo) {
             return null;
@@ -97,32 +98,23 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
         return (
             <div className='container'>
 
-                <div className='avatars'>
+                <div className='content-body'>
                     <Avatars
                         users={callInfo.users}
-                        size='xl'
+                        size='lg'
                         totalUsers={callInfo.users.length}
 
                     />
 
                 </div>
-                <span
-                    style={{
-                        color: '#333333',
-                        fontWeight: 600,
-                        textAlign: 'center',
-                        padding: '8px',
-                        fontSize: '12px',
-                    }}
-                >{this.getUsersNicknames(callInfo.users)}</span>
-                <h6
-                    className='grey'
-                    style={{fontSize: 10}}
-                >
-                    {/* {localizeMessage('label.ok', 'OK')} */}
-                    {this.state.trad}
-
-                </h6>
+                <div className='content-calling'>
+                    <div className='content-calling-user'>
+                        <span >{this.getUsersNicknames(callInfo.users)}</span>
+                    </div>
+                    <div className='content-calling-info'>
+                        {this.state.trad}
+                    </div>
+                </div>
                 <div className='actions'>
                     <Button
                         className='decline'
