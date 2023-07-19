@@ -10,7 +10,7 @@ function countMeta<T>(
     items: T[],
     total = items.length,
 ): [T[], T[], {overflowUnnamedCount: number; nonDisplayCount: number}] {
-    const breakAt = Math.max(items.length, total) > 4 ? 3 : 4;
+    const breakAt = Math.max(items.length, total) > 2 ? 2 : 4;
 
     const displayItems = items.slice(0, breakAt);
     const overflowItems = items.slice(breakAt);
@@ -101,7 +101,7 @@ function Avatars({
                     // style={{background: '#FFF'}}
                     size={size}
                     tabIndex={0}
-                    text={nonDisplayCount > OTHERS_DISPLAY_LIMIT ? `${OTHERS_DISPLAY_LIMIT}+` : `+${nonDisplayCount}`}
+                    name={nonDisplayCount > OTHERS_DISPLAY_LIMIT ? `${OTHERS_DISPLAY_LIMIT}+` : `+${nonDisplayCount}`}
                 />
             )}
         </div>
