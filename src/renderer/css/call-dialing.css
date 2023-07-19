@@ -17,6 +17,8 @@ div.actions {
     justify-content: space-around;
     margin-top: auto;
     padding-bottom: 16px;
+    flex: auto;
+    
 }
 div.avatars {
     justify-content: center;
@@ -34,9 +36,11 @@ div.avatars {
 }
 button {
     color: white !important;
+    min-height: 44px;
+    min-width: 90px;
 }
 button span {
-    font-weight: 400;
+    font-weight: 600;
     font-size: 14px;
 }
 h6.grey {

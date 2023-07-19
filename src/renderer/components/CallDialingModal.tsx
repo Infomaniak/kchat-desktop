@@ -62,7 +62,7 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
             this.setState({callInfo: msg, trad: 'is Calling'});
         });
 
-        playSoundLoop('Bing');
+        playSoundLoop('Ring');
     }
 
     onHandleDecline() {
@@ -90,7 +90,7 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
 
     render() {
         const {callInfo} = this.state;
-
+        // const trad = localizeMessage('label.ok', 'OK').toString();
         if (!callInfo) {
             return null;
         }
@@ -121,6 +121,7 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                 >
                     {/* {localizeMessage('label.ok', 'OK')} */}
                     {this.state.trad}
+
                 </h6>
                 <div className='actions'>
                     <Button

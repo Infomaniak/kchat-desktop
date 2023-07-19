@@ -1,4 +1,5 @@
 {
+  "call.dialing": "is Calling",
   "common.permissions.canBasicAuth": "Web Authentication",
   "common.tabs.TAB_FOCALBOARD": "Boards",
   "common.tabs.TAB_MESSAGING": "Channels",

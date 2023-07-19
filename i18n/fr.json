@@ -1,4 +1,5 @@
 {
+    "call.dialing": "vous appelle",
     "renderer.modals.permission.permissionModal.unknownOrigin": "origine inconnue",
     "renderer.modals.permission.permissionModal.title": "{permission} Requise",
     "renderer.modals.permission.permissionModal.requestOriginatedFromOrigin": "Cette demande provient de <link>{origin}</link>",
