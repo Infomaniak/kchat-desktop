@@ -10,6 +10,12 @@ jest.mock('common/config', () => ({
     configFilePath: 'mock/config/filepath/',
 }));
 
+jest.mock('electron', () => ({
+    app: {
+        getPath: jest.fn(),
+    },
+}));
+
 describe('main/diagnostics/index', () => {
     it('should be initialized with correct values', () => {
         const d = Diagnostics;

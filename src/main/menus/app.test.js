@@ -26,6 +26,7 @@ jest.mock('electron', () => {
             name: 'AppName',
             getVersion: () => '5.0.0',
             getAppPath: () => '',
+            getPath: jest.fn(),
         },
         ipcMain: {
             emit: jest.fn(),

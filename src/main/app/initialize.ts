@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import path from 'path';
+import fs from 'fs';
 
 import {app, ipcMain, session} from 'electron';
 import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-devtools-installer';
@@ -65,6 +66,8 @@ import {protocols} from '../../../electron-builder.json';
 
 import {IKLoginAllowedUrls} from 'common/utils/constants';
 
+import {getLogsPath} from 'main/utils';
+
 import {
     handleAppBeforeQuit,
     handleAppBrowserWindowCreated,
@@ -120,7 +123,7 @@ export async function initialize() {
     init({
         dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
     });
-
+    logInit();
     await initializeConfig();
     initializeAppEventListeners();
     initializeBeforeAppReady();
@@ -145,6 +148,24 @@ export async function initialize() {
     // initialization that should run once the app is ready
     initializeInterCommunicationEventListeners();
     initializeAfterAppReady();
+}
+
+function logInit() {
+    const pathLogFile = path.join(getLogsPath(), 'kchat-desktop.log');
+    const {size} = fs.statSync(pathLogFile);
+    const sizeMb = size / (1024 * 1024);
+    if (sizeMb > 500) {
+        fs.unlink(`${getLogsPath()}/kchat-desktop.log`, (err) => {
+            if (err) {
+                throw err;
+            }
+            // eslint-disable-next-line no-console
+            console.log('Cleaning - Log file is greater than 500 Mb.');
+        });
+    }
+    log.initialize({preload: true});
+    log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{processType}] [{level}] {text}';
+    log.transports.file.resolvePathFn = () => pathLogFile;
 }
 
 //

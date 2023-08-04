@@ -3,6 +3,8 @@
 // See LICENSE.txt for license information.
 'use strict';
 
+import fs from 'fs';
+
 import {app, ipcMain, Menu, MenuItemConstructorOptions, MenuItem, session, shell, WebContents, clipboard} from 'electron';
 
 import {BROWSER_HISTORY_BUTTON, SHOW_NEW_SERVER_MODAL} from 'common/communication';
@@ -15,6 +17,7 @@ import {UpdateManager} from 'main/autoUpdater';
 import downloadsManager from 'main/downloadsManager';
 import Diagnostics from 'main/diagnostics';
 import TokenManager from 'main/tokenManager';
+import {getLogsPath} from 'main/utils';
 
 export function createTemplate(config: Config, updateManager: UpdateManager) {
     const separatorItem: MenuItemConstructorOptions = {
@@ -349,6 +352,27 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         click() {
             Diagnostics.run();
         },
+    });
+
+    submenu.push({id: 'Troubleshooting',
+        label: localizeMessage('main.menus.app.help.troubleshooting', 'Troubleshooting'),
+        submenu: [{
+            label: localizeMessage('main.menus.app.help.troubleshooting.open', 'Open log folder'),
+            enabled: true,
+            click() {
+                shell.showItemInFolder(getLogsPath());
+            }}, {
+            label: localizeMessage('main.menus.app.help.troubleshooting.clear', 'Clear logs'),
+            enabled: true,
+            click() {
+                fs.unlink(`${getLogsPath()}/kchat-desktop.log`, (err) => {
+                    if (err) {
+                        throw err;
+                    }
+                    // eslint-disable-next-line no-console
+                    console.log('Delete log file successfully.');
+                });
+            }}],
     });
     submenu.push(separatorItem);
 

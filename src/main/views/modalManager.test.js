@@ -8,7 +8,9 @@ import * as WindowManager from '../windows/windowManager';
 import {ModalManager} from './modalManager';
 
 jest.mock('electron', () => ({
-    app: {},
+    app: {
+        getPath: jest.fn(),
+    },
     ipcMain: {
         handle: jest.fn(),
         on: jest.fn(),

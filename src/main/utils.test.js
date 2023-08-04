@@ -13,6 +13,7 @@ jest.mock('electron', () => ({
             wasOpenedAsHidden: true,
         }),
         getAppPath: () => '/path/to/app',
+        getPath: () => '/fake/path',
     },
 }));
 
@@ -161,5 +162,21 @@ describe('main/utils', () => {
         it('should increment filename if file already exists', () => {
             expect(Utils.shouldIncrementFilename('filename.txt')).toBe('filename (1).txt');
         });
+    });
+
+    describe('getLogsPath', () => {
+        test.each([
+            ['win32', '/fake/path/Roaming/kChat/logs/'],
+            ['linux', '/fake/path/kChat/logs/'],
+            ['darwin', '/fake/path/Library/Logs/kChat/'],
+        ])(
+            'given %p arguments, returns %p',
+            (os, path) => {
+                Object.defineProperty(process, 'platform', {
+                    value: os,
+                });
+                expect(Utils.getLogsPath()).toEqual(path);
+            },
+        );
     });
 });

@@ -83,7 +83,7 @@ export class UpdateManager {
                 const arch = process.arch;
                 const archFilter = arch === 'arm64' ? '-arm64.' : '-x64.';
 
-                this.macosLink = info.files.find((file) => file.url.includes('.dmg') && file.url.includes(archFilter));
+                this.macosLink = info.files?.find((file) => file.url.includes('.dmg') && file.url.includes(archFilter));
             }
             ipcMain.emit(UPDATE_SHORTCUT_MENU);
             log.info(`[kChat] available version ${info.version}`);

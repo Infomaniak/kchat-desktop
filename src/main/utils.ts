@@ -136,3 +136,11 @@ export function shouldIncrementFilename(filepath: string, increment = 0): string
     }
     return filename;
 }
+
+const logsPath = {
+    darwin: `${app.getPath('home')}/Library/Logs/kChat/`,
+    win32: `${app.getPath('appData')}/Roaming/kChat/logs/`,
+    linux: `${app.getPath('home')}/.kChat/logs/`,
+};
+
+export const getLogsPath = () => (logsPath as any)[process.platform];

@@ -19,6 +19,9 @@ jest.mock('fs', () => ({
     existsSync: jest.fn().mockReturnValue(false),
     readFileSync: jest.fn().mockImplementation((text) => text),
     writeFile: jest.fn(),
+    statSync: () => ({
+        size: 0,
+    }),
 
 }));
 
@@ -111,6 +114,19 @@ jest.mock('electron-devtools-installer', () => {
 
 const isDev = false;
 jest.mock('electron-is-dev', () => isDev);
+
+jest.mock('electron-log', () => ({
+    initialize: jest.fn(),
+    debug: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
+    transports: {
+        file: {
+            format: '',
+            resolvePathFn: '',
+        },
+    },
+}));
 
 jest.mock('../../../electron-builder.json', () => ([
     {
