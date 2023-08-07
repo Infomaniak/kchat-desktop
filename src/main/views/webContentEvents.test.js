@@ -13,7 +13,9 @@ import allowProtocolDialog from '../allowProtocolDialog';
 import {WebContentsEventManager} from './webContentEvents';
 
 jest.mock('electron', () => ({
-    app: {},
+    app: {
+        getPath: jest.fn(),
+    },
     shell: {
         openExternal: jest.fn(),
     },

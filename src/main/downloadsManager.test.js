@@ -27,6 +27,7 @@ jest.mock('electron', () => {
     return {
         app: {
             getAppPath: jest.fn(),
+            getPath: jest.fn(),
         },
         BrowserView: jest.fn().mockImplementation(() => ({
             webContents: {

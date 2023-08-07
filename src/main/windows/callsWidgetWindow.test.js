@@ -19,6 +19,9 @@ jest.mock('electron', () => ({
         on: jest.fn(),
         off: jest.fn(),
     },
+    app: {
+        getPath: jest.fn(),
+    },
 }));
 
 describe('main/windows/callsWidgetWindow', () => {

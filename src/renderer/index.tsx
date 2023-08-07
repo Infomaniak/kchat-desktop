@@ -19,6 +19,10 @@ Sentry.init({
     dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
 });
 
+// Initialize looger to collect/centralize logs from all processes main/renderer
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+Object.assign(console, (window as any).logManager);
+
 type State = {
     config?: CombinedConfig;
 }

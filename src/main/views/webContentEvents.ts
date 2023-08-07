@@ -75,7 +75,7 @@ export class WebContentsEventManager {
 
             // if ((url.includes('infomaniak.com') || url.includes('infomaniak.ch')) && !url.includes('preprod')) {
             if (url.includes('login')) {
-                console.log('need login');
+                log.info('need login');
                 return;
             }
 

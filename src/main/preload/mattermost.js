@@ -9,6 +9,8 @@
 
 import {contextBridge, ipcRenderer, webFrame} from 'electron';
 
+import log from 'electron-log';
+
 // I've filed an issue in electron-log https://github.com/megahertz/electron-log/issues/267
 // we'll be able to use it again if there is a workaround for the 'os' import
 //import log from 'electron-log';
@@ -64,7 +66,7 @@ let sessionExpired;
 let viewName;
 let shouldSendNotifications;
 
-console.log('Preload initialized');
+console.log('Mattermost preload initialized');
 
 if (process.env.NODE_ENV === 'test') {
     contextBridge.exposeInMainWorld('testHelper', {
@@ -72,6 +74,15 @@ if (process.env.NODE_ENV === 'test') {
         getWebContentsId: () => ipcRenderer.invoke(GET_VIEW_WEBCONTENTS_ID),
     });
 }
+const logPrefix = '[current server]';
+
+contextBridge.exposeInMainWorld('logManager', {
+    info: (...args) => log.info(logPrefix, ...args),
+    debug: (...args) => log.debug(logPrefix, ...args),
+    log: (...args) => log.log(logPrefix, ...args),
+    warn: (...args) => log.warn(logPrefix, ...args),
+    error: (...args) => log.error(logPrefix, ...args),
+});
 
 contextBridge.exposeInMainWorld('authManager', {
     tokenRequest: () => ipcRenderer.invoke(TOKEN_REQUEST),

@@ -6,6 +6,8 @@
 
 import {ipcRenderer, contextBridge} from 'electron';
 
+import log from 'electron-log';
+
 import {
     GET_LANGUAGE_INFORMATION,
     RETRIEVED_LANGUAGE_INFORMATION,
@@ -58,7 +60,17 @@ import {
     FOCUS_THREE_DOT_MENU,
 } from 'common/communication';
 
-console.log('Preload initialized');
+console.log('Main preload initialized');
+
+const logPrefix = '[app wrapper]';
+
+contextBridge.exposeInMainWorld('logManager', {
+    info: (...args) => log.info(logPrefix, ...args),
+    debug: (...args) => log.debug(logPrefix, ...args),
+    log: (...args) => log.log(logPrefix, ...args),
+    warn: (...args) => log.warn(logPrefix, ...args),
+    error: (...args) => log.error(logPrefix, ...args),
+});
 
 if (process.env.NODE_ENV === 'test') {
     contextBridge.exposeInMainWorld('testHelper', {
