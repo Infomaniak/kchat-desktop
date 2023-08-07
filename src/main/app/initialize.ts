@@ -151,21 +151,29 @@ export async function initialize() {
 }
 
 function logInit() {
-    const pathLogFile = path.join(getLogsPath(), 'kchat-desktop.log');
-    const {size} = fs.statSync(pathLogFile);
-    const sizeMb = size / (1024 * 1024);
-    if (sizeMb > 500) {
-        fs.unlink(`${getLogsPath()}/kchat-desktop.log`, (err) => {
-            if (err) {
-                throw err;
-            }
-            // eslint-disable-next-line no-console
-            console.log('Cleaning - Log file is greater than 500 Mb.');
-        });
+    try {
+        const pathLogFile = path.join(getLogsPath(), 'kchat-desktop.log');
+        if (!fs.existsSync(pathLogFile)) {
+            fs.openSync(pathLogFile, 'w');
+        }
+        const {size} = fs.statSync(pathLogFile);
+        const sizeMb = size / (1024 * 1024);
+        if (sizeMb > 500) {
+            fs.unlink(`${getLogsPath()}/kchat-desktop.log`, (err) => {
+                if (err) {
+                    throw err;
+                }
+                // eslint-disable-next-line no-console
+                console.log('Cleaning - Log file is greater than 500 Mb.');
+            });
+        }
+        log.initialize({preload: true});
+        log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{processType}] [{level}] {text}';
+        log.transports.file.resolvePathFn = () => pathLogFile;
+    } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(err);
     }
-    log.initialize({preload: true});
-    log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{processType}] [{level}] {text}';
-    log.transports.file.resolvePathFn = () => pathLogFile;
 }
 
 //
