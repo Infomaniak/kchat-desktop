@@ -11,7 +11,6 @@ import {
     CallsJoinCallMessage,
 } from 'types/calls';
 
-import {ModalTitle} from 'react-bootstrap';
 
 import {
     MAXIMIZE_CHANGE,
@@ -49,6 +48,8 @@ import {
     SERVER_DELETED,
     RESET_AUTH,
     RESET_TEAMS,
+    CALLS_JOINED_CALL,
+    CALL_DECLINED,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import {SECOND} from 'common/utils/constants';
@@ -140,6 +141,7 @@ export class WindowManager {
         ipcMain.on(APP_LOGGED_IN, this.handleAppLoggedIn);
         ipcMain.on(APP_LOGGED_OUT, this.handleAppLoggedOut);
         ipcMain.on(CALL_JOINED, this.handleCallJoined);
+        ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(GET_VIEW_NAME, this.handleGetViewName);
         ipcMain.handle(GET_VIEW_WEBCONTENTS_ID, this.handleGetWebContentsId);
@@ -875,6 +877,9 @@ export class WindowManager {
         createCallDialingWindow(this.mainWindow!, withDevTools, message.calling);
     }
 
+    handleCallDeclined =(event: IpcMainEvent, message, viewName: string) => {
+        windowManager.sendToMattermostViews(CALL_DECLINED, message);
+    }
     handleCallJoined = (event: IpcMainEvent, message, viewName: string) => {
         // if (this.callWindow) {
         //     this.callWindow.show();
@@ -887,6 +892,9 @@ export class WindowManager {
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar, message.username);
         this.callWindow.loadURL(message.url);
         this.callWindow.title = '🔉' + message.name;
+
+        windowManager.sendToMattermostViews(CALL_JOINED, message);
+
         // this.callWindow.webContents.openDevTools({mode: 'right'});
 
         // setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.kchat');

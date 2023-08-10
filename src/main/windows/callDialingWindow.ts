@@ -47,7 +47,14 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
             log.error(`Settings window failed to load: ${reason}`);
             log.info(process.env);
         });
-    callDialWindow.show();
+
+    callDialWindow.webContents.once('dom-ready', () => {
+        callDialWindow.show();
+        setTimeout(() => {
+            callDialWindow.close();
+            clearInterval(1);
+        }, callInfo.toneTimeOut);
+    });
 
     callDialWindow.webContents.on('did-finish-load', () => {
         callDialWindow.webContents.send('info-received', callInfo);

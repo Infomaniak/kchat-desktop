@@ -6,7 +6,7 @@
 import {Button} from 'react-bootstrap';
 import React from 'react';
 
-import {CALL_JOINED} from 'common/communication';
+import {CALL_DECLINED, CALL_JOINED} from 'common/communication';
 
 // import Avatar from './Avatar';
 
@@ -27,7 +27,7 @@ type State = {
         avatar: string;
         id: string;
         nicknames: string;
-        caller: UserProfile;
+
         currentUser: UserProfile;
     } | void;
     trad: string;
@@ -67,17 +67,16 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
 
     onHandleDecline() {
         const {callInfo} = this.state;
-
-        window.ipcRenderer.send('decline-call', callInfo);
+        window.ipcRenderer.send(CALL_DECLINED, callInfo);
         window.close();
     }
 
     onHandleAccept() {
         const {callInfo} = this.state;
-
         window.ipcRenderer.send(CALL_JOINED, callInfo);
         window.close();
     }
+    
     getUsersNicknames = (users: UserProfile[]): string => {
         const nicknames = users.map((user) => user.nickname);
 
