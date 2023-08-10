@@ -299,6 +299,14 @@ export class MattermostView extends EventEmitter {
         return this.status === Status.ERROR;
     }
 
+    isDestroyed = () => {
+        return this.view.webContents.isDestroyed();
+    }
+
+    sendToRenderer = (channel: string, ...args: any[]) => {
+        this.view.webContents.send(channel, ...args);
+    }
+
     needsLoadingScreen = () => {
         return !(this.status === Status.READY || this.status === Status.ERROR);
     }
