@@ -6,11 +6,7 @@
 import {Button} from 'react-bootstrap';
 import React from 'react';
 
-import {CALL_DECLINED, CALL_JOINED} from 'common/communication';
-
-// import Avatar from './Avatar';
-
-import {localizeMessage} from 'main/i18nManager';
+import {CALLS_JOINED_CALL, CALL_DECLINED, CALL_JOINED} from 'common/communication';
 
 import {playSoundLoop} from 'renderer/notificationSounds';
 
@@ -20,30 +16,19 @@ type State = {
     callInfo: {
         users: UserProfile[];
         channelID: string;
-        userCalling: string;
-        channel: any;
         url: string;
-        username: string;
         avatar: string;
         id: string;
         nicknames: string;
-
-        currentUser: UserProfile;
+        toneTimeOut: number;
     } | void;
     trad: string;
 }
 export type UserProfile = {
-    id: string;
-    user_id: number;
-    username: string;
-    email: string;
     nickname: string;
-    first_name: string;
-    last_name: string;
 };
 export default class DialingModal extends React.PureComponent<Record<string, never>, State> {
     // callInfo: any;
-
     constructor(props: Record<string, never>) {
         super(props);
 
@@ -61,8 +46,10 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
             // this.setState({callInfo: msg, trad: localizeMessage('Call.dialing', 'is Calling')});
             this.setState({callInfo: msg, trad: 'is Calling'});
         });
-
         playSoundLoop('Ring');
+        setTimeout(() => {
+            window.ipcRenderer.send(CALLS_JOINED_CALL);
+        }, 30000);
     }
 
     onHandleDecline() {
@@ -76,7 +63,7 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
         window.ipcRenderer.send(CALL_JOINED, callInfo);
         window.close();
     }
-    
+
     getUsersNicknames = (users: UserProfile[]): string => {
         const nicknames = users.map((user) => user.nickname);
 
@@ -89,8 +76,6 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
 
     render() {
         const {callInfo} = this.state;
-
-        // const trad = localizeMessage('label.ok', 'OK').toString();
         if (!callInfo) {
             return null;
         }

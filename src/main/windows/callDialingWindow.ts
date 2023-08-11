@@ -7,7 +7,7 @@ import log from 'electron-log';
 import Config from 'common/config';
 
 import {getLocalPreload, getLocalURLString} from '../utils';
-import {CALL_CLOSED, CALL_COMMAND} from 'common/communication';
+import {CALLS_JOINED_CALL} from 'common/communication';
 
 export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools: boolean, callInfo) {
     const preload = getLocalPreload('callDial.js');
@@ -15,9 +15,6 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
     const callDialWindow = new BrowserWindow({
         width: 267,
         height: 267,
-
-        // parent: mainWindow,
-     
         titleBarStyle: 'hiddenInset',
         hasShadow: true,
         minimizable: false,
@@ -26,9 +23,6 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
         alwaysOnTop: true,
         fullscreen: false,
         fullscreenable: false,
-
-        // skipTaskbar: true,
-        // frame: false,
         webPreferences: {
             preload,
             partition: 'persist:main',
@@ -36,9 +30,6 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
             contextIsolation: false},
     });
     callDialWindow.setTitle('kChat');
-
-    // const contextMenu = new ContextMenu({}, callDialWindow);
-    // contextMenu.reload();
 
     const localURL = getLocalURLString('callDialing.html');
     callDialWindow.setMenuBarVisibility(false);
@@ -50,12 +41,10 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
 
     callDialWindow.webContents.once('dom-ready', () => {
         callDialWindow.show();
-        setTimeout(() => {
-            callDialWindow.close();
-            clearInterval(1);
-        }, callInfo.toneTimeOut);
     });
-
+    ipcMain.on(CALLS_JOINED_CALL, () => {
+        callDialWindow.close();
+    });
     callDialWindow.webContents.on('did-finish-load', () => {
         callDialWindow.webContents.send('info-received', callInfo);
     });
