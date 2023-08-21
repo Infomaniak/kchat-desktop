@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Row, Button} from 'react-bootstrap';
-import {FormattedMessage} from 'react-intl';
+import {Row} from 'react-bootstrap';
 
 type Props = {
     darkMode?: boolean;
@@ -25,7 +24,8 @@ export default class ExtraBar extends React.PureComponent<Props> {
             barClass = 'dark-mode';
         }
 
-        return (
+        // remove the extrabar back button and let the grey band
+        /*return (
             <Row
                 id={'extra-bar'}
                 className={barClass}
@@ -47,6 +47,14 @@ export default class ExtraBar extends React.PureComponent<Props> {
                         </span>
                     </Button>
                 </div>
+            </Row>
+        );*/
+        return (
+            <Row
+                id={'extra-bar'}
+                className={barClass}
+            >
+                <div/>
             </Row>
         );
     }
