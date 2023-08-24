@@ -35,7 +35,7 @@ function Avatars({
     totalUsers,
     fetchMissingUsers = false,
 }: Props) {
-    console.log(users, Object.keys(users))
+    console.log(users, Object.keys(users));
     const [displayUserIds, _, {__, nonDisplayCount}] = countMeta(Object.keys(users), Object.keys(users).length);
 
     // const [overlayProps, setImmediate] = useSynchronizedImmediate();
@@ -58,11 +58,12 @@ function Avatars({
 
     return (
         <div
-            className={'avatars'}
+            className='avatars'
             onMouseLeave={() => setImmediate(false)}
         >
             {displayUserIds.map((id) => (
                 <Avatar
+
                     // style={{background: '#FFF'}}
                     key={id}
                     name={users[id].nickname}
@@ -98,6 +99,7 @@ function Avatars({
             // </SimpleTooltip>
 
                 <Avatar
+
                     // style={{background: '#FFF'}}
                     size={size}
                     tabIndex={0}

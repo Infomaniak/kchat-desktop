@@ -11,7 +11,6 @@ import {
     CallsJoinCallMessage,
 } from 'types/calls';
 
-
 import {
     MAXIMIZE_CHANGE,
     HISTORY,
@@ -29,8 +28,6 @@ import {
     APP_LOGGED_OUT,
     BROWSER_HISTORY_BUTTON,
     CALL_JOINED,
-    CALL_CLOSED,
-    WINDOW_WILL_UNLOADED,
     DISPATCH_GET_DESKTOP_SOURCES,
     DESKTOP_SOURCES_RESULT,
     RELOAD_CURRENT_VIEW,
@@ -48,7 +45,6 @@ import {
     SERVER_DELETED,
     RESET_AUTH,
     RESET_TEAMS,
-    CALLS_JOINED_CALL,
     CALL_DECLINED,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
@@ -72,8 +68,6 @@ import downloadsManager from 'main/downloadsManager';
 import TokenManager from 'main/tokenManager';
 
 import {updateServerInfos} from 'main/app/utils';
-
-import {JitsiMeetExternalAPI} from 'renderer/external_api';
 
 import {createSettingsWindow} from './settingsWindow';
 import createMainWindow from './mainWindow';
@@ -870,15 +864,15 @@ export class WindowManager {
         }
     }
 
-    handleCallDialing = (event: IpcMainEvent, message, viewName: string) => {
+    handleCallDialing =(_: IpcMainEvent, message: any) => {
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
         createCallDialingWindow(this.mainWindow!, withDevTools, message.calling);
     }
 
-    handleCallDeclined =(event: IpcMainEvent, message, viewName: string) => {
+    handleCallDeclined=(_: IpcMainEvent, message: unknown) =>
         windowManager.sendToMattermostViews(CALL_DECLINED, message);
-    }
-    handleCallJoined = (event: IpcMainEvent, message, viewName: string) => {
+
+    handleCallJoined =(_: IpcMainEvent, message: any) => {
         const withDevTools = true;
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
         this.callWindow.loadURL(message.url);
