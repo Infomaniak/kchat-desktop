@@ -864,15 +864,15 @@ export class WindowManager {
         }
     }
 
-    handleCallDialing =(_: IpcMainEvent, message: any) => {
+    handleCallDialing = (_: IpcMainEvent, message: any) => {
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
         createCallDialingWindow(this.mainWindow!, withDevTools, message.calling);
     }
 
-    handleCallDeclined=(_: IpcMainEvent, message: unknown) =>
+    handleCallDeclined = (_: IpcMainEvent, message: unknown) =>
         windowManager.sendToMattermostViews(CALL_DECLINED, message);
 
-    handleCallJoined =(_: IpcMainEvent, message: any) => {
+    handleCallJoined = (_: IpcMainEvent, message: any) => {
         const withDevTools = true;
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
         this.callWindow.loadURL(message.url);
