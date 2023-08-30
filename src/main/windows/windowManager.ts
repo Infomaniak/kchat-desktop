@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 import path from 'path';
 
-import {app, BrowserWindow, nativeImage, systemPreferences, ipcMain, IpcMainEvent, IpcMainInvokeEvent, desktopCapturer} from 'electron';
+import {app, BrowserWindow, nativeImage, systemPreferences, ipcMain, IpcMainEvent, IpcMainInvokeEvent, desktopCapturer, shell} from 'electron';
 import log from 'electron-log';
 
 import {
@@ -78,7 +78,6 @@ import {createCallDialingWindow} from './callDialingWindow';
 
 // eslint-disable-next-line import/no-commonjs
 import CallsWidgetWindow from './callsWidgetWindow';
-import {createCallWindow} from './callWindow';
 
 // const {setupScreenSharingMain, setupAlwaysOnTopMain, initPopupsConfigurationMain, setupPowerMonitorMain} = require('@jitsi/electron-sdk');
 
@@ -605,9 +604,7 @@ export class WindowManager {
             this.viewManager.load();
             this.viewManager.showInitial();
 
-            TokenManager.load().finally((r) => {
-                this.initializeCurrentServerName();
-            });
+            TokenManager.load().finally(() => this.initializeCurrentServerName());
         }
     }
 
@@ -873,10 +870,14 @@ export class WindowManager {
         windowManager.sendToMattermostViews(CALL_DECLINED, message);
 
     handleCallJoined = (_: IpcMainEvent, message: any) => {
-        const withDevTools = true;
+        //TODO: kMeet integration V2 => open call in a new window.
+        //remove shell.openExternal and uncomment code below.
+        shell.openExternal(message.url);
+
+        /*const withDevTools = true;
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
         this.callWindow.loadURL(message.url);
-        windowManager.sendToMattermostViews(CALL_JOINED, message);
+        windowManager.sendToMattermostViews(CALL_JOINED, message);*/
     }
 
     handleAppLoggedOut = (event: IpcMainEvent, viewName: string) => {
