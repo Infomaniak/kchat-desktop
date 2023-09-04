@@ -1,6 +1,6 @@
 @import url("components/index.css");
 @import url("fonts.css");
-@import '~@infomaniak/compass-icons/css/compass-icons.css';
+@import '../../../intern_modules/@infomaniak/compass-icons/css/compass-icons.css';
 
 html {
   height: 100%;

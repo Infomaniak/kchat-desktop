@@ -1,5 +1,5 @@
 @import url("../_css_variables.scss");
-@import '~@infomaniak/compass-icons/css/compass-icons.css';
+@import '../../../intern_modules/@infomaniak/compass-icons/css/compass-icons.css';
 
 .error {
     color: var(--error-text);

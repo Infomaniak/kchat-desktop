@@ -1,6 +1,6 @@
 @import url("fonts.css");
-@import '~@infomaniak/compass-icons/css/compass-icons.css';
-
+//@import '~@infomaniak/compass-icons/css/compass-icons.css';
+@import '../../../intern_modules/@infomaniak/compass-icons/css/compass-icons.css';
 @mixin file-icon($path) {
     background-image: url($path);
     background-position: center;
@@ -361,7 +361,7 @@ body {
                                 margin-top: 5px;
                             }
                         }
-                        
+
                         .DownloadsDropdown__Update__Details__DescriptionManual {
                             color: rgba(63, 67, 80, 0.64);
                             font-size: 9px;

@@ -1,0 +1,27 @@
+name: release-macos
+
+on:
+    push:
+        branches: [feat/github-actions-settings]
+        #tags:
+        #    - "^[0-9]+.[0-9]+.[0-9]+-(alpha|beta).[0-9]+$"
+jobs:
+    build:
+        runs-on: macos-latest
+        steps:
+            - name: release/checkout-repo
+              uses: actions/checkout@v3
+            - name: release/setup-node
+              uses: actions/setup-node@v3
+              with:
+                  node-version-file: "package.json"
+                  cache: "npm"
+                  cache-dependency-path: package-lock.json
+            - name: release/install-dependencies
+              run: |
+                  brew install yq rename
+                  npm ci
+            - name: release/test
+              run: npm run test:unit-ci
+            - name: release/build
+              run: npm run package:mac
