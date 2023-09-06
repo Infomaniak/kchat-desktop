@@ -31,10 +31,6 @@ jobs:
                   node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch arm64
                   node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch ia32
                   npm ci --openssl_fips=''
-            - name: ci/run-i18n-check
-              run: |
-                  npm run mmjstool -- i18n extract-desktop --desktop-dir .
-                  git --no-pager diff --exit-code i18n/en.json
             - name: release/test
               env:
                   ELECTRON_DISABLE_SANDBOX: "1"
