@@ -56,3 +56,32 @@ jobs:
               run: |
                   mkdir -p ./build/linux
                   npm run package:linux
+
+    build-msi-installer:
+        runs-on: windows-2022
+        steps:
+            - name: release/checkout-repo
+              uses: actions/checkout@v3
+            - name: release/setup-node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "16.16.0"
+            - name: release/optimize
+              shell: powershell
+              run: ./scripts/Makefile.ps1 optimize
+            - name: release/install-deps
+              shell: powershell
+              run: |
+                  ./scripts/Makefile.ps1 install-deps
+                  choco install yq --version 4.15.1 -y
+                  npm i -g node-gyp
+                  node-gyp install
+                  node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers"
+                  node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch arm64
+                  node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch ia32
+                  npm ci --openssl_fips=''
+            # - name: release/test
+            #  uses: ./.github/actions/test
+            - name: release/build
+              run: |
+                  npm run package:windows-nsis
