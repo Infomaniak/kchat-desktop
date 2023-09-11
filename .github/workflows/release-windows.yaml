@@ -34,7 +34,7 @@ jobs:
             - name: release/test
               env:
                   ELECTRON_DISABLE_SANDBOX: "1"
-              run: npm run test:unit-ci
+              run: npm run test:unit
             - name: release/build
               run: |
                   npm run package:windows-nsis
