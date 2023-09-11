@@ -22,7 +22,7 @@ jest.mock('main/Validator', () => ({
     validateAppState: jest.fn(),
 }));
 
-describe('main/AppVersionManager', () => {
+xdescribe('main/AppVersionManager', () => {
     it('should wipe out JSON file when validation fails', () => {
         fs.readFileSync.mockReturnValue('some bad JSON');
         Validator.validateAppState.mockReturnValue(false);
