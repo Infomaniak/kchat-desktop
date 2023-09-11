@@ -4,7 +4,8 @@ on:
     push:
         branches: [feat/github-actions-settings]
         #tags:
-        #    - "^[0-9]+.[0-9]+.[0-9]+-(alpha|beta).[0-9]+$"
+        #    - "[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]"
+        #    - "[0-9]+.[0-9]+.[0-9]+-beta.[0-9]"
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -24,7 +25,7 @@ jobs:
                   sudo apt-get update || true && sudo apt-get install -y ca-certificates libxtst-dev libpng++-dev gcc-aarch64-linux-gnu g++-aarch64-linux-gnu jq icnsutils graphicsmagick tzdata
                   npm ci
             - name: release/test
-              run: npm run test:unit-ci
+              uses: ./.github/actions/test
             - name: release/build
               run: |
                   mkdir -p ./build/linux

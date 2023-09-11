@@ -4,7 +4,8 @@ on:
     push:
         branches: [feat/github-actions-settings]
         #tags:
-        #    - "^[0-9]+.[0-9]+.[0-9]+-(alpha|beta).[0-9]+$"
+        #    - "[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]"
+        #    - "[0-9]+.[0-9]+.[0-9]+-beta.[0-9]"
 jobs:
     build:
         runs-on: macos-latest
@@ -22,7 +23,7 @@ jobs:
                   brew install yq rename
                   npm ci
             - name: release/test
-              run: npm run test:unit-ci
+              uses: ./.github/actions/test
             - name: release/build
               env:
                   APPLEID: ${{ secrets.APPLEID }}
