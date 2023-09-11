@@ -102,7 +102,7 @@
     ],
     "globals": {
       "__HASH_VERSION__": "5.0.0",
-      "__CAN_UPGRADE__": true,
+      "__CAN_UPGRADE__": false,
       "__IS_NIGHTLY_BUILD__": false,
       "__IS_MAC_APP_STORE__": false,
       "__DISABLE_GPU__": false,
