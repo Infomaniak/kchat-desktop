@@ -24,4 +24,10 @@ jobs:
             - name: release/test
               run: npm run test:unit-ci
             - name: release/build
+              env:
+                  APPLEID: ${{ secrets.APPLEID }}
+                  APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+                  CSC_FOR_PULL_REQUEST: true
+                  CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+                  CSC_LINK: ${{ secrets.CSC_LINK }}
               run: npm run package:mac
