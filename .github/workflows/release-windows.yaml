@@ -16,7 +16,7 @@ env:
     MM_WIN_INSTALLERS: 1
 
 jobs:
-    build:
+    build-msi-installer:
         runs-on: windows-2022
         steps:
             - name: release/checkout-repo

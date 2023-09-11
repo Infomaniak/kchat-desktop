@@ -7,7 +7,7 @@ on:
         #    - "[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]"
         #    - "[0-9]+.[0-9]+.[0-9]+-beta.[0-9]"
 jobs:
-    build:
+    build-linux:
         runs-on: ubuntu-latest
         steps:
             - name: release/checkout-repo
