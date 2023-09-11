@@ -16,7 +16,7 @@ jest.mock('electron', () => ({
     },
 }));
 
-xdescribe('main/diagnostics/index', () => {
+describe('main/diagnostics/index', () => {
     it('should be initialized with correct values', () => {
         const d = Diagnostics;
         expect(d.stepTotal).toBe(0);

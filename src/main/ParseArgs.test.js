@@ -11,7 +11,7 @@ jest.mock('electron', () => ({
 
 import parse from 'main/ParseArgs';
 
-xdescribe('main/ParseArgs', () => {
+describe('main/ParseArgs', () => {
     it('should remove arguments following a deeplink', () => {
         const args = parse(['mattermost', '--disableDevMode', 'mattermost://server-1.com']);
         expect(args.disableDevMode).toBe(true);
