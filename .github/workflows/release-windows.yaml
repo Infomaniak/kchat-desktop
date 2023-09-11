@@ -7,7 +7,7 @@ on:
         #    - "^[0-9]+.[0-9]+.[0-9]+-(alpha|beta).[0-9]+$"
 jobs:
     build:
-        runs-on: windows-latest
+        runs-on: windows-2022
         steps:
             - name: release/checkout-repo
               uses: actions/checkout@v3
