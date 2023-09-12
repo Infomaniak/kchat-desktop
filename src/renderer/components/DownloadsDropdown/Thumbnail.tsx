@@ -4,7 +4,7 @@
 import React, {useEffect, useState} from 'react';
 import {DownloadedItem} from 'types/downloads';
 
-import {CheckCircleIcon, CloseCircleIcon} from '../../../../intern_modules/@infomaniak/compass-icons/components';
+import {CheckCircleIcon, CloseCircleIcon} from '@infomaniak/compass-icons/components';
 
 import {getIconClassName, isImageFile} from 'renderer/utils';
 
