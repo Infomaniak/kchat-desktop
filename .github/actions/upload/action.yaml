@@ -1,0 +1,37 @@
+name: "upload-artifacts"
+description: This action used to upload artifacts
+
+inputs:
+    shell:
+        description: The shell to run the script
+        required: true
+        default: bash
+
+runs:
+    using: "composite"
+    steps:
+        - name: Create Release
+          id: create_release
+          uses: actions/create-release@v1
+          env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+              tag_name: ${{ github.ref }}
+              release_name: ${{ github.ref }}
+              draft: false
+              prerelease: false
+        - name: Create ZIP archive
+          shell: ${{ inputs.shell }}
+          run: |
+              mkdir release_archive
+              zip -r release_archive/build.zip release/
+          working-directory: ${{ github.workspace }}
+        - name: upload Mac artifacts
+          uses: actions/upload-release-asset@v1
+          env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+              upload_url: ${{ steps.create_release.outputs.upload_url }}
+              asset_path: release_archive/build.zip
+              asset_name: build.zip
+              asset_content_type: application/zip

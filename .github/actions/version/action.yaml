@@ -13,5 +13,4 @@ runs:
         - name: update package.json version
           shell: ${{ inputs.shell }}
           run: |
-              echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
-              echo "Tag name from github.ref_name: ${{  github.ref_name }}"
+              npm --no-git-tag-version version $GITHUB_REF_NAME
