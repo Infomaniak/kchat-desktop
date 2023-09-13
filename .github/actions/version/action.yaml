@@ -1,0 +1,10 @@
+name: "update-version"
+description: This action used to update package.json version
+
+runs:
+    using: "composite"
+    steps:
+        - name: update package.json version
+          run: |
+              echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
+              echo "Tag name from github.ref_name: ${{  github.ref_name }}"

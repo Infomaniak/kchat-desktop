@@ -24,6 +24,8 @@ jobs:
               run: |
                   brew install yq rename
                   npm ci
+            - name: release/update-version
+              uses: ./.github/actions/version
             - name: release/test
               uses: ./.github/actions/test
             - name: release/build
@@ -54,6 +56,8 @@ jobs:
                   wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 && chmod a+x /usr/local/bin/yq
                   sudo apt-get update || true && sudo apt-get install -y ca-certificates libxtst-dev libpng++-dev gcc-aarch64-linux-gnu g++-aarch64-linux-gnu jq icnsutils graphicsmagick tzdata
                   npm ci
+            - name: release/update-version
+              uses: ./.github/actions/version
             - name: release/test
               uses: ./.github/actions/test
             - name: release/build
@@ -86,6 +90,8 @@ jobs:
                   node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch arm64
                   node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch ia32
                   npm ci --openssl_fips=''
+            - name: release/update-version
+              uses: ./.github/actions/version
             # - name: release/test
             #  uses: ./.github/actions/test
             - name: release/build
