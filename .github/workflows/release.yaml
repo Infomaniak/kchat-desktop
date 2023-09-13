@@ -45,7 +45,7 @@ jobs:
                   CSC_LINK: ${{ secrets.CSC_LINK }}
               run: npm run package:mac
             - name: release/upload-build
-              uses: actions/upload-artifact@3
+              uses: actions/upload-artifact@v3
               with:
                   name: build
                   path: ./build
@@ -81,7 +81,7 @@ jobs:
                   mkdir -p ./build/linux
                   npm run package:linux
             - name: release/upload-build
-              uses: actions/upload-artifact@3
+              uses: actions/upload-artifact@v3
               with:
                   name: build
                   path: ./build
@@ -130,7 +130,7 @@ jobs:
             - build-linux
         steps:
             - name: release/download-builds
-              uses: actions/download-artifact@3
+              uses: actions/download-artifact@v3
             - name: Display structure of downloaded files
               run: ls -R
 
