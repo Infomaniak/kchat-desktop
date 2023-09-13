@@ -36,6 +36,8 @@ jobs:
                   CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
                   CSC_LINK: ${{ secrets.CSC_LINK }}
               run: npm run package:mac
+            - name: upload-artifacts
+              uses: ./.github/actions/upload
 
     build-linux:
         runs-on: ubuntu-latest
@@ -64,6 +66,8 @@ jobs:
               run: |
                   mkdir -p ./build/linux
                   npm run package:linux
+            - name: upload-artifacts
+              uses: ./.github/actions/upload
 
     build-msi-installer:
         runs-on: windows-2022
@@ -97,16 +101,6 @@ jobs:
             - name: release/build
               run: |
                   npm run package:windows-nsis
-
-    upload-to-github:
-        runs-on: ubuntu-latest
-        needs:
-            - build-mac-installer
-            #    - build-msi-installer
-            - build-linux
-        steps:
-            - name: upload-artifacts
-              uses: ./.github/actions/upload
 
     #upload-to-s3:
     #    runs-on: ubuntu-latest
