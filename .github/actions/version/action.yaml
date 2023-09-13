@@ -1,10 +1,17 @@
 name: "update-version"
 description: This action used to update package.json version
 
+inputs:
+    shell:
+        description: The shell to run the script
+        required: true
+        default: bash
+
 runs:
     using: "composite"
     steps:
         - name: update package.json version
+          shell: ${{ inputs.shell }}
           run: |
               echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
               echo "Tag name from github.ref_name: ${{  github.ref_name }}"
