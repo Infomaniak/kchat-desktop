@@ -26,3 +26,5 @@ fastlane/report.xml
 
 .env
 sentry.properties
+# Sentry Auth Token
+.env.sentry-build-plugin
