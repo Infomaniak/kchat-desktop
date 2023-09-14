@@ -11,7 +11,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: create-release
-              uses: ../.github/actions/create-release
+              uses: ./../.github/actions/create-release
 
     build-mac-installer:
         runs-on: macos-latest
