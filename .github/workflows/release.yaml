@@ -23,7 +23,7 @@ jobs:
                   draft: false
                   prerelease: false
 
-    build-mac-installer:
+    build-mac:
         runs-on: macos-latest
         needs:
             - create-release
