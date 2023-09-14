@@ -7,16 +7,16 @@ on:
             - "[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]"
             - "[0-9]+.[0-9]+.[0-9]+-beta.[0-9]"
 jobs:
-    #create-release:
-    #    runs-on: ubuntu-latest
-    #    steps:
-    #        - name: create-github-release
-    #          uses: ./.github/actions/create-release
+    create-release:
+        runs-on: ubuntu-latest
+        steps:
+            - name: create-github-release
+              uses: ./.github/actions/create-release
 
     build-mac-installer:
         runs-on: macos-latest
-        #needs:
-        #    - create-release
+        needs:
+            - create-release
         steps:
             - name: release/checkout-repo
               uses: actions/checkout@v3
@@ -53,8 +53,8 @@ jobs:
 
     build-linux:
         runs-on: ubuntu-latest
-        #needs:
-        #    - create-release
+        needs:
+            - create-release
         steps:
             - name: release/checkout-repo
               uses: actions/checkout@v3
@@ -89,8 +89,8 @@ jobs:
 
     build-msi-installer:
         runs-on: windows-2022
-        #needs:
-        #    - create-release
+        needs:
+            - create-release
         steps:
             - name: release/checkout-repo
               uses: actions/checkout@v3
@@ -131,8 +131,25 @@ jobs:
         steps:
             - name: release/download-builds
               uses: actions/download-artifact@v3
-            - name: Display structure of downloaded files
-              run: ls -R
+              with:
+                  name: release
+                  path: release
+            - name: Create ZIP archive
+              shell:
+                  required: true
+                  default: bash
+              run: |
+                  zip -r ./release.zip release/
+              working-directory: ${{ github.workspace }}
+            - name: upload Mac artifacts
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./release.zip
+                  asset_name: release.zip
+                  asset_content_type: application/zip
 
     #upload-to-s3:
     #    runs-on: ubuntu-latest
