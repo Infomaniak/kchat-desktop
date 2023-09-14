@@ -135,8 +135,8 @@ jobs:
     upload-to-github:
         runs-on: ubuntu-latest
         needs:
-            - build-mac
-            #    - build-msi-installer
+            #   - build-mac
+            #   - build-msi-installer
             - build-linux
         steps:
             - name: release/download-builds
