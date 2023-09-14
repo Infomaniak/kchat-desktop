@@ -10,7 +10,7 @@ jobs:
     create-release:
         runs-on: ubuntu-latest
         steps:
-            - name: create-github-release
+            - name: create-release
               uses: ./.github/actions/create-release
 
     build-mac-installer:

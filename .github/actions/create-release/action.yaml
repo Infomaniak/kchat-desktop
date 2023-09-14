@@ -1,5 +1,5 @@
-name: "upload-artifacts"
-description: This action used to upload artifacts
+name: "create-release"
+description: This action used to create github release
 
 inputs:
     shell:
