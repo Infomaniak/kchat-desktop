@@ -2,16 +2,18 @@ name: release-kchat
 
 on:
     push:
-        #branches: [feat/github-actions-settings]
-        tags:
-            - "[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]"
-            - "[0-9]+.[0-9]+.[0-9]+-beta.[0-9]"
+        branches: [feat/github-actions-settings]
+        #tags:
+        #    - "[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]"
+        #    - "[0-9]+.[0-9]+.[0-9]+-beta.[0-9]"
 jobs:
     create-release:
         runs-on: ubuntu-latest
         steps:
+            - name: release/checkout-repo
+              uses: actions/checkout@v3
             - name: create-release
-              uses: ./../.github/actions/create-release
+              uses: ./.github/actions/create-release
 
     build-mac-installer:
         runs-on: macos-latest
