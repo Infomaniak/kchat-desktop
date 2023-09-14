@@ -135,9 +135,6 @@ jobs:
                   name: release
                   path: release
             - name: Create ZIP archive
-              shell:
-                  required: true
-                  default: bash
               run: |
                   zip -r ./release.zip release/
               working-directory: ${{ github.workspace }}
