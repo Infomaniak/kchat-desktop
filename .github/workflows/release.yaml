@@ -55,12 +55,15 @@ jobs:
                   CSC_FOR_PULL_REQUEST: true
                   CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
                   CSC_LINK: ${{ secrets.CSC_LINK }}
-              run: npm run package:mac
+              run: |
+                  npm run package:mac
+                  mkdir -p ./artifacts
+                  find ./release -type f \( -name "*.dmg" \) -exec cp {} ./artifacts/ \;
             - name: release/upload-build
               uses: actions/upload-artifact@v3
               with:
-                  name: release
-                  path: ./release
+                  name: artifacts
+                  path: ./artifacts
                   retention-days: 1
 
     build-linux:
@@ -92,11 +95,13 @@ jobs:
               run: |
                   mkdir -p ./build/linux
                   npm run package:linux
+                  mkdir -p ./artifacts
+                  find ./release -type f \( -name "*.rpm" -o -name "*.deb" -o -name "*.AppImage" \) -exec cp {} ./artifacts/ \;
             - name: release/upload-build
               uses: actions/upload-artifact@v3
               with:
-                  name: release
-                  path: ./release
+                  name: artifacts
+                  path: ./artifacts
                   retention-days: 1
 
     build-msi-installer:
@@ -145,21 +150,15 @@ jobs:
             - name: release/download-builds
               uses: actions/download-artifact@v3
               with:
-                  name: release
-                  path: release
-            - name: Create ZIP archive
-              run: |
-                  zip -r ./release.zip release/
-              working-directory: ${{ github.workspace }}
-            - name: upload Mac artifacts
+                  name: artifacts
+                  path: ./artifacts
+            - name: upload artifacts
               uses: actions/upload-release-asset@v1
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: ./release.zip
-                  asset_name: release.zip
-                  asset_content_type: application/zip
+                  asset_path: ./artifacts
 
     #upload-to-s3:
     #    runs-on: ubuntu-latest
