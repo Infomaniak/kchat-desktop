@@ -22,8 +22,8 @@ jobs:
                   release_name: ${{ github.ref }}
                   draft: false
                   prerelease: false
-             outputs:
-                output_url: ${{ steps.create_release.outputs.upload_url }}
+              outputs:
+                  output_url: ${{ steps.create_release.outputs.upload_url }}
 
     # build-mac:
     #     runs-on: macos-latest
@@ -135,11 +135,11 @@ jobs:
     #               npm run package:windows-nsis
 
     upload-to-github:
-          runs-on: ubuntu-latest
-          needs: create-release
-          steps:
+        runs-on: ubuntu-latest
+        needs: create-release
+        steps:
             - env:
-                OUTPUT1: ${{needs.create-release.outputs.output_url}}
+                  OUTPUT1: ${{needs.create-release.outputs.output_url}}
               run: echo "$OUTPUT1"
         # runs-on: ubuntu-latest
         # needs:
