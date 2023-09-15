@@ -158,8 +158,8 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{github.ref}}-mac-arm64.dmg"
-                  asset_name: "kchat-desktop-${{github.ref}}-mac-arm64.dmg"
+                  asset_path: "./artifacts/kchat-desktop-${{$GITHUB_REF_NAME}}-mac-arm64.dmg"
+                  asset_name: "kchat-desktop-${{$GITHUB_REF_NAME}}-mac-arm64.dmg"
                   asset_content_type: application/octet-stream
             - name: upload artifact mac x64
               uses: actions/upload-release-asset@v1
@@ -167,8 +167,8 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{github.ref}}-mac-x64.dmg"
-                  asset_name: "kchat-desktop-${{github.ref}}-mac-x64.dmg"
+                  asset_path: "./artifacts/kchat-desktop-${{$GITHUB_REF_NAME}}-mac-x64.dmg"
+                  asset_name: "kchat-desktop-${{$GITHUB_REF_NAME}}-mac-x64.dmg"
                   asset_content_type: application/octet-stream
 
     #upload-to-s3:
