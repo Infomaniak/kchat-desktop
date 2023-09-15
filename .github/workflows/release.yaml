@@ -144,7 +144,7 @@ jobs:
         needs:
             - create-release
             - build-mac
-            #   - build-msi-installer
+            # - build-msi-installer
             # - build-linux
         steps:
             - name: release/download-builds
@@ -152,38 +152,24 @@ jobs:
               with:
                   name: artifacts
                   path: ./artifacts
-            - name: List artifacts
-              run: |
-                  find ./artifacts -type f > asset_list.txt
-              working-directory: ${{ github.workspace }}
-
-            - name: Read asset list
-              id: read-asset-list
-              run: |
-                  echo "::set-output name=assets::$(cat asset_list.txt)"
-              working-directory: ${{ github.workspace }}
-
-            - name: Upload artifacts
-              id: upload-artifacts
-              run: |
-                  for asset in ${{ steps.read-asset-list.outputs.assets }}; do
-                      asset_name=$(basename "$asset")
-                      echo "Uploading asset: $asset_name"
-                      echo "::set-output name=asset_name::$asset_name"
-                      echo "::set-output name=asset_path::$asset"
-                      echo "::set-output name=asset_content_type::application/octet-stream" # Set a default content type
-                  done
-              working-directory: ${{ github.workspace }}
-
-            - name: Upload release assets
+            - name: upload artifact mac arm64
               uses: actions/upload-release-asset@v1
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: ${{ steps.upload-artifacts.outputs.asset_path }}
-                  asset_name: ${{ steps.upload-artifacts.outputs.asset_name }}
-                  asset_content_type: ${{ steps.upload-artifacts.outputs.asset_content_type }}
+                  asset_path: ./artifacts
+                  asset_name: kchat-desktop-${GITHUB_REF_NAME}-mac-arm64.dmg
+                  asset_content_type: application/octet-stream
+            - name: upload artifact mac x64
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: ./artifacts
+                  asset_name: kchat-desktop-${GITHUB_REF_NAME}-mac-x64.dmg
+                  asset_content_type: application/octet-stream
 
     #upload-to-s3:
     #    runs-on: ubuntu-latest
