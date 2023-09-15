@@ -171,6 +171,7 @@ jobs:
                       echo "Uploading asset: $asset_name"
                       echo "::set-output name=asset_name::$asset_name"
                       echo "::set-output name=asset_path::$asset"
+                      echo "::set-output name=asset_content_type::application/octet-stream" # Set a default content type
                   done
               working-directory: ${{ github.workspace }}
 
@@ -182,6 +183,7 @@ jobs:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
                   asset_path: ${{ steps.upload-artifacts.outputs.asset_path }}
                   asset_name: ${{ steps.upload-artifacts.outputs.asset_name }}
+                  asset_content_type: ${{ steps.upload-artifacts.outputs.asset_content_type }}
 
     #upload-to-s3:
     #    runs-on: ubuntu-latest
