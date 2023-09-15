@@ -212,7 +212,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-1_amd64.deb"
+                  asset_path: "./artifacts/kchat-desktop_${{ github.ref_name }}-1_amd64.deb"
                   asset_name: "kchat-desktop_${{ github.ref_name }}-1_amd64.deb"
                   asset_content_type: application/octet-stream
             - name: upload artifact linux arm64 deb
@@ -221,7 +221,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-1_arm64.deb"
+                  asset_path: "./artifacts/kchat-desktop_${{ github.ref_name }}-1_arm64.deb"
                   asset_name: "kchat-desktop_${{ github.ref_name }}-1_arm64.deb"
                   asset_content_type: application/octet-stream
 
