@@ -145,7 +145,7 @@ jobs:
             - create-release
             - build-mac
             # - build-msi-installer
-            # - build-linux
+            - build-linux
         steps:
             - name: release/download-builds
               uses: actions/download-artifact@v3
@@ -169,6 +169,51 @@ jobs:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
                   asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-mac-x64.dmg"
                   asset_name: "kchat-desktop-${{ github.ref_name }}-mac-x64.dmg"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact linux x86_64 AppImage
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-x86_64.AppImage"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-x86_64.AppImage"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact linux arm64 AppImage
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-arm64.AppImage"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-arm64.AppImage"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact linux x86_64 rpm
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-x86_64.rpm"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-x86_64.rpm"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact linux aarch64 rpm
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-aarch64.rpm"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-aarch64.rpm"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact linux amd64 deb
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-1_amd64.deb"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-1_amd64.deb"
                   asset_content_type: application/octet-stream
 
     #upload-to-s3:
