@@ -9,6 +9,8 @@ on:
 jobs:
     create-release:
         runs-on: ubuntu-latest
+        outputs:
+            output_url: ${{ steps.create_release.outputs.upload_url }}
         steps:
             - name: release/checkout-repo
               uses: actions/checkout@v3
@@ -22,8 +24,6 @@ jobs:
                   release_name: ${{ github.ref }}
                   draft: false
                   prerelease: false
-              outputs:
-                  output_url: ${{ steps.create_release.outputs.upload_url }}
 
     # build-mac:
     #     runs-on: macos-latest
