@@ -145,7 +145,7 @@ jobs:
             - create-release
             - build-mac
             #   - build-msi-installer
-            - build-linux
+            # - build-linux
         steps:
             - name: release/download-builds
               uses: actions/download-artifact@v3
