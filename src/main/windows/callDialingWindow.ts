@@ -4,14 +4,14 @@
 import {BrowserWindow, ipcMain} from 'electron';
 import log from 'electron-log';
 
-import Config from 'common/config';
-
 import {getLocalPreload, getLocalURLString} from '../utils';
 import {CALLS_JOINED_CALL} from 'common/communication';
 
 export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools: boolean, callInfo) {
     const preload = getLocalPreload('callDial.js');
-    const spellcheck = (typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker);
+    const mainSession = mainWindow.webContents.session;
+
+    //const spellcheck = (typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker);
     const callDialWindow = new BrowserWindow({
         width: 267,
         height: 267,
@@ -25,7 +25,7 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
         fullscreenable: false,
         webPreferences: {
             preload,
-            partition: 'persist:main',
+            session: mainSession,
             nodeIntegration: true,
             contextIsolation: false},
     });

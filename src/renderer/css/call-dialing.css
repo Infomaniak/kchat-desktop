@@ -19,7 +19,7 @@ div.actions {
     flex-wrap: wrap;
     gap: 16px;
     justify-content: center;
-    
+
 }
 div.content-body {
     display: flex;
@@ -45,7 +45,7 @@ div.content-calling-info {
     color: #666666;
     font-size: 14px;
     padding-top: 8px;
-    
+
 }
 div.avatars {
     justify-content: center;
@@ -73,10 +73,10 @@ h6.grey {
     color: #666666;
 }
 button.accept {
-    background: var(--blue);
-} 
+    background: #0098ff;
+}
 button.decline {
-    background: var(--red);
+    background: #F44336;
 }
 .avatar {
     border-radius: 50%;

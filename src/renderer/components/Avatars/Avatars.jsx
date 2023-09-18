@@ -32,30 +32,9 @@ type Props = {
 function Avatars({
     size,
     users,
-    totalUsers,
-    fetchMissingUsers = false,
 }: Props) {
     console.log(users, Object.keys(users));
-    const [displayUserIds, _, {__, nonDisplayCount}] = countMeta(Object.keys(users), Object.keys(users).length);
-
-    // const [overlayProps, setImmediate] = useSynchronizedImmediate();
-
-    // const overflowNames = useSelector((state: GlobalState) => {
-    //     return overflowUserIds.map((userId) => displayNameGetter(state, true)(selectUser(state, userId))).join(', ');
-    // });
-
-    // const {centerChannelBg, centerChannelColor} = useSelector(getTheme);
-
-    // const avatarStyle: CSSProperties = useMemo(() => ({
-    //     background: tinycolor.mix(centerChannelBg, centerChannelColor, 8).toRgbString(),
-    // }), [centerChannelBg, centerChannelColor]);
-
-    // useEffect(() => {
-    //     if (fetchMissingUsers) {
-    //         dispatch(getMissingProfilesByIds(userIds));
-    //     }
-    // }, [fetchMissingUsers, userIds]);
-
+    const [displayUserIds,, {__, nonDisplayCount}] = countMeta(Object.keys(users), Object.keys(users).length);
     return (
         <div
             className='avatars'
@@ -63,44 +42,16 @@ function Avatars({
         >
             {displayUserIds.map((id) => (
                 <Avatar
-
-                    // style={{background: '#FFF'}}
                     key={id}
                     name={users[id].nickname}
                     userId={id}
                     size={size}
                     tabIndex={0}
-                    image={users[id].picture}
+                    image={users[id].avatar}
                 />
             ))}
             {Boolean(nonDisplayCount) && (
-
-            // <SimpleTooltip
-            //     id={'names-overflow'}
-            //     {...overlayProps}
-            //     content={overflowUserIds.length ? formatMessage(
-            //         {
-            //             id: t('avatars.overflowUsers'),
-            //             defaultMessage: '{overflowUnnamedCount, plural, =0 {{names}} =1 {{names} and one other} other {{names} and # others}}',
-            //         },
-            //         {
-            //             overflowUnnamedCount,
-            //             names: overflowNames,
-            //         },
-            //     ) : formatMessage(
-            //         {
-            //             id: t('avatars.overflowUnnamedOnly'),
-            //             defaultMessage: '{overflowUnnamedCount, plural, =1 {one other} other {# others}}',
-            //         },
-            //         {overflowUnnamedCount},
-            //     )}
-            // >
-            //     {/*  */}
-            // </SimpleTooltip>
-
                 <Avatar
-
-                    // style={{background: '#FFF'}}
                     size={size}
                     tabIndex={0}
                     name={nonDisplayCount > OTHERS_DISPLAY_LIMIT ? `${OTHERS_DISPLAY_LIMIT}+` : `+${nonDisplayCount}`}
