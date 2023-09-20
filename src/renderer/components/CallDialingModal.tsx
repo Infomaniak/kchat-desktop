@@ -6,28 +6,35 @@
 import {Button} from 'react-bootstrap';
 import React from 'react';
 
-import {CALL_JOINED} from 'common/communication';
+import {CALLS_JOINED_CALL, CALL_DECLINED, CALL_JOINED} from 'common/communication';
 
-import Avatar from './Avatar';
+import {playSoundLoop} from 'renderer/notificationSounds';
+
 import Avatars from './Avatars/Avatars';
 
 type State = {
     callInfo: {
-        users: any[];
+        users: UserProfile[];
         channelID: string;
-        userCalling: string;
-        channel: any;
+        url: string;
+        avatar: string;
+        id: string;
+        nicknames: string;
+        toneTimeOut: number;
     } | void;
+    trad: string;
 }
-
+export type UserProfile = {
+    nickname: string;
+};
 export default class DialingModal extends React.PureComponent<Record<string, never>, State> {
     // callInfo: any;
-
     constructor(props: Record<string, never>) {
         super(props);
 
         this.state = {
             callInfo: undefined,
+            trad: '',
         };
 
         this.onHandleAccept = this.onHandleAccept.bind(this);
@@ -36,70 +43,77 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
 
     componentDidMount() {
         window.ipcRenderer.on('info-received', (_, msg) => {
-            this.setState({callInfo: msg});
+            // this.setState({callInfo: msg, trad: localizeMessage('Call.dialing', 'is Calling')});
+            this.setState({callInfo: msg, trad: 'is Calling'});
         });
+        playSoundLoop('Ring');
+        setTimeout(() => {
+            window.ipcRenderer.send(CALLS_JOINED_CALL);
+        }, 30000);
     }
 
     onHandleDecline() {
         const {callInfo} = this.state;
-
-        window.ipcRenderer.send('decline-call', callInfo);
+        window.ipcRenderer.send(CALL_DECLINED, callInfo);
         window.close();
     }
 
     onHandleAccept() {
         const {callInfo} = this.state;
-
         window.ipcRenderer.send(CALL_JOINED, callInfo);
         window.close();
     }
 
+    getUsersNicknames = (users: UserProfile[]): string => {
+        const nicknames = users.map((user) => user.nickname);
+
+        if (users.length > 2) {
+            return [...nicknames.slice(0, 2), '...'].join(', ');
+        }
+
+        return nicknames.join(', ');
+    };
+
     render() {
         const {callInfo} = this.state;
-
         if (!callInfo) {
             return null;
         }
-
-        console.log(callInfo);
         return (
             <div className='container'>
-                <div className='avatars'>
+
+                <div className='content-body'>
                     <Avatars
                         users={callInfo.users}
-                        size='xl' />
-                    {/* {callInfo.users.map((user) => (
-                    ))} */}
+                        size='lg'
+                        totalUsers={callInfo.users.length}
+
+                    />
+
                 </div>
-                <h6
-                    style={{
-                        alignSelf: 'center',
-                        paddingTop: 10,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        maxWidth: '200px',
-                    }}
-                >{callInfo.channel.display_name}</h6>
-                <h6
-                    className='grey'
-                    style={{fontSize: 12}}
-                >{'🎧 incoming call'}</h6>
+                <div className='content-calling'>
+                    <div className='content-calling-user'>
+                        <span >{this.getUsersNicknames(callInfo.users)}</span>
+                    </div>
+                    <div className='content-calling-info'>
+                        {this.state.trad}
+                    </div>
+                </div>
                 <div className='actions'>
                     <Button
                         className='decline'
-                        size='lg'
+                        size='sm'
                         onClick={this.onHandleDecline}
-                        variant='link'
+                        variant='danger'
                         style={{fontSize: 14}}
                     >
                         <span>{'Decline'}</span>
                     </Button>
                     <Button
                         className='accept'
-                        size='lg'
+                        size='sm'
                         onClick={this.onHandleAccept}
-                        variant='link'
+                        variant='primary'
                         style={{fontSize: 14}}
                     >
                         <span>{'Accept'}</span>

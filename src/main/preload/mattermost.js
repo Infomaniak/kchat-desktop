@@ -55,7 +55,9 @@ import {
     SERVER_DELETED,
     RESET_AUTH,
     RESET_TEAMS,
+    CALL_DECLINED,
 } from 'common/communication';
+import windowManager, {WindowManager} from 'main/windows/windowManager';
 
 const UNREAD_COUNT_INTERVAL = 1000;
 const CLEAR_CACHE_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours
@@ -96,6 +98,10 @@ contextBridge.exposeInMainWorld('authManager', {
     },
 });
 
+contextBridge.exposeInMainWorld('callManager', {
+    onCallJoined: (callback) => ipcRenderer.on(CALL_JOINED, callback),
+    onCallDeclined: (callback) => ipcRenderer.on(CALL_DECLINED, callback),
+});
 ipcRenderer.invoke('get-app-version').then(({name, version}) => {
     appVersion = version;
     appName = name;

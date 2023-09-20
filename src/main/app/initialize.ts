@@ -319,10 +319,18 @@ function initializeAfterAppReady() {
     defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
         (d, c) => {
             if (d.url.includes('/token') && d.responseHeaders) {
-                d.responseHeaders['Access-Control-Allow-Origin'] = ['https://kchat.infomaniak.com'];
-                d.responseHeaders['Access-Control-Allow-Credentials'] = ['true'];
-                d.responseHeaders['Access-Control-Allow-Headers'] = ['X-Requested-With, Authorization', 'Webapp-Version'];
-                d.responseHeaders['Access-Control-Allow-Methods'] = ['GET, POST, OPTIONS, PUT, DELETE'];
+                if (!d.responseHeaders['access-control-allow-origin']) {
+                    d.responseHeaders['access-control-allow-origin'] = ['https://kchat.infomaniak.com'];
+                }
+                if (!d.responseHeaders['access-control-allow-credentials']) {
+                    d.responseHeaders['access-control-allow-credentials'] = ['true'];
+                }
+                if (!d.responseHeaders['access-control-allow-headers']) {
+                    d.responseHeaders['access-control-allow-headers'] = ['X-Requested-With, Authorization', 'Webapp-Version'];
+                }
+                if (!d.responseHeaders['access-control-allow-methods']) {
+                    d.responseHeaders['access-control-allow-methods'] = ['GET, POST, OPTIONS, PUT, DELETE'];
+                }
             }
 
             c({

@@ -63,7 +63,7 @@ module.exports = merge(base, {
         }),
         new HtmlWebpackPlugin({
             title: '🔉',
-            template: 'src/renderer/index.html',
+            template: 'src/renderer/call-dialing.html',
             chunks: ['callDialing'],
             filename: 'callDialing.html',
         }),

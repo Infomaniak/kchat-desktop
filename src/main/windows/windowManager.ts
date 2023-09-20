@@ -4,7 +4,7 @@
 /* eslint-disable max-lines */
 import path from 'path';
 
-import {app, BrowserWindow, nativeImage, systemPreferences, ipcMain, IpcMainEvent, IpcMainInvokeEvent, desktopCapturer} from 'electron';
+import {app, BrowserWindow, nativeImage, systemPreferences, ipcMain, IpcMainEvent, IpcMainInvokeEvent, desktopCapturer, shell} from 'electron';
 import log from 'electron-log';
 
 import {
@@ -28,8 +28,6 @@ import {
     APP_LOGGED_OUT,
     BROWSER_HISTORY_BUTTON,
     CALL_JOINED,
-    CALL_CLOSED,
-    WINDOW_WILL_UNLOADED,
     DISPATCH_GET_DESKTOP_SOURCES,
     DESKTOP_SOURCES_RESULT,
     RELOAD_CURRENT_VIEW,
@@ -47,6 +45,7 @@ import {
     SERVER_DELETED,
     RESET_AUTH,
     RESET_TEAMS,
+    CALL_DECLINED,
 } from 'common/communication';
 import urlUtils from 'common/utils/url';
 import {SECOND} from 'common/utils/constants';
@@ -135,6 +134,7 @@ export class WindowManager {
         ipcMain.on(APP_LOGGED_IN, this.handleAppLoggedIn);
         ipcMain.on(APP_LOGGED_OUT, this.handleAppLoggedOut);
         ipcMain.on(CALL_JOINED, this.handleCallJoined);
+        ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(GET_VIEW_NAME, this.handleGetViewName);
         ipcMain.handle(GET_VIEW_WEBCONTENTS_ID, this.handleGetWebContentsId);
@@ -604,9 +604,7 @@ export class WindowManager {
             this.viewManager.load();
             this.viewManager.showInitial();
 
-            TokenManager.load().finally((r) => {
-                this.initializeCurrentServerName();
-            });
+            TokenManager.load().finally(() => this.initializeCurrentServerName());
         }
     }
 
@@ -863,72 +861,23 @@ export class WindowManager {
         }
     }
 
-    handleCallDialing = (event: IpcMainEvent, message, viewName: string) => {
+    handleCallDialing = (_: IpcMainEvent, message: any) => {
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
-
-        // this.dialingWindow = createCallDialingWindow(this.mainWindow!, withDevTools);
         createCallDialingWindow(this.mainWindow!, withDevTools, message.calling);
     }
 
-    handleCallJoined = (event: IpcMainEvent, message, viewName: string) => {
-        if (this.callWindow) {
-            this.callWindow.show();
-        } else {
-            // if (!this.mainWindow) {
-            //     this.showMainWindow();
-            // }
+    handleCallDeclined = (_: IpcMainEvent, message: unknown) =>
+        windowManager.sendToMattermostViews(CALL_DECLINED, message);
 
-            // const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
+    handleCallJoined = (_: IpcMainEvent, message: any) => {
+        //TODO: kMeet integration V2 => open call in a new window.
+        //remove shell.openExternal and uncomment code below.
+        shell.openExternal(message.url);
 
-            // this.callWindow = createCallWindow(this.mainWindow!, withDevTools, message.id, message.url, message.name, message.avatar, message.username);
-            // initPopupsConfigurationMain(this.callWindow);
-            // setupScreenSharingMain(this.callWindow, 'kChat', 'com.infomaniak.kchat');
-            // setupAlwaysOnTopMain(this.callWindow);
-            // setupPowerMonitorMain(this.callWindow);
-
-            // // setupScreenSharingMain(mainWindow, config.default.appName, pkgJson.build.appId);
-            // ipcMain.on(CALL_CLOSED, () => {
-            //     if (this.callWindow?.close) {
-            //         this.callWindow.close();
-            //     }
-            //     this.callWindow = undefined;
-            // });
-
-            // ipcMain.on('call-focus', () => {
-            //     this.callWindow?.focus();
-            // });
-
-            // ipcMain.on('call-audio-status-change', (_, status) => {
-            //     const currentView = this.viewManager?.views.get(viewName);
-            //     currentView?.view.webContents.send('call-audio-status-change', status.muted);
-            // });
-
-            // ipcMain.on('call-video-status-change', (_, status) => {
-            //     const currentView = this.viewManager?.views.get(viewName);
-            //     currentView?.view.webContents.send('call-video-status-change', status.muted);
-            // });
-
-            // ipcMain.on('call-ss-status-change', (_, status) => {
-            //     const currentView = this.viewManager?.views.get(viewName);
-            //     currentView?.view.webContents.send('call-ss-status-change', status.on);
-            // });
-
-            // ipcMain.on(WINDOW_WILL_UNLOADED, () => {
-            //     if (this.callWindow) {
-            //         this.callWindow.focus();
-            //         if (this.callWindow.close) {
-            //             this.callWindow.close();
-            //         }
-            //         delete this.callWindow;
-            //     }
-            // });
-
-            // this.callWindow.on('closed', () => {
-            //     delete this.callWindow;
-            //     const currentView = this.viewManager?.views.get(viewName);
-            //     currentView?.view.webContents.send(CALL_CLOSED, message.id);
-            // });
-        }
+        /*const withDevTools = true;
+        this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
+        this.callWindow.loadURL(message.url);
+        windowManager.sendToMattermostViews(CALL_JOINED, message);*/
     }
 
     handleAppLoggedOut = (event: IpcMainEvent, viewName: string) => {

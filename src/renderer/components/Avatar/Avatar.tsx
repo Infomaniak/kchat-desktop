@@ -107,6 +107,7 @@ const Avatar = (props: PAvatar): JSX.Element => {
         width: AVATAR_SIZE_MAP[size].size,
         height: AVATAR_SIZE_MAP[size].size,
         borderRadius: '50%',
+        border: 'solid',
     };
 
     return (

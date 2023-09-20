@@ -5,38 +5,78 @@ html, body, body > div {
     height: 100%;
 }
 .container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    max-width: 270px;
+    height: 267px;
+    width: 267px;
+    padding: 16px;
+    overflow: hidden;
+    padding-top: 32px;
 }
 div.actions {
+    padding: 0;
+    padding-top: 15px;
     display: flex;
-    justify-content: space-around;
-    margin-top: auto;
-    padding-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+
+}
+div.content-body {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 8px;
+    margin-left: 12px;
+}
+div.content-calling {
+    text-align: center;
+    padding: 8px;
+}
+div.content-calling-user {
+    color: #333333;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 200px;
+    font-size: 14px;
+    margin-left: 8px;
+}
+div.content-calling-info {
+    color: #666666;
+    font-size: 14px;
+    padding-top: 8px;
+
 }
 div.avatars {
     justify-content: center;
     align-items: center;
     display: flex;
-    padding-top: 25%;
+    padding-top: 30px;
+    margin-left: 6px;
+}
+
+.AvatarRoot {
+    position: relative;
+    z-index: 0;
+    margin-left: -12px;
+
 }
 button {
+    flex: auto;
+    min-height: 44px;
+    min-width: 66px;
     color: white !important;
 }
-button span {
-    font-weight: 400;
-    font-size: 14px;
-}
+
 h6.grey {
     align-self: center;
     color: #666666;
 }
 button.accept {
-    background: var(--blue);
-} 
+    background: #0098ff;
+}
 button.decline {
-    background: var(--red);
+    background: #F44336;
 }
 .avatar {
     border-radius: 50%;
