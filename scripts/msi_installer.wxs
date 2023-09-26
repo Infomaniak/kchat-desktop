@@ -76,11 +76,11 @@
             </Component>
             <Directory Id="GPOFiles" Name="gpo">
               <Component Id="GPODefinitionFile" Guid="BE30D350-8727-41CB-9F8D-9E0B7B9572A9" Win64="$(var.Win64)">
-                <File Id="kChatAdmxFile" Name="kChat.admx" Source="../resources/windows/gpo/kChat.admx" KeyPath="yes" />
+                <File Id="MattermostAdmxFile" Name="mattermost.admx" Source="../resources/windows/gpo/mattermost.admx" KeyPath="yes" />
               </Component>
               <Directory Id="GPOUSEnglishFiles" Name="en-US">
                 <Component Id="GPOUSEnglishFiles" Guid="1D49A24E-769C-4AF0-863E-0648628A4554" Win64="$(var.Win64)">
-                  <File Id="kChatAdmlFile" Name="kChat.adml" Source="../resources/windows/gpo/en-US/kChat.adml" KeyPath="yes" />
+                  <File Id="MattermostAdmlFile" Name="mattermost.adml" Source="../resources/windows/gpo/en-US/mattermost.adml" KeyPath="yes" />
                 </Component>
               </Directory>
             </Directory>
