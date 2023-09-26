@@ -5,6 +5,10 @@ on:
         tags:
             - "[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]"
             - "[0-9]+.[0-9]+.[0-9]+-beta.[0-9]"
+
+env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
     create-release:
         runs-on: ubuntu-latest
@@ -16,8 +20,6 @@ jobs:
             - name: Create Release
               id: create_release
               uses: actions/create-release@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   tag_name: ${{ github.ref }}
                   release_name: ${{ github.ref }}
@@ -170,8 +172,6 @@ jobs:
                   path: ./artifacts
             - name: upload artifact mac arm64
               uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
                   asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-mac-arm64.dmg"
@@ -179,8 +179,6 @@ jobs:
                   asset_content_type: application/octet-stream
             - name: upload artifact mac x64
               uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
                   asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-mac-x64.dmg"
@@ -188,8 +186,6 @@ jobs:
                   asset_content_type: application/octet-stream
             - name: upload artifact linux x86_64 AppImage
               uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
                   asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-x86_64.AppImage"
@@ -197,8 +193,6 @@ jobs:
                   asset_content_type: application/octet-stream
             - name: upload artifact linux arm64 AppImage
               uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
                   asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-arm64.AppImage"
@@ -206,8 +200,6 @@ jobs:
                   asset_content_type: application/octet-stream
             - name: upload artifact linux x86_64 rpm
               uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
                   asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-x86_64.rpm"
@@ -215,8 +207,6 @@ jobs:
                   asset_content_type: application/octet-stream
             - name: upload artifact linux aarch64 rpm
               uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
                   asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-aarch64.rpm"
@@ -224,8 +214,6 @@ jobs:
                   asset_content_type: application/octet-stream
             - name: upload artifact linux amd64 deb
               uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
                   asset_path: "./artifacts/kchat-desktop_${{ github.ref_name }}-1_amd64.deb"
@@ -233,8 +221,6 @@ jobs:
                   asset_content_type: application/octet-stream
             - name: upload artifact linux arm64 deb
               uses: actions/upload-release-asset@v1
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
                   asset_path: "./artifacts/kchat-desktop_${{ github.ref_name }}-1_arm64.deb"
