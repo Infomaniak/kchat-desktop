@@ -148,13 +148,13 @@ jobs:
                 ./scripts/Makefile.ps1 build
             - name: nightly/package
               run: |
-                mkdir -p ./build/win-release
-                bash -x ./scripts/cp_artifacts.sh release ./build/win-release
+                mkdir -p ./artifacts
+                bash -x ./scripts/cp_artifacts.sh release ./artifacts
             - name: release/upload-build
               uses: actions/upload-artifact@v3
               with:
                   name: artifacts
-                  path: ./build
+                  path: ./artifacts
                   retention-days: 1
 
     upload-to-github:
@@ -188,21 +188,21 @@ jobs:
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./build/win-release/kchat-desktop-setup-${{ github.ref_name }}-win.exe"
+                  asset_path: "./artifacts/kchat-desktop-setup-${{ github.ref_name }}-win.exe"
                   asset_name: "kchat-desktop-setup-${{ github.ref_name }}-win.exe"
                   asset_content_type: application/octet-stream
-            - name: upload artifact win msi
+            - name: upload artifact win msi x64
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./build/win-release/kchat-desktop-${{ github.ref_name }}-x64.msi"
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-x64.msi"
                   asset_name: "kchat-desktop-${{ github.ref_name }}-x64.msi"
                   asset_content_type: application/octet-stream
-            - name: upload artifact win msi
+            - name: upload artifact win msi x86
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./build/win-release/kchat-desktop-${{ github.ref_name }}-x86.msi"
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-x86.msi"
                   asset_name: "kchat-desktop-${{ github.ref_name }}-x86.msi"
                   asset_content_type: application/octet-stream
             - name: upload artifact linux x86_64 AppImage
