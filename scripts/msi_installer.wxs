@@ -26,7 +26,7 @@
   <?define ProgramFilesVersion = "ProgramFilesFolder" ?>
   <?define ReleaseDir = "../release/win-ia32-unpacked" ?>
   <?endif ?>
-  <!-- 
+  <!--
   The product GUID must not be changed except when:
   - the old and new versions have to coexist on the user's computer
   - the .msi filename change for any reason
@@ -114,7 +114,7 @@
       <!-- Using heat to generate file and directory hierarchy
            src.: https://stackoverflow.com/a/26558025/3514658
       -->
-      <ComponentGroupRef Id="kChatDesktopFiles" />
+      <ComponentGroupRef Id="MattermostDesktopFiles" />
       <ComponentRef Id="MainExecutableShortcutDesktop" />
       <ComponentRef Id="MainExecutableShortcutStartMenu" />
       <ComponentRef Id="ProgramMenuDir" />
@@ -137,7 +137,7 @@
     <Property Id="ARPURLINFOABOUT">https://mattermost.com/</Property>
     <!--
       Next line will be added by `Makefile.ps1`, leaving it here for reference, as it will be added before constructing the MSI
-      <Property Id="ComponentDownload">https://releases.mattermost.com/desktop/0.0.0/mattermost-desktop-0.0.0-$(var.Platform).msi</Property> 
+      <Property Id="ComponentDownload">https://releases.mattermost.com/desktop/0.0.0/mattermost-desktop-0.0.0-$(var.Platform).msi</Property>
     -->
     <Property Id="ADDDESKTOPSHORTCUT">true</Property>
     <Property Id="ADDSTARTMENUSHORTCUT">true</Property>
