@@ -171,6 +171,7 @@ jobs:
                   name: artifacts
                   path: ./artifacts
             - name: upload artifact mac arm64
+              continue-on-error: true
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
@@ -178,6 +179,7 @@ jobs:
                   asset_name: "kchat-desktop-${{ github.ref_name }}-mac-arm64.dmg"
                   asset_content_type: application/octet-stream
             - name: upload artifact mac x64
+              continue-on-error: true
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
@@ -185,6 +187,7 @@ jobs:
                   asset_name: "kchat-desktop-${{ github.ref_name }}-mac-x64.dmg"
                   asset_content_type: application/octet-stream
             - name: upload artifact win exe
+              continue-on-error: true
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
@@ -192,6 +195,7 @@ jobs:
                   asset_name: "kchat-desktop-setup-${{ github.ref_name }}-win.exe"
                   asset_content_type: application/octet-stream
             - name: upload artifact win msi x64
+              continue-on-error: true
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
@@ -199,6 +203,7 @@ jobs:
                   asset_name: "kchat-desktop-${{ github.ref_name }}-x64.msi"
                   asset_content_type: application/octet-stream
             - name: upload artifact win msi x86
+              continue-on-error: true
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
@@ -206,6 +211,7 @@ jobs:
                   asset_name: "kchat-desktop-${{ github.ref_name }}-x86.msi"
                   asset_content_type: application/octet-stream
             - name: upload artifact linux x86_64 AppImage
+              continue-on-error: true
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
@@ -213,6 +219,7 @@ jobs:
                   asset_name: "kchat-desktop-${{ github.ref_name }}-linux-x86_64.AppImage"
                   asset_content_type: application/octet-stream
             - name: upload artifact linux arm64 AppImage
+              continue-on-error: true
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
@@ -220,6 +227,7 @@ jobs:
                   asset_name: "kchat-desktop-${{ github.ref_name }}-linux-arm64.AppImage"
                   asset_content_type: application/octet-stream
             - name: upload artifact linux x86_64 rpm
+              continue-on-error: true
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
@@ -227,6 +235,7 @@ jobs:
                   asset_name: "kchat-desktop-${{ github.ref_name }}-linux-x86_64.rpm"
                   asset_content_type: application/octet-stream
             - name: upload artifact linux aarch64 rpm
+              continue-on-error: true
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
@@ -234,6 +243,7 @@ jobs:
                   asset_name: "kchat-desktop-${{ github.ref_name }}-linux-aarch64.rpm"
                   asset_content_type: application/octet-stream
             - name: upload artifact linux amd64 deb
+              continue-on-error: true
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
@@ -241,6 +251,7 @@ jobs:
                   asset_name: "kchat-desktop_${{ github.ref_name }}-1_amd64.deb"
                   asset_content_type: application/octet-stream
             - name: upload artifact linux arm64 deb
+              continue-on-error: true
               uses: actions/upload-release-asset@v1
               with:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
