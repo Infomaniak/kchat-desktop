@@ -25,19 +25,19 @@ if [[ -f "${SRC}/kchat-desktop-${VERSION}-win-arm64.zip" ]]; then
     cp "${SRC}/kchat-desktop-${VERSION}-win-arm64.zip" "${DEST}/kchat-desktop-${VERSION}-arm64.zip"
     SOMETHING_COPIED=$((SOMETHING_COPIED + 2))
 fi
-if [[ ${MM_WIN_INSTALLERS-0} -eq 1 && -f "${SRC}/kchat-desktop-setup-${VERSION}-win.exe" ]]; then
+if [[ -f "${SRC}/kchat-desktop-setup-${VERSION}-win.exe" ]]; then
     echo -e "Copying win-no-arch\n"
-    cp "${SRC}/kchat-desktop-setup-${VERSION}-win.exe" "${DEST}/"
+    cp "${SRC}/kchat-desktop-setup-${VERSION}-win.exe" "${DEST}/kchat-desktop-setup-${VERSION}-win.exe"
     SOMETHING_COPIED=$((SOMETHING_COPIED + 3))
 fi
-if [[ ${MM_WIN_INSTALLERS-0} -eq 1 && -f "${SRC}/kchat-desktop-${VERSION}-x64.msi" ]]; then
+if [[ -f "${SRC}/kchat-desktop-${VERSION}-x64.msi" ]]; then
     echo -e "Copying win-msi-x64\n"
-    cp "${SRC}/kchat-desktop-${VERSION}-x64.msi" "${DEST}/"
+    cp "${SRC}/kchat-desktop-${VERSION}-x64.msi" "${DEST}/kchat-desktop-${VERSION}-x64.msi"
     SOMETHING_COPIED=$((SOMETHING_COPIED + 4))
 fi
-if [[ ${MM_WIN_INSTALLERS-0} -eq 1 && -f "${SRC}/kchat-desktop-${VERSION}-x86.msi" ]]; then
+if [[ -f "${SRC}/kchat-desktop-${VERSION}-x86.msi" ]]; then
     echo -e "Copying win-msi-x86\n"
-    cp "${SRC}/kchat-desktop-${VERSION}-x86.msi" "${DEST}/"
+    cp "${SRC}/kchat-desktop-${VERSION}-x86.msi" "${DEST}/kchat-desktop-${VERSION}-x86.msi"
     SOMETHING_COPIED=$((SOMETHING_COPIED + 5))
 fi
 
