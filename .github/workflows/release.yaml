@@ -162,7 +162,7 @@ jobs:
         needs:
             - create-release
             - build-mac
-            # - build-msi-installer
+            - build-msi-installer
             - build-linux
         steps:
             - name: release/download-builds
@@ -183,6 +183,27 @@ jobs:
                   upload_url: ${{ needs.create-release.outputs.output_url }}
                   asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-mac-x64.dmg"
                   asset_name: "kchat-desktop-${{ github.ref_name }}-mac-x64.dmg"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact win exe
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./build/win-release/kchat-desktop-setup-${{ github.ref_name }}-win.exe"
+                  asset_name: "kchat-desktop-setup-${{ github.ref_name }}-win.exe"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact win msi
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./build/win-release/kchat-desktop-${{ github.ref_name }}-x64.msi"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-x64.msi"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact win msi
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./build/win-release/kchat-desktop-${{ github.ref_name }}-x86.msi"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-x86.msi"
                   asset_content_type: application/octet-stream
             - name: upload artifact linux x86_64 AppImage
               uses: actions/upload-release-asset@v1
