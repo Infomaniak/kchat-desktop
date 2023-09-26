@@ -97,7 +97,7 @@ export function composeUserAgent() {
     // filter out the Mattermost tag that gets added earlier on
     const filteredUserAgent = baseUserAgent.filter((ua) => !ua.startsWith('Mattermost'));
 
-    return `${filteredUserAgent.join(' ')} Mattermost/${app.getVersion()}`;
+    return `${filteredUserAgent.join(' ')} Mattermost/2.1.0 kChat/2.1.0`;
 }
 
 export function isStringWithLength(string: unknown): boolean {
@@ -139,7 +139,7 @@ export function shouldIncrementFilename(filepath: string, increment = 0): string
 
 const logsPath = {
     darwin: `${app.getPath('home')}/Library/Logs/kChat/`,
-    win32: `${app.getPath('appData')}/Roaming/kChat/logs/`,
+    win32: `${app.getPath('appData')}/kChat/logs/`,
     linux: `${app.getPath('home')}/kChat/logs/`,
 };
 
