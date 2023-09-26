@@ -163,7 +163,7 @@ function Check-Deps {
     if ([string]::IsNullOrEmpty($(Get-NpmDir)) -or
         # We could have used the builtin Test-Path cmdlet instead but it is
         # tested for folders as well. We need to test for a file existence
-        # here.  
+        # here.
         ![System.IO.File]::Exists("$(Get-NpmDir)\npm.cmd") -or
         ![System.IO.File]::Exists("$(Get-NpmDir)\node.exe")) {
             if ($verbose) { Print-Error "nodejs/npm dependency missing." }
@@ -192,7 +192,7 @@ function Check-Deps {
     }
 
     if ($throwable -and $missing.Count -gt 0) {
-        throw "com.mattermost.makefile.deps.missing"
+        throw "com.infomaniak.makefile.deps.missing"
     }
 
     return $missing
@@ -207,7 +207,7 @@ function Install-Deps {
     }
 
     if (-not (Is-Admin)) {
-        throw "com.mattermost.makefile.deps.notadmin"
+        throw "com.infomaniak.makefile.deps.notadmin"
     }
 
     foreach ($missingItem in $missing) {
@@ -262,7 +262,7 @@ function Install-Wix {
     # todo: check hash
     .\scripts\wix.exe -q
     if ($LastExitCode -ne $null) {
-        throw "com.mattermost.makefile.deps.wix"
+        throw "com.infomaniak.makefile.deps.wix"
     }
     Print-Info "wixtoolset installed!"
 }
@@ -440,7 +440,7 @@ function Run-BuildId {
     Print " [$env:COM_MATTERMOST_MAKEFILE_BUILD_DATE]"
 
     # Generate build version ids
-    # 
+    #
     # nodejs/npm does require to have semver parsable versions:
     # major.minor.patch
     # Non number values are allowed only if they are not starting the dot verion.
@@ -478,7 +478,7 @@ function Run-BuildId {
     [version]$appVersion = New-Object -TypeName System.Version
     [void][version]::TryParse($winVersion, [ref]$appVersion)
     if (!($appVersion)) {
-        # if we couldn't parse, it might be a -develop or something similar, so we just add a 
+        # if we couldn't parse, it might be a -develop or something similar, so we just add a
         # number there that will change overtime. Most likely this is a PR to be tested
         $revision = "$(git rev-list --all --count)"
         $winVersion = "$($version -Replace '-.*').${revision}"
@@ -501,16 +501,16 @@ function Run-BuildId {
     $env:COM_MATTERMOST_MAKEFILE_BUILD_ID_NODE = $version
     Print " [$env:COM_MATTERMOST_MAKEFILE_BUILD_ID_NODE]"
 
-    Print-Info "Patching version from msi xml descriptor..."
-    $msiDescriptorFileName = "scripts\msi_installer.wxs"
-    $msiDescriptor = [xml](Get-Content $msiDescriptorFileName)
-    $msiDescriptor.Wix.Product.Version = [string]$env:COM_MATTERMOST_MAKEFILE_BUILD_ID_MSI
-    $ComponentDownload = $msiDescriptor.CreateElement("Property", "http://schemas.microsoft.com/wix/2006/wi")
-    $ComponentDownload.InnerText = "https://releases.mattermost.com/desktop/$version/kchat-desktop-$version-`$(var.Platform).msi"
-    $ComponentDownload.SetAttribute("Id", "ComponentDownload")
-    $msiDescriptor.Wix.Product.AppendChild($ComponentDownload)
-    $msiDescriptor.Save($msiDescriptorFileName)
-    Print-Info "Modified Wix XML"
+    # Print-Info "Patching version from msi xml descriptor..."
+    # $msiDescriptorFileName = "scripts\msi_installer.wxs"
+    # $msiDescriptor = [xml](Get-Content $msiDescriptorFileName)
+    # $msiDescriptor.Wix.Product.Version = [string]$env:COM_MATTERMOST_MAKEFILE_BUILD_ID_MSI
+    # $ComponentDownload = $msiDescriptor.CreateElement("Property", "http://schemas.microsoft.com/wix/2006/wi")
+    # $ComponentDownload.InnerText = "https://releases.mattermost.com/desktop/$version/kchat-desktop-$version-`$(var.Platform).msi"
+    # $ComponentDownload.SetAttribute("Id", "ComponentDownload")
+    # $msiDescriptor.Wix.Product.AppendChild($ComponentDownload)
+    # $msiDescriptor.Save($msiDescriptorFileName)
+    # Print-Info "Modified Wix XML"
 }
 
 function InstallDeps-Electron {
@@ -734,19 +734,19 @@ function Main {
 
     } catch {
         switch ($_.Exception.Message) {
-            "com.mattermost.makefile.deps.missing" {
+            "com.infomaniak.makefile.deps.missing" {
                 Print-Error "The following dependencies are missing: $($missing -Join ', ').`n    Please install dependencies as an administrator:`n    # makefile.ps1 install-deps"
                 $exitCode = -1
             }
-            "com.mattermost.makefile.deps.notadmin" {
+            "com.infomaniak.makefile.deps.notadmin" {
                 Print-Error "Installing dependencies requires admin privileges. Operation aborted.`n    Please reexecute this makefile as an administrator:`n    # makefile.ps1 install-deps"
                 $exitCode = -2
             }
-            "com.mattermost.makefile.deps.wix" {
+            "com.infomaniak.makefile.deps.wix" {
                 Print-Error "There was nothing wrong with your source code,but we found a problem installing wix toolset and couldn't continue. please try re-running the job."
                 $exitCode = -3
-            }   
-            default {          
+            }
+            default {
                 Print-Error "Another error occurred: $_"
                 $exitCode = -100
             }
