@@ -97,7 +97,7 @@ export function composeUserAgent() {
     // filter out the Mattermost tag that gets added earlier on
     const filteredUserAgent = baseUserAgent.filter((ua) => !ua.startsWith('Mattermost'));
 
-    return `${filteredUserAgent.join(' ')} Mattermost/2.1.0 kChat/2.1.0`;
+    return `${filteredUserAgent.join(' ')} Mattermost/${app.getVersion()}`;
 }
 
 export function isStringWithLength(string: unknown): boolean {
