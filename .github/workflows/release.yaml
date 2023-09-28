@@ -20,7 +20,7 @@ jobs:
             jq --null-input \
             --arg icon_url "https://infomaniak.kchat.infomaniak.com/static/emoji/kchat.png" \
             --arg username "DesktopReleaseBot" \
-            --arg text "[$(jq -r .version package.json)] Release for desktop app started from GitHub, it should take about 30 minutes to complete." \
+            --arg text "[$GITHUB_REF_NAME] Release for desktop app started from GitHub, it should take about 30 minutes to complete." \
             '{"username":$username,"icon_url": $icon_url, "text": $text }' > /tmp/webhook-data.json
             curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOFICATION FAILED! check logs as this will succeed intentionally"
 
@@ -288,6 +288,6 @@ jobs:
             jq --null-input \
             --arg icon_url "https://infomaniak.kchat.infomaniak.com/static/emoji/kchat.png" \
             --arg username "DesktopReleaseBot" \
-            --arg text "$(bash -x scripts/generate_release_post.sh $(jq -r .version package.json))" \
+            --arg text "$(bash -x scripts/generate_release_post.sh $GITHUB_REF_NAME)" \
             '{"username":$username,"icon_url": $icon_url, "text": $text }' > /tmp/webhook-data.json
             curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOFICATION FAILED! check logs as this will succeed intentionally"
