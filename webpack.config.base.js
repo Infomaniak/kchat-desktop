@@ -16,7 +16,6 @@ const {
 const webpack = require('webpack');
 
 const VERSION = childProcess.execSync('git rev-parse --short HEAD').toString();
-const GIT_RELEASE = JSON.stringify(childProcess.execSync('git describe --tags --abbrev=0').toString());
 const isProduction = process.env.NODE_ENV === 'production';
 const isTest = process.env.NODE_ENV === 'test';
 const isRelease = process.env.CIRCLE_BRANCH && process.env.CIRCLE_BRANCH.startsWith('release-');
