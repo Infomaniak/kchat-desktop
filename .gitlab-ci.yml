@@ -1,37 +1,37 @@
-include:
-  - project: 'docker-public/gitlab-ci-dev-scripts'
-    ref: master
-    file: '/sentry-release.yaml'
+# include:
+#   - project: 'docker-public/gitlab-ci-dev-scripts'
+#     ref: master
+#     file: '/sentry-release.yaml'
 
-stages:
-  - release
+# stages:
+#   - release
 
 workflow:
   rules:
     - if: "$CI_COMMIT_TAG =~ /\\-beta.*/"
       variables:
         DEPLOY_VARIABLE: beta
-        SLACK_NOTIFY_CHANNEL: C03BA6564NP
+        NOTIFY_CHANNEL: ${KCHAT_WHOOK_URL}/986f3435-6c53-4648-a86c-33c64fc14daf
     - if: "$CI_COMMIT_TAG =~ /\\-alpha.*/"
       variables:
         DEPLOY_VARIABLE: alpha
-        SLACK_NOTIFY_CHANNEL: C03BA6564NP
+        NOTIFY_CHANNEL: ${KCHAT_WHOOK_URL}/986f3435-6c53-4648-a86c-33c64fc14daf
     - if: "$CI_COMMIT_TAG"
       variables:
         DEPLOY_VARIABLE: stable
-        SLACK_NOTIFY_CHANNEL: C02NHLU88MN
+        NOTIFY_CHANNEL: ${KCHAT_WHOOK_URL}/986f3435-6c53-4648-a86c-33c64fc14daf
     - if: $CI_COMMIT_BRANCH == "master"
       variables:
         DEPLOY_VARIABLE: prodsec
     - when: never
 
-sentry_release:
-  stage: release
-  rules:
-    - if: $DEPLOY_VARIABLE == "beta" || $DEPLOY_VARIABLE == "alpha" || $DEPLOY_VARIABLE == "stable"
-      when: on_success
-      allow_failure: false
-    - when: never
+# sentry_release:
+#   stage: release
+#   rules:
+#     - if: $DEPLOY_VARIABLE == "beta" || $DEPLOY_VARIABLE == "alpha" || $DEPLOY_VARIABLE == "stable"
+#       when: on_success
+#       allow_failure: false
+#     - when: never
 
 # changelog:
 #   stage: release
@@ -45,4 +45,4 @@ sentry_release:
 #       when: on_success
 #     - when: never
 #   script:
-#     - "./release.sh ${GITLAB_API_TOKEN} ${CI_COMMIT_TAG} ${CI_COMMIT_TAG:0:3} ${SLACK_API_TOKEN} ${SLACK_NOTIFY_CHANNEL}"
+#     - "./release.sh ${GITLAB_API_TOKEN} ${CI_COMMIT_TAG} ${CI_COMMIT_TAG:0:3} ${SLACK_API_TOKEN} ${NOTIFY_CHANNEL}"
