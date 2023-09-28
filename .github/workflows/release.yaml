@@ -1,0 +1,260 @@
+name: release-kchat
+
+on:
+    push:
+        tags:
+            - "[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]+"
+            - "[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+"
+
+env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+    create-release:
+        runs-on: ubuntu-latest
+        outputs:
+            output_url: ${{ steps.create_release.outputs.upload_url }}
+        steps:
+            - name: release/checkout-repo
+              uses: actions/checkout@v3
+            - name: Create Release
+              id: create_release
+              uses: actions/create-release@v1
+              with:
+                  tag_name: ${{ github.ref }}
+                  release_name: ${{ github.ref }}
+                  draft: false
+                  prerelease: false
+
+    build-mac:
+        runs-on: macos-latest
+        needs:
+            - create-release
+        steps:
+            - name: release/checkout-repo
+              uses: actions/checkout@v3
+            - name: release/setup-node
+              uses: actions/setup-node@v3
+              with:
+                  node-version-file: "package.json"
+                  cache: "npm"
+                  cache-dependency-path: package-lock.json
+            - name: release/install-dependencies
+              env:
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: |
+                  brew install yq rename
+                  npm ci
+            - name: release/update-version
+              uses: ./.github/actions/version
+            - name: release/test
+              uses: ./.github/actions/test
+            - name: release/build
+              env:
+                  APPLEID: ${{ secrets.APPLEID }}
+                  APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+                  CSC_FOR_PULL_REQUEST: true
+                  CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+                  CSC_LINK: ${{ secrets.CSC_LINK }}
+              run: |
+                  npm run package:mac
+                  mkdir -p ./artifacts
+                  find ./release -type f \( -name "*.dmg" \) -exec cp {} ./artifacts/ \;
+            - name: release/upload-build
+              uses: actions/upload-artifact@v3
+              with:
+                  name: artifacts
+                  path: ./artifacts
+                  retention-days: 1
+
+    build-linux:
+        runs-on: ubuntu-latest
+        needs:
+            - create-release
+        steps:
+            - name: release/checkout-repo
+              uses: actions/checkout@v3
+            - name: release/setup-node
+              uses: actions/setup-node@v3
+              with:
+                  node-version-file: "package.json"
+                  cache: "npm"
+                  cache-dependency-path: package-lock.json
+            - name: release/install-dependencies
+              env:
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: |
+                  wget -qO - https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_22.04/Release.key | sudo apt-key add -
+                  wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 && chmod a+x /usr/local/bin/yq
+                  sudo apt-get update || true && sudo apt-get install -y ca-certificates libxtst-dev libpng++-dev gcc-aarch64-linux-gnu g++-aarch64-linux-gnu jq icnsutils graphicsmagick tzdata
+                  npm ci
+            - name: release/update-version
+              uses: ./.github/actions/version
+            - name: release/test
+              uses: ./.github/actions/test
+            - name: release/build
+              run: |
+                  mkdir -p ./build/linux
+                  npm run package:linux
+                  mkdir -p ./artifacts
+                  find ./release -type f \( -name "*.rpm" -o -name "*.deb" -o -name "*.AppImage" \) -exec cp {} ./artifacts/ \;
+            - name: release/upload-build
+              uses: actions/upload-artifact@v3
+              with:
+                  name: artifacts
+                  path: ./artifacts
+                  retention-days: 1
+
+    build-msi-installer:
+        runs-on: windows-2022
+        needs:
+            - create-release
+        steps:
+            - name: release/checkout-repo
+              uses: actions/checkout@v3
+            - name: release/setup-node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "16.16.0"
+            - name: release/optimize
+              shell: powershell
+              run: ./scripts/Makefile.ps1 optimize
+            - name: release/install-deps
+              env:
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+              shell: powershell
+              run: |
+                  ./scripts/Makefile.ps1 install-deps
+                  choco install yq --version 4.15.1 -y
+                  npm i -g node-gyp
+                  node-gyp install
+                  node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers"
+                  node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch arm64
+                  node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch ia32
+                  npm ci --openssl_fips=''
+            - name: release/update-version
+              uses: ./.github/actions/version
+            # - name: release/test
+            #  uses: ./.github/actions/test
+            - name: release/build
+              shell: powershell
+              env:
+                MM_WIN_INSTALLERS: 1
+                PFX_KEY: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX_KEY }}
+                CSC_KEY_PASSWORD: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_KEY_PASSWORD }}
+                PFX: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX }}
+                CSC_LINK: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_LINK }}
+              run: |
+                ./scripts/Makefile.ps1 build
+            - name: nightly/package
+              run: |
+                mkdir -p ./artifacts
+                bash -x ./scripts/cp_artifacts.sh release ./artifacts
+            - name: release/upload-build
+              uses: actions/upload-artifact@v3
+              with:
+                  name: artifacts
+                  path: ./artifacts
+                  retention-days: 1
+
+    upload-to-github:
+        runs-on: ubuntu-latest
+        needs:
+            - create-release
+            - build-mac
+            - build-msi-installer
+            - build-linux
+        steps:
+            - name: release/download-builds
+              uses: actions/download-artifact@v3
+              with:
+                  name: artifacts
+                  path: ./artifacts
+            - name: upload artifact mac arm64
+              continue-on-error: true
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-mac-arm64.dmg"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-mac-arm64.dmg"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact mac x64
+              continue-on-error: true
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-mac-x64.dmg"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-mac-x64.dmg"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact win exe
+              continue-on-error: true
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-setup-${{ github.ref_name }}-win.exe"
+                  asset_name: "kchat-desktop-setup-${{ github.ref_name }}-win.exe"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact win msi x64
+              continue-on-error: true
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-x64.msi"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-x64.msi"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact win msi x86
+              continue-on-error: true
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-x86.msi"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-x86.msi"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact linux x86_64 AppImage
+              continue-on-error: true
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-x86_64.AppImage"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-x86_64.AppImage"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact linux arm64 AppImage
+              continue-on-error: true
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-arm64.AppImage"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-arm64.AppImage"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact linux x86_64 rpm
+              continue-on-error: true
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-x86_64.rpm"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-x86_64.rpm"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact linux aarch64 rpm
+              continue-on-error: true
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-aarch64.rpm"
+                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-aarch64.rpm"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact linux amd64 deb
+              continue-on-error: true
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop_${{ github.ref_name }}-1_amd64.deb"
+                  asset_name: "kchat-desktop_${{ github.ref_name }}-1_amd64.deb"
+                  asset_content_type: application/octet-stream
+            - name: upload artifact linux arm64 deb
+              continue-on-error: true
+              uses: actions/upload-release-asset@v1
+              with:
+                  upload_url: ${{ needs.create-release.outputs.output_url }}
+                  asset_path: "./artifacts/kchat-desktop_${{ github.ref_name }}-1_arm64.deb"
+                  asset_name: "kchat-desktop_${{ github.ref_name }}-1_arm64.deb"
+                  asset_content_type: application/octet-stream

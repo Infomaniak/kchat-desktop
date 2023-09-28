@@ -163,7 +163,7 @@ function Check-Deps {
     if ([string]::IsNullOrEmpty($(Get-NpmDir)) -or
         # We could have used the builtin Test-Path cmdlet instead but it is
         # tested for folders as well. We need to test for a file existence
-        # here.  
+        # here.
         ![System.IO.File]::Exists("$(Get-NpmDir)\npm.cmd") -or
         ![System.IO.File]::Exists("$(Get-NpmDir)\node.exe")) {
             if ($verbose) { Print-Error "nodejs/npm dependency missing." }
@@ -192,7 +192,7 @@ function Check-Deps {
     }
 
     if ($throwable -and $missing.Count -gt 0) {
-        throw "com.mattermost.makefile.deps.missing"
+        throw "com.infomaniak.makefile.deps.missing"
     }
 
     return $missing
@@ -207,7 +207,7 @@ function Install-Deps {
     }
 
     if (-not (Is-Admin)) {
-        throw "com.mattermost.makefile.deps.notadmin"
+        throw "com.infomaniak.makefile.deps.notadmin"
     }
 
     foreach ($missingItem in $missing) {
@@ -262,7 +262,7 @@ function Install-Wix {
     # todo: check hash
     .\scripts\wix.exe -q
     if ($LastExitCode -ne $null) {
-        throw "com.mattermost.makefile.deps.wix"
+        throw "com.infomaniak.makefile.deps.wix"
     }
     Print-Info "wixtoolset installed!"
 }
@@ -440,7 +440,7 @@ function Run-BuildId {
     Print " [$env:COM_MATTERMOST_MAKEFILE_BUILD_DATE]"
 
     # Generate build version ids
-    # 
+    #
     # nodejs/npm does require to have semver parsable versions:
     # major.minor.patch
     # Non number values are allowed only if they are not starting the dot verion.
@@ -478,7 +478,7 @@ function Run-BuildId {
     [version]$appVersion = New-Object -TypeName System.Version
     [void][version]::TryParse($winVersion, [ref]$appVersion)
     if (!($appVersion)) {
-        # if we couldn't parse, it might be a -develop or something similar, so we just add a 
+        # if we couldn't parse, it might be a -develop or something similar, so we just add a
         # number there that will change overtime. Most likely this is a PR to be tested
         $revision = "$(git rev-list --all --count)"
         $winVersion = "$($version -Replace '-.*').${revision}"
@@ -501,16 +501,16 @@ function Run-BuildId {
     $env:COM_MATTERMOST_MAKEFILE_BUILD_ID_NODE = $version
     Print " [$env:COM_MATTERMOST_MAKEFILE_BUILD_ID_NODE]"
 
-    Print-Info "Patching version from msi xml descriptor..."
-    $msiDescriptorFileName = "scripts\msi_installer.wxs"
-    $msiDescriptor = [xml](Get-Content $msiDescriptorFileName)
-    $msiDescriptor.Wix.Product.Version = [string]$env:COM_MATTERMOST_MAKEFILE_BUILD_ID_MSI
-    $ComponentDownload = $msiDescriptor.CreateElement("Property", "http://schemas.microsoft.com/wix/2006/wi")
-    $ComponentDownload.InnerText = "https://releases.mattermost.com/desktop/$version/kchat-desktop-$version-`$(var.Platform).msi"
-    $ComponentDownload.SetAttribute("Id", "ComponentDownload")
-    $msiDescriptor.Wix.Product.AppendChild($ComponentDownload)
-    $msiDescriptor.Save($msiDescriptorFileName)
-    Print-Info "Modified Wix XML"
+    # Print-Info "Patching version from msi xml descriptor..."
+    # $msiDescriptorFileName = "scripts\msi_installer.wxs"
+    # $msiDescriptor = [xml](Get-Content $msiDescriptorFileName)
+    # $msiDescriptor.Wix.Product.Version = [string]$env:COM_MATTERMOST_MAKEFILE_BUILD_ID_MSI
+    # $ComponentDownload = $msiDescriptor.CreateElement("Property", "http://schemas.microsoft.com/wix/2006/wi")
+    # $ComponentDownload.InnerText = "https://releases.mattermost.com/desktop/$version/kchat-desktop-$version-`$(var.Platform).msi"
+    # $ComponentDownload.SetAttribute("Id", "ComponentDownload")
+    # $msiDescriptor.Wix.Product.AppendChild($ComponentDownload)
+    # $msiDescriptor.Save($msiDescriptorFileName)
+    # Print-Info "Modified Wix XML"
 }
 
 function InstallDeps-Electron {
@@ -623,12 +623,12 @@ function Run-BuildMsi {
     Print-Info "Building 32 bits msi installer..."
     heat.exe dir "release\win-ia32-unpacked\" -o "scripts\msi_installer_files.wxs" -scom -frag -srd -sreg -gg -cg MattermostDesktopFiles -t "scripts\msi_installer_files_replace_id.xslt" -dr INSTALLDIR
     candle.exe -dPlatform=x86 "scripts\msi_installer.wxs" "scripts\msi_installer_files.wxs" -o "scripts\"
-    light.exe "scripts\msi_installer.wixobj" "scripts\msi_installer_files.wixobj" -loc "resources\windows\msi_i18n\en_US.wxl" -o "release\$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" -b "release\win-ia32-unpacked\"
+    light.exe "scripts\msi_installer.wixobj" "scripts\msi_installer_files.wixobj" -loc "resources\windows\msi_i18n\en_US.wxl" -o "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" -b "release\win-ia32-unpacked\"
 
     Print-Info "Building 64 bits msi installer..."
     heat.exe dir "release\win-unpacked\" -o "scripts\msi_installer_files.wxs" -scom -frag -srd -sreg -gg -cg MattermostDesktopFiles -t "scripts\msi_installer_files_replace_id.xslt" -t "scripts\msi_installer_files_set_win64.xslt" -dr INSTALLDIR
     candle.exe -dPlatform=x64 "scripts\msi_installer.wxs" "scripts\msi_installer_files.wxs" -o "scripts\"
-    light.exe "scripts\msi_installer.wixobj" "scripts\msi_installer_files.wixobj" -loc "resources\windows\msi_i18n\en_US.wxl" -o "release\$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" -b "release\win-unpacked\"
+    light.exe "scripts\msi_installer.wixobj" "scripts\msi_installer_files.wixobj" -loc "resources\windows\msi_i18n\en_US.wxl" -o "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" -b "release\win-unpacked\"
 
     # Only sign the executable and .dll if this is a release and not a pull request
     # check.
@@ -638,11 +638,11 @@ function Run-BuildMsi {
         # Dual signing is not supported on msi files. Is it recommended to sign with 256 hash.
         # src.: https://security.stackexchange.com/a/124685/84134
         # src.: https://social.msdn.microsoft.com/Forums/windowsdesktop/en-us/d4b70ecd-a883-4289-8047-cc9cde28b492#0b3e3b80-6b3b-463f-ac1e-1bf0dc831952
-        signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" "release\$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi"
+        signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi"
 
         Print-Info "Signing kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi (waiting for 15 seconds)..."
         Start-Sleep -s 15
-        signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" "release\$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi"
+        signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi"
     } else {
         Print-Info "Certificate file not found, the msi installers won't be signed."
     }
@@ -734,19 +734,19 @@ function Main {
 
     } catch {
         switch ($_.Exception.Message) {
-            "com.mattermost.makefile.deps.missing" {
+            "com.infomaniak.makefile.deps.missing" {
                 Print-Error "The following dependencies are missing: $($missing -Join ', ').`n    Please install dependencies as an administrator:`n    # makefile.ps1 install-deps"
                 $exitCode = -1
             }
-            "com.mattermost.makefile.deps.notadmin" {
+            "com.infomaniak.makefile.deps.notadmin" {
                 Print-Error "Installing dependencies requires admin privileges. Operation aborted.`n    Please reexecute this makefile as an administrator:`n    # makefile.ps1 install-deps"
                 $exitCode = -2
             }
-            "com.mattermost.makefile.deps.wix" {
+            "com.infomaniak.makefile.deps.wix" {
                 Print-Error "There was nothing wrong with your source code,but we found a problem installing wix toolset and couldn't continue. please try re-running the job."
                 $exitCode = -3
-            }   
-            default {          
+            }
+            default {
                 Print-Error "Another error occurred: $_"
                 $exitCode = -100
             }

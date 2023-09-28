@@ -19,6 +19,7 @@ jest.mock('fs', () => ({
     existsSync: jest.fn().mockReturnValue(false),
     readFileSync: jest.fn().mockImplementation((text) => text),
     writeFile: jest.fn(),
+    openSync: jest.fn(),
     statSync: () => ({
         size: 0,
     }),
