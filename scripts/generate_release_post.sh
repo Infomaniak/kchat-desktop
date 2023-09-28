@@ -11,5 +11,7 @@ TEMP_CHANGES_FILE="$(mktemp -t temp_changes_file.XXXX)"
 git cherry -v v$LAST_VERSION v$VERSION | grep ^+ | grep "(#[0-9]\+)" > $TEMP_CHANGES_FILE
 
 cat <<-MD
-### [v$VERSION](https://github.com/Infomaniak/kchat-desktop/releases/tag/$VERSION)
+#### $VERSION Published to GitHub Releases
+
+https://github.com/Infomaniak/kchat-desktop/releases/tag/$VERSION
 MD

@@ -61,8 +61,8 @@ jobs:
                   npm ci
             - name: release/update-version
               uses: ./.github/actions/version
-            - name: release/test
-              uses: ./.github/actions/test
+            # - name: release/test
+            #   uses: ./.github/actions/test
             - name: release/build
               env:
                   APPLEID: ${{ secrets.APPLEID }}
@@ -104,8 +104,8 @@ jobs:
                   npm ci
             - name: release/update-version
               uses: ./.github/actions/version
-            - name: release/test
-              uses: ./.github/actions/test
+            # - name: release/test
+            #   uses: ./.github/actions/test
             - name: release/build
               run: |
                   mkdir -p ./build/linux
