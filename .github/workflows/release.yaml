@@ -70,6 +70,7 @@ jobs:
                   CSC_FOR_PULL_REQUEST: true
                   CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
                   CSC_LINK: ${{ secrets.CSC_LINK }}
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
               run: |
                   npm run package:mac
                   mkdir -p ./artifacts
@@ -107,6 +108,8 @@ jobs:
             # - name: release/test
             #   uses: ./.github/actions/test
             - name: release/build
+              env:
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
               run: |
                   mkdir -p ./build/linux
                   npm run package:linux
@@ -158,6 +161,7 @@ jobs:
                 CSC_KEY_PASSWORD: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_KEY_PASSWORD }}
                 PFX: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX }}
                 CSC_LINK: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_LINK }}
+                SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
               run: |
                 ./scripts/Makefile.ps1 build
             - name: nightly/package
@@ -284,7 +288,6 @@ jobs:
             fetch-depth: 0
         - name: release/notify-channel
           run: |
-            git fetch --all
             jq --null-input \
             --arg icon_url "https://infomaniak.kchat.infomaniak.com/static/emoji/kchat.png" \
             --arg username "DesktopReleaseBot" \
