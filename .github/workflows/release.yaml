@@ -71,6 +71,7 @@ jobs:
                   CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
                   CSC_LINK: ${{ secrets.CSC_LINK }}
                   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_RELEASE: ${{ github.ref_name }}
               run: |
                   npm run package:mac
                   mkdir -p ./artifacts
@@ -110,6 +111,7 @@ jobs:
             - name: release/build
               env:
                   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_RELEASE: ${{ github.ref_name }}
               run: |
                   mkdir -p ./build/linux
                   npm run package:linux
@@ -162,6 +164,7 @@ jobs:
                 PFX: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX }}
                 CSC_LINK: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_LINK }}
                 SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                SENTRY_RELEASE: ${{ github.ref_name }}
               run: |
                 ./scripts/Makefile.ps1 build
             - name: nightly/package

@@ -47,9 +47,6 @@ module.exports = {
             org: 'sentry',
             project: 'desktop',
             url: 'https://sentry-kchat.infomaniak.com/',
-            release: {
-                name: GIT_RELEASE,
-            },
         })],
     devtool: 'source-map',
     resolve: {
