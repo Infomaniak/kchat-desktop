@@ -163,16 +163,13 @@ function logInit() {
                 if (err) {
                     throw err;
                 }
-                // eslint-disable-next-line no-console
-                console.log('Cleaning - Log file is greater than 500 Mb.');
             });
         }
         log.initialize({preload: true});
         log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{processType}] [{level}] {text}';
         log.transports.file.resolvePathFn = () => pathLogFile;
     } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(err);
+        // swallow error since no logger available, sentry will catch this
     }
 }
 
