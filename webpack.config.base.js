@@ -42,6 +42,7 @@ module.exports = {
     plugins: [
         new webpack.DefinePlugin(codeDefinitions),
         sentryWebpackPlugin({
+            disable: !isProduction,
             authToken: process.env.SENTRY_AUTH_TOKEN,
             org: 'sentry',
             project: 'desktop',
