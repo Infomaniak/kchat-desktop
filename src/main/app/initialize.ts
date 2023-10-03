@@ -66,7 +66,7 @@ import {protocols} from '../../../electron-builder.json';
 
 import {IKLoginAllowedUrls} from 'common/utils/constants';
 
-import {getLogsPath} from 'main/utils';
+import {getLogsPath, isSigPipeError} from 'main/utils';
 
 import {
     handleAppBeforeQuit,
@@ -114,7 +114,11 @@ export const mainProtocol = protocols?.[0]?.schemes?.[0];
  * Main entry point for the application, ensures that everything initializes in the proper order
  */
 export async function initialize() {
-    process.on('uncaughtException', CriticalErrorHandler.processUncaughtExceptionHandler.bind(CriticalErrorHandler));
+    process.on('uncaughtException', (error) => {
+        if (!isSigPipeError(error)) {
+            CriticalErrorHandler.processUncaughtExceptionHandler(error)
+        }
+    });
     global.willAppQuit = false;
 
     // initialization that can run before the app is ready
@@ -165,11 +169,10 @@ function logInit() {
                 }
             });
         }
-        log.initialize({preload: true});
         log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{processType}] [{level}] {text}';
         log.transports.file.resolvePathFn = () => pathLogFile;
     } catch (err) {
-        // swallow error since no logger available, sentry will catch this
+        // do nothing
     }
 }
 
