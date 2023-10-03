@@ -169,6 +169,7 @@ function logInit() {
                 }
             });
         }
+        log.initialize({preload: true});
         log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{processType}] [{level}] {text}';
         log.transports.file.resolvePathFn = () => pathLogFile;
     } catch (err) {
