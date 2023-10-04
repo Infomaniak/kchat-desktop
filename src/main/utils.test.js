@@ -166,7 +166,7 @@ describe('main/utils', () => {
 
     describe('getLogsPath', () => {
         test.each([
-            ['win32', '/fake/path/Roaming/kChat/logs/'],
+            ['win32', '/fake/path\\kChat\\logs\\'],
             ['linux', '/fake/path/kChat/logs/'],
             ['darwin', '/fake/path/Library/Logs/kChat/'],
         ])(
