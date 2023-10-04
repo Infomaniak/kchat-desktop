@@ -36,6 +36,9 @@ describe('copylink', function desc() {
         await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
         const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
         await env.loginToMattermost(firstServer);
+        await firstServer.waitForSelector('#sidebarItem_town-square');
+        await firstServer.click('#sidebarItem_town-square', {button: 'right'});
+        await firstServer.click('li.SidebarChannel.expanded.active > span > nav > div');
         await firstServer.waitForSelector('#sidebarItem_suscipit-4');
         await firstServer.click('#sidebarItem_suscipit-4');
         await firstServer.click('#sidebarItem_suscipit-4', {button: 'right'});
@@ -45,6 +48,6 @@ describe('copylink', function desc() {
         const clipboardText = clipboard.readText();
         await firstServer.fill('#post_textbox', clipboardText);
         const content = await firstServer.locator('#post_textbox').textContent();
-        content.should.contain('/ad-1/channels/suscipit-4');
+        content.should.contain('/ad-1/channels/town-square');
     });
 });

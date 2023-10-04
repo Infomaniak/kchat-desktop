@@ -14,10 +14,11 @@ env:
   # AWS_ACCESS_KEY_ID: ${{ secrets.MM_DESKTOP_E2E_AWS_ACCESS_KEY_ID }}
   # AWS_SECRET_ACCESS_KEY: ${{ secrets.MM_DESKTOP_E2E_AWS_SECRET_ACCESS_KEY }}
   # ZEPHYR_API_KEY: ${{ secrets.MM_DESKTOP_E2E_ZEPHYR_API_KEY }}
+  E2E_USER1_PWD: ${{ secrets.E2E_USER1_PWD }}
   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   BRANCH: ${{ github.ref }}
   BUILD_SUFFIX: 'desktop-e2e'
-  MM_TEST_SERVER_URL: "https://infomaniak.kchat.infomaniak.com/"
+  MM_TEST_SERVER_URL: "https://kchat.infomaniak.com/"
   PULL_REQUEST_BASE_URL: "https://github.com/Infomaniak/kchat-desktop/pull/"
   TYPE: ${{ github.event_name == 'pull_request' && 'PR' || '' }}
   TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_DESKTOP_E2E_TEST_CYCLE_LINK_PREFIX }}

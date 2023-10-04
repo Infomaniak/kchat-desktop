@@ -36,7 +36,6 @@ describe('edit_menu', function desc() {
         await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
         const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
         await env.loginToMattermost(firstServer);
-        await firstServer.waitForSelector('#sidebarItem_suscipit-4');
 
         // click on sint channel
         await firstServer.click('#sidebarItem_suscipit-4');
@@ -54,7 +53,6 @@ describe('edit_menu', function desc() {
         await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
         const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
         await env.loginToMattermost(firstServer);
-        await firstServer.waitForSelector('#sidebarItem_suscipit-4');
 
         // click on sint channel
         await firstServer.click('#sidebarItem_suscipit-4');
@@ -77,7 +75,6 @@ describe('edit_menu', function desc() {
         await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
         const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
         await env.loginToMattermost(firstServer);
-        await firstServer.waitForSelector('#sidebarItem_suscipit-4');
 
         // click on sint channel
         await firstServer.click('#sidebarItem_suscipit-4');
@@ -96,7 +93,6 @@ describe('edit_menu', function desc() {
         await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
         const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
         await env.loginToMattermost(firstServer);
-        await firstServer.waitForSelector('#sidebarItem_suscipit-4');
 
         // click on sint channel
         await firstServer.click('#sidebarItem_suscipit-4');
@@ -118,7 +114,6 @@ describe('edit_menu', function desc() {
         await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
         const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
         await env.loginToMattermost(firstServer);
-        await firstServer.waitForSelector('#sidebarItem_suscipit-4');
 
         // click on sint channel
         await firstServer.click('#sidebarItem_suscipit-4');
@@ -141,7 +136,6 @@ describe('edit_menu', function desc() {
         await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
         const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
         await env.loginToMattermost(firstServer);
-        await firstServer.waitForSelector('#sidebarItem_suscipit-4');
 
         // click on sint channel
         await firstServer.click('#sidebarItem_suscipit-4');

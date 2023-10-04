@@ -203,7 +203,7 @@ module.exports = {
                 RESOURCES_PATH: userDataDir,
             },
             executablePath: electronBinaryPath,
-            args: [`${path.join(sourceRootDir, 'dist')}`, `--user-data-dir=${userDataDir}`, '--disable-dev-mode', ...args],
+            args: [`${path.join(sourceRootDir, 'dist')}`, `--user-data-dir=${userDataDir}`, '--disable-dev-mode', '--no-sandbox', ...args],
         };
 
         // if (process.env.MM_DEBUG_SETTINGS) {
@@ -247,19 +247,15 @@ module.exports = {
     },
 
     async loginToMattermost(window) {
-        await window.waitForSelector('#input_loginId');
-        await window.waitForSelector('#input_password-input');
-        await window.waitForSelector('#saveSetting');
-
         // Do this twice because sometimes the app likes to load the login screen, then go to Loading... again
-        await asyncSleep(1000);
-        await window.waitForSelector('#input_loginId');
-        await window.waitForSelector('#input_password-input');
-        await window.waitForSelector('#saveSetting');
+        await asyncSleep(2000);
+        await window.waitForSelector('input[placeholder="address@mail.com"]');
+        await window.waitForSelector('input[placeholder="Password"]');
+        await window.waitForSelector('button[type="submit"]');
 
-        await window.type('#input_loginId', 'user-1');
-        await window.type('#input_password-input', 'SampleUs@r-1');
-        await window.click('#saveSetting');
+        await window.type('input[placeholder="address@mail.com"]', 'e2e@ik-test-parner.ch');
+        await window.type('input[placeholder="Password"]', process.env.E2E_USER1_PWD);
+        await window.waitForSelector('button[type="submit"]');
     },
 
     async openDownloadsDropdown(app) {

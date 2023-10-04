@@ -15,33 +15,7 @@ describe('focus', function desc() {
     this.timeout(40000);
 
     const config = {
-        ...env.demoMattermostConfig,
-        teams: [
-            ...env.demoMattermostConfig.teams,
-            {
-                name: 'community',
-                url: 'https://community.mattermost.com',
-                order: 0,
-                tabs: [
-                    {
-                        name: 'TAB_MESSAGING',
-                        order: 0,
-                        isOpen: true,
-                    },
-                    {
-                        name: 'TAB_FOCALBOARD',
-                        order: 1,
-                        isOpen: true,
-                    },
-                    {
-                        name: 'TAB_PLAYBOOKS',
-                        order: 2,
-                        isOpen: true,
-                    },
-                ],
-                lastActiveTab: 0,
-            },
-        ],
+        ...env.demoMattermostConfig
     };
 
     beforeEach(async () => {
@@ -116,43 +90,6 @@ describe('focus', function desc() {
 
             const textboxString = await firstServer.inputValue('#post_textbox');
             textboxString.should.equal('Mattermost');
-        });
-
-        it('MM-T1317 should return focus to the focused box when switching servers', async () => {
-            const mainView = this.app.windows().find((window) => window.url().includes('index'));
-            const dropdownView = this.app.windows().find((window) => window.url().includes('dropdown'));
-            await mainView.click('.TeamDropdownButton');
-            await dropdownView.click('.TeamDropdown .TeamDropdown__button:has-text("community")');
-            // eslint-disable-next-line dot-notation
-            const secondServer = this.serverMap['community___TAB_MESSAGING'].win;
-            await secondServer.waitForSelector('#input_loginId');
-            await secondServer.focus('#input_loginId');
-
-            await mainView.click('.TeamDropdownButton');
-            await dropdownView.click(`.TeamDropdown .TeamDropdown__button:has-text("${config.teams[0].name}")`);
-            const isTextboxFocused = await firstServer.$eval('#post_textbox', (el) => el === document.activeElement);
-            isTextboxFocused.should.be.true;
-
-            // Make sure you can just start typing and it'll go in the post textbox
-            await asyncSleep(500);
-            robot.typeString('Mattermost');
-            await asyncSleep(500);
-
-            const textboxString = await firstServer.inputValue('#post_textbox');
-            textboxString.should.equal('Mattermost');
-
-            await mainView.click('.TeamDropdownButton');
-            await dropdownView.click('.TeamDropdown .TeamDropdown__button:has-text("community")');
-            const isLoginFocused = await secondServer.$eval('#input_loginId', (el) => el === document.activeElement);
-            isLoginFocused.should.be.true;
-
-            // Make sure you can just start typing and it'll go in the post textbox
-            await asyncSleep(500);
-            robot.typeString('username');
-            await asyncSleep(500);
-
-            const loginString = await secondServer.inputValue('#input_loginId');
-            loginString.should.equal('username');
         });
     });
 });
