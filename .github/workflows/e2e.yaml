@@ -17,7 +17,7 @@ env:
   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   BRANCH: ${{ github.ref }}
   BUILD_SUFFIX: 'desktop-e2e'
-  MM_TEST_SERVER_URL: "https://infomaniak.kchat.preprod.dev.infomaniak.ch/"
+  MM_TEST_SERVER_URL: "https://infomaniak.kchat.infomaniak.com/"
   PULL_REQUEST_BASE_URL: "https://github.com/Infomaniak/kchat-desktop/pull/"
   TYPE: ${{ github.event_name == 'pull_request' && 'PR' || '' }}
   TEST_CYCLE_LINK_PREFIX: ${{ secrets.MM_DESKTOP_E2E_TEST_CYCLE_LINK_PREFIX }}
@@ -149,19 +149,18 @@ jobs:
           cache: "npm"
           cache-dependency-path: package-lock.json
 
-      - name: ci/cache-node-modules
-        id: cache-node-modules
-        uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-build-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-node-modules
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+      # - name: ci/cache-node-modules
+      #   id: cache-node-modules
+      #   uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      #   with:
+      #     path: node_modules
+      #     key: ${{ runner.os }}-build-node-modules-${{ hashFiles('**/package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-build-node-modules
+      #       ${{ runner.os }}-build-
+      #       ${{ runner.os }}-
 
       - name: ci/install-node-gyp
-        if: steps.cache-node-modules.outputs.cache-hit != 'true'
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
         run: |
@@ -171,6 +170,12 @@ jobs:
           node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers"
           node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch arm64
           node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch ia32
+
+      - name: release/install-deps
+        shell: powershell
+        run: |
+            ./scripts/Makefile.ps1 install-deps
+            npm ci --openssl_fips=''
 
       - name: Set Environment Variables
         shell: bash
