@@ -61,8 +61,8 @@ jobs:
                   npm ci
             - name: release/update-version
               uses: ./.github/actions/version
-            # - name: release/test
-            #   uses: ./.github/actions/test
+            - name: release/test
+              uses: ./.github/actions/test
             - name: release/build
               env:
                   APPLEID: ${{ secrets.APPLEID }}
@@ -106,8 +106,8 @@ jobs:
                   npm ci
             - name: release/update-version
               uses: ./.github/actions/version
-            # - name: release/test
-            #   uses: ./.github/actions/test
+            - name: release/test
+              uses: ./.github/actions/test
             - name: release/build
               env:
                   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
@@ -153,8 +153,8 @@ jobs:
                   npm ci --openssl_fips=''
             - name: release/update-version
               uses: ./.github/actions/version
-            # - name: release/test
-            #  uses: ./.github/actions/test
+            - name: release/test
+             uses: ./.github/actions/test
             - name: release/build
               shell: powershell
               env:
