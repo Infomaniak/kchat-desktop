@@ -155,7 +155,7 @@
     "@typescript-eslint/parser": "5.18.0",
     "7zip-bin": "5.1.1",
     "auto-launch": "5.0.5",
-    "aws-sdk": "^2.1190.0",
+    "aws-sdk": "^2.1469.0",
     "axios": "0.26.1",
     "babel-eslint": "10.1.0",
     "babel-loader": "8.2.4",
