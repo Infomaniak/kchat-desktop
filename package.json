@@ -142,7 +142,7 @@
     "@sentry/webpack-plugin": "^2.7.1",
     "@infomaniak/compass-icons": "0.10.0",
     "@storybook/addon-actions": "6.4.20",
-    "@storybook/react": "6.4.20",
+    "@storybook/react": "7.4.6",
     "@types/auto-launch": "5.0.2",
     "@types/electron-devtools-installer": "2.2.1",
     "@types/jest": "^29.0.0",
