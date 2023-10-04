@@ -25,7 +25,6 @@ env:
 
 jobs:
   e2e-linux:
-    if: ${{ github.event.label.name == 'Run Desktop E2E Tests' }}
     runs-on: ubuntu-latest
     steps:
       - name: ci/checkout-repo
@@ -81,7 +80,6 @@ jobs:
             retention-days: 7
 
   e2e-macos:
-    if: ${{ github.event.label.name == 'Run Desktop E2E Tests' }}
     runs-on: macos-12
     steps:
       - name: ci/checkout-repo
@@ -139,7 +137,6 @@ jobs:
             retention-days: 7
 
   e2e-windows:
-    if: ${{ github.event.label.name == 'Run Desktop E2E Tests' }}
     runs-on: windows-latest
     steps:
       - name: ci/checkout-repo
