@@ -154,7 +154,7 @@ jobs:
             - name: release/update-version
               uses: ./.github/actions/version
             - name: release/test
-             uses: ./.github/actions/test
+              uses: ./.github/actions/test
             - name: release/build
               shell: powershell
               env:
