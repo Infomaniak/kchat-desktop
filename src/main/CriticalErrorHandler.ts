@@ -38,6 +38,10 @@ function openDetachedExternal(url: string) {
 export class CriticalErrorHandler {
     mainWindow?: BrowserWindow;
 
+    constructor() {
+        this.processUncaughtExceptionHandler = this.processUncaughtExceptionHandler.bind(this);
+    }
+
     setMainWindow(mainWindow: BrowserWindow) {
         this.mainWindow = mainWindow;
     }
