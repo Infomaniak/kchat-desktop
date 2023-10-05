@@ -551,7 +551,7 @@ export class ViewManager {
     sendToAllViews = (channel: string, ...args: unknown[]) => {
         this.views.forEach((view) => {
             if (!view.view.webContents.isDestroyed()) {
-                view.sendToRenderer(channel, ...args);
+                view.view.webContents.send(channel, ...args);
             }
         });
     }
