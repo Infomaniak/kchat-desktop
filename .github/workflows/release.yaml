@@ -76,6 +76,21 @@ jobs:
                   npm run package:mac
                   mkdir -p ./artifacts
                   find ./release -type f \( -name "*.dmg" \) -exec cp {} ./artifacts/ \;
+            - name: release/set-sentry-env
+              id: prerelease
+              run: echo "::set-output name=label::$(echo ${GITHUB_REF##*/} | sed -E 's/[0-9]+.[0-9]+.[0-9]+-([a-z]+).[0-9]+/\1/')"
+            - name: release/sentry-release
+              uses: getsentry/action-release@4744f6a65149f441c5f396d5b0877307c0db52c7
+              env:
+                SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                SENTRY_ORG: sentry
+                SENTRY_PROJECT: desktop
+                SENTRY_URL: https://sentry-kchat.infomaniak.com/
+              with:
+                dist: macos-${{ steps.prerelease.outputs.label }}
+                environment: ${{ steps.prerelease.outputs.label }}
+                sourcemaps: './dist'
+                version: ${{ github.ref_name }}
             - name: release/upload-build
               uses: actions/upload-artifact@v3
               with:
@@ -117,6 +132,21 @@ jobs:
                   npm run package:linux
                   mkdir -p ./artifacts
                   find ./release -type f \( -name "*.rpm" -o -name "*.deb" -o -name "*.AppImage" \) -exec cp {} ./artifacts/ \;
+            - name: release/set-sentry-env
+              id: prerelease
+              run: echo "::set-output name=label::$(echo ${GITHUB_REF##*/} | sed -E 's/[0-9]+.[0-9]+.[0-9]+-([a-z]+).[0-9]+/\1/')"
+            - name: release/sentry-release
+              uses: getsentry/action-release@4744f6a65149f441c5f396d5b0877307c0db52c7
+              env:
+                SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                SENTRY_ORG: sentry
+                SENTRY_PROJECT: desktop
+                SENTRY_URL: https://sentry-kchat.infomaniak.com/
+              with:
+                dist: linux-${{ steps.prerelease.outputs.label }}
+                environment: ${{ steps.prerelease.outputs.label }}
+                sourcemaps: './dist'
+                version: ${{ github.ref_name }}
             - name: release/upload-build
               uses: actions/upload-artifact@v3
               with:
@@ -171,6 +201,21 @@ jobs:
               run: |
                 mkdir -p ./artifacts
                 bash -x ./scripts/cp_artifacts.sh release ./artifacts
+            - name: release/set-sentry-env
+              id: prerelease
+              run: echo "::set-output name=label::$(echo ${GITHUB_REF##*/} | sed -E 's/[0-9]+.[0-9]+.[0-9]+-([a-z]+).[0-9]+/\1/')"
+            - name: release/sentry-release
+              uses: getsentry/action-release@4744f6a65149f441c5f396d5b0877307c0db52c7
+              env:
+                SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                SENTRY_ORG: sentry
+                SENTRY_PROJECT: desktop
+                SENTRY_URL: https://sentry-kchat.infomaniak.com/
+              with:
+                dist: windows-${{ steps.prerelease.outputs.label }}
+                environment: ${{ steps.prerelease.outputs.label }}
+                sourcemaps: './dist'
+                version: ${{ github.ref_name }}
             - name: release/upload-build
               uses: actions/upload-artifact@v3
               with:

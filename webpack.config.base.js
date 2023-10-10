@@ -9,10 +9,6 @@
 const childProcess = require('child_process');
 const path = require('path');
 
-const {
-    sentryWebpackPlugin,
-} = require('@sentry/webpack-plugin');
-
 const webpack = require('webpack');
 
 const VERSION = childProcess.execSync('git rev-parse --short HEAD').toString();
@@ -40,14 +36,8 @@ module.exports = {
     mode: isProduction ? 'none' : 'development',
     bail: true,
     plugins: [
-        new webpack.DefinePlugin(codeDefinitions),
-        sentryWebpackPlugin({
-            disable: !isProduction,
-            authToken: process.env.SENTRY_AUTH_TOKEN,
-            org: 'sentry',
-            project: 'desktop',
-            url: 'https://sentry-kchat.infomaniak.com/',
-        })],
+        new webpack.DefinePlugin(codeDefinitions)
+    ],
     devtool: 'source-map',
     resolve: {
         alias: {
