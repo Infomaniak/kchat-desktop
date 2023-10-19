@@ -863,21 +863,33 @@ export class WindowManager {
 
     handleCallDialing = (_: IpcMainEvent, message: any) => {
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
-        createCallDialingWindow(this.mainWindow!, withDevTools, message.calling);
+        console.log('callWindow opened', this.callWindow)
+        if(this.callWindow) return
+        this.callWindow = createCallDialingWindow(this.mainWindow!, withDevTools, message.calling);
+        this.callWindow.on('close', () => {
+            this.destroyCallWindow();
+        })
     }
 
-    handleCallDeclined = (_: IpcMainEvent, message: unknown) =>
+    handleCallDeclined = (_: IpcMainEvent, message: unknown) => {
         windowManager.sendToMattermostViews(CALL_DECLINED, message);
+        this.destroyCallWindow();
+    }
 
     handleCallJoined = (_: IpcMainEvent, message: any) => {
         //TODO: kMeet integration V2 => open call in a new window.
         //remove shell.openExternal and uncomment code below.
         shell.openExternal(message.url);
-
+        this.destroyCallWindow();
         /*const withDevTools = true;
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
         this.callWindow.loadURL(message.url);
         windowManager.sendToMattermostViews(CALL_JOINED, message);*/
+    }
+
+    destroyCallWindow = () => {
+        this.callWindow!.destroy();
+        this.callWindow = undefined;
     }
 
     handleAppLoggedOut = (event: IpcMainEvent, viewName: string) => {
