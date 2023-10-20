@@ -85,7 +85,7 @@ export class ServerViewState {
         MainWindow.show();
         const server = ServerManager.getServer(serverId);
         if (!server) {
-            ServerManager.getServerLog(serverId, 'WindowManager').error('Cannot find server in config');
+            ServerManager.getServerLog(serverId, 'WindowManager').error('Cannot find server in config',serverId);
             return;
         }
         ipcMain.emit(TOGGLE_SECURE_INPUT, null, false);

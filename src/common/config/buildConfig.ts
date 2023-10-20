@@ -24,7 +24,7 @@ const buildConfig: BuildConfig = {
     defaultServers: [
         {
             name: '.',
-            url: 'https://kchat.infomaniak.com',
+            url: 'https://infomaniak.kchat.infomaniak.com',
         },
     ],
     helpLink: '',
