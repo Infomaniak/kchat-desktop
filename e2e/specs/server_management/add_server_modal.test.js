@@ -21,8 +21,8 @@ describe('Add Server Modal', function desc() {
 
         const mainView = this.app.windows().find((window) => window.url().includes('index'));
         const dropdownView = this.app.windows().find((window) => window.url().includes('dropdown'));
-        await mainView.click('.TeamDropdownButton');
-        await dropdownView.click('.TeamDropdown .TeamDropdown__button.addServer');
+        await mainView.click('.ServerDropdownButton');
+        await dropdownView.click('.ServerDropdown .ServerDropdown__button.addServer');
         newServerView = await this.app.waitForEvent('window', {
             predicate: (window) => window.url().includes('newServer'),
         });
@@ -41,7 +41,7 @@ describe('Add Server Modal', function desc() {
     let newServerView;
 
     it('MM-T1312 should focus the first text input', async () => {
-        const isFocused = await newServerView.$eval('#teamUrlInput', (el) => el.isSameNode(document.activeElement));
+        const isFocused = await newServerView.$eval('#serverUrlInput', (el) => el.isSameNode(document.activeElement));
         isFocused.should.be.true;
     });
 
@@ -53,55 +53,43 @@ describe('Add Server Modal', function desc() {
     });
 
     describe('MM-T4389 Invalid messages', () => {
-        it('MM-T4389_1 should not be valid if no team name or URL has been set', async () => {
-            await newServerView.click('#saveNewServerModal');
-            const existingName = await newServerView.isVisible('#teamNameInput.is-invalid');
-            const existingUrl = await newServerView.isVisible('#teamUrlInput.is-invalid');
-            existingName.should.be.true;
-            existingUrl.should.be.true;
+        it('MM-T4389_1 should not be valid and save should be disabled if no server name or URL has been set', async () => {
+            const existing = await newServerView.isVisible('#nameValidation.error');
+            existing.should.be.true;
+            const disabled = await newServerView.getAttribute('#saveNewServerModal', 'disabled');
+            (disabled === '').should.be.true;
         });
 
-        it('should not be valid if a server with the same name exists', async () => {
-            await newServerView.type('#teamNameInput', config.teams[0].name);
-            await newServerView.type('#teamUrlInput', 'http://example.org');
-            await newServerView.click('#saveNewServerModal');
-            const existing = await newServerView.isVisible('#teamNameInput.is-invalid');
+        it('should warn the user if a server with the same URL exists, but still allow them to save', async () => {
+            await newServerView.type('#serverNameInput', 'some-new-server');
+            await newServerView.type('#serverUrlInput', config.teams[0].url);
+            await newServerView.waitForSelector('#urlValidation.warning');
+            const existing = await newServerView.isVisible('#urlValidation.warning');
             existing.should.be.true;
-        });
-
-        it('should not be valid if a server with the same URL exists', async () => {
-            await newServerView.type('#teamNameInput', 'some-new-server');
-            await newServerView.type('#teamUrlInput', config.teams[0].url);
-            await newServerView.click('#saveNewServerModal');
-            const existing = await newServerView.isVisible('#teamUrlInput.is-invalid');
-            existing.should.be.true;
+            const disabled = await newServerView.getAttribute('#saveNewServerModal', 'disabled');
+            (disabled === '').should.be.false;
         });
 
         describe('Valid server name', async () => {
             beforeEach(async () => {
-                await newServerView.type('#teamNameInput', 'TestTeam');
-                await newServerView.click('#saveNewServerModal');
+                await newServerView.type('#serverNameInput', 'TestServer');
             });
 
-            it('MM-T4389_2 Name should not be marked invalid, URL should be marked invalid', async () => {
-                const existingName = await newServerView.isVisible('#teamNameInput.is-invalid');
-                const existingUrl = await newServerView.isVisible('#teamUrlInput.is-invalid');
+            it('MM-T4389_2 Name should not be marked invalid, but should not be able to save', async () => {
+                await newServerView.waitForSelector('#nameValidation.error', {state: 'detached'});
                 const disabled = await newServerView.getAttribute('#saveNewServerModal', 'disabled');
-                existingName.should.be.false;
-                existingUrl.should.be.true;
                 (disabled === '').should.be.true;
             });
         });
 
         describe('Valid server url', () => {
             beforeEach(async () => {
-                await newServerView.type('#teamUrlInput', 'http://example.org');
-                await newServerView.click('#saveNewServerModal');
+                await newServerView.type('#serverUrlInput', 'http://example.org');
             });
 
             it('MM-T4389_3 URL should not be marked invalid, name should be marked invalid', async () => {
-                const existingName = await newServerView.isVisible('#teamNameInput.is-invalid');
-                const existingUrl = await newServerView.isVisible('#teamUrlInput.is-invalid');
+                const existingUrl = await newServerView.isVisible('#urlValidation.error');
+                const existingName = await newServerView.isVisible('#nameValidation.error');
                 const disabled = await newServerView.getAttribute('#saveNewServerModal', 'disabled');
                 existingName.should.be.true;
                 existingUrl.should.be.false;
@@ -111,16 +99,17 @@ describe('Add Server Modal', function desc() {
     });
 
     it('MM-T2826_1 should not be valid if an invalid server address has been set', async () => {
-        await newServerView.type('#teamUrlInput', 'superInvalid url');
-        await newServerView.click('#saveNewServerModal');
-        const existing = await newServerView.isVisible('#teamUrlInput.is-invalid');
+        await newServerView.type('#serverUrlInput', 'superInvalid url');
+        await newServerView.waitForSelector('#urlValidation.error');
+        const existing = await newServerView.isVisible('#urlValidation.error');
         existing.should.be.true;
     });
 
     describe('Valid Team Settings', () => {
         beforeEach(async () => {
-            await newServerView.type('#teamUrlInput', 'http://example.org');
-            await newServerView.type('#teamNameInput', 'TestTeam');
+            await newServerView.type('#serverUrlInput', 'http://example.org');
+            await newServerView.type('#serverNameInput', 'TestServer');
+            await newServerView.waitForSelector('#urlValidation.warning');
         });
 
         it('should be possible to click add', async () => {
@@ -128,7 +117,7 @@ describe('Add Server Modal', function desc() {
             (disabled === null).should.be.true;
         });
 
-        it('MM-T2826_2 should add the team to the config file', async () => {
+        it('MM-T2826_2 should add the server to the config file', async () => {
             await newServerView.click('#saveNewServerModal');
             await asyncSleep(1000);
             const existing = Boolean(await this.app.windows().find((window) => window.url().includes('newServer')));
@@ -136,9 +125,10 @@ describe('Add Server Modal', function desc() {
 
             const savedConfig = JSON.parse(fs.readFileSync(env.configFilePath, 'utf8'));
             savedConfig.teams.should.deep.contain({
-                name: 'TestTeam',
-                url: 'http://example.org',
+                name: 'TestServer',
+                url: 'http://example.org/',
                 order: 2,
+                lastActiveTab: 0,
                 tabs: [
                     {
                         name: 'TAB_MESSAGING',

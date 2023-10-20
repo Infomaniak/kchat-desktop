@@ -4,9 +4,9 @@
 
 import fs from 'fs';
 
-import log from 'electron-log';
-
 import {IpcMainEvent, net, session, ipcMain} from 'electron';
+
+import log from 'electron-log';
 
 import {UPDATE_PATHS} from 'common/communication';
 
@@ -14,8 +14,8 @@ import {tokensStorePath} from './constants';
 
 type Token = {
     token: string;
+    refreshToken?: string;
 
-    // refreshToken: string;
     // expiresAt: number;
 }
 

@@ -8,14 +8,20 @@ import {ipcRenderer} from 'electron';
 import {
     CALLS_LEAVE_CALL,
     CALLS_JOINED_CALL,
+    CALLS_POPOUT_FOCUS,
     CALLS_WIDGET_RESIZE,
     CALLS_WIDGET_SHARE_SCREEN,
     CALLS_WIDGET_CHANNEL_LINK_CLICK,
+    CALLS_ERROR,
     DESKTOP_SOURCES_RESULT,
     DESKTOP_SOURCES_MODAL_REQUEST,
-    DISPATCH_GET_DESKTOP_SOURCES,
+    CALLS_LINK_CLICK,
+    CALLS_JOIN_REQUEST,
 } from 'common/communication';
 
+//
+// Handle messages FROM the widget. (i.e., widget's webapp -> widget's window)
+//
 window.addEventListener('message', ({origin, data = {}} = {}) => {
     const {type, message = {}} = data;
 
@@ -39,21 +45,24 @@ window.addEventListener('message', ({origin, data = {}} = {}) => {
         });
         break;
     }
-    case 'get-desktop-sources': {
-        ipcRenderer.send(DISPATCH_GET_DESKTOP_SOURCES, 'widget', message);
-        break;
-    }
     case DESKTOP_SOURCES_MODAL_REQUEST:
     case CALLS_WIDGET_CHANNEL_LINK_CLICK:
+    case CALLS_LINK_CLICK:
     case CALLS_WIDGET_RESIZE:
     case CALLS_JOINED_CALL:
-    case CALLS_LEAVE_CALL: {
-        ipcRenderer.send(type, message);
+    case CALLS_POPOUT_FOCUS:
+    case CALLS_ERROR:
+    case CALLS_LEAVE_CALL:
+    case CALLS_JOIN_REQUEST: {
+        ipcRenderer.send(type, 'widget', message);
         break;
     }
     }
 });
 
+//
+// Handle messages TO the widget.
+//
 ipcRenderer.on(DESKTOP_SOURCES_RESULT, (event, sources) => {
     window.postMessage(
         {
@@ -68,6 +77,16 @@ ipcRenderer.on(CALLS_WIDGET_SHARE_SCREEN, (event, message) => {
     window.postMessage(
         {
             type: CALLS_WIDGET_SHARE_SCREEN,
+            message,
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on(CALLS_ERROR, (event, message) => {
+    window.postMessage(
+        {
+            type: CALLS_ERROR,
             message,
         },
         window.location.origin,

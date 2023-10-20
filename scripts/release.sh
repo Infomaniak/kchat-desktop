@@ -22,9 +22,9 @@ function tag {
 }
 
 function write_package_version {
-    temp_file="$(mktemp -t package.json)"
+    temp_file="$(mktemp -t package.json.XXXX)"
     jq ".version = \"${1}\"" ./package.json > "${temp_file}" && mv "${temp_file}" ./package.json
-    temp_file="$(mktemp -t package-lock.json)"
+    temp_file="$(mktemp -t package-lock.json.XXXX)"
     jq ".version = \"${1}\"" ./package-lock.json > "${temp_file}" && mv "${temp_file}" ./package-lock.json
 
     git add ./package.json ./package-lock.json
@@ -39,8 +39,8 @@ trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
 trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 
 # mattermost repo might not be the origin one, we don't want to enforce that.
-org="github.com:mattermost"
-git_origin="$(git remote -v | grep ${org} | grep push | awk '{print $1}')"
+org="github.com:mattermost|https://github.com/mattermost"
+git_origin="$(git remote -v | grep -E ${org} | grep push | awk '{print $1}')"
 if [[ -z "${git_origin}" ]]; then
     print_warning "Can't find a mattermost remote, defaulting to origin"
     git_origin="origin"
@@ -102,6 +102,35 @@ case "${1}" in
             print_error "Can't generate a release candidate on a non release-X.Y branch"
             exit 2
 
+        fi
+    ;;
+    "pre-final")
+        if [[ "${branch_name}" =~ "release-" ]]; then
+            print_info "Releasing v${current_version} for MAS approval"
+            new_pkg_version="${current_version}"
+            if [[ "${pkg_version}" != "${new_pkg_version}" ]]; then
+                write_package_version "${new_pkg_version}"
+            fi
+            new_tag_version=$(git describe --match "v$current_version*" --abbrev=0)
+            if [[ "${new_tag_version}" =~ "-mas." ]]; then
+                mas="${new_tag_version#*-mas.}"
+            else
+                mas=0
+            fi
+            case "${mas}" in
+                ''|*[!0-9]*)
+                    mas=0
+                ;;
+                *)
+                    mas=$(( mas + 1 ))
+                ;;
+            esac
+            tag "${new_pkg_version}-mas.${mas}" "MAS approval ${mas}"
+            print_info "Locally created an MAS approval version. In order to build you'll have to:"
+            print_info "$ git push --follow-tags ${git_origin} ${branch_name}:${branch_name}"
+        else
+            print_error "Can't release on a non release-X.Y branch"
+            exit 2
         fi
     ;;
     "final")

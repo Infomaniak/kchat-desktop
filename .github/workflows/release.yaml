@@ -11,18 +11,18 @@ env:
 
 jobs:
     begin-notification:
-      runs-on: ubuntu-latest
-      steps:
-        - name: release/checkout-repo
-          uses: actions/checkout@v3
-        - name: release/notify-channel
-          run: |
-            jq --null-input \
-            --arg icon_url "https://infomaniak.kchat.infomaniak.com/static/emoji/kchat.png" \
-            --arg username "DesktopReleaseBot" \
-            --arg text "[$GITHUB_REF_NAME] Release for desktop app started from GitHub, it should take about 30 minutes to complete." \
-            '{"username":$username,"icon_url": $icon_url, "text": $text }' > /tmp/webhook-data.json
-            curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOFICATION FAILED! check logs as this will succeed intentionally"
+        runs-on: ubuntu-latest
+        steps:
+            - name: release/checkout-repo
+              uses: actions/checkout@v3
+            - name: release/notify-channel
+              run: |
+                  jq --null-input \
+                  --arg icon_url "https://infomaniak.kchat.infomaniak.com/static/emoji/kchat.png" \
+                  --arg username "DesktopReleaseBot" \
+                  --arg text "[$GITHUB_REF_NAME] Release for desktop app started from GitHub, it should take about 30 minutes to complete." \
+                  '{"username":$username,"icon_url": $icon_url, "text": $text }' > /tmp/webhook-data.json
+                  curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOFICATION FAILED! check logs as this will succeed intentionally"
 
     create-release:
         runs-on: ubuntu-latest
@@ -158,19 +158,19 @@ jobs:
             - name: release/build
               shell: powershell
               env:
-                MM_WIN_INSTALLERS: 1
-                PFX_KEY: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX_KEY }}
-                CSC_KEY_PASSWORD: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_KEY_PASSWORD }}
-                PFX: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX }}
-                CSC_LINK: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_LINK }}
-                SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-                SENTRY_RELEASE: ${{ github.ref_name }}
+                  MM_WIN_INSTALLERS: 1
+                  PFX_KEY: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX_KEY }}
+                  CSC_KEY_PASSWORD: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_KEY_PASSWORD }}
+                  PFX: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX }}
+                  CSC_LINK: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_LINK }}
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_RELEASE: ${{ github.ref_name }}
               run: |
-                ./scripts/Makefile.ps1 build
+                  ./scripts/Makefile.ps1 build
             - name: nightly/package
               run: |
-                mkdir -p ./artifacts
-                bash -x ./scripts/cp_artifacts.sh release ./artifacts
+                  mkdir -p ./artifacts
+                  bash -x ./scripts/cp_artifacts.sh release ./artifacts
             - name: release/upload-build
               uses: actions/upload-artifact@v3
               with:
@@ -281,19 +281,19 @@ jobs:
                   asset_content_type: application/octet-stream
 
     end-notification:
-      runs-on: ubuntu-latest
-      needs:
-        - upload-to-github
-      steps:
-        - name: release/checkout-repo
-          uses: actions/checkout@v3
-          with:
-            fetch-depth: 0
-        - name: release/notify-channel
-          run: |
-            jq --null-input \
-            --arg icon_url "https://infomaniak.kchat.infomaniak.com/static/emoji/kchat.png" \
-            --arg username "DesktopReleaseBot" \
-            --arg text "$(bash -x scripts/generate_release_post.sh $GITHUB_REF_NAME)" \
-            '{"username":$username,"icon_url": $icon_url, "text": $text }' > /tmp/webhook-data.json
-            curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOFICATION FAILED! check logs as this will succeed intentionally"
+        runs-on: ubuntu-latest
+        needs:
+            - upload-to-github
+        steps:
+            - name: release/checkout-repo
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0
+            - name: release/notify-channel
+              run: |
+                  jq --null-input \
+                  --arg icon_url "https://infomaniak.kchat.infomaniak.com/static/emoji/kchat.png" \
+                  --arg username "DesktopReleaseBot" \
+                  --arg text "$(bash -x scripts/generate_release_post.sh $GITHUB_REF_NAME)" \
+                  '{"username":$username,"icon_url": $icon_url, "text": $text }' > /tmp/webhook-data.json
+                  curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOFICATION FAILED! check logs as this will succeed intentionally"

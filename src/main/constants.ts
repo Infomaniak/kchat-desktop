@@ -20,6 +20,7 @@ export let boundsInfoPath = '';
 export let migrationInfoPath = '';
 export let downloadsJson = '';
 export let tokensStorePath = '';
+export let permissionsJson = '';
 
 export function updatePaths(emit = false) {
     userDataPath = app.getPath('userData');
@@ -33,6 +34,7 @@ export function updatePaths(emit = false) {
     migrationInfoPath = path.resolve(userDataPath, 'migration-info.json');
     downloadsJson = path.resolve(userDataPath, 'downloads.json');
     tokensStorePath = path.resolve(userDataPath, 'tokens.json');
+    permissionsJson = path.resolve(userDataPath, 'permissions.json');
 
     if (emit) {
         ipcMain.emit(UPDATE_PATHS);
