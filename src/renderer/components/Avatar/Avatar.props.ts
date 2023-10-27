@@ -68,7 +68,7 @@ type PAvatar = {
     /**
      * click event handler
      */
-    onClick: () => void;
+    onClick?: () => void;
 
     /**
      * custom className
@@ -84,6 +84,6 @@ type PAvatarStatusBadgeRoot = Required<Pick<PAvatarRoot, 'size'>> & { offset: nu
 
 type PAvatarMentionBadgeRoot = { isUnreadBadge: boolean };
 
-export type {PAvatarRoot, PAvatarStatusBadgeRoot, PAvatarMentionBadgeRoot};
+export type { PAvatarRoot, PAvatarStatusBadgeRoot, PAvatarMentionBadgeRoot };
 
 export default PAvatar;

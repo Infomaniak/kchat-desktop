@@ -13,7 +13,7 @@ import CallDialingModal from './components/CallDialingModal';
 
 const start = async () => {
     ReactDOM.render(
-        <CallDialingModal/>,
+        <CallDialingModal />,
         document.getElementById('app'),
     );
 };

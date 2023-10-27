@@ -1,13 +1,13 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserWindow, ipcMain} from 'electron';
+import { BrowserWindow, ipcMain } from 'electron';
 import log from 'electron-log';
 
-import {getLocalPreload, getLocalURLString} from '../utils';
-import {CALLS_JOINED_CALL} from 'common/communication';
+import { getLocalPreload, getLocalURLString } from '../utils';
+import { CALLS_JOINED_CALL } from 'common/communication';
 
-export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools: boolean, callInfo) {
+export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools: boolean, callInfo: any) {
     const preload = getLocalPreload('callDial.js');
     const mainSession = mainWindow.webContents.session;
 
@@ -27,7 +27,8 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
             preload,
             session: mainSession,
             nodeIntegration: true,
-            contextIsolation: false},
+            contextIsolation: false
+        },
     });
     callDialWindow.setTitle('kChat');
 
@@ -40,17 +41,17 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
         });
 
     callDialWindow.webContents.once('dom-ready', () => {
-        callDialWindow.show();
+        callDialWindow?.show();
     });
     ipcMain.on(CALLS_JOINED_CALL, () => {
-        callDialWindow.close();
+        callDialWindow?.close();
     });
     callDialWindow.webContents.on('did-finish-load', () => {
         callDialWindow.webContents.send('info-received', callInfo);
     });
 
     if (withDevTools) {
-        callDialWindow.webContents.openDevTools({mode: 'detach'});
+        callDialWindow.webContents.openDevTools({ mode: 'detach' });
     }
     return callDialWindow;
 }
