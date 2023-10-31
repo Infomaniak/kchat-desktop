@@ -290,7 +290,6 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.handle(GET_LOCAL_CONFIGURATION, handleGetLocalConfiguration);
     ipcMain.on(UPDATE_CONFIGURATION, updateConfiguration);
     ipcMain.handle(UPDATE_TEAMS, updateTeamsHandler);
-
     ipcMain.handle(GET_DARK_MODE, handleGetDarkMode);
     ipcMain.on(WINDOW_CLOSE, handleClose);
     ipcMain.on(WINDOW_MAXIMIZE, handleMaximize);
@@ -310,7 +309,7 @@ function updateTeamsHandler(_: any, servers: ConfigServer[]) {
     if (defaultServer?.url && firstServer.url.includes(defaultServer.url)) {
         initIKserver();
     } else {
-        if (isLocalEnv) {
+        if (isLocalEnv && devServerUrl) {
             servers[0].url = devServerUrl;
         }
         initReceivedServer(servers);
