@@ -7,7 +7,7 @@
 /* eslint-disable import/no-commonjs */
 /* eslint-disable no-magic-numbers */
 
-import {contextBridge, ipcRenderer, webFrame} from 'electron';
+import { contextBridge, ipcRenderer, webFrame } from 'electron';
 
 import log from 'electron-log';
 
@@ -37,7 +37,6 @@ import {
     DESKTOP_SOURCES_RESULT,
     CALL_RINGING,
     TOKEN_REFRESHED,
-    TOKEN_CLEARED,
     VIEW_FINISHED_RESIZING,
     CALLS_JOIN_CALL,
     CALLS_JOINED_CALL,
@@ -107,16 +106,16 @@ contextBridge.exposeInMainWorld('desktopAPI', {
     isDev: () => ipcRenderer.invoke(GET_IS_DEV_MODE),
 });
 
-ipcRenderer.invoke('get-app-version').then(({name, version}) => {
+ipcRenderer.invoke('get-app-version').then(({ name, version }) => {
     appVersion = version;
     appName = name;
 });
 
 function isReactAppInitialized() {
     const initializedRoot =
-    document.querySelector('#root.channel-view') || // React 16 webapp
-    document.querySelector('#root .signup-team__container') || // React 16 login
-    document.querySelector('div[data-reactroot]'); // Older React apps
+        document.querySelector('#root.channel-view') || // React 16 webapp
+        document.querySelector('#root .signup-team__container') || // React 16 login
+        document.querySelector('div[data-reactroot]'); // Older React apps
     if (initializedRoot === null) {
         return false;
     }
@@ -169,125 +168,121 @@ document.addEventListener('mouseout', (event) => {
 });
 
 // listen for messages from the webapp
-window.addEventListener('message', ({origin, data = {}} = {}) => {
-    const {type, message = {}} = data;
+window.addEventListener('message', ({ origin, data = {} } = {}) => {
+    const { type, message = {} } = data;
     if (origin !== window.location.origin) {
         return;
     }
     switch (type) {
-    case 'webapp-ready': {
-    // register with the webapp to enable custom integration functionality
-        console.log(`registering ${appName} v${appVersion} with the server`);
-        window.postMessage(
-            {
-                type: 'register-desktop',
-                message: {
-                    version: appVersion,
-                    name: appName,
+        case 'webapp-ready': {
+            // register with the webapp to enable custom integration functionality
+            console.log(`registering ${appName} v${appVersion} with the server`);
+            window.postMessage(
+                {
+                    type: 'register-desktop',
+                    message: {
+                        version: appVersion,
+                        name: appName,
+                    },
                 },
-            },
-            window.location.origin || '*',
-        );
-        break;
-    }
-    case 'register-desktop':
-    // it will be captured by itself too
-        break;
-    case 'dispatch-notification': {
-        if (shouldSendNotifications) {
-            const {title, body, channel, teamId, url, silent, data: messageData} = message;
-            ipcRenderer.send(NOTIFY_MENTION, title, body, channel, teamId, url, silent, messageData);
+                window.location.origin || '*',
+            );
+            break;
         }
-        break;
-    }
-    case 'browser-history-push': {
-        const {path} = message;
-        ipcRenderer.send(BROWSER_HISTORY_PUSH, viewId, path);
-        break;
-    }
-    case 'history-button': {
-        ipcRenderer.send(BROWSER_HISTORY_BUTTON, viewId);
-        break;
-    }
-    case 'call-joined': {
-        ipcRenderer.send(CALL_JOINED, message, viewId);
-        break;
-    }
-    case 'call-command': {
-        ipcRenderer.send(CALL_COMMAND, message, viewId);
-        break;
-    }
-    case 'window-will-unloaded': {
-        ipcRenderer.send(WINDOW_WILL_UNLOADED, viewId);
-        break;
-    }
-    case 'get-desktop-sources': {
-        ipcRenderer.send(DISPATCH_GET_DESKTOP_SOURCES, viewId, message);
-        break;
-    }
-    case 'call-dialing': {
-        ipcRenderer.send(CALL_RINGING, message, viewId);
-        break;
-    }
-    case 'token-refreshed': {
-        ipcRenderer.send(TOKEN_REFRESHED, message, viewId);
-        break;
-    }
-    case 'token-cleared': {
-        ipcRenderer.send(TOKEN_CLEARED, message, viewId);
-        break;
-    }
-    case 'call-focus': {
-        ipcRenderer.send('call-focus', message, viewId);
-        break;
-    }
-    case 'reset-teams': {
-        ipcRenderer.invoke(UPDATE_TEAMS, [{
-            name: '.',
-            url: 'https://kchat.infomaniak.com',
-            order: 0,
-            tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
-        }]);
-        break;
-    }
-    case 'update-teams': {
-        const teams = message.teams.reduce((acc, item, idx) => {
-            acc.push({
-                name: item.display_name,
-                url: item.url,
-                order: idx,
-                tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
-            });
-
-            return acc;
-        }, []);
-
-        if (teams.length) {
-            ipcRenderer.invoke(UPDATE_TEAMS, teams);
-        } else {
-            ipcRenderer.invoke(UPDATE_TEAMS, []);
+        case 'register-desktop':
+            // it will be captured by itself too
+            break;
+        case 'dispatch-notification': {
+            if (shouldSendNotifications) {
+                const { title, body, channel, teamId, url, silent, data: messageData } = message;
+                ipcRenderer.send(NOTIFY_MENTION, title, body, channel, teamId, url, silent, messageData);
+            }
+            break;
         }
-        break;
-    }
-    case SWITCH_SERVER:
-        ipcRenderer.send(SWITCH_SERVER, event.data.data);
-        break;
-    case CALLS_JOIN_CALL: {
-        ipcRenderer.send(CALLS_JOIN_CALL, viewId, message);
-        break;
-    }
-    case CALLS_WIDGET_SHARE_SCREEN: {
-        ipcRenderer.send(CALLS_WIDGET_SHARE_SCREEN, viewId, message);
-        break;
-    }
-    case CALLS_LEAVE_CALL: {
-        ipcRenderer.send(CALLS_LEAVE_CALL, viewId, message);
-        break;
-    }
+        case 'browser-history-push': {
+            const { path } = message;
+            ipcRenderer.send(BROWSER_HISTORY_PUSH, viewId, path);
+            break;
+        }
+        case 'history-button': {
+            ipcRenderer.send(BROWSER_HISTORY_BUTTON, viewId);
+            break;
+        }
+        case 'call-joined': {
+            ipcRenderer.send(CALL_JOINED, message, viewId);
+            break;
+        }
+        case 'call-command': {
+            ipcRenderer.send(CALL_COMMAND, message, viewId);
+            break;
+        }
+        case 'window-will-unloaded': {
+            ipcRenderer.send(WINDOW_WILL_UNLOADED, viewId);
+            break;
+        }
+        case 'get-desktop-sources': {
+            ipcRenderer.send(DISPATCH_GET_DESKTOP_SOURCES, viewId, message);
+            break;
+        }
+        case 'call-dialing': {
+            ipcRenderer.send(CALL_RINGING, message, viewId);
+            break;
+        }
+        case 'token-refreshed': {
+            ipcRenderer.send(TOKEN_REFRESHED, message, viewId);
+            break;
+        }
+        case 'call-focus': {
+            ipcRenderer.send('call-focus', message, viewId);
+            break;
+        }
+        case 'reset-teams': {
+            ipcRenderer.invoke(UPDATE_TEAMS, [{
+                name: '.',
+                url: 'https://kchat.infomaniak.com',
+                order: 0,
+                tabs: [{ name: 'TAB_MESSAGING', order: 0, isOpen: true }],
+            }]);
+            break;
+        }
+        case 'update-teams': {
+            const teams = message.teams.reduce((acc, item, idx) => {
+                acc.push({
+                    name: item.display_name,
+                    url: item.url,
+                    order: idx,
+                    tabs: [{ name: 'TAB_MESSAGING', order: 0, isOpen: true }],
+                });
+
+                return acc;
+            }, []);
+
+            if (teams.length) {
+                ipcRenderer.invoke(UPDATE_TEAMS, teams);
+            } else {
+                ipcRenderer.invoke(UPDATE_TEAMS, []);
+            }
+            break;
+        }
+        case SWITCH_SERVER:
+            ipcRenderer.send(SWITCH_SERVER, event.data.data);
+            break;
+        case CALLS_JOIN_CALL: {
+            ipcRenderer.send(CALLS_JOIN_CALL, viewId, message);
+            break;
+        }
+        case CALLS_WIDGET_SHARE_SCREEN: {
+            ipcRenderer.send(CALLS_WIDGET_SHARE_SCREEN, viewId, message);
+            break;
+        }
+        case CALLS_LEAVE_CALL: {
+            ipcRenderer.send(CALLS_LEAVE_CALL, viewId, message);
+            break;
+        }
     }
 });
 
-const handleNotificationClick = ({channel, teamId, url}) => {
+const handleNotificationClick = ({ channel, teamId, url }) => {
     window.postMessage(
         {
             type: 'notification-clicked',
@@ -351,9 +346,9 @@ function getUnreadCount() {
 setInterval(getUnreadCount, UNREAD_COUNT_INTERVAL);
 
 // push user activity updates to the webapp
-ipcRenderer.on(USER_ACTIVITY_UPDATE, (event, {userIsActive, isSystemEvent}) => {
+ipcRenderer.on(USER_ACTIVITY_UPDATE, (event, { userIsActive, isSystemEvent }) => {
     if (window.location.origin !== 'null') {
-        window.postMessage({type: USER_ACTIVITY_UPDATE, message: {userIsActive, manual: isSystemEvent}}, window.location.origin);
+        window.postMessage({ type: USER_ACTIVITY_UPDATE, message: { userIsActive, manual: isSystemEvent } }, window.location.origin);
     }
 });
 
