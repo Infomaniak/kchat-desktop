@@ -2,7 +2,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BuildConfig} from 'types/config';
+import { BuildConfig } from 'types/config';
 
 // For detailed guides, please refer to https://docs.mattermost.com/deployment/desktop-app-deployment.html
 
@@ -24,7 +24,7 @@ const buildConfig: BuildConfig = {
     defaultServers: [
         {
             name: '.',
-            url: 'https://infomaniak.kchat.infomaniak.com',
+            url: 'https://kchat.infomaniak.com',
         },
     ],
     helpLink: '',

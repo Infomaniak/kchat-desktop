@@ -51,6 +51,8 @@ export const GET_FULL_SCREEN_STATUS = 'get-full-screen-status';
 
 export const UPDATE_TARGET_URL = 'update_target_url';
 
+export const UPDATE_TEAMS = 'update-teams';
+
 export const PLAY_SOUND = 'play_sound';
 
 export const GET_DOWNLOAD_LOCATION = 'get_download_location';
@@ -133,7 +135,6 @@ export const GET_AVAILABLE_LANGUAGES = 'get-available-languages';
 export const VIEW_FINISHED_RESIZING = 'view-finished-resizing';
 
 export const TOKEN_REFRESHED = 'token-refreshed';
-export const TOKEN_CLEARED = 'token-cleared';
 export const TOKEN_REQUEST = 'token-request';
 export const REFRESH_TOKEN = 'refresh-token';
 export const RESET_TOKEN = 'reset-token';
