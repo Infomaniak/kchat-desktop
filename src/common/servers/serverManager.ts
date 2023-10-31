@@ -3,21 +3,21 @@
 
 import EventEmitter from 'events';
 
-import {Server, ConfigServer, ConfigView} from 'types/config';
-import {RemoteInfo} from 'types/server';
+import { Server, ConfigServer, ConfigView } from 'types/config';
+import { RemoteInfo } from 'types/server';
 
 import Config from 'common/config';
 import {
     SERVERS_URL_MODIFIED,
     SERVERS_UPDATE,
 } from 'common/communication';
-import {Logger, getLevel} from 'common/log';
-import {MattermostServer} from 'common/servers/MattermostServer';
-import {TAB_FOCALBOARD, TAB_MESSAGING, TAB_PLAYBOOKS, MattermostView, getDefaultViews} from 'common/views/View';
+import { Logger, getLevel } from 'common/log';
+import { MattermostServer } from 'common/servers/MattermostServer';
+import { TAB_FOCALBOARD, TAB_MESSAGING, TAB_PLAYBOOKS, MattermostView, getDefaultViews } from 'common/views/View';
 import MessagingView from 'common/views/MessagingView';
 import FocalboardView from 'common/views/FocalboardView';
 import PlaybooksView from 'common/views/PlaybooksView';
-import {getFormattedPathName, isInternalURL, parseURL} from 'common/utils/url';
+import { getFormattedPathName, isInternalURL, parseURL } from 'common/utils/url';
 import Utils from 'common/utils/util';
 
 const log = new Logger('ServerManager');
@@ -157,6 +157,8 @@ export class ServerManager extends EventEmitter {
         this.persistServers();
     }
 
+    serverNameExist = (server: Server) => this.getAllServers().some(({ name }: MattermostServer) => name === server.name);
+
     addServer = (server: Server) => {
         const newServer = new MattermostServer(server, false);
 
@@ -220,6 +222,12 @@ export class ServerManager extends EventEmitter {
         this.persistServers();
     }
 
+    removePredefinedServersHandler = (predefined: boolean) => {
+        const predifinedServers = this.getAllServers().filter(server => server.isPredefined === predefined);
+        predifinedServers && predifinedServers.forEach(({ id }: MattermostServer) => this.removeServer(id));
+        this.persistServers();
+    }
+
     setViewIsOpen = (viewId: string, isOpen: boolean) => {
         const view = this.views.get(viewId);
         if (!view) {
@@ -262,7 +270,7 @@ export class ServerManager extends EventEmitter {
     }
 
     private filterOutDuplicateServers = () => {
-        const servers = [...this.servers.keys()].map((key) => ({key, value: this.servers.get(key)!}));
+        const servers = [...this.servers.keys()].map((key) => ({ key, value: this.servers.get(key)! }));
         const uniqueServers = new Set();
         servers.forEach((server) => {
             if (uniqueServers.has(`${server.value.name}:${server.value.url}`)) {
@@ -304,7 +312,7 @@ export class ServerManager extends EventEmitter {
         return firstView;
     }
 
-    private persistServers = async (lastActiveServer?: number) => {
+    private persistServers = (lastActiveServer?: number) => {
         this.emit(SERVERS_UPDATE);
 
         const localServers = [...this.servers.values()].
@@ -315,7 +323,7 @@ export class ServerManager extends EventEmitter {
                 servers.push(this.toConfigServer(srv));
                 return servers;
             }, [] as ConfigServer[]);
-        await Config.setServers(localServers, lastActiveServer);
+        Config.setServers(localServers, lastActiveServer);
     }
 
     private getLastActiveView = (serverId: string) => {
@@ -352,14 +360,14 @@ export class ServerManager extends EventEmitter {
 
     private getNewView = (srv: MattermostServer, viewName: string, isOpen?: boolean) => {
         switch (viewName) {
-        case TAB_MESSAGING:
-            return new MessagingView(srv, isOpen);
-        case TAB_FOCALBOARD:
-            return new FocalboardView(srv, isOpen);
-        case TAB_PLAYBOOKS:
-            return new PlaybooksView(srv, isOpen);
-        default:
-            throw new Error('Not implemeneted');
+            case TAB_MESSAGING:
+                return new MessagingView(srv, isOpen);
+            case TAB_FOCALBOARD:
+                return new FocalboardView(srv, isOpen);
+            case TAB_PLAYBOOKS:
+                return new PlaybooksView(srv, isOpen);
+            default:
+                throw new Error('Not implemeneted');
         }
     }
 
