@@ -218,7 +218,7 @@ export class ViewManager {
 
     resetTeams = () => {
         // TokenManager.reset();
-        Config.set('teams', [{
+        Config.setServers([{
             name: '.',
             url: 'https://kchat.infomaniak.com',
             order: 0,
@@ -249,7 +249,7 @@ export class ViewManager {
     }
 
     handleCallDeclined = (_: IpcMainEvent, message: unknown) => {
-        MainWindow.sendToRenderer(CALL_DECLINED, message);
+        this.sendToAllViews(CALL_DECLINED, message);
         this.destroyCallWindow();
     }
 
