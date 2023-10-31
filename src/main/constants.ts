@@ -5,9 +5,10 @@
 
 import path from 'path';
 
-import {app, ipcMain} from 'electron';
+import { app, ipcMain } from 'electron';
 
-import {UPDATE_PATHS} from 'common/communication';
+import { UPDATE_PATHS } from 'common/communication';
+import { isLocalEnv } from 'common/config/config';
 
 let userDataPath;
 
@@ -33,7 +34,7 @@ export function updatePaths(emit = false) {
     boundsInfoPath = path.join(userDataPath, 'bounds-info.json');
     migrationInfoPath = path.resolve(userDataPath, 'migration-info.json');
     downloadsJson = path.resolve(userDataPath, 'downloads.json');
-    tokensStorePath = path.resolve(userDataPath, 'tokens.json');
+    tokensStorePath = path.resolve(userDataPath, `${isLocalEnv ? 'dev-' : ''}tokens.json`);
     permissionsJson = path.resolve(userDataPath, 'permissions.json');
 
     if (emit) {

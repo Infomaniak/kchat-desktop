@@ -3,6 +3,7 @@
 // See LICENSE.txt for license information.
 
 import { BuildConfig } from 'types/config';
+import { IKOrigin } from './config';
 
 // For detailed guides, please refer to https://docs.mattermost.com/deployment/desktop-app-deployment.html
 
@@ -24,7 +25,7 @@ const buildConfig: BuildConfig = {
     defaultServers: [
         {
             name: '.',
-            url: 'https://kchat.infomaniak.com',
+            url: IKOrigin,
         },
     ],
     helpLink: '',

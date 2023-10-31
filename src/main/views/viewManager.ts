@@ -62,6 +62,7 @@ import modalManager from './modalManager';
 import LoadingScreen from './loadingScreen';
 import TokenManager from 'main/tokenManager';
 import { createCallDialingWindow } from 'main/windows/callDialingWindow';
+import { IKOrigin } from 'common/config/config';
 
 const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
@@ -220,7 +221,7 @@ export class ViewManager {
         // TokenManager.reset();
         Config.setServers([{
             name: '.',
-            url: 'https://kchat.infomaniak.com',
+            url: IKOrigin,
             order: 0,
             tabs: [{ name: 'TAB_MESSAGING', order: 0, isOpen: true }],
         }]);

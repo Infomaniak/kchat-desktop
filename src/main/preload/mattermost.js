@@ -59,6 +59,7 @@ import {
     GET_IS_DEV_MODE,
     TOGGLE_SECURE_INPUT,
 } from 'common/communication';
+import { IKOrigin } from 'common/config/config';
 
 const UNREAD_COUNT_INTERVAL = 1000;
 const CLEAR_CACHE_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours
@@ -239,7 +240,7 @@ window.addEventListener('message', ({ origin, data = {} } = {}) => {
         case 'reset-teams': {
             ipcRenderer.invoke(UPDATE_TEAMS, [{
                 name: '.',
-                url: 'https://kchat.infomaniak.com',
+                url: IKOrigin,
                 order: 0,
                 tabs: [{ name: 'TAB_MESSAGING', order: 0, isOpen: true }],
             }]);

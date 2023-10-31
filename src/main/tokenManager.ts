@@ -4,13 +4,15 @@
 
 import fs from 'fs';
 
-import {IpcMainEvent, net, session, ipcMain} from 'electron';
+import { IpcMainEvent, net, session, ipcMain } from 'electron';
 
 import log from 'electron-log';
 
-import {UPDATE_PATHS} from 'common/communication';
+import { UPDATE_PATHS } from 'common/communication';
 
-import {tokensStorePath} from './constants';
+import { tokensStorePath } from './constants';
+
+import { tokenApiEndpoint } from './../common/config/config'
 
 type Token = {
     token: string;
@@ -29,7 +31,7 @@ export class TokenManager {
 
     constructor(tokensStorePath: string) {
         this.clientID = 'A7376A6D-9A79-4B06-A837-7D92DB93965B';
-        this.tokenApiEndpoint = 'https://login.infomaniak.com/token';
+        this.tokenApiEndpoint = tokenApiEndpoint;
 
         this.storeFile = tokensStorePath;
         this.data = {};
@@ -150,7 +152,7 @@ export class TokenManager {
                         try {
                             const data = JSON.parse(raw) as Record<string, string>;
                             // eslint-disable-next-line @typescript-eslint/naming-convention
-                            const {access_token, expires_in, refresh_token} = data;
+                            const { access_token, expires_in, refresh_token } = data;
                             this.data = {
                                 token: access_token,
                                 refreshToken: refresh_token,
@@ -182,7 +184,7 @@ export class TokenManager {
                     this.requestPromise = undefined;
                     reject(error);
                 }
-                response.on('error', (() => {}));
+                response.on('error', (() => { }));
             });
             req.on('abort', () => {
                 const error = new Error('token refresh aborted');

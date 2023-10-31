@@ -33,7 +33,6 @@ import {
     DOUBLE_CLICK_ON_WINDOW,
     TOGGLE_SECURE_INPUT,
     UPDATE_TEAMS,
-    EMIT_CONFIGURATION,
     SERVERS_UPDATE,
 } from 'common/communication';
 import Config from 'common/config';
@@ -112,6 +111,7 @@ import {
 } from './windows';
 import { ConfigServer } from 'types/config';
 import buildConfig from 'common/config/buildConfig';
+import { IKOrigin, devServerUrl, isLocalEnv } from 'common/config/config';
 
 export const mainProtocol = protocols?.[0]?.schemes?.[0];
 
@@ -302,12 +302,17 @@ function initializeInterCommunicationEventListeners() {
 }
 
 function updateTeamsHandler(_: any, servers: ConfigServer[]) {
+
     const [defaultServer] = buildConfig.defaultServers!;
     const [firstServer] = servers;
+
     // Check if it's first call to fetch kchat info with kchat.infomaniak.com
     if (defaultServer?.url && firstServer.url.includes(defaultServer.url)) {
         initIKserver();
     } else {
+        if (isLocalEnv) {
+            servers[0].url = devServerUrl;
+        }
         initReceivedServer(servers);
     }
 }
@@ -341,7 +346,7 @@ async function initializeAfterAppReady() {
         (d, c) => {
             if (d.url.includes('/token') && d.responseHeaders) {
                 if (!d.responseHeaders['access-control-allow-origin']) {
-                    d.responseHeaders['access-control-allow-origin'] = ['https://kchat.infomaniak.com'];
+                    d.responseHeaders['access-control-allow-origin'] = [IKOrigin];
                 }
                 if (!d.responseHeaders['access-control-allow-credentials']) {
                     d.responseHeaders['access-control-allow-credentials'] = ['true'];
