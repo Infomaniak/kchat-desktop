@@ -74,7 +74,7 @@ export function getDeeplinkingURL(args: string[]) {
     // deeplink urls should always be the last argument, but may not be the first (i.e. Windows with the app already running)
         const url = args[args.length - 1];
         const protocol = isDev ? 'mattermost-dev' : mainProtocol;
-        if (url && protocol && url.startsWith(protocol) && isValisdURI(url)) {
+        if (url && protocol && url.startsWith(protocol) && isValidURI(url)) {
             return url;
         }
     }

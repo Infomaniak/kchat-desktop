@@ -3,7 +3,7 @@
 import path from 'path';
 
 import {app, powerMonitor} from 'electron';
-import {ElectronLog} from 'electron-log';
+import {MainLogger} from 'electron-log';
 import {DiagnosticStepResponse} from 'types/diagnostics';
 
 import DiagnosticsStep from '../DiagnosticStep';
@@ -13,7 +13,7 @@ import {dateTimeInFilename} from './internal/utils';
 const stepName = 'Step-7';
 const stepDescriptiveName = 'PerformanceAndMemory';
 
-const run = async (logger: ElectronLog): Promise<DiagnosticStepResponse> => {
+const run = async (logger: MainLogger): Promise<DiagnosticStepResponse> => {
     try {
         const heapSnapshotFilepath = path.join(app.getAppPath(), `heapSnapshots/heap_snap_${dateTimeInFilename()}.txt`);
 

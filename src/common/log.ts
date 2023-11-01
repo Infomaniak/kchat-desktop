@@ -5,6 +5,10 @@ import log, {LevelOption} from 'electron-log';
 
 import Util from 'common/utils/util';
 
+import {getLogsPath} from 'main/utils';
+import fs from 'fs';
+import path from 'path';
+
 export const setLoggingLevel = (level: string) => {
     if (log.transports.file.level === level) {
         return;
@@ -15,14 +19,12 @@ export const setLoggingLevel = (level: string) => {
     log.transports.file.level = level as LevelOption;
 };
 
+logInit();
 // Start on info by default
 setLoggingLevel('info');
 
 export const getLevel = () => log.transports.file.level as string;
 
-/*
-import {getLogsPath} from 'main/utils';
-import fs from 'fs';
 function logInit() {
     try {
         const pathLogFile = path.join(getLogsPath(), 'kchat-desktop.log');
@@ -44,7 +46,7 @@ function logInit() {
     } catch (err) {
         // do nothing
     }
-}*/
+}
 
 export class Logger {
     private prefixes: string[];
