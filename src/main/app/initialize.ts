@@ -111,7 +111,7 @@ import {
 } from './windows';
 import { ConfigServer } from 'types/config';
 import buildConfig from 'common/config/buildConfig';
-import { IKOrigin, devServerUrl, isLocalEnv } from 'common/config/config';
+import { IKOrigin, devServerUrl, isLocalEnv } from 'common/config/ikConfig';
 
 export const mainProtocol = protocols?.[0]?.schemes?.[0];
 

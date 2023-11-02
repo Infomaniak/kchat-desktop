@@ -8,7 +8,7 @@ import path from 'path';
 import { app, ipcMain } from 'electron';
 
 import { UPDATE_PATHS } from 'common/communication';
-import { isLocalEnv } from 'common/config/config';
+import { isLocalEnv } from 'common/config/ikConfig';
 
 let userDataPath;
 

@@ -59,7 +59,7 @@ import {
     GET_IS_DEV_MODE,
     TOGGLE_SECURE_INPUT,
 } from 'common/communication';
-import { IKOrigin } from 'common/config/config';
+import { IKOrigin } from 'common/config/ikConfig';
 
 const UNREAD_COUNT_INTERVAL = 1000;
 const CLEAR_CACHE_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours

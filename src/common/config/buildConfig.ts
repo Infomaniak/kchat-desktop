@@ -3,7 +3,7 @@
 // See LICENSE.txt for license information.
 
 import { BuildConfig } from 'types/config';
-import { IKOrigin } from './config';
+import { IKOrigin } from './ikConfig';
 
 // For detailed guides, please refer to https://docs.mattermost.com/deployment/desktop-app-deployment.html
 

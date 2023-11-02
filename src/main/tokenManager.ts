@@ -12,7 +12,7 @@ import { UPDATE_PATHS } from 'common/communication';
 
 import { tokensStorePath } from './constants';
 
-import { tokenApiEndpoint } from './../common/config/config'
+import { tokenApiEndpoint } from '../common/config/ikConfig'
 
 type Token = {
     token: string;
@@ -215,7 +215,7 @@ export class TokenManager {
             return this.revokePromise as Promise<any>;
         }
 
-        this.revokePromise = new Promise((resolve, reject) => {
+        this.revokePromise = new Promise<void>((resolve, reject) => {
             if (!this.data.token) {
                 reject(new Error('no token to revoke'));
             }

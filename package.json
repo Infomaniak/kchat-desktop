@@ -70,7 +70,7 @@
         "lint:js-quiet": "eslint --ignore-path .gitignore --ignore-pattern node_modules --ext .js --ext .jsx --ext .ts --ext .tsx . --quiet",
         "fix:js": "eslint --ignore-path .gitignore --ignore-pattern node_modules --quiet --ext .js --ext .jsx --ext .ts --ext .tsx . --fix",
         "check-build-config": "npm-run-all check-config-parameters:build check-build-config:build check-build-config:run",
-        "check-config-parameters:build": "babel ./src/common/config/config.ts -o ./dist/config.js",
+        "check-config-parameters:build": "babel ./src/common/config/ikConfig.ts -o ./dist/ikConfig.js",
         "check-build-config:build": "babel ./src/common/config/buildConfig.ts -o ./dist/buildConfig.js",
         "check-build-config:run": "node -r @babel/register scripts/check_build_config.js",
         "check-types": "tsc",

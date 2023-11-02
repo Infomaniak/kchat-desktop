@@ -85,7 +85,7 @@ export function handleMainWindowIsShown() {
             handleShowOnboardingScreens(showWelcomeScreen(), showNewServerModal(), false);
         });
     }
-}
+    }
 
 export function handleWelcomeScreenModal() {
     log.debug('handleWelcomeScreenModal');

@@ -62,7 +62,7 @@ import modalManager from './modalManager';
 import LoadingScreen from './loadingScreen';
 import TokenManager from 'main/tokenManager';
 import { createCallDialingWindow } from 'main/windows/callDialingWindow';
-import { IKOrigin } from 'common/config/config';
+import { IKOrigin } from 'common/config/ikConfig';
 
 const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
