@@ -26,6 +26,7 @@ jobs:
 
     create-release:
         runs-on: ubuntu-latest
+        permissions: write-all
         outputs:
             output_url: ${{ steps.create_release.outputs.upload_url }}
         steps:
