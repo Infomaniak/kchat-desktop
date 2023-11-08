@@ -306,7 +306,7 @@ function updateTeamsHandler(_: any, servers: ConfigServer[]) {
     const [firstServer] = servers;
 
     // Check if it's first call to fetch kchat info with kchat.infomaniak.com
-    if (defaultServer?.url && firstServer.url.includes(defaultServer.url)) {
+    if (defaultServer?.url && firstServer.url === defaultServer.url) {
         initIKserver();
     } else {
         if (isLocalEnv && devServerUrl) {
@@ -366,14 +366,14 @@ async function initializeAfterAppReady() {
     );
 
     /*
-        Catch api/v4 call to inject token
+        Catch api/v4 call to inject token, for images and websocket, rest is handled by the web client.
      */
     defaultSession.webRequest.onBeforeSendHeaders({ urls: ['https://*/api/v4/*', 'https://*/broadcasting/auth'] },
         (d, c) => {
             const authHeader = d.requestHeaders.Authorization ? d.requestHeaders.Authorization : null;
-            const ikToken = TokenManager.getToken(); // WindowManager.mainStore?.get('IKToken');
+            const ikToken = TokenManager.getToken();
 
-            // No Auhtorization header or bearer is empty
+            // No Authorization header or bearer is empty
             if ((!authHeader || !authHeader?.split(' ')[1]) && ikToken.token) {
                 d.requestHeaders.Authorization = `Bearer ${ikToken.token}`;
             }
