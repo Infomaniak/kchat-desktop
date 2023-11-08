@@ -58,6 +58,7 @@ jobs:
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
               run: |
                   brew install yq rename
+                  sudo -H pip install setuptools
                   npm ci
             - name: release/update-version
               uses: ./.github/actions/version
