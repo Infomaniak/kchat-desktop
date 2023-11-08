@@ -69,6 +69,7 @@ jobs:
               env:
                   APPLEID: ${{ secrets.APPLEID }}
                   APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+                  APPLETEAMID: ${{ secrets.APPLETEAMID }}
                   CSC_FOR_PULL_REQUEST: true
                   CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
                   CSC_LINK: ${{ secrets.CSC_LINK }}
