@@ -243,7 +243,7 @@ export class ViewManager {
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
         console.log('callWindow opened', this.callWindow)
         if (this.callWindow) return
-        this.callWindow = createCallDialingWindow(MainWindow.get()!, true, message.calling);
+        this.callWindow = createCallDialingWindow(MainWindow.get()!, withDevTools, message.calling);
         this.callWindow?.on('close', () => {
             this.destroyCallWindow();
         })
