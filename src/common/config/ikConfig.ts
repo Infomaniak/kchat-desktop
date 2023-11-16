@@ -12,7 +12,7 @@ export const isLocalEnv = false;
 
 // export const tokenApiEndpoint = 'https://login.preprod.dev.infomaniak.ch/token';
 // export const IKOrigin = 'https://kchat.preprod.dev.infomaniak.ch';
-// export const devServerUrl = 'https://local.kchat.preprod.dev.infomaniak.ch';
+// export const devServerUrl = 'https://infomaniak.kchat.preprod.dev.infomaniak.ch';
 // export const isLocalEnv = false;
 
 
