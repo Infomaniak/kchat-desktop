@@ -4,6 +4,14 @@
         <meta charset="utf-8">
         <meta http-equiv="Content-Security-Policy" content="img-src https://* data:; style-src 'self' 'unsafe-inline'; media-src data:">
         <title><%= htmlWebpackPlugin.options.title %></title>
+        <style>
+            body {
+                -webkit-app-region: drag;
+            }
+            button {
+                -webkit-app-region: no-drag;
+            }
+        </style>
     </head>
     <body>
         <div id="app" />
