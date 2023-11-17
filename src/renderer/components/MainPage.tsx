@@ -531,7 +531,7 @@ class MainPage extends React.PureComponent<Props, State> {
                             })}
                         />
                     </button>
-                    {activeServer && (
+                  { process.env.NODE_ENV === 'dev' && activeServer && (
                         <ServerDropdownButton
                             isDisabled={this.state.modalOpen}
                             activeServerName={activeServer.name}
@@ -609,3 +609,4 @@ class MainPage extends React.PureComponent<Props, State> {
 }
 
 export default injectIntl(MainPage);
+

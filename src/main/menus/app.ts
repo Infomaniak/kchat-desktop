@@ -6,7 +6,7 @@
 import fs from 'fs';
 import {app, ipcMain, Menu, MenuItemConstructorOptions, MenuItem, session, shell, WebContents, clipboard} from 'electron';
 import log from 'electron-log';
-import {OPEN_SERVERS_DROPDOWN, SHOW_NEW_SERVER_MODAL} from 'common/communication';
+import { SHOW_NEW_SERVER_MODAL} from 'common/communication';
 import {Config} from 'common/config';
 import {localizeMessage} from 'main/i18nManager';
 import {UpdateManager} from 'main/autoUpdater';
@@ -17,8 +17,6 @@ import {getLogsPath} from 'main/utils';
 import ViewManager from 'main/views/viewManager';
 import SettingsWindow from 'main/windows/settingsWindow';
 import ServerManager from 'common/servers/serverManager';
-import ServerViewState from 'app/serverViewState';
-import {getViewDisplayName, ViewType} from 'common/views/View';
 import { t } from 'common/utils/util';
 
 export function createTemplate(config: Config, updateManager: UpdateManager) {
@@ -241,7 +239,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         }],
     });
 
-    const servers = ServerManager.getOrderedServers();
+    //const servers = ServerManager.getOrderedServers();
     const windowMenu = {
         id: 'window',
         label: localizeMessage('main.menus.app.window', '&Window'),
@@ -261,52 +259,46 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             label: isMac ? localizeMessage('main.menus.app.window.closeWindow', 'Close Window') : localizeMessage('main.menus.app.window.close', 'Close'),
             accelerator: 'CmdOrCtrl+W',
         }, separatorItem,
-        ...(ServerManager.hasServers() ? [{
-            label: localizeMessage('main.menus.app.window.showServers', 'Show Servers'),
-            accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+S`,
-            click() {
-                ipcMain.emit(OPEN_SERVERS_DROPDOWN);
-            },
-        }] : []),
-        ...servers.slice(0, 9).map((server, i) => {
-            const items = [];
-            items.push({
-                label: server.name,
-                accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+${i + 1}`,
-                click() {
-                    ServerViewState.switchServer(server.id);
-                },
-            });
-            if (ServerViewState.getCurrentServer().id === server.id) {
-                ServerManager.getOrderedTabsForServer(server.id).slice(0, 9).forEach((view, i) => {
-                    items.push({
-                        label: `    ${localizeMessage(`common.views.${view.type}`, getViewDisplayName(view.type as ViewType))}`,
-                        accelerator: `CmdOrCtrl+${i + 1}`,
-                        click() {
-                            ViewManager.showById(view.id);
-                        },
-                    });
-                });
-            }
-            return items;
-        }).flat(), separatorItem, {
-            label: localizeMessage('main.menus.app.window.selectNextTab', 'Select Next Tab'),
-            accelerator: 'Ctrl+Tab',
-            click() {
-                ServerViewState.selectNextView();
-            },
-            enabled: (servers.length > 1),
-        }, {
-            label: localizeMessage('main.menus.app.window.selectPreviousTab', 'Select Previous Tab'),
-            accelerator: 'Ctrl+Shift+Tab',
-            click() {
-                ServerViewState.selectPreviousView();
-            },
-            enabled: (servers.length > 1),
-        }, ...(isMac ? [separatorItem, {
-            role: 'front',
-            label: localizeMessage('main.menus.app.window.bringAllToFront', 'Bring All to Front'),
-        }] : []),
+
+        // ...teams.sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).map((team, i) => {
+        //     const items = [];
+        //     items.push({
+        //         label: team.name,
+        //         accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+${i + 1}`,
+        //         click() {
+        //             WindowManager.switchServer(team.name);
+        //         },
+        //     });
+        //     if (WindowManager.getCurrentTeamName() === team.name) {
+        //         team.tabs.filter((tab) => tab.isOpen).sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).forEach((tab, i) => {
+        //             items.push({
+        //                 label: `    ${localizeMessage(`common.tabs.${tab.name}`, getTabDisplayName(tab.name as TabType))}`,
+        //                 accelerator: `CmdOrCtrl+${i + 1}`,
+        //                 click() {
+        //                     WindowManager.switchTab(team.name, tab.name);
+        //                 },
+        //             });
+        //         });
+        //     }
+        //     return items;
+        // }).flat(), separatorItem, {
+        //     label: localizeMessage('main.menus.app.window.selectNextTab', 'Select Next Tab'),
+        //     accelerator: 'Ctrl+Tab',
+        //     click() {
+        //         WindowManager.selectNextTab();
+        //     },
+        //     enabled: (teams.length > 1),
+        // }, {
+        //     label: localizeMessage('main.menus.app.window.selectPreviousTab', 'Select Previous Tab'),
+        //     accelerator: 'Ctrl+Shift+Tab',
+        //     click() {
+        //         WindowManager.selectPreviousTab();
+        //     },
+        //     enabled: (teams.length > 1),
+        // }, ...(isMac ? [separatorItem, {
+        //     role: 'front',
+        //     label: localizeMessage('main.menus.app.window.bringAllToFront', 'Bring All to Front'),
+        // }] : []),
         ],
     };
     template.push(windowMenu);

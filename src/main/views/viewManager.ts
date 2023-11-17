@@ -241,9 +241,8 @@ export class ViewManager {
 
     handleCallDialing = (_: IpcMainEvent, message: any) => {
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
-        console.log('callWindow opened', this.callWindow)
         if (this.callWindow) return
-        this.callWindow = createCallDialingWindow(MainWindow.get()!, true, message.calling);
+        this.callWindow = createCallDialingWindow(MainWindow.get()!, withDevTools, message.calling);
         this.callWindow?.on('close', () => {
             this.destroyCallWindow();
         })
@@ -575,8 +574,6 @@ export class ViewManager {
                 this.currentView = view.id;
                 this.showById(view.id);
                 MainWindow.get()?.webContents.send(SET_ACTIVE_VIEW, view.view.server.id, view.view.id);
-            } else {
-                this.focusCurrentView();
             }
         } else {
             this.showInitial();
