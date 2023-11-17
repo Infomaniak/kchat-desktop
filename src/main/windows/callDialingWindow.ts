@@ -23,6 +23,7 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
         alwaysOnTop: true,
         fullscreen: false,
         fullscreenable: false,
+        frame:false,
         webPreferences: {
             preload,
             session: mainSession,

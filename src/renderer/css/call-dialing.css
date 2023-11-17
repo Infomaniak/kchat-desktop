@@ -1,13 +1,4 @@
-html,
-body,
-body>div {
-    height: 100%;
-}
-
 .container {
-    max-width: 270px;
-    height: 267px;
-    width: 267px;
     padding: 16px;
     overflow: hidden;
     padding-top: 32px;
