@@ -31,6 +31,14 @@ jobs:
         steps:
             - name: release/checkout-repo
               uses: actions/checkout@v3
+            - name: Set Prerelease Flag
+              id: prerelease_check
+              run: |
+                if [[ "${{ github.ref }}" == *"-beta"* ]] || [[ "${{ github.ref }}" == *"-alpha"* ]]; then
+                  echo "PRERELEASE=true" >> $GITHUB_ENV
+                else
+                  echo "PRERELEASE=false" >> $GITHUB_ENV
+                fi
             - name: Create Release
               id: create_release
               uses: actions/create-release@v1
@@ -38,7 +46,7 @@ jobs:
                   tag_name: ${{ github.ref }}
                   release_name: ${{ github.ref }}
                   draft: false
-                  prerelease: false
+                  prerelease: ${{ env.PRERELEASE }}
 
     build-mac:
         runs-on: macos-latest
