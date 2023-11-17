@@ -574,8 +574,6 @@ export class ViewManager {
                 this.currentView = view.id;
                 this.showById(view.id);
                 MainWindow.get()?.webContents.send(SET_ACTIVE_VIEW, view.view.server.id, view.view.id);
-            } else {
-                this.focusCurrentView();
             }
         } else {
             this.showInitial();
