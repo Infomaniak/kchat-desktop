@@ -36,8 +36,6 @@ import {
     RESET_AUTH,
     RESET_TEAMS,
     RESET_TOKEN,
-    SERVER_ADDED,
-    SERVER_DELETED,
     TOKEN_REFRESHED,
     TOKEN_REQUEST,
     CALL_JOINED,
@@ -67,36 +65,11 @@ import { IKOrigin } from 'common/config/ikConfig';
 const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
 const URL_VIEW_HEIGHT = 20;
-
-type SuiteTeam = {
-    id: string;
-    create_at: number;
-    update_at: number;
-    delete_at: number;
-    display_name: string;
-    name: string;
-    product_id: number;
-    account_id: number;
-    description: string;
-    email: string;
-    type: string;
-    company_name: string;
-    allowed_domains: string;
-    invite_id: string;
-    scheme_id: string | void;
-    policy_id: string | void;
-    allow_open_invite: boolean;
-    group_constrained: number | void;
-    url: string;
-    pack_name: string;
-    last_team_icon_update: number;
-}
-
 export class ViewManager {
     private closedViews: Map<string, { srv: MattermostServer; view: MattermostView }>;
     private views: Map<string, MattermostBrowserView>;
     private currentView?: string;
-    private callWindow?: BrowserWindow;
+    private callWindow?: BrowserWindow | null;
 
     private urlViewCancel?: () => void;
 
@@ -243,9 +216,7 @@ export class ViewManager {
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
         if (this.callWindow) return
         this.callWindow = createCallDialingWindow(MainWindow.get()!, withDevTools, message.calling);
-        this.callWindow?.on('close', () => {
-            this.destroyCallWindow();
-        })
+        this.callWindow?.on('close', () => this.destroyCallWindow());
     }
 
     handleCallDeclined = (_: IpcMainEvent, message: unknown) => {

@@ -11,7 +11,6 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
     const preload = getLocalPreload('callDial.js');
     const mainSession = mainWindow.webContents.session;
 
-    //const spellcheck = (typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker);
     const callDialWindow = new BrowserWindow({
         width: 267,
         height: 267,
@@ -23,7 +22,7 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
         alwaysOnTop: true,
         fullscreen: false,
         fullscreenable: false,
-        frame:false,
+        frame: false,
         webPreferences: {
             preload,
             session: mainSession,
@@ -32,7 +31,6 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
         },
     });
     callDialWindow.setTitle('kChat');
-
     const localURL = getLocalURLString('callDialing.html');
     callDialWindow.setMenuBarVisibility(false);
     callDialWindow.loadURL(localURL).catch(
@@ -41,16 +39,9 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
             log.info(process.env);
         });
 
-    callDialWindow.webContents.once('dom-ready', () => {
-        callDialWindow?.show();
-    });
-    ipcMain.on(CALLS_JOINED_CALL, () => {
-        callDialWindow?.close();
-    });
-    callDialWindow.webContents.on('did-finish-load', () => {
-        callDialWindow.webContents.send('info-received', callInfo);
-    });
-
+    callDialWindow.webContents.once('dom-ready', () => callDialWindow?.show());
+    ipcMain.on(CALLS_JOINED_CALL, () => !callDialWindow?.isDestroyed() && callDialWindow?.close());
+    callDialWindow.webContents.on('did-finish-load', () => callDialWindow.webContents.send('info-received', callInfo));
     if (withDevTools) {
         callDialWindow.webContents.openDevTools({ mode: 'detach' });
     }
