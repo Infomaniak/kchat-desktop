@@ -40,7 +40,7 @@ if (process.platform === 'win32') {
     robot.mouseClick();
 }
 
-const exampleTeam = {
+const exampleServer = {
     name: 'example',
     url: exampleURL,
     order: 0,
@@ -61,7 +61,7 @@ const exampleTeam = {
     ],
     lastActiveTab: 0,
 };
-const githubTeam = {
+const githubServer = {
     name: 'github',
     url: 'https://github.com/',
     order: 1,
@@ -87,7 +87,7 @@ const githubTeam = {
 
 const demoConfig = {
     version: 3,
-    teams: [exampleTeam, githubTeam],
+    teams: [exampleServer, githubServer],
     showTrayIcon: false,
     trayIconTheme: 'light',
     minimizeToTray: false,
@@ -113,9 +113,9 @@ const demoConfig = {
 const demoMattermostConfig = {
     ...demoConfig,
     teams: [{
-        ...exampleTeam,
+        ...exampleServer,
         url: mattermostURL,
-    }, githubTeam],
+    }, githubServer],
 };
 
 const cmdOrCtrl = process.platform === 'darwin' ? 'command' : 'control';
@@ -214,16 +214,16 @@ module.exports = {
         //     // this changes the default debugging port so chromedriver can run without issues.
         //     options.chromeDriverArgs.push('remote-debugging-port=9222');
         //}
-        return electron.launch(options).then(async (app) => {
-            // Make sure the app has time to fully load and that the window is focused
-            await asyncSleep(1000);
-            const mainWindow = app.windows().find((window) => window.url().includes('index'));
-            const browserWindow = await app.browserWindow(mainWindow);
-            await browserWindow.evaluate((win) => {
-                win.show();
-                return true;
+        return electron.launch(options).then(async (eapp) => {
+            await eapp.evaluate(async ({app}) => {
+                const promise = new Promise((resolve) => {
+                    app.on('e2e-app-loaded', () => {
+                        resolve();
+                    });
+                });
+                return promise;
             });
-            return app;
+            return eapp;
         });
     },
 
@@ -234,9 +234,8 @@ module.exports = {
                 if (!window.testHelper) {
                     return null;
                 }
-                const name = await window.testHelper.getViewName();
-                const webContentsId = await window.testHelper.getWebContentsId();
-                return {viewName: name, webContentsId};
+                const info = await window.testHelper.getViewInfoForTest();
+                return {viewName: `${info.serverName}___${info.viewType}`, webContentsId: info.webContentsId};
             }).then((result) => {
                 if (result) {
                     map[result.viewName] = {win, webContentsId: result.webContentsId};

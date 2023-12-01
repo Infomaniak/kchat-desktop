@@ -15,7 +15,7 @@ describe('focus', function desc() {
     this.timeout(40000);
 
     const config = {
-        ...env.demoMattermostConfig
+        ...env.demoMattermostConfig,
     };
 
     beforeEach(async () => {
@@ -72,8 +72,8 @@ describe('focus', function desc() {
         it('MM-T1316 should return focus to the message box when closing the settings window', async () => {
             const mainView = this.app.windows().find((window) => window.url().includes('index'));
             const dropdownView = this.app.windows().find((window) => window.url().includes('dropdown'));
-            await mainView.click('.TeamDropdownButton');
-            await dropdownView.click('.TeamDropdown .TeamDropdown__button.addServer');
+            await mainView.click('.ServerDropdownButton');
+            await dropdownView.click('.ServerDropdown .ServerDropdown__button.addServer');
             const newServerView = await this.app.waitForEvent('window', {
                 predicate: (window) => window.url().includes('newServer'),
             });
@@ -90,6 +90,43 @@ describe('focus', function desc() {
 
             const textboxString = await firstServer.inputValue('#post_textbox');
             textboxString.should.equal('Mattermost');
+        });
+
+        it('MM-T1317 should return focus to the focused box when switching servers', async () => {
+            const mainView = this.app.windows().find((window) => window.url().includes('index'));
+            const dropdownView = this.app.windows().find((window) => window.url().includes('dropdown'));
+            await mainView.click('.ServerDropdownButton');
+            await dropdownView.click('.ServerDropdown .ServerDropdown__button:has-text("community")');
+            // eslint-disable-next-line dot-notation
+            const secondServer = this.serverMap['community___TAB_MESSAGING'].win;
+            await secondServer.waitForSelector('#input_loginId');
+            await secondServer.focus('#input_loginId');
+
+            await mainView.click('.ServerDropdownButton');
+            await dropdownView.click(`.ServerDropdown .ServerDropdown__button:has-text("${config.teams[0].name}")`);
+            const isTextboxFocused = await firstServer.$eval('#post_textbox', (el) => el === document.activeElement);
+            isTextboxFocused.should.be.true;
+
+            // Make sure you can just start typing and it'll go in the post textbox
+            await asyncSleep(500);
+            robot.typeString('Mattermost');
+            await asyncSleep(500);
+
+            const textboxString = await firstServer.inputValue('#post_textbox');
+            textboxString.should.equal('Mattermost');
+
+            await mainView.click('.ServerDropdownButton');
+            await dropdownView.click('.ServerDropdown .ServerDropdown__button:has-text("community")');
+            const isLoginFocused = await secondServer.$eval('#input_loginId', (el) => el === document.activeElement);
+            isLoginFocused.should.be.true;
+
+            // Make sure you can just start typing and it'll go in the post textbox
+            await asyncSleep(500);
+            robot.typeString('username');
+            await asyncSleep(500);
+
+            const loginString = await secondServer.inputValue('#input_loginId');
+            loginString.should.equal('username');
         });
     });
 });

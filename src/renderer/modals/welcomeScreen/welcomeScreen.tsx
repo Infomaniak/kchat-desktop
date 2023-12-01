@@ -4,24 +4,24 @@
 import React, {useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
 
-import {TeamWithIndex} from 'types/config';
-import {ModalMessage} from 'types/modals';
+import {UniqueServer} from 'types/config';
 
-import {
-    GET_MODAL_UNCLOSEABLE,
-    GET_DARK_MODE,
-    DARK_MODE_CHANGE,
-    RESET_AUTH,
-} from 'common/communication';
 import IntlProvider from 'renderer/intl_provider';
+
 import WelcomeScreen from '../../components/WelcomeScreen';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+import ConfigureServer from 'renderer/components/ConfigureServer';
 
 const MOBILE_SCREEN_WIDTH = 1200;
 
+const onConnect = (data: UniqueServer) => {
+    window.desktop.modals.finishModal(data);
+};
+
 const WelcomeScreenModalWrapper = () => {
     const [darkMode, setDarkMode] = useState(false);
+    const [getStarted, setGetStarted] = useState(false);
     const [mobileView, setMobileView] = useState(false);
 
     const handleWindowResize = () => {
@@ -29,39 +29,40 @@ const WelcomeScreenModalWrapper = () => {
     };
 
     useEffect(() => {
-        window.postMessage({type: GET_MODAL_UNCLOSEABLE}, window.location.href);
-        window.postMessage({type: GET_DARK_MODE}, window.location.href);
+        window.desktop.getDarkMode().then((result) => {
+            setDarkMode(result);
+        });
+
+        window.desktop.onDarkModeChange((result) => {
+            setDarkMode(result);
+        });
 
         handleWindowResize();
-
         window.addEventListener('resize', handleWindowResize);
-        window.addEventListener('message', handleMessageEvent);
 
         return () => {
-            window.removeEventListener('message', handleMessageEvent);
+            window.removeEventListener('resize', handleWindowResize);
         };
     }, []);
 
-    const handleMessageEvent = (event: {data: ModalMessage<boolean | Electron.Rectangle | TeamWithIndex[]>}) => {
-        switch (event.data.type) {
-        case DARK_MODE_CHANGE:
-            setDarkMode(event.data.data as boolean);
-            break;
-        default:
-            break;
-        }
-    };
-
     const onGetStarted = () => {
-        window.postMessage({type: RESET_AUTH}, window.location.href);
+        setGetStarted(true);
     };
 
     return (
         <IntlProvider>
-            <WelcomeScreen
-                darkMode={darkMode}
-                onGetStarted={onGetStarted}
-            />
+            {getStarted ? (
+                <ConfigureServer
+                    mobileView={mobileView}
+                    darkMode={darkMode}
+                    onConnect={onConnect}
+                />
+            ) : (
+                <WelcomeScreen
+                    darkMode={darkMode}
+                    onGetStarted={onGetStarted}
+                />
+            )}
         </IntlProvider>
     );
 };

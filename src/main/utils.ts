@@ -5,13 +5,22 @@
 import path from 'path';
 import fs from 'fs';
 
-import {app, BrowserWindow} from 'electron';
+import { exec as execOriginal } from 'child_process';
 
-import {Args} from 'types/args';
+import { promisify } from 'util';
+const exec = promisify(execOriginal);
 
-import {BACK_BAR_HEIGHT, customLoginRegexPaths, PRODUCTION, TAB_BAR_HEIGHT} from 'common/utils/constants';
-import UrlUtils from 'common/utils/url';
+import { app, BrowserWindow } from 'electron';
+
+import { Args } from 'types/args';
+
+import { BACK_BAR_HEIGHT, customLoginRegexPaths, PRODUCTION, TAB_BAR_HEIGHT } from 'common/utils/constants';
 import Utils from 'common/utils/util';
+import { isAdminUrl, isPluginUrl, isTeamUrl, isUrlType, parseURL } from 'common/utils/url';
+
+export function isInsideRectangle(container: Electron.Rectangle, rect: Electron.Rectangle) {
+    return container.x <= rect.x && container.y <= rect.y && container.width >= rect.width && container.height >= rect.height;
+}
 
 export function shouldBeHiddenOnStartup(parsedArgv: Args) {
     if (parsedArgv.hidden) {
@@ -26,7 +35,7 @@ export function shouldBeHiddenOnStartup(parsedArgv: Args) {
 }
 
 export function getWindowBoundaries(win: BrowserWindow, hasBackBar = false) {
-    const {width, height} = win.getContentBounds();
+    const { width, height } = win.getContentBounds();
     return getAdjustedWindowBoundaries(width, height, hasBackBar);
 }
 
@@ -39,11 +48,11 @@ export function getAdjustedWindowBoundaries(width: number, height: number, hasBa
     };
 }
 
-export function shouldHaveBackBar(serverUrl: URL | string, inputURL: URL | string) {
-    if (UrlUtils.isUrlType('login', serverUrl, inputURL)) {
-        const serverURL = UrlUtils.parseURL(serverUrl);
+export function shouldHaveBackBar(serverUrl: URL, inputURL: URL) {
+    if (isUrlType('login', serverUrl, inputURL)) {
+        const serverURL = parseURL(serverUrl);
         const subpath = serverURL ? serverURL.pathname : '';
-        const parsedURL = UrlUtils.parseURL(inputURL);
+        const parsedURL = parseURL(inputURL);
         if (!parsedURL) {
             return false;
         }
@@ -58,7 +67,7 @@ export function shouldHaveBackBar(serverUrl: URL | string, inputURL: URL | strin
 
         return false;
     }
-    return !UrlUtils.isTeamUrl(serverUrl, inputURL) && !UrlUtils.isAdminUrl(serverUrl, inputURL) && !UrlUtils.isPluginUrl(serverUrl, inputURL);
+    return !isTeamUrl(serverUrl, inputURL) && !isAdminUrl(serverUrl, inputURL) && !isPluginUrl(serverUrl, inputURL);
 }
 
 export function getLocalURLString(urlPath: string, query?: Map<string, string>, isMain?: boolean) {
@@ -97,7 +106,7 @@ export function composeUserAgent() {
     // filter out the Mattermost tag that gets added earlier on
     const filteredUserAgent = baseUserAgent.filter((ua) => !ua.startsWith('Mattermost'));
 
-    return `${filteredUserAgent.join(' ')} Mattermost/${app.getVersion()}`;
+    return `${filteredUserAgent.join(' ')} Mattermost/2.2.0 kChat/2.2.0`;
 }
 
 export function isStringWithLength(string: unknown): boolean {
@@ -120,7 +129,7 @@ export function doubleSecToMs(d: number): number {
 }
 
 export function shouldIncrementFilename(filepath: string, increment = 0): string {
-    const {dir, name, ext} = path.parse(filepath);
+    const { dir, name, ext } = path.parse(filepath);
     const incrementString = increment ? ` (${increment})` : '';
     const filename = `${name}${incrementString}${ext}`;
 
@@ -137,10 +146,10 @@ export function shouldIncrementFilename(filepath: string, increment = 0): string
     return filename;
 }
 
-const logsPath: {[os: string]: string} = {
-    darwin: `${app.getPath('home')}/Library/Logs/kChat/`,
-    win32: `${app.getPath('appData')}\\kChat\\logs\\`,
-    linux: `${app.getPath('appData')}/kChat/logs/`,
+const logsPath: { [os: string]: string } = {
+    darwin: `${app.getPath('home')}/Library/Logs/${app.name}/`,
+    win32: `${app.getPath('appData')}\\${app.name}\\logs\\`,
+    linux: `${app.getPath('appData')}/${app.name}/logs/`,
 };
 
 export const getLogsPath = () => logsPath[process.platform];
@@ -152,10 +161,25 @@ export const getLogsPath = () => logsPath[process.platform];
  * @see https://github.com/microsoft/vscode-remote-release/issues/6481
  */
 export function isSigPipeError(e: unknown): e is Error {
-	if (!e || typeof e !== 'object') {
-		return false;
-	}
+    if (!e || typeof e !== 'object') {
+        return false;
+    }
 
-	const cast = e as Record<string, string | undefined>;
-	return cast.code === 'EPIPE' && cast.syscall?.toUpperCase() === 'WRITE';
+    const cast = e as Record<string, string | undefined>;
+    return cast.code === 'EPIPE' && cast.syscall?.toUpperCase() === 'WRITE';
+}
+export function resetScreensharePermissionsMacOS() {
+    if (process.platform !== 'darwin') {
+        return Promise.resolve();
+    }
+    return exec('tccutil reset ScreenCapture Mattermost.Desktop',
+        { timeout: 1000 });
+}
+
+export function openScreensharePermissionsSettingsMacOS() {
+    if (process.platform !== 'darwin') {
+        return Promise.resolve();
+    }
+    return exec('open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"',
+        { timeout: 1000 });
 }

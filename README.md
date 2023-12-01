@@ -10,7 +10,13 @@ Infomaniak fork of the mattermost desktop app modified to work with our internal
 
 -   Node 16
 
-### Installing and building dependencies
+### Desktop integration
+* Server dropdown for access to multiple servers
+* Dedicated tabs for Channels, Boards and Playbooks
+* Desktop Notifications
+* Badges for unread channels and mentions
+* Deep Linking to open links directly in the app
+* Runs in background to reduce number of open windows
 
 ```shell
 npm install

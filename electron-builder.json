@@ -1,7 +1,7 @@
 {
   "publish": {
     "provider": "s3",
-    "channel": "latest",
+    "channel": "beta",
     "bucket": "kchat",
     "endpoint": "https://download.storage5.infomaniak.com",
     "path": "/"
@@ -47,13 +47,10 @@
     "artifactName": "${name}_${version}-1_${arch}.${ext}",
     "synopsis": "kChat Desktop App",
     "depends": [
-      "gconf2",
-      "gconf-service",
       "libnotify4",
       "libxtst6",
       "libnss3"
     ],
-    "category": "contrib/net",
     "priority": "optional"
   },
   "asarUnpack": [
@@ -66,7 +63,6 @@
       "appimage",
       "deb"
     ],
-    "icon": "src/assets/icon.icns",
     "extraFiles": [
       {
         "filter": [
@@ -108,7 +104,6 @@
         ]
       }
     ],
-    "icon": "src/assets/osx/osx_icon.icns",
     "hardenedRuntime": true,
     "gatekeeperAssess": false,
     "entitlements": "./entitlements.mac.plist",
@@ -174,6 +169,10 @@
     "publisherName": "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH"
   },
   "nsis": {
-    "artifactName": "${name}-setup-${version}-win.${ext}"
+    "artifactName": "${name}-setup-${version}-win.${ext}",
+    "packElevateHelper": false
+  },
+  "rpm": {
+    "fpm": ["--rpm-rpmbuild-define", "_build_id_links none"]
   }
 }

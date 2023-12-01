@@ -1,17 +1,9 @@
-body {
-    -webkit-app-region: drag;
-}
-html, body, body > div {
-    height: 100%;
-}
 .container {
-    max-width: 270px;
-    height: 267px;
-    width: 267px;
     padding: 16px;
     overflow: hidden;
     padding-top: 32px;
 }
+
 div.actions {
     padding: 0;
     padding-top: 15px;
@@ -21,16 +13,19 @@ div.actions {
     justify-content: center;
 
 }
+
 div.content-body {
     display: flex;
     justify-content: center;
     padding-bottom: 8px;
     margin-left: 12px;
 }
+
 div.content-calling {
     text-align: center;
     padding: 8px;
 }
+
 div.content-calling-user {
     color: #333333;
     font-weight: 600;
@@ -41,12 +36,14 @@ div.content-calling-user {
     font-size: 14px;
     margin-left: 8px;
 }
+
 div.content-calling-info {
     color: #666666;
     font-size: 14px;
     padding-top: 8px;
 
 }
+
 div.avatars {
     justify-content: center;
     align-items: center;
@@ -61,6 +58,7 @@ div.avatars {
     margin-left: -12px;
 
 }
+
 button {
     flex: auto;
     min-height: 44px;
@@ -72,12 +70,15 @@ h6.grey {
     align-self: center;
     color: #666666;
 }
+
 button.accept {
     background: #0098ff;
 }
+
 button.decline {
     background: #F44336;
 }
+
 .avatar {
     border-radius: 50%;
     border: 1px solid grey;

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {session} from 'electron';
-import {ElectronLog} from 'electron-log';
+import {MainLogger} from 'electron-log';
 import {DiagnosticStepResponse} from 'types/diagnostics';
 
 import DiagnosticsStep from '../DiagnosticStep';
@@ -10,7 +10,7 @@ import DiagnosticsStep from '../DiagnosticStep';
 const stepName = 'Step-11';
 const stepDescriptiveName = 'AuthSSO';
 
-const run = async (logger: ElectronLog): Promise<DiagnosticStepResponse> => {
+const run = async (logger: MainLogger): Promise<DiagnosticStepResponse> => {
     try {
         const cookies = await session.defaultSession.cookies.get({});
 

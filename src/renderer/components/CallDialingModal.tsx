@@ -3,12 +3,12 @@
 
 /* eslint-disable max-lines */
 
-import {Button} from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import React from 'react';
 
-import {CALLS_JOINED_CALL, CALL_DECLINED, CALL_JOINED} from 'common/communication';
+import { CALLS_JOINED_CALL, CALL_DECLINED, CALL_JOINED } from 'common/communication';
 
-import {playSoundLoop} from 'renderer/notificationSounds';
+import { playSoundLoop } from 'renderer/notificationSounds';
 
 import Avatars from './Avatars/Avatars';
 
@@ -44,7 +44,7 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
     componentDidMount() {
         window.ipcRenderer.on('info-received', (_, msg) => {
             // this.setState({callInfo: msg, trad: localizeMessage('Call.dialing', 'is Calling')});
-            this.setState({callInfo: msg, trad: 'is Calling'});
+            this.setState({ callInfo: msg, trad: 'is Calling' });
         });
         playSoundLoop('Ring');
         setTimeout(() => {
@@ -53,13 +53,13 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
     }
 
     onHandleDecline() {
-        const {callInfo} = this.state;
+        const { callInfo } = this.state;
         window.ipcRenderer.send(CALL_DECLINED, callInfo);
         window.close();
     }
 
     onHandleAccept() {
-        const {callInfo} = this.state;
+        const { callInfo } = this.state;
         window.ipcRenderer.send(CALL_JOINED, callInfo);
         window.close();
     }
@@ -75,7 +75,7 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
     };
 
     render() {
-        const {callInfo} = this.state;
+        const { callInfo } = this.state;
         if (!callInfo) {
             return null;
         }
@@ -105,7 +105,7 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         size='sm'
                         onClick={this.onHandleDecline}
                         variant='danger'
-                        style={{fontSize: 14}}
+                        style={{ fontSize: 14 }}
                     >
                         <span>{'Decline'}</span>
                     </Button>
@@ -114,7 +114,7 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         size='sm'
                         onClick={this.onHandleAccept}
                         variant='primary'
-                        style={{fontSize: 14}}
+                        style={{ fontSize: 14 }}
                     >
                         <span>{'Accept'}</span>
                     </Button>
