@@ -47,6 +47,9 @@ export class DownloadsDropdownView {
         ipcMain.on(DOWNLOADS_DROPDOWN_OPEN_FILE, this.openFile);
         ipcMain.on(UPDATE_DOWNLOADS_DROPDOWN, this.updateDownloadsDropdown);
         ipcMain.on(UPDATE_DOWNLOADS_DROPDOWN_MENU_ITEM, this.updateDownloadsDropdownMenuItem);
+
+        // Keep this remove handler to avoid double registration.
+        ipcMain.removeHandler(GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION);
         ipcMain.handle(GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION, this.getDownloadImageThumbnailLocation);
     }
 
