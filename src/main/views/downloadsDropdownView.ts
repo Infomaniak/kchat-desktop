@@ -71,6 +71,7 @@ export class DownloadsDropdownView {
         }});
 
         this.view.webContents.loadURL(getLocalURLString('downloadsDropdown.html'));
+
         //this.view.webContents.session.webRequest.onHeadersReceived(downloadsManager.webRequestOnHeadersReceivedHandler);
         MainWindow.get()?.addBrowserView(this.view);
     }
@@ -96,13 +97,15 @@ export class DownloadsDropdownView {
     private updateDownloadsDropdown = () => {
         log.debug('updateDownloadsDropdown');
 
-        this.view?.webContents.send(
-            UPDATE_DOWNLOADS_DROPDOWN,
-            downloadsManager.getDownloads(),
-            Config.darkMode,
-            MainWindow.getBounds(),
-            this.item,
-        );
+        if (!this.view?.webContents.isDestroyed()) {
+            this.view?.webContents.send(
+                UPDATE_DOWNLOADS_DROPDOWN,
+                downloadsManager.getDownloads(),
+                Config.darkMode,
+                MainWindow.getBounds(),
+                this.item,
+            );
+        }
     }
 
     private handleOpen = () => {
