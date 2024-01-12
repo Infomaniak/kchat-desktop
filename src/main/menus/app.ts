@@ -4,9 +4,9 @@
 'use strict';
 
 import fs from 'fs';
-import {app, ipcMain, Menu, MenuItemConstructorOptions, MenuItem, session, shell, WebContents, clipboard} from 'electron';
-import log from 'electron-log';
-import { SHOW_NEW_SERVER_MODAL} from 'common/communication';
+
+import {app, Menu, MenuItemConstructorOptions, MenuItem, session, shell, WebContents, clipboard} from 'electron';
+
 import {Config} from 'common/config';
 import {localizeMessage} from 'main/i18nManager';
 import {UpdateManager} from 'main/autoUpdater';
@@ -16,8 +16,7 @@ import TokenManager from 'main/tokenManager';
 import {getLogsPath} from 'main/utils';
 import ViewManager from 'main/views/viewManager';
 import SettingsWindow from 'main/windows/settingsWindow';
-import ServerManager from 'common/servers/serverManager';
-import { t } from 'common/utils/util';
+import {t} from 'common/utils/util';
 
 export function createTemplate(config: Config, updateManager: UpdateManager) {
     const separatorItem: MenuItemConstructorOptions = {
@@ -337,13 +336,13 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         submenu.push(separatorItem);
     }
 
-    submenu.push({
+    /*submenu.push({
         id: 'Show logs',
         label: localizeMessage('main.menus.app.help.ShowLogs', 'Show logs'),
         click() {
             shell.showItemInFolder(log.transports.file.getFile().path);
         },
-    });
+    });*/
 
     submenu.push({
         id: 'diagnostics',
