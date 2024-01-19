@@ -341,9 +341,9 @@ export class WebContentsEventManager {
         };
 
         this.listeners[contents.id] = removeWebContentsListeners;
-        contents.once('render-process-gone', (event, details) => {
-            if (details.reason !== 'clean-exit') {
-                this.log(contents.id).error('Renderer process for a webcontent is no longer available:', details.reason);
+        contents.once('render-process-gone', (_, {reason, exitCode}) => {
+            if (reason !== 'clean-exit') {
+                this.log(contents.id).error('Renderer process for a webcontent is no longer available:', reason, exitCode);
             }
             removeWebContentsListeners();
         });
