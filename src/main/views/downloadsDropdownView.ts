@@ -47,6 +47,7 @@ export class DownloadsDropdownView {
         ipcMain.on(DOWNLOADS_DROPDOWN_OPEN_FILE, this.openFile);
         ipcMain.on(UPDATE_DOWNLOADS_DROPDOWN, this.updateDownloadsDropdown);
         ipcMain.on(UPDATE_DOWNLOADS_DROPDOWN_MENU_ITEM, this.updateDownloadsDropdownMenuItem);
+        ipcMain.removeHandler(GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION);
         ipcMain.handle(GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION, this.getDownloadImageThumbnailLocation);
     }
 
@@ -68,6 +69,7 @@ export class DownloadsDropdownView {
         }});
 
         this.view.webContents.loadURL(getLocalURLString('downloadsDropdown.html'));
+
         //this.view.webContents.session.webRequest.onHeadersReceived(downloadsManager.webRequestOnHeadersReceivedHandler);
         MainWindow.get()?.addBrowserView(this.view);
     }
