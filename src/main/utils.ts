@@ -5,18 +5,18 @@
 import path from 'path';
 import fs from 'fs';
 
-import { exec as execOriginal } from 'child_process';
+import {exec as execOriginal} from 'child_process';
 
-import { promisify } from 'util';
+import {promisify} from 'util';
 const exec = promisify(execOriginal);
 
-import { app, BrowserWindow } from 'electron';
+import {app, BrowserWindow} from 'electron';
 
-import { Args } from 'types/args';
+import {Args} from 'types/args';
 
-import { BACK_BAR_HEIGHT, customLoginRegexPaths, PRODUCTION, TAB_BAR_HEIGHT } from 'common/utils/constants';
+import {BACK_BAR_HEIGHT, customLoginRegexPaths, PRODUCTION, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import Utils from 'common/utils/util';
-import { isAdminUrl, isPluginUrl, isTeamUrl, isUrlType, parseURL } from 'common/utils/url';
+import {isAdminUrl, isPluginUrl, isTeamUrl, isUrlType, parseURL} from 'common/utils/url';
 
 export function isInsideRectangle(container: Electron.Rectangle, rect: Electron.Rectangle) {
     return container.x <= rect.x && container.y <= rect.y && container.width >= rect.width && container.height >= rect.height;
@@ -35,7 +35,7 @@ export function shouldBeHiddenOnStartup(parsedArgv: Args) {
 }
 
 export function getWindowBoundaries(win: BrowserWindow, hasBackBar = false) {
-    const { width, height } = win.getContentBounds();
+    const {width, height} = win.getContentBounds();
     return getAdjustedWindowBoundaries(width, height, hasBackBar);
 }
 
@@ -106,7 +106,7 @@ export function composeUserAgent() {
     // filter out the Mattermost tag that gets added earlier on
     const filteredUserAgent = baseUserAgent.filter((ua) => !ua.startsWith('Mattermost'));
 
-    return `${filteredUserAgent.join(' ')} Mattermost/2.2.0 kChat/2.2.0`;
+    return `${filteredUserAgent.join(' ')} Mattermost/2.2.0`;
 }
 
 export function isStringWithLength(string: unknown): boolean {
@@ -129,7 +129,7 @@ export function doubleSecToMs(d: number): number {
 }
 
 export function shouldIncrementFilename(filepath: string, increment = 0): string {
-    const { dir, name, ext } = path.parse(filepath);
+    const {dir, name, ext} = path.parse(filepath);
     const incrementString = increment ? ` (${increment})` : '';
     const filename = `${name}${incrementString}${ext}`;
 
@@ -173,7 +173,7 @@ export function resetScreensharePermissionsMacOS() {
         return Promise.resolve();
     }
     return exec('tccutil reset ScreenCapture Mattermost.Desktop',
-        { timeout: 1000 });
+        {timeout: 1000});
 }
 
 export function openScreensharePermissionsSettingsMacOS() {
@@ -181,5 +181,5 @@ export function openScreensharePermissionsSettingsMacOS() {
         return Promise.resolve();
     }
     return exec('open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"',
-        { timeout: 1000 });
+        {timeout: 1000});
 }
