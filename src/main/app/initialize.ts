@@ -60,7 +60,7 @@ import MainWindow from 'main/windows/mainWindow';
 
 import { protocols } from '../../../electron-builder.json';
 
-import { IKLoginAllowedUrls } from 'common/utils/constants';
+import { IKDriveAllowedUrls, IKLoginAllowedUrls, KChatTokenWhitelist } from 'common/utils/constants';
 
 import ServerManager from 'common/servers/serverManager';
 
@@ -368,7 +368,10 @@ async function initializeAfterAppReady() {
     /*
         Catch api/v4 call to inject token, for images and websocket, rest is handled by the web client.
      */
-    defaultSession.webRequest.onBeforeSendHeaders({ urls: ['https://*/api/v4/*', 'https://*/broadcasting/auth'] },
+    defaultSession.webRequest.onBeforeSendHeaders({ urls: [
+        ...KChatTokenWhitelist,
+        ...IKDriveAllowedUrls
+    ] },
         (d, c) => {
             const authHeader = d.requestHeaders.Authorization ? d.requestHeaders.Authorization : null;
             const ikToken = TokenManager.getToken();

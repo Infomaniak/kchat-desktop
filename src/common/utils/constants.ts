@@ -316,3 +316,17 @@ export const IKLoginAllowedUrls = [
     'https://login.infomaniak.com/*',
     'https://login.preprod.dev.infomaniak.ch/*',
 ];
+
+export const IKDriveAllowedUrls = [
+    'https://kdrive.infomaniak.com/*',
+    'https://kdrive.preprod.dev.infomaniak.ch/*',
+];
+
+export const KChatTokenWhitelist = [
+    // Prod whitelist
+    'https://*.infomaniak.com/api/v4/*',
+    'https://*.infomaniak.com/broadcasting/auth',
+    // Preprod whitelist
+    'https://*.preprod.dev.infomaniak.ch/api/v4/*',
+    'https://*.preprod.dev.infomaniak.ch/broadcasting/auth',
+];
