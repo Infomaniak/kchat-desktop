@@ -366,7 +366,7 @@ async function initializeAfterAppReady() {
     );
 
     /*
-        Catch api/v4 call to inject token, for images and websocket, rest is handled by the web client.
+        Inject token, for kdrive, images and websocket, rest is handled by the web client.
      */
     defaultSession.webRequest.onBeforeSendHeaders({ urls: [
         ...KChatTokenWhitelist,
