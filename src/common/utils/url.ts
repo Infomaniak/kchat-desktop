@@ -3,213 +3,85 @@
 
 import {isHttpsUri, isHttpUri, isUri} from 'valid-url';
 
-import {TeamWithTabs} from 'types/config';
-import {ServerFromURL} from 'types/utils';
-
 import buildConfig from 'common/config/buildConfig';
-import {MattermostServer} from 'common/servers/MattermostServer';
-import {getServerView} from 'common/tabs/TabView';
-import {customLoginRegexPaths, nonTeamUrlPaths} from 'common/utils/constants';
+import {customLoginRegexPaths, nonTeamUrlPaths, CALLS_PLUGIN_ID} from 'common/utils/constants';
 
-function isValidURL(testURL: string) {
-    return Boolean(isHttpUri(testURL) || isHttpsUri(testURL)) && Boolean(parseURL(testURL));
-}
-
-function isValidURI(testURL: string) {
-    return Boolean(isUri(testURL));
-}
-
-function startsWithProtocol(testURL: string) {
-    return Boolean((/^https?:\/\/.*/).test(testURL.trim()));
-}
-
-function parseURL(inputURL: URL | string) {
+export const getFormattedPathName = (pn: string) => (pn.endsWith('/') ? pn : `${pn}/`);
+export const parseURL = (inputURL: string | URL) => {
     if (inputURL instanceof URL) {
         return inputURL;
     }
     try {
-        return new URL(inputURL.replace(/([^:]\/)\/+/g, '$1'));
+        return new URL(inputURL.replace(/([^:]\/)\/+/g, '$1')); // Regex here to remove extra slashes
     } catch (e) {
         return undefined;
     }
-}
+};
 
-function getHost(inputURL: URL | string) {
-    const parsedURL = parseURL(inputURL);
-    if (parsedURL) {
-        return parsedURL.origin;
-    }
-    throw new SyntaxError(`Couldn't parse url: ${inputURL}`);
-}
+/**
+ * URL form checks
+ */
+
+export const isValidURL = (testURL: string) => Boolean(isHttpUri(testURL) || isHttpsUri(testURL)) && Boolean(parseURL(testURL));
+export const isValidURI = (testURL: string) => Boolean(isUri(testURL));
 
 // isInternalURL determines if the target url is internal to the application.
 // - currentURL is the current url inside the webview
-function isInternalURL(targetURL: URL | undefined, currentURL: URL) {
-    if (!targetURL) {
-        return false;
-    }
-
+export const isInternalURL = (targetURL: URL, currentURL: URL, ignoreScheme?: boolean) => {
     if (targetURL.host !== currentURL.host) {
         return false;
     }
 
-    if (!equalUrlsWithSubpath(targetURL, currentURL) && !(targetURL.pathname || '/').startsWith(currentURL.pathname)) {
+    if (!equalUrlsWithSubpath(targetURL, currentURL, ignoreScheme) && !(targetURL.pathname || '/').startsWith(currentURL.pathname)) {
         return false;
     }
 
     return true;
-}
+};
 
-function getServerInfo(serverUrl: URL | string) {
-    const parsedServer = parseURL(serverUrl);
-    if (!parsedServer) {
-        return undefined;
+export const isTrustedURL = (url: URL, rootURL: URL) => {
+    const parsedURL = parseURL(url);
+    const rootParsedURL = parseURL(rootURL);
+    if (!parsedURL || !rootParsedURL) {
+        return false;
     }
+    return (getFormattedPathName(rootParsedURL.pathname) !== '/' && equalUrlsWithSubpath(rootParsedURL, parsedURL)) ||
+        (getFormattedPathName(rootParsedURL.pathname) === '/' && equalUrlsIgnoringSubpath(rootParsedURL, parsedURL));
+};
 
-    // does the server have a subpath?
-    const pn = parsedServer.pathname.toLowerCase();
-    const subpath = getFormattedPathName(pn);
-    return {subpath, url: parsedServer};
-}
-
-export function getFormattedPathName(pn: string) {
-    return pn.endsWith('/') ? pn.toLowerCase() : `${pn.toLowerCase()}/`;
-}
-
-function getManagedResources() {
-    if (!buildConfig) {
-        return [];
+export const isUrlType = (urlType: string, serverURL: URL, inputURL: URL) => {
+    if (!isInternalURL(inputURL, serverURL)) {
+        return false;
     }
+    return (getFormattedPathName(inputURL.pathname).startsWith(`${getFormattedPathName(serverURL.pathname)}${urlType}/`) ||
+    getFormattedPathName(inputURL.pathname).startsWith(`/${urlType}/`));
+};
 
-    return buildConfig.managedResources || [];
-}
-
-export function isUrlType(urlType: string, serverUrl: URL | string, inputURL: URL | string) {
-    if (!serverUrl || !inputURL) {
+export const isHelpUrl = (serverURL: URL, inputURL: URL) => isUrlType('help', serverURL, inputURL);
+export const isImageProxyUrl = (serverURL: URL, inputURL: URL) => isUrlType('api/v4/image', serverURL, inputURL);
+export const isPublicFilesUrl = (serverURL: URL, inputURL: URL) => isUrlType('files', serverURL, inputURL);
+export const isAdminUrl = (serverURL: URL, inputURL: URL) => isUrlType('admin_console', serverURL, inputURL);
+export const isPluginUrl = (serverURL: URL, inputURL: URL) => isUrlType('plugins', serverURL, inputURL);
+export const isChannelExportUrl = (serverURL: URL, inputURL: URL) => isUrlType('plugins/com.mattermost.plugin-channel-export/api/v1/export', serverURL, inputURL);
+export const isManagedResource = (serverURL: URL, inputURL: URL) => [...buildConfig.managedResources].some((testPath) => isUrlType(testPath, serverURL, inputURL));
+export const isTeamUrl = (serverURL: URL, inputURL: URL, withApi?: boolean) => {
+    if (!isInternalURL(inputURL, serverURL)) {
         return false;
     }
 
-    const parsedURL = parseURL(inputURL);
-    const server = getServerInfo(serverUrl);
-    if (!parsedURL || !server || (!equalUrlsIgnoringSubpath(server.url, parsedURL))) {
-        return false;
-    }
-    return (getFormattedPathName(parsedURL.pathname).startsWith(`${server.subpath}${urlType}/`) ||
-    getFormattedPathName(parsedURL.pathname).startsWith(`/${urlType}/`));
-}
-
-function isAdminUrl(serverUrl: URL | string, inputURL: URL | string) {
-    return isUrlType('admin_console', serverUrl, inputURL);
-}
-
-function isTeamUrl(serverUrl: URL | string, inputURL: URL | string, withApi?: boolean) {
-    const parsedURL = parseURL(inputURL);
-    const server = getServerInfo(serverUrl);
-    if (!parsedURL || !server || (!equalUrlsIgnoringSubpath(server.url, parsedURL))) {
-        return false;
-    }
-
-    const paths = [...getManagedResources(), ...nonTeamUrlPaths];
+    const paths = [...buildConfig.managedResources, ...nonTeamUrlPaths];
 
     if (withApi) {
         paths.push('api');
     }
-    return !(paths.some((testPath) => isUrlType(testPath, serverUrl, inputURL)));
-}
-
-function isPluginUrl(serverUrl: URL | string, inputURL: URL | string) {
-    return isUrlType('plugins', serverUrl, inputURL);
-}
-
-function isManagedResource(serverUrl: URL | string, inputURL: URL | string) {
-    const paths = [...getManagedResources()];
-    return paths.some((testPath) => isUrlType(testPath, serverUrl, inputURL));
-}
-
-function getView(inputURL: URL | string, teams: TeamWithTabs[], ignoreScheme = false): ServerFromURL | undefined {
-    const parsedURL = parseURL(inputURL);
-    if (!parsedURL) {
-        return undefined;
-    }
-
-    // TODO: add check for IK server (prod, preprod dev..)
-    // Match for ktalk protocol and redirect to IK server
-    // if (parsedURL.protocol === 'ktalk:') {
-    //     const srv = new MattermostServer(teams[0].name, teams[0].url);
-    //     const tabView = getServerView(srv, teams[0].tabs[0]);
-    //     const ktalkParsedUrl = parseURL(tabView.url);
-    //     if (ktalkParsedUrl) {
-    //         return {name: tabView.name, url: ktalkParsedUrl.toString()};
-    //     }
-    // }
-
-    // If not ktalk protocol and maybe another server than IK server
-    let firstOption;
-    let secondOption;
-
-    teams.forEach((team) => {
-        const srv = new MattermostServer(team.name, team.url);
-
-        // sort by length so that we match the highest specificity last
-        const filteredTabs = team.tabs.map((tab) => {
-            const tabView = getServerView(srv, tab);
-            const parsedServerUrl = parseURL(tabView.url);
-            return {tabView, parsedServerUrl};
-        });
-        filteredTabs.sort((a, b) => a.tabView.url.toString().length - b.tabView.url.toString().length);
-        filteredTabs.forEach((tab) => {
-            if (tab.parsedServerUrl) {
-                // check server and subpath matches (without subpath pathname is \ so it always matches)
-                if (getFormattedPathName(tab.parsedServerUrl.pathname) !== '/' && equalUrlsWithSubpath(tab.parsedServerUrl, parsedURL, ignoreScheme)) {
-                    firstOption = {name: tab.tabView.name, url: tab.parsedServerUrl.toString()};
-                }
-                if (getFormattedPathName(tab.parsedServerUrl.pathname) === '/' && equalUrlsIgnoringSubpath(tab.parsedServerUrl, parsedURL, ignoreScheme)) {
-                    // in case the user added something on the path that doesn't really belong to the server
-                    // there might be more than one that matches, but we can't differentiate, so last one
-                    // is as good as any other in case there is no better match (e.g.: two subpath servers with the same origin)
-                    // e.g.: https://community.mattermost.com/core
-                    secondOption = {name: tab.tabView.name, url: tab.parsedServerUrl.toString()};
-                }
-            }
-        });
-    });
-    return firstOption || secondOption;
-}
-
-// next two functions are defined to clarify intent
-export function equalUrlsWithSubpath(url1: URL, url2: URL, ignoreScheme?: boolean) {
-    if (ignoreScheme) {
-        return url1.host === url2.host && getFormattedPathName(url2.pathname).startsWith(getFormattedPathName(url1.pathname));
-    }
-    return url1.origin === url2.origin && getFormattedPathName(url2.pathname).startsWith(getFormattedPathName(url1.pathname));
-}
-
-export function equalUrlsIgnoringSubpath(url1: URL, url2: URL, ignoreScheme?: boolean) {
-    if (ignoreScheme) {
-        return url1.host.toLowerCase() === url2.host.toLowerCase();
-    }
-    return url1.origin.toLowerCase() === url2.origin.toLowerCase();
-}
-
-function isTrustedURL(url: URL | string, teams: TeamWithTabs[]) {
-    const parsedURL = parseURL(url);
-    if (!parsedURL) {
+    return !(paths.some((testPath) => isUrlType(testPath, serverURL, inputURL)));
+};
+export const isCustomLoginURL = (inputURL: URL, serverURL: URL) => {
+    if (!isTrustedURL(inputURL, serverURL)) {
         return false;
     }
-    return getView(parsedURL, teams) !== null;
-}
-
-function isCustomLoginURL(url: URL | string, server: ServerFromURL, teams: TeamWithTabs[]): boolean {
-    const serverURL = parseURL(server.url);
-    const subpath = server && serverURL ? serverURL.pathname : '';
-    const parsedURL = parseURL(url);
-    if (!parsedURL) {
-        return false;
-    }
-    if (!isTrustedURL(parsedURL, teams)) {
-        return false;
-    }
-    const urlPath = parsedURL.pathname;
+    const subpath = serverURL.pathname;
+    const urlPath = inputURL.pathname;
     const replacement = subpath.endsWith('/') ? '/' : '';
     const replacedPath = urlPath.replace(subpath, replacement);
     for (const regexPath of customLoginRegexPaths) {
@@ -219,40 +91,40 @@ function isCustomLoginURL(url: URL | string, server: ServerFromURL, teams: TeamW
     }
 
     return false;
-}
+};
 
-function isChannelExportUrl(serverUrl: URL | string, inputUrl: URL | string): boolean {
-    return isUrlType('plugins/com.mattermost.plugin-channel-export/api/v1/export', serverUrl, inputUrl);
-}
-
-function cleanPathName(basePathName: string, pathName: string) {
-    if (basePathName === '/') {
-        return pathName;
+export const isCallsPopOutURL = (serverURL: URL, inputURL: URL, callID: string) => {
+    const matches = inputURL.pathname.match(new RegExp(`^${escapeRegExp(getFormattedPathName(serverURL.pathname))}([A-Za-z0-9-_]+)/`, 'i'));
+    if (matches?.length !== 2) {
+        return false;
     }
 
-    if (pathName.startsWith(basePathName)) {
-        return pathName.replace(basePathName, '');
+    const teamName = matches[1];
+    const subPath = `${teamName}/${CALLS_PLUGIN_ID}/expanded/${callID}`;
+
+    return isUrlType(subPath, serverURL, inputURL);
+};
+
+/**
+ * Helper functions
+ */
+
+// next two functions are defined to clarify intent
+const equalUrlsWithSubpath = (url1: URL, url2: URL, ignoreScheme?: boolean) => {
+    if (ignoreScheme) {
+        return url1.host === url2.host && getFormattedPathName(url2.pathname).startsWith(getFormattedPathName(url1.pathname));
     }
+    return url1.origin === url2.origin && getFormattedPathName(url2.pathname).startsWith(getFormattedPathName(url1.pathname));
+};
+const equalUrlsIgnoringSubpath = (url1: URL, url2: URL, ignoreScheme?: boolean) => {
+    if (ignoreScheme) {
+        return url1.host.toLowerCase() === url2.host.toLowerCase();
+    }
+    return url1.origin.toLowerCase() === url2.origin.toLowerCase();
+};
 
-    return pathName;
-}
-
-export default {
-    isValidURL,
-    isValidURI,
-    isInternalURL,
-    parseURL,
-    getView,
-    getServerInfo,
-    isAdminUrl,
-    isTeamUrl,
-    isPluginUrl,
-    isManagedResource,
-    getHost,
-    isTrustedURL,
-    isCustomLoginURL,
-    isChannelExportUrl,
-    isUrlType,
-    cleanPathName,
-    startsWithProtocol,
+// RegExp string escaping function, as recommended by
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
+const escapeRegExp = (s: string) => {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 };

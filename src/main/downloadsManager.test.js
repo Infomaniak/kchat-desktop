@@ -7,6 +7,9 @@ import {shell} from 'electron';
 
 import {getDoNotDisturb as getDarwinDoNotDisturb} from 'macos-notification-state';
 
+import Config from 'common/config';
+import {APP_UPDATE_KEY} from 'common/constants';
+
 import {DownloadsManager} from 'main/downloadsManager';
 
 const downloadLocationMock = '/path/to/downloads';
@@ -27,6 +30,7 @@ jest.mock('electron', () => {
     return {
         app: {
             getAppPath: jest.fn(),
+            getPath: jest.fn(),
         },
         BrowserView: jest.fn().mockImplementation(() => ({
             webContents: {
@@ -76,13 +80,16 @@ jest.mock('fs', () => ({
 jest.mock('macos-notification-state', () => ({
     getDoNotDisturb: jest.fn(),
 }));
-jest.mock('main/windows/windowManager', () => ({
+jest.mock('main/notifications', () => ({}));
+jest.mock('main/windows/mainWindow', () => ({
     sendToRenderer: jest.fn(),
 }));
+jest.mock('main/views/viewManager', () => ({}));
 jest.mock('common/config', () => {
     const original = jest.requireActual('common/config');
     return {
         ...original,
+        canUpgrade: true,
         downloadLocation: downloadLocationMock,
     };
 });
@@ -221,6 +228,27 @@ describe('main/downloadsManager', () => {
         expect(Object.keys(dl.downloads).includes('invalid_file4.txt')).toBe(false);
         expect(Object.keys(dl.downloads).includes('invalid_file5.txt')).toBe(false);
         expect(Object.keys(dl.downloads).includes('invalid_file6.txt')).toBe(false);
+    });
+
+    it('should remove updates if they are disabled', () => {
+        const file = JSON.stringify({
+            ...downloadsJson,
+            [APP_UPDATE_KEY]: {
+                type: 'update',
+                progress: 0,
+                location: '',
+                addedAt: 0,
+                receivedBytes: 0,
+                totalBytes: 0,
+                state: 'available',
+                filename: '1.2.3',
+            },
+        });
+        const dl = new DownloadsManager(file);
+        expect(dl.hasUpdate()).toBe(true);
+        Config.canUpgrade = false;
+        dl.init();
+        expect(dl.hasUpdate()).toBe(false);
     });
 });
 

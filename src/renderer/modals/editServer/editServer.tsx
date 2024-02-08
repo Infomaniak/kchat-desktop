@@ -7,57 +7,41 @@ import 'renderer/css/modals.css';
 import React, {useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
 
-import {TeamWithIndex} from 'types/config';
-import {ModalMessage} from 'types/modals';
-
-import {MODAL_CANCEL, MODAL_INFO, MODAL_RESULT, RETRIEVE_MODAL_INFO} from 'common/communication';
+import {UniqueServer} from 'types/config';
 
 import IntlProvider from 'renderer/intl_provider';
 
-import NewTeamModal from '../../components/NewTeamModal'; //'./addServer.jsx';
+import NewServerModal from '../../components/NewServerModal';
 
 import setupDarkMode from '../darkMode';
 
 setupDarkMode();
 
 const onClose = () => {
-    window.postMessage({type: MODAL_CANCEL}, window.location.href);
+    window.desktop.modals.cancelModal();
 };
 
-const onSave = (data: TeamWithIndex) => {
-    window.postMessage({type: MODAL_RESULT, data}, window.location.href);
+const onSave = (data: UniqueServer) => {
+    window.desktop.modals.finishModal(data);
 };
 
 const EditServerModalWrapper: React.FC = () => {
-    const [server, setServer] = useState<TeamWithIndex>();
-    const [currentTeams, setCurrentTeams] = useState<TeamWithIndex[]>();
-
-    const handleEditServerMessage = (event: {data: ModalMessage<{currentTeams: TeamWithIndex[]; team: TeamWithIndex}>}) => {
-        switch (event.data.type) {
-        case MODAL_INFO: {
-            setServer(event.data.data.team);
-            setCurrentTeams(event.data.data.currentTeams);
-            break;
-        }
-        default:
-            break;
-        }
-    };
+    const [server, setServer] = useState<UniqueServer>();
 
     useEffect(() => {
-        window.addEventListener('message', handleEditServerMessage);
-        window.postMessage({type: RETRIEVE_MODAL_INFO}, window.location.href);
+        window.desktop.modals.getModalInfo<UniqueServer>().then((server) => {
+            setServer(server);
+        });
     }, []);
 
     return (
         <IntlProvider>
-            <NewTeamModal
+            <NewServerModal
                 onClose={onClose}
                 onSave={onSave}
                 editMode={true}
                 show={Boolean(server)}
-                team={server}
-                currentTeams={currentTeams}
+                server={server}
             />
         </IntlProvider>
     );

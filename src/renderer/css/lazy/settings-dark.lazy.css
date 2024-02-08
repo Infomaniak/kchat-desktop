@@ -1,6 +1,6 @@
 @import '~bootstrap-dark/src/bootstrap-dark.css';
 
-.TeamListItem:hover {
+.ServerListItem:hover {
     background: #242a30;
 }
 
@@ -18,4 +18,8 @@
 
 .SettingsPage__spellCheckerLocalesDropdown .SettingsPage__spellCheckerLocalesDropdown__option:hover {
     background: rgba(255, 255, 255, 0.16);
+}
+
+.SettingsPage__spellCheckerLocalesDropdown .SettingsPage__spellCheckerLocalesDropdown__input-container {
+    color: #fff;
 }

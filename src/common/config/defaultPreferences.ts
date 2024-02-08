@@ -19,6 +19,11 @@ export const getDefaultDownloadLocation = (): string | undefined => {
     if (__IS_MAC_APP_STORE__) {
         return undefined;
     }
+
+    if (process.platform === 'linux' && process.env.XDG_DOWNLOAD_DIR) {
+        return process.env.XDG_DOWNLOAD_DIR;
+    }
+
     return path.join(os.homedir(), 'Downloads');
 };
 
@@ -43,6 +48,7 @@ const defaultPreferences: ConfigV3 = {
     lastActiveTeam: 0,
     downloadLocation: getDefaultDownloadLocation(),
     startInFullscreen: false,
+    logLevel: 'info',
 };
 
 export default defaultPreferences;

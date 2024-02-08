@@ -6,6 +6,7 @@
         "source.fixAll.eslint": true
     },
     "cSpell.words": [
+        "appimage",
         "automations",
         "Autoupgrade",
         "browserview",
@@ -13,6 +14,7 @@
         "chromedriver",
         "chromedriverlog",
         "deauthorize",
+        "deeplink",
         "deeplinking",
         "diskimage",
         "dont",
@@ -23,6 +25,7 @@
         "gsettings",
         "ICONNAME",
         "inputflash",
+        "libxtst",
         "loadscreen",
         "mailhost",
         "mailserver",
@@ -36,6 +39,7 @@
         "officedocument",
         "openxmlformats",
         "presentationml",
+        "servernum",
         "showunreadbadge",
         "spreadsheetml",
         "textbox",
@@ -44,6 +48,7 @@
         "Unreads",
         "webcontents",
         "wordprocessingml",
+        "xvfb",
         "Yuya"
     ],
     "i18n-ally.keystyle": "nested"

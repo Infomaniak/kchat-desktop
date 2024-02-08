@@ -3,11 +3,15 @@
 
 import Diagnostics from '.';
 
-jest.mock('main/windows/windowManager', () => ({
-    mainWindow: {},
-}));
+jest.mock('main/windows/mainWindow', () => ({}));
 jest.mock('common/config', () => ({
     configFilePath: 'mock/config/filepath/',
+}));
+
+jest.mock('electron', () => ({
+    app: {
+        getPath: jest.fn(),
+    },
 }));
 
 describe('main/diagnostics/index', () => {

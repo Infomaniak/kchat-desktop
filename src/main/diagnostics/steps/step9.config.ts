@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ElectronLog} from 'electron-log';
+import {MainLogger} from 'electron-log';
 import {DiagnosticStepResponse} from 'types/diagnostics';
 
 import config from 'common/config';
@@ -11,7 +11,7 @@ import DiagnosticsStep from '../DiagnosticStep';
 const stepName = 'Step-9';
 const stepDescriptiveName = 'Config';
 
-const run = async (logger: ElectronLog): Promise<DiagnosticStepResponse> => {
+const run = async (logger: MainLogger): Promise<DiagnosticStepResponse> => {
     try {
         const payload = config.data;
 

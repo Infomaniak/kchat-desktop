@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {shell} from 'electron';
-import log, {ElectronLog} from 'electron-log';
+import log, {MainLogger} from 'electron-log';
 import {DiagnosticsReport} from 'types/diagnostics';
 
 import DiagnosticsStep from './DiagnosticStep';
@@ -41,7 +41,7 @@ class DiagnosticsModule {
     stepCurrent = 0;
     stepTotal = 0;
     report: DiagnosticsReport = [];
-    logger: ElectronLog = log.create('diagnostics-logger');
+    logger: MainLogger = log.create('diagnostics-logger');
 
     run = async () => {
         try {

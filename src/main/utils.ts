@@ -5,13 +5,22 @@
 import path from 'path';
 import fs from 'fs';
 
+import {exec as execOriginal} from 'child_process';
+
+import {promisify} from 'util';
+const exec = promisify(execOriginal);
+
 import {app, BrowserWindow} from 'electron';
 
 import {Args} from 'types/args';
 
 import {BACK_BAR_HEIGHT, customLoginRegexPaths, PRODUCTION, TAB_BAR_HEIGHT} from 'common/utils/constants';
-import UrlUtils from 'common/utils/url';
 import Utils from 'common/utils/util';
+import {isAdminUrl, isPluginUrl, isTeamUrl, isUrlType, parseURL} from 'common/utils/url';
+
+export function isInsideRectangle(container: Electron.Rectangle, rect: Electron.Rectangle) {
+    return container.x <= rect.x && container.y <= rect.y && container.width >= rect.width && container.height >= rect.height;
+}
 
 export function shouldBeHiddenOnStartup(parsedArgv: Args) {
     if (parsedArgv.hidden) {
@@ -39,11 +48,11 @@ export function getAdjustedWindowBoundaries(width: number, height: number, hasBa
     };
 }
 
-export function shouldHaveBackBar(serverUrl: URL | string, inputURL: URL | string) {
-    if (UrlUtils.isUrlType('login', serverUrl, inputURL)) {
-        const serverURL = UrlUtils.parseURL(serverUrl);
+export function shouldHaveBackBar(serverUrl: URL, inputURL: URL) {
+    if (isUrlType('login', serverUrl, inputURL)) {
+        const serverURL = parseURL(serverUrl);
         const subpath = serverURL ? serverURL.pathname : '';
-        const parsedURL = UrlUtils.parseURL(inputURL);
+        const parsedURL = parseURL(inputURL);
         if (!parsedURL) {
             return false;
         }
@@ -58,7 +67,7 @@ export function shouldHaveBackBar(serverUrl: URL | string, inputURL: URL | strin
 
         return false;
     }
-    return !UrlUtils.isTeamUrl(serverUrl, inputURL) && !UrlUtils.isAdminUrl(serverUrl, inputURL) && !UrlUtils.isPluginUrl(serverUrl, inputURL);
+    return !isTeamUrl(serverUrl, inputURL) && !isAdminUrl(serverUrl, inputURL) && !isPluginUrl(serverUrl, inputURL);
 }
 
 export function getLocalURLString(urlPath: string, query?: Map<string, string>, isMain?: boolean) {
@@ -135,4 +144,42 @@ export function shouldIncrementFilename(filepath: string, increment = 0): string
         return shouldIncrementFilename(filepath, increment + 1);
     }
     return filename;
+}
+
+const logsPath: { [os: string]: string } = {
+    darwin: `${app.getPath('home')}/Library/Logs/${app.name}/`,
+    win32: `${app.getPath('appData')}\\${app.name}\\logs\\`,
+    linux: `${app.getPath('appData')}/${app.name}/logs/`,
+};
+
+export const getLogsPath = () => logsPath[process.platform];
+
+/**
+ * Returns if the error is a SIGPIPE error. SIGPIPE errors should generally be
+ * logged at most once, to avoid a loop.
+ *
+ * @see https://github.com/microsoft/vscode-remote-release/issues/6481
+ */
+export function isSigPipeError(e: unknown): e is Error {
+    if (!e || typeof e !== 'object') {
+        return false;
+    }
+
+    const cast = e as Record<string, string | undefined>;
+    return cast.code === 'EPIPE' && cast.syscall?.toUpperCase() === 'WRITE';
+}
+export function resetScreensharePermissionsMacOS() {
+    if (process.platform !== 'darwin') {
+        return Promise.resolve();
+    }
+    return exec('tccutil reset ScreenCapture Mattermost.Desktop',
+        {timeout: 1000});
+}
+
+export function openScreensharePermissionsSettingsMacOS() {
+    if (process.platform !== 'darwin') {
+        return Promise.resolve();
+    }
+    return exec('open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"',
+        {timeout: 1000});
 }

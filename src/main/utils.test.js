@@ -13,6 +13,7 @@ jest.mock('electron', () => ({
             wasOpenedAsHidden: true,
         }),
         getAppPath: () => '/path/to/app',
+        getPath: () => '/fake/path',
     },
 }));
 
@@ -107,11 +108,11 @@ describe('main/utils', () => {
 
     describe('shouldHaveBackBar', () => {
         it('should have back bar for custom logins', () => {
-            expect(Utils.shouldHaveBackBar('https://server-1.com', 'https://server-1.com/login/sso/saml')).toBe(true);
+            expect(Utils.shouldHaveBackBar(new URL('https://server-1.com'), new URL('https://server-1.com/login/sso/saml'))).toBe(true);
         });
 
         it('should not have back bar for regular login', () => {
-            expect(Utils.shouldHaveBackBar('https://server-1.com', 'https://server-1.com/login')).toBe(false);
+            expect(Utils.shouldHaveBackBar(new URL('https://server-1.com'), new URL('https://server-1.com/login'))).toBe(false);
         });
     });
 
@@ -161,5 +162,21 @@ describe('main/utils', () => {
         it('should increment filename if file already exists', () => {
             expect(Utils.shouldIncrementFilename('filename.txt')).toBe('filename (1).txt');
         });
+    });
+
+    describe('getLogsPath', () => {
+        test.each([
+            ['win32', '/fake/path\\kChat\\logs\\'],
+            ['linux', '/fake/path/kChat/logs/'],
+            ['darwin', '/fake/path/Library/Logs/kChat/'],
+        ])(
+            'given %p arguments, returns %p',
+            (os, path) => {
+                Object.defineProperty(process, 'platform', {
+                    value: os,
+                });
+                expect(Utils.getLogsPath()).toEqual(path);
+            },
+        );
     });
 });

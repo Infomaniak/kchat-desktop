@@ -7,8 +7,10 @@
 
 // eslint-disable-next-line import/no-commonjs
 const {ipcRenderer} = require('electron');
+
 // eslint-disable-next-line import/no-commonjs
 // const {setupScreenSharingRender, setupAlwaysOnTopRender, setupWiFiStats, setupPowerMonitorRender, initPopupsConfigurationRender} = require('@jitsi/electron-sdk');
+
 // eslint-disable-next-line import/no-commonjs
 // const {platform} = require('process');
 
@@ -29,29 +31,29 @@ const {ipcRenderer} = require('electron');
  * @returns {void}
  */
 // function setupRenderer(api, options = {}) {
-// initPopupsConfigurationRender(api);
+//     // initPopupsConfigurationRender(api);
 
-// const iframe = api.getIFrame();
+//     const iframe = api.getIFrame();
 
-// initPopupsConfigurationRender(api);
+//     initPopupsConfigurationRender(api);
 
-// setupScreenSharingRender(api);
+//     setupScreenSharingRender(api);
 
-// if (options.enableRemoteControl) {
-//     new RemoteControl(iframe); // eslint-disable-line no-new
-// }
+//     // if (options.enableRemoteControl) {
+//     //     new RemoteControl(iframe); // eslint-disable-line no-new
+//     // }
 
-// // Allow window to be on top if enabled in settings
-// if (options.enableAlwaysOnTopWindow) {
-//     setupAlwaysOnTopRender(api);
-// }
+//     // // Allow window to be on top if enabled in settings
+//     if (options.enableAlwaysOnTopWindow) {
+//         setupAlwaysOnTopRender(api);
+//     }
 
-// // Disable WiFiStats on mac due to jitsi-meet-electron#585
-// if (platform !== 'darwin') {
-//     setupWiFiStats(iframe);
-// }
+//     // // Disable WiFiStats on mac due to jitsi-meet-electron#585
+//     if (platform !== 'darwin') {
+//         setupWiFiStats(iframe);
+//     }
 
-// setupPowerMonitorRender(api);
+//     setupPowerMonitorRender(api);
 // }
 
 window.ipcRenderer = {

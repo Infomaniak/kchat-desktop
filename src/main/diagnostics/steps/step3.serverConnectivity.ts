@@ -1,10 +1,11 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ElectronLog} from 'electron-log';
+import {MainLogger} from 'electron-log';
 import {DiagnosticStepResponse} from 'types/diagnostics';
 
-import Config from 'common/config';
+import ServerManager from 'common/servers/serverManager';
+import {parseURL} from 'common/utils/url';
 
 import DiagnosticsStep from '../DiagnosticStep';
 
@@ -13,28 +14,28 @@ import {isOnline} from './internal/utils';
 const stepName = 'Step-3';
 const stepDescriptiveName = 'serverConnectivity';
 
-const run = async (logger: ElectronLog): Promise<DiagnosticStepResponse> => {
+const run = async (logger: MainLogger): Promise<DiagnosticStepResponse> => {
     try {
-        const teams = Config.combinedData?.teams || [];
+        const servers = ServerManager.getAllServers();
 
-        await Promise.all(teams.map(async (team) => {
-            logger.debug('Pinging server: ', team.url);
+        await Promise.all(servers.map(async (server) => {
+            logger.debug('Pinging server: ', server.url);
 
-            if (!team.name || !team.url) {
-                throw new Error(`Invalid server configuration. Team Url: ${team.url}, team name: ${team.name}`);
+            if (!server.name || !server.url) {
+                throw new Error(`Invalid server configuration. Server Url: ${server.url}, server name: ${server.name}`);
             }
 
-            const serverOnline = await isOnline(logger, `${team.url}/api/v4/system/ping`);
+            const serverOnline = await isOnline(logger, parseURL(`${server.url}/api/v4/system/ping`)?.toString());
 
             if (!serverOnline) {
-                throw new Error(`Server appears to be offline. Team url: ${team.url}`);
+                throw new Error(`Server appears to be offline. Server url: ${server.url}`);
             }
         }));
 
         return {
             message: `${stepName} finished successfully`,
             succeeded: true,
-            payload: teams,
+            payload: servers,
         };
     } catch (error) {
         logger.warn(`Diagnostics ${stepName} Failure`, {error});

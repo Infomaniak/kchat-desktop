@@ -5,9 +5,10 @@
 
 import path from 'path';
 
-import {app, ipcMain} from 'electron';
+import { app, ipcMain } from 'electron';
 
-import {UPDATE_PATHS} from 'common/communication';
+import { UPDATE_PATHS } from 'common/communication';
+import { isLocalEnv } from 'common/config/ikConfig';
 
 let userDataPath;
 
@@ -20,6 +21,7 @@ export let boundsInfoPath = '';
 export let migrationInfoPath = '';
 export let downloadsJson = '';
 export let tokensStorePath = '';
+export let permissionsJson = '';
 
 export function updatePaths(emit = false) {
     userDataPath = app.getPath('userData');
@@ -32,7 +34,8 @@ export function updatePaths(emit = false) {
     boundsInfoPath = path.join(userDataPath, 'bounds-info.json');
     migrationInfoPath = path.resolve(userDataPath, 'migration-info.json');
     downloadsJson = path.resolve(userDataPath, 'downloads.json');
-    tokensStorePath = path.resolve(userDataPath, 'tokens.json');
+    tokensStorePath = path.resolve(userDataPath, `${isLocalEnv ? 'dev-' : ''}tokens.json`);
+    permissionsJson = path.resolve(userDataPath, 'permissions.json');
 
     if (emit) {
         ipcMain.emit(UPDATE_PATHS);

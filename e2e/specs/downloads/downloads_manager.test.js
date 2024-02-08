@@ -9,33 +9,7 @@ const robot = require('robotjs');
 const env = require('../../modules/environment');
 const {asyncSleep, rmDirAsync} = require('../../modules/utils');
 
-const config = {
-    ...env.demoMattermostConfig,
-    teams: [
-        ...env.demoMattermostConfig.teams,
-        {
-            url: 'https://community.mattermost.com',
-            name: 'community',
-            order: 0,
-            tabs: [
-                {
-                    name: 'TAB_MESSAGING',
-                    order: 0,
-                    isOpen: true,
-                },
-                {
-                    name: 'TAB_FOCALBOARD',
-                    order: 1,
-                },
-                {
-                    name: 'TAB_PLAYBOOKS',
-                    order: 2,
-                },
-            ],
-            lastActiveTab: 0,
-        },
-    ],
-};
+const config = env.demoMattermostConfig;
 
 describe('downloads/downloads_manager', function desc() {
     this.timeout(30000);

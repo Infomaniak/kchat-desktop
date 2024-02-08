@@ -3,10 +3,9 @@
 
 export const SWITCH_SERVER = 'switch-server';
 export const SWITCH_TAB = 'switch-tab';
-export const CLOSE_TAB = 'close-tab';
-export const OPEN_TAB = 'open-tab';
+export const CLOSE_VIEW = 'close-view';
+export const OPEN_VIEW = 'open-view';
 export const SET_ACTIVE_VIEW = 'set-active-view';
-export const UPDATE_LAST_ACTIVE = 'update-last-active';
 export const FOCUS_BROWSERVIEW = 'focus-browserview';
 export const HISTORY = 'history';
 
@@ -18,7 +17,6 @@ export const GET_LOCAL_CONFIGURATION = 'get-local-configuration';
 export const RELOAD_CONFIGURATION = 'reload-config';
 export const EMIT_CONFIGURATION = 'emit-configuration';
 
-export const UPDATE_TEAMS = 'update-teams';
 export const DARK_MODE_CHANGE = 'dark_mode_change';
 export const GET_DARK_MODE = 'get-dark-mode';
 export const USER_ACTIVITY_UPDATE = 'user-activity-update';
@@ -38,13 +36,10 @@ export const DOUBLE_CLICK_ON_WINDOW = 'double_click';
 export const SHOW_NEW_SERVER_MODAL = 'show_new_server_modal';
 export const SHOW_EDIT_SERVER_MODAL = 'show-edit-server-modal';
 export const SHOW_REMOVE_SERVER_MODAL = 'show-remove-server-modal';
-export const MAIN_WINDOW_SHOWN = 'main-window-shown';
 
 export const RETRIEVE_MODAL_INFO = 'retrieve-modal-info';
-export const MODAL_INFO = 'modal-info';
 export const MODAL_CANCEL = 'modal-cancel';
 export const MODAL_RESULT = 'modal-result';
-export const MODAL_SEND_IPC_MESSAGE = 'modal-send-ipc-message';
 export const MODAL_OPEN = 'modal-open';
 export const MODAL_CLOSE = 'modal-close';
 export const NOTIFY_MENTION = 'notify_mention';
@@ -56,6 +51,8 @@ export const GET_FULL_SCREEN_STATUS = 'get-full-screen-status';
 
 export const UPDATE_TARGET_URL = 'update_target_url';
 
+export const UPDATE_TEAMS = 'update-teams';
+
 export const PLAY_SOUND = 'play_sound';
 
 export const GET_DOWNLOAD_LOCATION = 'get_download_location';
@@ -64,8 +61,6 @@ export const UPDATE_MENTIONS = 'update_mentions';
 export const IS_UNREAD = 'is_unread';
 export const UNREAD_RESULT = 'unread_result';
 export const SESSION_EXPIRED = 'session_expired';
-export const UPDATE_TRAY = 'update_tray';
-export const UPDATE_BADGE = 'update_badge';
 
 export const SET_VIEW_OPTIONS = 'set-view-name';
 export const REACT_APP_INITIALIZED = 'react-app-initialized';
@@ -74,8 +69,6 @@ export const TOGGLE_BACK_BUTTON = 'toggle-back-button';
 
 export const SHOW_SETTINGS_WINDOW = 'show-settings-window';
 
-export const RECEIVED_LOADING_SCREEN_DATA = 'received-loading-screen-data';
-export const GET_LOADING_SCREEN_DATA = 'get-loading-screen-data';
 export const LOADING_SCREEN_ANIMATION_FINISHED = 'loading-screen-animation-finished';
 export const TOGGLE_LOADING_SCREEN_VISIBILITY = 'toggle-loading-screen-visibility';
 
@@ -85,13 +78,11 @@ export const FOCUS_THREE_DOT_MENU = 'focus-three-dot-menu';
 
 export const LOADSCREEN_END = 'loadscreen-end';
 
-export const OPEN_TEAMS_DROPDOWN = 'open-teams-dropdown';
-export const CLOSE_TEAMS_DROPDOWN = 'close-teams-dropdown';
-export const UPDATE_TEAMS_DROPDOWN = 'update-teams-dropdown';
-export const UPDATE_DROPDOWN_MENTIONS = 'update-dropdown-mentions';
-export const REQUEST_TEAMS_DROPDOWN_INFO = 'request-teams-dropdown-info';
+export const OPEN_SERVERS_DROPDOWN = 'open-servers-dropdown';
+export const CLOSE_SERVERS_DROPDOWN = 'close-servers-dropdown';
+export const UPDATE_SERVERS_DROPDOWN = 'update-servers-dropdown';
+export const REQUEST_SERVERS_DROPDOWN_INFO = 'request-servers-dropdown-info';
 export const RECEIVE_DROPDOWN_MENU_SIZE = 'receive-dropdown-menu-size';
-export const SEND_DROPDOWN_MENU_SIZE = 'send-dropdown-menu-size';
 
 export const UPDATE_AVAILABLE = 'update-available';
 export const UPDATE_DOWNLOADED = 'update-downloaded';
@@ -112,18 +103,17 @@ export const APP_LOGGED_OUT = 'app-logged-out';
 
 export const GET_AVAILABLE_SPELL_CHECKER_LANGUAGES = 'get-available-spell-checker-languages';
 
-export const GET_VIEW_NAME = 'get-view-name';
-export const GET_VIEW_WEBCONTENTS_ID = 'get-view-webcontents-id';
+export const GET_VIEW_INFO_FOR_TEST = 'get-view-info-for-test';
 
-export const RESIZE_MODAL = 'resize-modal';
 export const GET_MODAL_UNCLOSEABLE = 'get-modal-uncloseable';
-export const MODAL_UNCLOSEABLE = 'modal-uncloseable';
 
 export const UPDATE_PATHS = 'update-paths';
 
 export const UPDATE_URL_VIEW_WIDTH = 'update-url-view-width';
 
+export const CALL_JOINED_BROWSER = 'call-joined-browser';
 export const CALL_JOINED = 'call-joined';
+export const CALL_DECLINED = 'call-declined';
 export const CALL_COMMAND = 'call-command';
 export const CALL_CLOSED = 'call-closed';
 export const CONNECT_CALL = 'connect-call';
@@ -140,13 +130,11 @@ export const PING_DOMAIN_RESPONSE = 'ping-domain-response';
 export const CALL_RINGING = 'call-ringing';
 
 export const GET_LANGUAGE_INFORMATION = 'get-language-information';
-export const RETRIEVED_LANGUAGE_INFORMATION = 'retrieved-language-information';
 export const GET_AVAILABLE_LANGUAGES = 'get-available-languages';
 
 export const VIEW_FINISHED_RESIZING = 'view-finished-resizing';
 
 export const TOKEN_REFRESHED = 'token-refreshed';
-export const TOKEN_CLEARED = 'token-cleared';
 export const TOKEN_REQUEST = 'token-request';
 export const REFRESH_TOKEN = 'refresh-token';
 export const RESET_TOKEN = 'reset-token';
@@ -164,7 +152,11 @@ export const CALLS_LEAVE_CALL = 'calls-leave-call';
 export const CALLS_WIDGET_RESIZE = 'calls-widget-resize';
 export const CALLS_WIDGET_SHARE_SCREEN = 'calls-widget-share-screen';
 export const CALLS_WIDGET_CHANNEL_LINK_CLICK = 'calls-widget-channel-link-click';
+export const CALLS_LINK_CLICK = 'calls-link-click';
 export const CALLS_JOINED_CALL = 'calls-joined-call';
+export const CALLS_POPOUT_FOCUS = 'calls-popout-focus';
+export const CALLS_ERROR = 'calls-error';
+export const CALLS_JOIN_REQUEST = 'calls-join-request';
 
 export const REQUEST_CLEAR_DOWNLOADS_DROPDOWN = 'request-clear-downloads-dropdown';
 export const CLOSE_DOWNLOADS_DROPDOWN = 'close-downloads-dropdown';
@@ -173,11 +165,10 @@ export const SHOW_DOWNLOADS_DROPDOWN_BUTTON_BADGE = 'show-downloads-dropdown-but
 export const HIDE_DOWNLOADS_DROPDOWN_BUTTON_BADGE = 'hide-downloads-dropdown-button-badge';
 export const REQUEST_DOWNLOADS_DROPDOWN_INFO = 'request-downloads-dropdown-info';
 export const UPDATE_DOWNLOADS_DROPDOWN = 'update-downloads-dropdown';
-export const DOWNLOADS_DROPDOWN_SHOW_FILE_IN_FOLDER = 'downloads-dropdown-show-file-in-folder';
+export const DOWNLOADS_DROPDOWN_OPEN_FILE = 'downloads-dropdown-open-file';
 export const REQUEST_HAS_DOWNLOADS = 'request-has-downloads';
 export const DOWNLOADS_DROPDOWN_FOCUSED = 'downloads-dropdown-focused';
 export const RECEIVE_DOWNLOADS_DROPDOWN_SIZE = 'receive-downloads-dropdown-size';
-export const SEND_DOWNLOADS_DROPDOWN_SIZE = 'send-downloads-dropdown-size';
 export const GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION = 'get-downloaded-image-thumbnail-location';
 
 export const OPEN_DOWNLOADS_DROPDOWN_MENU = 'open-downloads-dropdown-menu';
@@ -189,3 +180,26 @@ export const REQUEST_DOWNLOADS_DROPDOWN_MENU_INFO = 'request-downloads-dropdown-
 export const DOWNLOADS_DROPDOWN_MENU_CANCEL_DOWNLOAD = 'downloads-dropdown-menu-cancel-download';
 export const DOWNLOADS_DROPDOWN_MENU_CLEAR_FILE = 'downloads-dropdown-menu-clear-file';
 export const DOWNLOADS_DROPDOWN_MENU_OPEN_FILE = 'downloads-dropdown-menu-open-file';
+export const DOWNLOADS_DROPDOWN_MENU_SHOW_FILE_IN_FOLDER = 'downloads-dropdown-menu-show-file-in-folder';
+
+export const SERVERS_URL_MODIFIED = 'servers-modified';
+export const SERVERS_UPDATE = 'servers-update';
+export const UPDATE_SERVER_ORDER = 'update-server-order';
+export const UPDATE_TAB_ORDER = 'update-tab-order';
+export const GET_LAST_ACTIVE = 'get-last-active';
+export const GET_ORDERED_SERVERS = 'get-ordered-servers';
+export const GET_ORDERED_TABS_FOR_SERVER = 'get-ordered-tabs-for-server';
+
+export const UPDATE_APPSTATE = 'update-appstate';
+export const UPDATE_APPSTATE_TOTALS = 'update-appstate-totals';
+export const UPDATE_APPSTATE_FOR_VIEW_ID = 'update-appstate-for-view-id';
+
+export const MAIN_WINDOW_CREATED = 'main-window-created';
+export const MAIN_WINDOW_RESIZED = 'main-window-resized';
+export const MAIN_WINDOW_FOCUSED = 'main-window-focused';
+
+export const VALIDATE_SERVER_URL = 'validate-server-url';
+
+export const GET_IS_DEV_MODE = 'get-is-dev-mode';
+
+export const TOGGLE_SECURE_INPUT = 'toggle-secure-input';

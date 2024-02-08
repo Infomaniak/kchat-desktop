@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import log, {ElectronLog} from 'electron-log';
+import log, {MainLogger} from 'electron-log';
 
 import {DiagnosticStepResponse} from 'types/diagnostics';
 
@@ -14,7 +14,7 @@ import {readFileLineByLine} from './internal/utils';
 const stepName = 'Step-8';
 const stepDescriptiveName = 'LogHeuristics';
 
-const run = async (logger: ElectronLog): Promise<DiagnosticStepResponse> => {
+const run = async (logger: MainLogger): Promise<DiagnosticStepResponse> => {
     try {
         const mainLogFilePath = log.transports.file.getFile().path;
         const fileData = await readFileLineByLine(mainLogFilePath);

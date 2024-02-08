@@ -219,7 +219,7 @@ function generateTestReport(summary, isUploadedToS3, reportLink, testCycleKey) {
             color: testResult.color,
             author_name: 'Desktop End-to-end Testing',
             author_icon: 'https://mattermost.com/wp-content/uploads/2022/02/icon_WS.png',
-            author_link: 'https://www.mattermost.com/',
+            author_link: 'https://www.infomaniak.com/',
             title,
             text: `${quickSummary} | ${(stats.duration / (60 * 1000)).toFixed(2)} mins ${testCycleLink}\n${envValue}`,
         }],

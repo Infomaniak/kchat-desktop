@@ -22,7 +22,7 @@ export const MENU_SHADOW_WIDTH = 24;
 
 export const DEFAULT_WINDOW_WIDTH = 1280;
 export const DEFAULT_WINDOW_HEIGHT = 800;
-export const MINIMUM_WINDOW_WIDTH = 700;
+export const MINIMUM_WINDOW_WIDTH = 600;
 export const MINIMUM_WINDOW_HEIGHT = 240;
 
 // Calls
@@ -43,6 +43,17 @@ export const DOWNLOADS_DROPDOWN_MENU_FULL_WIDTH = (DOWNLOADS_DROPDOWN_MENU_PADDI
 export const DOWNLOADS_DROPDOWN_MENU_FULL_HEIGHT = DOWNLOADS_DROPDOWN_MENU_HEIGHT + TAB_BAR_PADDING; // only bottom padding included for better positioning
 export const DOWNLOADS_DROPDOWN_MAX_ITEMS = 50;
 export const DOWNLOADS_DROPDOWN_AUTOCLOSE_TIMEOUT = 4000; // 4 sec
+
+export const URLValidationStatus = {
+    OK: 'OK',
+    Missing: 'MISSING',
+    Invalid: 'INVALID',
+    Insecure: 'INSECURE',
+    URLExists: 'URL_EXISTS',
+    NotMattermost: 'NOT_MATTERMOST',
+    URLNotMatched: 'URL_NOT_MATCHED',
+    URLUpdated: 'URL_UPDATED',
+};
 
 // supported custom login paths (oath, saml)
 export const customLoginRegexPaths = [
@@ -304,4 +315,18 @@ export const localeTranslations: Record<string, string> = {
 export const IKLoginAllowedUrls = [
     'https://login.infomaniak.com/*',
     'https://login.preprod.dev.infomaniak.ch/*',
+];
+
+export const IKDriveAllowedUrls = [
+    'https://kdrive.infomaniak.com/*',
+    'https://kdrive.preprod.dev.infomaniak.ch/*',
+];
+
+export const KChatTokenWhitelist = [
+    // Prod whitelist
+    'https://*.infomaniak.com/api/v4/*',
+    'https://*.infomaniak.com/broadcasting/auth',
+    // Preprod whitelist
+    'https://*.preprod.dev.infomaniak.ch/api/v4/*',
+    'https://*.preprod.dev.infomaniak.ch/broadcasting/auth',
 ];

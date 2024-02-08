@@ -13,6 +13,7 @@ dist/
 mochawesome-report/
 
 test-results.xml
+/e2e/performance/perf-test-report.json
 test_config.json
 .idea
 testUserData
@@ -25,3 +26,6 @@ fastlane/report.xml
 *.provisionprofile
 
 .env
+sentry.properties
+# Sentry Auth Token
+.env.sentry-build-plugin

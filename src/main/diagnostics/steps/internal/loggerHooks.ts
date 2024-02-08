@@ -1,12 +1,12 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ElectronLog} from 'electron-log';
+import {MainLogger} from 'electron-log';
 
 import {obfuscateByType} from './obfuscators';
 
-type ElectronLogHook = ElectronLog['hooks'][number];
-type ElectronLogHookCreator = (l: ElectronLog) => ElectronLogHook;
+type ElectronLogHook = MainLogger['hooks'][number];
+type ElectronLogHookCreator = (l: MainLogger) => ElectronLogHook;
 
 export const maskMessageDataHook: ElectronLogHookCreator = (logger) => (message, transport) => {
     if (transport !== logger.transports.file) {
@@ -21,7 +21,7 @@ export const maskMessageDataHook: ElectronLogHookCreator = (logger) => (message,
     return message;
 };
 
-const loggerHooks: (logger: ElectronLog) => ElectronLog['hooks'] = (logger) => [
+const loggerHooks: (logger: MainLogger) => MainLogger['hooks'] = (logger) => [
     maskMessageDataHook(logger),
 ];
 

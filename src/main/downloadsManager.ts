@@ -3,8 +3,7 @@
 import path from 'path';
 import fs from 'fs';
 
-import {DownloadItem, Event, WebContents, FileFilter, ipcMain, dialog, shell, Menu, app} from 'electron';
-import log from 'electron-log';
+import {DownloadItem, Event, WebContents, FileFilter, ipcMain, dialog, shell, Menu, app, IpcMainInvokeEvent} from 'electron';
 import {ProgressInfo, UpdateInfo} from 'electron-updater';
 import {DownloadedItem, DownloadItemDoneEventState, DownloadedItems, DownloadItemState, DownloadItemUpdatedEventState} from 'types/downloads';
 
@@ -13,6 +12,7 @@ import {
     CLOSE_DOWNLOADS_DROPDOWN,
     CLOSE_DOWNLOADS_DROPDOWN_MENU,
     DOWNLOADS_DROPDOWN_FOCUSED,
+    GET_DOWNLOAD_LOCATION,
     HIDE_DOWNLOADS_DROPDOWN_BUTTON_BADGE,
     NO_UPDATE_AVAILABLE,
     OPEN_DOWNLOADS_DROPDOWN,
@@ -26,16 +26,20 @@ import {
 } from 'common/communication';
 import Config from 'common/config';
 import JsonFileManager from 'common/JsonFileManager';
+import {Logger} from 'common/log';
 import {APP_UPDATE_KEY, UPDATE_DOWNLOAD_ITEM} from 'common/constants';
 import {DOWNLOADS_DROPDOWN_AUTOCLOSE_TIMEOUT, DOWNLOADS_DROPDOWN_MAX_ITEMS} from 'common/utils/constants';
+import * as Validator from 'common/Validator';
 import {localizeMessage} from 'main/i18nManager';
-import {displayDownloadCompleted} from 'main/notifications';
-import WindowManager from 'main/windows/windowManager';
+import NotificationManager from 'main/notifications';
+import ViewManager from 'main/views/viewManager';
+import MainWindow from 'main/windows/mainWindow';
 import {doubleSecToMs, getPercentage, isStringWithLength, readFilenameFromContentDispositionHeader, shouldIncrementFilename} from 'main/utils';
 
 import appVersionManager from './AppVersionManager';
 import {downloadsJson} from './constants';
-import * as Validator from './Validator';
+
+const log = new Logger('DownloadsManager');
 
 export enum DownloadItemTypeEnum {
     FILE = 'file',
@@ -68,7 +72,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     private init = () => {
         // ensure data loaded from file is valid
         const validatedJSON = Validator.validateDownloads(this.json);
-        log.debug('DownloadsManager.init', {'this.json': this.json, validatedJSON});
+        log.debug('init', {'this.json': this.json, validatedJSON});
         if (validatedJSON) {
             this.saveAll(validatedJSON);
         } else {
@@ -86,12 +90,14 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
             return this.hasDownloads();
         });
 
+        ipcMain.removeHandler(GET_DOWNLOAD_LOCATION);
         ipcMain.removeListener(DOWNLOADS_DROPDOWN_FOCUSED, this.clearAutoCloseTimeout);
         ipcMain.removeListener(UPDATE_AVAILABLE, this.onUpdateAvailable);
         ipcMain.removeListener(UPDATE_DOWNLOADED, this.onUpdateDownloaded);
         ipcMain.removeListener(UPDATE_PROGRESS, this.onUpdateProgress);
         ipcMain.removeListener(NO_UPDATE_AVAILABLE, this.noUpdateAvailable);
 
+        ipcMain.handle(GET_DOWNLOAD_LOCATION, this.handleSelectDownload);
         ipcMain.on(DOWNLOADS_DROPDOWN_FOCUSED, this.clearAutoCloseTimeout);
         ipcMain.on(UPDATE_AVAILABLE, this.onUpdateAvailable);
         ipcMain.on(UPDATE_DOWNLOADED, this.onUpdateDownloaded);
@@ -100,7 +106,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     };
 
     handleNewDownload = async (event: Event, item: DownloadItem, webContents: WebContents) => {
-        log.debug('DownloadsManager.handleNewDownload', {item, sourceURL: webContents.getURL()});
+        log.debug('handleNewDownload', {item, sourceURL: webContents.getURL()});
 
         const url = item.getURL();
 
@@ -131,7 +137,8 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
                 this.willDownloadURLs.set(url, {filePath: saveDialogResult.filePath, bookmark: saveDialogResult.bookmark});
             } else {
                 const filename = this.createFilename(item);
-                const savePath = this.getSavePath(`${Config.downloadLocation}`, filename);
+                const downloadLocation = await this.verifyMacAppStoreDownloadFolder(filename);
+                const savePath = this.getSavePath(`${downloadLocation}`, filename);
                 this.willDownloadURLs.set(url, {filePath: savePath});
             }
 
@@ -167,20 +174,25 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
         }
 
         for (const file of Object.values(this.downloads)) {
-            if (file.bookmark) {
-                this.bookmarks.set(this.getDownloadedFileId(file), {originalPath: file.location, bookmark: file.bookmark});
+            try {
+                if (file.bookmark) {
+                    this.bookmarks.set(this.getDownloadedFileId(file), {originalPath: file.location, bookmark: file.bookmark});
 
-                if (file.mimeType?.toLowerCase().startsWith('image/')) {
-                    const func = app.startAccessingSecurityScopedResource(file.bookmark);
-                    fs.copyFileSync(file.location, path.resolve(app.getPath('temp'), path.basename(file.location)));
-                    func();
+                    if (file.mimeType?.toLowerCase().startsWith('image/')) {
+                        const func = app.startAccessingSecurityScopedResource(file.bookmark);
+                        fs.copyFileSync(file.location, path.resolve(app.getPath('temp'), path.basename(file.location)));
+                        func();
+                    }
                 }
+            } catch (e) {
+                log.warn('could not load bookmark', file.filename, e);
+                this.clearFile(file);
             }
         }
     }
 
     checkForDeletedFiles = () => {
-        log.debug('DownloadsManager.checkForDeletedFiles');
+        log.debug('checkForDeletedFiles');
         const downloads = this.downloads;
         let modified = false;
 
@@ -194,10 +206,9 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
                     continue;
                 }
 
-                // Remove update if app was updated and restarted
-                // TODO: maybe don't need this since now autoUpdate is clearing updates on construct, check what is better.
+                // Remove update if app was updated and restarted OR if we disabled auto updates
                 if (fileId === APP_UPDATE_KEY) {
-                    if (appVersionManager.lastAppVersion === file.filename) {
+                    if (appVersionManager.lastAppVersion === file.filename || !Config.canUpgrade) {
                         delete downloads[APP_UPDATE_KEY];
                         modified = true;
                         continue;
@@ -224,7 +235,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     };
 
     clearDownloadsDropDown = () => {
-        log.debug('DownloadsManager.clearDownloadsDropDown');
+        log.debug('clearDownloadsDropDown');
 
         if (this.hasUpdate()) {
             this.saveAll({
@@ -239,10 +250,10 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     };
 
     showFileInFolder = (item?: DownloadedItem) => {
-        log.debug('DownloadsDropdownView.showFileInFolder', {item});
+        log.debug('showFileInFolder', {item});
 
         if (!item) {
-            log.debug('DownloadsDropdownView.showFileInFolder', 'ITEM_UNDEFINED');
+            log.debug('showFileInFolder', 'ITEM_UNDEFINED');
             return;
         }
 
@@ -261,14 +272,14 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
             return;
         }
 
-        log.debug('DownloadsDropdownView.showFileInFolder', 'NO_DOWNLOAD_LOCATION');
+        log.debug('showFileInFolder', 'NO_DOWNLOAD_LOCATION');
     };
 
     openFile = (item?: DownloadedItem) => {
-        log.debug('DownloadsDropdownView.openFile', {item});
+        log.debug('openFile', {item});
 
         if (!item) {
-            log.debug('DownloadsDropdownView.openFile', 'FILE_UNDEFINED');
+            log.debug('openFile', 'FILE_UNDEFINED');
             return;
         }
 
@@ -283,19 +294,19 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
                 func = app.startAccessingSecurityScopedResource(bookmark.bookmark);
             }
             shell.openPath(item.location).catch((err) => {
-                log.debug('DownloadsDropdownView.openFileError', {err});
+                log.debug('openFileError', {err});
                 this.showFileInFolder(item);
             });
             func?.();
         } else {
-            log.debug('DownloadsDropdownView.openFile', 'COULD_NOT_OPEN_FILE');
+            log.debug('openFile', 'COULD_NOT_OPEN_FILE');
             this.markFileAsDeleted(item);
             this.showFileInFolder(item);
         }
     };
 
     clearFile = (item?: DownloadedItem) => {
-        log.debug('DownloadsDropdownView.clearFile', {item});
+        log.debug('clearFile', {item});
 
         if (!item || item.type === DownloadItemTypeEnum.UPDATE) {
             return;
@@ -312,7 +323,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     };
 
     cancelDownload = (item?: DownloadedItem) => {
-        log.debug('DownloadsDropdownView.cancelDownload', {item});
+        log.debug('cancelDownload', {item});
 
         if (!item) {
             return;
@@ -333,7 +344,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
 
     onOpen = () => {
         this.open = true;
-        WindowManager.sendToRenderer(HIDE_DOWNLOADS_DROPDOWN_BUTTON_BADGE);
+        MainWindow.sendToRenderer(HIDE_DOWNLOADS_DROPDOWN_BUTTON_BADGE);
     };
 
     onClose = () => {
@@ -347,7 +358,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     };
 
     hasDownloads = () => {
-        log.debug('DownloadsManager.hasDownloads');
+        log.debug('hasDownloads');
         return (Object.keys(this.downloads)?.length || 0) > 0;
     };
 
@@ -356,10 +367,10 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     };
 
     openDownloadsDropdown = () => {
-        log.debug('DownloadsManager.openDownloadsDropdown');
+        log.debug('openDownloadsDropdown');
         this.open = true;
         ipcMain.emit(OPEN_DOWNLOADS_DROPDOWN);
-        WindowManager.sendToRenderer(HIDE_DOWNLOADS_DROPDOWN_BUTTON_BADGE);
+        MainWindow.sendToRenderer(HIDE_DOWNLOADS_DROPDOWN_BUTTON_BADGE);
     };
 
     hasUpdate = () => {
@@ -371,6 +382,46 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
         delete downloads[APP_UPDATE_KEY];
         this.saveAll(downloads);
     };
+
+    private handleSelectDownload = (event: IpcMainInvokeEvent, startFrom: string) => {
+        return this.selectDefaultDownloadDirectory(
+            startFrom,
+            localizeMessage('main.downloadsManager.specifyDownloadsFolder', 'Specify the folder where files will download'),
+        );
+    }
+
+    private selectDefaultDownloadDirectory = async (startFrom: string, message: string) => {
+        log.debug('handleSelectDownload', startFrom);
+
+        const result = await dialog.showOpenDialog({defaultPath: startFrom || Config.downloadLocation,
+            message,
+            properties:
+        ['openDirectory', 'createDirectory', 'dontAddToRecent', 'promptToCreate']});
+        return result.filePaths[0];
+    }
+
+    private verifyMacAppStoreDownloadFolder = async (fileName: string) => {
+        let downloadLocation = Config.downloadLocation;
+
+        // eslint-disable-next-line no-undef
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        if (__IS_MAC_APP_STORE__ && downloadLocation) {
+            try {
+                const savePath = this.getSavePath(downloadLocation, fileName);
+                fs.writeFileSync(savePath, '');
+                fs.unlinkSync(savePath);
+            } catch (e) {
+                downloadLocation = await this.selectDefaultDownloadDirectory(
+                    downloadLocation,
+                    localizeMessage('main.downloadsManager.resetDownloadsFolder', 'Please reset the folder where files will download'),
+                );
+                Config.set('downloadLocation', downloadLocation);
+            }
+        }
+
+        return downloadLocation;
+    }
 
     private markFileAsDeleted = (item: DownloadedItem) => {
         const fileId = this.getDownloadedFileId(item);
@@ -387,20 +438,20 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     };
 
     private saveAll = (downloads: DownloadedItems): void => {
-        log.debug('DownloadsManager.saveAll');
+        log.debug('saveAll');
 
         this.downloads = downloads;
         this.setJson(downloads);
         ipcMain.emit(UPDATE_DOWNLOADS_DROPDOWN, true, this.downloads);
-        WindowManager?.sendToRenderer(UPDATE_DOWNLOADS_DROPDOWN, this.downloads);
+        MainWindow.sendToRenderer(UPDATE_DOWNLOADS_DROPDOWN, this.downloads);
     };
 
     private save = (key: string, item: DownloadedItem) => {
-        log.debug('DownloadsManager.save');
+        log.debug('save');
         this.downloads[key] = item;
         this.setValue(key, item);
         ipcMain.emit(UPDATE_DOWNLOADS_DROPDOWN, true, this.downloads);
-        WindowManager?.sendToRenderer(UPDATE_DOWNLOADS_DROPDOWN, this.downloads);
+        MainWindow.sendToRenderer(UPDATE_DOWNLOADS_DROPDOWN, this.downloads);
     };
 
     private handleDownloadItemEvents = (item: DownloadItem, webContents: WebContents) => {
@@ -416,7 +467,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
      *  This function return true if "downloadLocation" is undefined
      */
     private shouldShowSaveDialog = (item: DownloadItem, downloadLocation?: string) => {
-        log.debug('DownloadsManager.shouldShowSaveDialog', {downloadLocation});
+        log.debug('shouldShowSaveDialog', {downloadLocation});
         return !item.hasUserGesture() || !downloadLocation;
     };
 
@@ -434,7 +485,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     };
 
     private closeDownloadsDropdown = () => {
-        log.debug('DownloadsManager.closeDownloadsDropdown');
+        log.debug('closeDownloadsDropdown');
         this.open = false;
         ipcMain.emit(CLOSE_DOWNLOADS_DROPDOWN);
         ipcMain.emit(CLOSE_DOWNLOADS_DROPDOWN_MENU);
@@ -450,7 +501,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
 
     private upsertFileToDownloads = (item: DownloadItem, state: DownloadItemState, overridePath?: string) => {
         const fileId = this.getFileId(item);
-        log.debug('DownloadsManager.upsertFileToDownloads', {fileId});
+        log.debug('upsertFileToDownloads', {fileId});
         const formattedItem = this.formatDownloadItem(item, state, overridePath);
         this.save(fileId, formattedItem);
         this.checkIfMaxFilesReached();
@@ -480,12 +531,12 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     };
 
     private shouldShowBadge = () => {
-        log.debug('DownloadsManager.shouldShowBadge');
+        log.debug('shouldShowBadge');
 
         if (this.open === true) {
-            WindowManager.sendToRenderer(HIDE_DOWNLOADS_DROPDOWN_BUTTON_BADGE);
+            MainWindow.sendToRenderer(HIDE_DOWNLOADS_DROPDOWN_BUTTON_BADGE);
         } else {
-            WindowManager.sendToRenderer(SHOW_DOWNLOADS_DROPDOWN_BUTTON_BADGE);
+            MainWindow.sendToRenderer(SHOW_DOWNLOADS_DROPDOWN_BUTTON_BADGE);
         }
     };
 
@@ -493,7 +544,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
      *  DownloadItem event handlers
      */
     private updatedEventController = (updatedEvent: Event, state: DownloadItemUpdatedEventState, item: DownloadItem) => {
-        log.debug('DownloadsManager.updatedEventController', {state});
+        log.debug('updatedEventController', {state});
 
         this.upsertFileToDownloads(item, state);
 
@@ -505,10 +556,10 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     };
 
     private doneEventController = (doneEvent: Event, state: DownloadItemDoneEventState, item: DownloadItem, webContents: WebContents) => {
-        log.debug('DownloadsManager.doneEventController', {state});
+        log.debug('doneEventController', {state});
 
         if (state === 'completed' && !this.open) {
-            displayDownloadCompleted(path.basename(item.savePath), item.savePath, WindowManager.getServerNameByWebContentsId(webContents.id) || '');
+            NotificationManager.displayDownloadCompleted(path.basename(item.savePath), item.savePath, ViewManager.getViewByWebContentsId(webContents.id)?.view.server.name ?? '');
         }
 
         const bookmark = this.bookmarks.get(this.getFileId(item));
@@ -537,7 +588,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
         this.openDownloadsDropdown();
     };
     private onUpdateDownloaded = (event: Event, info: UpdateInfo) => {
-        log.debug('DownloadsManager.onUpdateDownloaded', {info});
+        log.debug('onUpdateDownloaded', {info});
 
         const {version} = info;
         const update = this.downloads[APP_UPDATE_KEY];
@@ -552,7 +603,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
         this.openDownloadsDropdown();
     };
     private onUpdateProgress = (event: Event, progress: ProgressInfo) => {
-        log.debug('DownloadsManager.onUpdateProgress', {progress});
+        log.debug('onUpdateProgress', {progress});
         const {total, transferred, percent} = progress;
         const update = this.downloads[APP_UPDATE_KEY] || {...UPDATE_DOWNLOAD_ITEM};
         if (typeof update.addedAt !== 'number' || update.addedAt === 0) {

@@ -2,27 +2,29 @@
 // See LICENSE.txt for license information.
 
 import {app, BrowserWindow, Event, dialog, WebContents, Certificate, Details} from 'electron';
-import log from 'electron-log';
 
-import urlUtils from 'common/utils/url';
-import Config from 'common/config';
+import {Logger} from 'common/log';
+import {parseURL} from 'common/utils/url';
 
-import updateManager from 'main/autoUpdater';
 import CertificateStore from 'main/certificateStore';
 import {localizeMessage} from 'main/i18nManager';
-import {destroyTray} from 'main/tray/tray';
-import WindowManager from 'main/windows/windowManager';
+import Tray from 'main/tray/tray';
+import ViewManager from 'main/views/viewManager';
+import MainWindow from 'main/windows/mainWindow';
 
 import {getDeeplinkingURL, openDeepLink, resizeScreen} from './utils';
 
 export const certificateErrorCallbacks = new Map();
 
+// Jitsi
 // We need this because of https://github.com/electron/electron/issues/18214
-app.commandLine.appendSwitch('disable-site-isolation-trials');
+// app.commandLine.appendSwitch('disable-site-isolation-trials');
 
+// Jitsi
 // This allows BrowserWindow.setContentProtection(true) to work on macOS.
 // https://github.com/electron/electron/issues/19880
-app.commandLine.appendSwitch('disable-features', 'IOSurfaceCapturer');
+// app.commandLine.appendSwitch('disable-features', 'IOSurfaceCapturer');
+const log = new Logger('App.App');
 
 //
 // app event handlers
@@ -30,16 +32,19 @@ app.commandLine.appendSwitch('disable-features', 'IOSurfaceCapturer');
 
 // activate first app instance, subsequent instances will quit themselves
 export function handleAppSecondInstance(event: Event, argv: string[]) {
-    log.debug('App.handleAppSecondInstance', argv);
+    log.debug('handleAppSecondInstance', argv);
 
     // Protocol handler for win32
     // argv: An array of the second instance’s (command line / deep linked) arguments
-    const deeplinkingUrl = getDeeplinkingURL(argv);
-    WindowManager.showMainWindow(deeplinkingUrl);
+    MainWindow.show();
+    const deeplinkingURL = getDeeplinkingURL(argv);
+    if (deeplinkingURL) {
+        openDeepLink(deeplinkingURL);
+    }
 }
 
 export function handleAppWindowAllClosed() {
-    log.debug('App.handleAppWindowAllClosed');
+    log.debug('handleAppWindowAllClosed');
 
     // On OS X it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
@@ -49,7 +54,7 @@ export function handleAppWindowAllClosed() {
 }
 
 export function handleAppBrowserWindowCreated(event: Event, newWindow: BrowserWindow) {
-    log.debug('App.handleAppBrowserWindowCreated');
+    log.debug('handleAppBrowserWindowCreated');
 
     // Screen cannot be required before app is ready
     resizeScreen(newWindow);
@@ -88,40 +93,38 @@ export function handleAppWillFinishLaunching() {
 }
 
 export function handleAppBeforeQuit() {
-    log.debug('App.handleAppBeforeQuit');
+    log.debug('handleAppBeforeQuit');
 
     // Make sure tray icon gets removed if the user exits via CTRL-Q
-    destroyTray();
+    Tray.destroy();
     global.willAppQuit = true;
 
     // updateManager.handleOnQuit();
 }
 
 export async function handleAppCertificateError(event: Event, webContents: WebContents, url: string, error: string, certificate: Certificate, callback: (isTrusted: boolean) => void) {
-    log.verbose('App.handleAppCertificateError', {url, error, certificate});
+    log.verbose('handleAppCertificateError', {url, error, certificate});
 
-    const parsedURL = urlUtils.parseURL(url);
+    const parsedURL = parseURL(url);
     if (!parsedURL) {
         return;
     }
-    const origin = parsedURL.origin;
-    if (CertificateStore.isExplicitlyUntrusted(origin)) {
+    if (CertificateStore.isExplicitlyUntrusted(parsedURL)) {
         event.preventDefault();
-        log.warn(`Ignoring previously untrusted certificate for ${origin}`);
+        log.warn(`Ignoring previously untrusted certificate for ${parsedURL.origin}`);
         callback(false);
-    } else if (CertificateStore.isTrusted(origin, certificate)) {
+    } else if (CertificateStore.isTrusted(parsedURL, certificate)) {
         event.preventDefault();
         callback(true);
     } else {
     // update the callback
-        const errorID = `${origin}:${error}`;
+        const errorID = `${parsedURL.origin}:${error}`;
 
-        const serverName = WindowManager.getServerNameByWebContentsId(webContents.id);
-        const server = Config.teams.find((team) => team.name === serverName);
-        if (server) {
-            const serverURL = urlUtils.parseURL(server.url);
-            if (serverURL && serverURL.origin !== origin) {
-                log.warn(`Ignoring certificate for unmatched origin ${origin}, will not trust`);
+        const view = ViewManager.getViewByWebContentsId(webContents.id);
+        if (view?.view.server) {
+            const serverURL = parseURL(view.view.server.url);
+            if (serverURL && serverURL.origin !== parsedURL.origin) {
+                log.warn(`Ignoring certificate for unmatched origin ${parsedURL.origin}, will not trust`);
                 callback(false);
                 return;
             }
@@ -133,13 +136,12 @@ export async function handleAppCertificateError(event: Event, webContents: WebCo
             certificateErrorCallbacks.set(errorID, callback);
             return;
         }
-        const extraDetail = CertificateStore.isExisting(origin) ? localizeMessage('main.app.app.handleAppCertificateError.dialog.extraDetail', 'Certificate is different from previous one.\n\n') : '';
-        const detail = localizeMessage('main.app.app.handleAppCertificateError.certError.dialog.detail', '{extraDetail}origin: {origin}\nError: {error}', {extraDetail, origin, error});
+        const extraDetail = CertificateStore.isExisting(parsedURL) ? localizeMessage('main.app.app.handleAppCertificateError.dialog.extraDetail', 'Certificate is different from previous one.\n\n') : '';
+        const detail = localizeMessage('main.app.app.handleAppCertificateError.certError.dialog.detail', '{extraDetail}origin: {origin}\nError: {error}', {extraDetail, origin: parsedURL.origin, error});
 
         certificateErrorCallbacks.set(errorID, callback);
 
-        // TODO: should we move this to window manager or provide a handler for dialogs?
-        const mainWindow = WindowManager.getMainWindow();
+        const mainWindow = MainWindow.get();
         if (!mainWindow) {
             return;
         }
@@ -176,20 +178,18 @@ export async function handleAppCertificateError(event: Event, webContents: WebCo
             }
 
             if (result.response === 0) {
-                CertificateStore.add(origin, certificate);
+                CertificateStore.add(parsedURL, certificate);
                 CertificateStore.save();
                 certificateErrorCallbacks.get(errorID)(true);
 
-                const viewName = WindowManager.getViewNameByWebContentsId(webContents.id);
-                if (viewName) {
-                    const view = WindowManager.viewManager?.views.get(viewName);
-                    view?.load(url);
+                if (view) {
+                    view.load(url);
                 } else {
                     webContents.loadURL(url);
                 }
             } else {
                 if (result.checkboxChecked) {
-                    CertificateStore.add(origin, certificate, true);
+                    CertificateStore.add(parsedURL, certificate, true);
                     CertificateStore.save();
                 }
                 certificateErrorCallbacks.get(errorID)(false);

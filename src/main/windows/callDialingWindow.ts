@@ -1,43 +1,36 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserWindow, ipcMain} from 'electron';
+import { BrowserWindow, ipcMain } from 'electron';
 import log from 'electron-log';
 
-import Config from 'common/config';
+import { getLocalPreload, getLocalURLString } from '../utils';
+import { CALLS_JOINED_CALL } from 'common/communication';
 
-import {getLocalPreload, getLocalURLString} from '../utils';
-import {CALL_CLOSED, CALL_COMMAND} from 'common/communication';
-
-export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools: boolean, callInfo) {
+export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools: boolean, callInfo: any) {
     const preload = getLocalPreload('callDial.js');
-    const spellcheck = (typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker);
+    const mainSession = mainWindow.webContents.session;
+
     const callDialWindow = new BrowserWindow({
-        width: 230,
-        height: 260,
-        // parent: mainWindow,
-        // title: 'Call 🔉',
-        titleBarStyle: 'hidden',
+        width: 267,
+        height: 267,
+        titleBarStyle: 'hiddenInset',
+        hasShadow: true,
         minimizable: false,
         maximizable: false,
-        resizable: true,
-        // alwaysOnTop: true,
+        resizable: false,
+        alwaysOnTop: true,
         fullscreen: false,
         fullscreenable: false,
-        skipTaskbar: true,
         frame: false,
         webPreferences: {
-            nativeWindowOpen: true,
             preload,
-            spellcheck,
-            partition: 'persist:main',
+            session: mainSession,
             nodeIntegration: true,
-            contextIsolation: false,
-        }});
-
-    // const contextMenu = new ContextMenu({}, callDialWindow);
-    // contextMenu.reload();
-
+            contextIsolation: false
+        },
+    });
+    callDialWindow.setTitle('kChat');
     const localURL = getLocalURLString('callDialing.html');
     callDialWindow.setMenuBarVisibility(false);
     callDialWindow.loadURL(localURL).catch(
@@ -45,14 +38,12 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
             log.error(`Settings window failed to load: ${reason}`);
             log.info(process.env);
         });
-    callDialWindow.show();
 
-    callDialWindow.webContents.on('did-finish-load', () => {
-        callDialWindow.webContents.send('info-received', callInfo);
-    });
-
+    callDialWindow.webContents.once('dom-ready', () => callDialWindow?.show());
+    ipcMain.on(CALLS_JOINED_CALL, () => !callDialWindow?.isDestroyed() && callDialWindow?.close());
+    callDialWindow.webContents.on('did-finish-load', () => callDialWindow.webContents.send('info-received', callInfo));
     if (withDevTools) {
-        callDialWindow.webContents.openDevTools({mode: 'detach'});
+        callDialWindow.webContents.openDevTools({ mode: 'detach' });
     }
     return callDialWindow;
 }

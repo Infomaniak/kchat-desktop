@@ -4,13 +4,14 @@
 import path from 'path';
 
 import {dialog, ipcMain, app, nativeImage, shell, BrowserWindow} from 'electron';
-import log from 'electron-log';
 
 import {autoUpdater, CancellationToken, ProgressInfo, UpdateFileInfo, UpdateInfo} from 'electron-updater';
 
+import {Logger} from 'common/log';
+
 import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
-import {displayUpgrade, displayRestartToUpgrade} from 'main/notifications';
+import NotificationManager from 'main/notifications';
 
 import {
     CANCEL_UPGRADE,
@@ -25,18 +26,18 @@ import {
 } from 'common/communication';
 import Config from 'common/config';
 
-import {destroyTray} from './tray/tray';
+import tray from './tray/tray';
 
 const NEXT_NOTIFY = 86400000; // 24 hours
 const NEXT_CHECK = 3600000; // 1 hour
 
-log.transports.file.level = 'info';
+const log = new Logger('UpdateManager');
 autoUpdater.logger = log;
 autoUpdater.autoDownload = false;
 autoUpdater.disableWebInstaller = true;
 
 const assetsDir = path.resolve(app.getAppPath(), 'assets');
-const appIconURL = path.resolve(assetsDir, 'appicon_with_spacing_32.png');
+const appIconURL = path.resolve(assetsDir, 'appicon_with_spacing_96.png');
 const appIcon = nativeImage.createFromPath(appIconURL);
 
 /** to test this during development
@@ -83,7 +84,7 @@ export class UpdateManager {
                 const arch = process.arch;
                 const archFilter = arch === 'arm64' ? '-arm64.' : '-x64.';
 
-                this.macosLink = info.files.find((file) => file.url.includes('.dmg') && file.url.includes(archFilter));
+                this.macosLink = info.files?.find((file) => file.url.includes('.dmg') && file.url.includes(archFilter));
             }
             ipcMain.emit(UPDATE_SHORTCUT_MENU);
             log.info(`[kChat] available version ${info.version}`);
@@ -128,12 +129,12 @@ export class UpdateManager {
 
     notifyUpgrade = (): void => {
         ipcMain.emit(UPDATE_AVAILABLE, null, this.versionAvailable);
-        displayUpgrade(this.versionAvailable || 'unknown', this.handleDownload);
+        NotificationManager.displayUpgrade(this.versionAvailable || 'unknown', this.handleDownload);
     }
 
     notifyDownloaded = (): void => {
         ipcMain.emit(UPDATE_DOWNLOADED, null, this.downloadedInfo);
-        displayRestartToUpgrade(this.versionDownloaded || 'unknown', this.handleUpdate);
+        NotificationManager.displayRestartToUpgrade(this.versionDownloaded || 'unknown', this.handleUpdate);
     }
 
     handleDownloadManual = (): void => {
@@ -192,7 +193,7 @@ export class UpdateManager {
         // do it just like develar says: https://github.com/electron-userland/electron-builder/issues/1604#issuecomment-306709572
         log.info('quitting and installing now');
         setImmediate(() => {
-            destroyTray();
+            tray.destroy();
             global.willAppQuit = true;
             app.removeAllListeners('window-all-closed');
             const browserWindows = BrowserWindow.getAllWindows();
