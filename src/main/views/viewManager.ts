@@ -207,6 +207,7 @@ export class ViewManager {
         //TODO: kMeet integration V2 => open call in a new window.
         //remove shell.openExternal and uncomment code below.
         shell.openExternal(message.url);
+        this.sendToAllViews(CALL_JOINED, message);
         this.destroyCallWindow();
         /*const withDevTools = true;
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
@@ -233,7 +234,7 @@ export class ViewManager {
     }
 
     destroyCallWindow = () => {
-        this.callWindow!.destroy();
+        this.callWindow?.destroy();
         this.callWindow = undefined;
     }
 

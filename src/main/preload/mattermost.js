@@ -171,7 +171,6 @@ document.addEventListener('mouseout', (event) => {
 
 // listen for messages from the webapp
 window.addEventListener('message', ({ origin, data = {} } = {}) => {
-    console.log('NEW MESSAGE', origin, data)
     const { type, message = {} } = data;
     if (origin !== window.location.origin) {
         return;
