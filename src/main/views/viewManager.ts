@@ -41,6 +41,7 @@ import {
     CALL_JOINED,
     CALL_DECLINED,
     CALL_RINGING,
+    CALL_JOINED_BROWSER,
 } from 'common/communication';
 import Config from 'common/config';
 import { Logger } from 'common/log';
@@ -102,6 +103,7 @@ export class ViewManager {
         ipcMain.handle(RESET_TOKEN, this.handleResetToken);
         ipcMain.handle(RESET_AUTH, this.handleRevokeToken);
         ipcMain.on(CALL_JOINED, this.handleCallJoined);
+        ipcMain.on(CALL_JOINED_BROWSER, this.handleCallJoinedBrowser);
         ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(RESET_TEAMS, this.resetTeams);
@@ -210,6 +212,12 @@ export class ViewManager {
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
         this.callWindow.loadURL(message.url);
         windowManager.sendToMattermostViews(CALL_JOINED, message);*/
+
+    }
+
+    handleCallJoinedBrowser = (_: IpcMainEvent, message: any) => {
+        this.sendToAllViews(CALL_JOINED, message);
+        this.destroyCallWindow();
     }
 
     handleCallDialing = (_: IpcMainEvent, message: any) => {

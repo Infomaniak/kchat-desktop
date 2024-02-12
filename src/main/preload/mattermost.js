@@ -58,6 +58,7 @@ import {
     CALLS_JOIN_REQUEST,
     GET_IS_DEV_MODE,
     TOGGLE_SECURE_INPUT,
+    CALL_JOINED_BROWSER,
 } from 'common/communication';
 import { IKOrigin } from 'common/config/ikConfig';
 
@@ -170,6 +171,7 @@ document.addEventListener('mouseout', (event) => {
 
 // listen for messages from the webapp
 window.addEventListener('message', ({ origin, data = {} } = {}) => {
+    console.log('NEW MESSAGE', origin, data)
     const { type, message = {} } = data;
     if (origin !== window.location.origin) {
         return;
@@ -211,6 +213,14 @@ window.addEventListener('message', ({ origin, data = {} } = {}) => {
         }
         case 'call-joined': {
             ipcRenderer.send(CALL_JOINED, message, viewId);
+            break;
+        }
+        case 'call-joined-browser': {
+            ipcRenderer.send(CALL_JOINED_BROWSER, message, viewId);
+            break;
+        }
+        case 'call-declined': {
+            ipcRenderer.send(CALL_DECLINED, message, viewId);
             break;
         }
         case 'call-command': {
