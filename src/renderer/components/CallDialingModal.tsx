@@ -81,7 +81,6 @@ class DialingModal extends React.PureComponent<Props, State> {
 
     render() {
         const { callInfo } = this.state;
-        const {intl} = this.props;
 
         if (!callInfo) {
             return null;
@@ -90,12 +89,12 @@ class DialingModal extends React.PureComponent<Props, State> {
             <div className='container'>
 
                 <div className='content-body'>
-                    <Avatars
+                    {/* <Avatars
                         users={callInfo.users}
                         size='lg'
                         totalUsers={callInfo.users.length}
 
-                    />
+                    /> */}
 
                 </div>
                 <div className='content-calling'>
@@ -115,10 +114,10 @@ class DialingModal extends React.PureComponent<Props, State> {
                         style={{ fontSize: 14 }}
                     >
                         <span>
-                            {intl.formatMessage({
-                                id: 'renderer.modals.call.decline',
-                                defaultMessage: 'Decline'
-                            })}
+                            <FormattedMessage
+                                id="renderer.modals.call.decline"
+                                defaultMessage="Decline"
+                            />
                         </span>
                     </Button>
                     <Button
@@ -129,10 +128,10 @@ class DialingModal extends React.PureComponent<Props, State> {
                         style={{ fontSize: 14 }}
                     >
                         <span>
-                            {intl.formatMessage({
-                                id: 'renderer.modals.call.accept',
-                                defaultMessage: 'Accept'
-                            })}
+                            <FormattedMessage
+                                id="renderer.modals.call.accept"
+                                defaultMessage="Accept"
+                            />
                         </span>
                     </Button>
                 </div>

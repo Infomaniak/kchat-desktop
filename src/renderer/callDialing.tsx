@@ -14,7 +14,9 @@ import IntlProvider from './intl_provider';
 
 const start = async () => {
     ReactDOM.render(
-        <IntlProvider><CallDialingModal /></IntlProvider>,
+        <IntlProvider>
+            <CallDialingModal />
+        </IntlProvider>,
         document.getElementById('app'),
     );
 };

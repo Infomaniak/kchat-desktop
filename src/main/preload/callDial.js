@@ -5,11 +5,16 @@
 
 'use strict';
 
+const { GET_LANGUAGE_INFORMATION } = require('common/communication');
 // eslint-disable-next-line import/no-commonjs
-const {ipcRenderer} = require('electron');
+const {ipcRenderer, contextBridge} = require('electron');
 
 window.ipcRenderer = {
     send: ipcRenderer.send,
     on: (channel, listener) => ipcRenderer.on(channel, (_, ...args) => listener(null, ...args)),
     invoke: ipcRenderer.invoke,
 };
+
+contextBridge.exposeInMainWorld('desktop', {
+    getLanguageInformation: () => ipcRenderer.invoke(GET_LANGUAGE_INFORMATION),
+});

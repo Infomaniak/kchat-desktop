@@ -27,7 +27,7 @@ export function createCallDialingWindow(mainWindow: BrowserWindow, withDevTools:
             preload,
             session: mainSession,
             nodeIntegration: true,
-            contextIsolation: false
+            contextIsolation: true
         },
     });
     callDialWindow.setTitle('kChat');
