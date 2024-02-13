@@ -11,7 +11,11 @@ import { CALLS_JOINED_CALL, CALL_DECLINED, CALL_JOINED } from 'common/communicat
 import { playSoundLoop } from 'renderer/notificationSounds';
 
 import Avatars from './Avatars/Avatars';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, IntlShape, injectIntl } from 'react-intl';
+
+type Props = Record<string, never> & {
+    intl: IntlShape
+}
 
 type State = {
     callInfo: {
@@ -28,9 +32,9 @@ type State = {
 export type UserProfile = {
     nickname: string;
 };
-export default class DialingModal extends React.PureComponent<Record<string, never>, State> {
+class DialingModal extends React.PureComponent<Props, State> {
     // callInfo: any;
-    constructor(props: Record<string, never>) {
+    constructor(props: Props) {
         super(props);
 
         this.state = {
@@ -77,6 +81,8 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
 
     render() {
         const { callInfo } = this.state;
+        const {intl} = this.props;
+
         if (!callInfo) {
             return null;
         }
@@ -109,11 +115,10 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         style={{ fontSize: 14 }}
                     >
                         <span>
-                            {`Decline`}
-                            {/* <FormattedMessage
-                                id='renderer.modals.call.decline'
-                                defaultMessage='Decline'
-                            /> */}
+                            {intl.formatMessage({
+                                id: 'renderer.modals.call.decline',
+                                defaultMessage: 'Decline'
+                            })}
                         </span>
                     </Button>
                     <Button
@@ -124,11 +129,10 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         style={{ fontSize: 14 }}
                     >
                         <span>
-                            {`Accept`}
-                            {/* <FormattedMessage
-                                id='renderer.modals.call.accept'
-                                defaultMessage='Accept'
-                            /> */}
+                            {intl.formatMessage({
+                                id: 'renderer.modals.call.accept',
+                                defaultMessage: 'Accept'
+                            })}
                         </span>
                     </Button>
                 </div>
@@ -136,3 +140,5 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
         );
     }
 }
+
+export default injectIntl(DialingModal)
