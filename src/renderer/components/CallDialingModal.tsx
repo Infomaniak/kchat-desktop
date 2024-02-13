@@ -11,6 +11,7 @@ import { CALLS_JOINED_CALL, CALL_DECLINED, CALL_JOINED } from 'common/communicat
 import { playSoundLoop } from 'renderer/notificationSounds';
 
 import Avatars from './Avatars/Avatars';
+import { FormattedMessage } from 'react-intl';
 
 type State = {
     callInfo: {
@@ -107,7 +108,13 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         variant='danger'
                         style={{ fontSize: 14 }}
                     >
-                        <span>{'Decline'}</span>
+                        <span>
+                            {`Decline`}
+                            {/* <FormattedMessage
+                                id='renderer.modals.call.decline'
+                                defaultMessage='Decline'
+                            /> */}
+                        </span>
                     </Button>
                     <Button
                         className='accept'
@@ -116,7 +123,13 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         variant='primary'
                         style={{ fontSize: 14 }}
                     >
-                        <span>{'Accept'}</span>
+                        <span>
+                            {`Accept`}
+                            {/* <FormattedMessage
+                                id='renderer.modals.call.accept'
+                                defaultMessage='Accept'
+                            /> */}
+                        </span>
                     </Button>
                 </div>
             </div>

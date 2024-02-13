@@ -163,6 +163,8 @@
     "renderer.modals.certificate.certificateModal.noCertsAvailable": "No hay ningún certificado disponible",
     "renderer.modals.certificate.certificateModal.issuer": "Emisor",
     "renderer.modals.certificate.certificateModal.certInfoButton": "Información del certificado",
+    "renderer.modals.call.accept": "Aceptar",
+    "renderer.modals.call.decline": "Rechazar",
     "renderer.dropdown.servers": "Servidores",
     "renderer.dropdown.addAServer": "Añadir un servidor",
     "renderer.components.welcomeScreen.slides.welcome.title": "Bienvenido",
