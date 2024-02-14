@@ -7,7 +7,7 @@
 
 const { GET_LANGUAGE_INFORMATION } = require('common/communication');
 // eslint-disable-next-line import/no-commonjs
-const {ipcRenderer, contextBridge} = require('electron');
+const {ipcRenderer} = require('electron');
 
 window.ipcRenderer = {
     send: ipcRenderer.send,
