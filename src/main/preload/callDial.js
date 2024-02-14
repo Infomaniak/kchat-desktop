@@ -15,6 +15,6 @@ window.ipcRenderer = {
     invoke: ipcRenderer.invoke,
 };
 
-contextBridge.exposeInMainWorld('desktop', {
-    getLanguageInformation: () => ipcRenderer.invoke(GET_LANGUAGE_INFORMATION),
-});
+window.desktop = {
+    getLanguageInformation: () => ipcRenderer.invoke(GET_LANGUAGE_INFORMATION)
+}

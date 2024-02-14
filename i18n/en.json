@@ -306,6 +306,7 @@
   "renderer.modals.permission.permissionModal.unknownOrigin": "unknown origin",
   "renderer.modals.call.accept": "Accept",
   "renderer.modals.call.decline": "Decline",
+  "renderer.modals.call.calling": "Is calling",
   "renderer.time.hours": "hours",
   "renderer.time.mins": "mins",
   "renderer.time.sec": "sec"

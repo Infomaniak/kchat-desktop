@@ -49,7 +49,10 @@ class DialingModal extends React.PureComponent<Props, State> {
     componentDidMount() {
         window.ipcRenderer.on('info-received', (_, msg) => {
             // this.setState({callInfo: msg, trad: localizeMessage('Call.dialing', 'is Calling')});
-            this.setState({ callInfo: msg, trad: 'is Calling' });
+            this.setState({ callInfo: msg, trad: this.props.intl.formatMessage({
+                id: 'renderer.modals.call.calling',
+                defaultMessage: 'Is calling'
+            }) });
         });
         playSoundLoop('Ring');
         setTimeout(() => {
@@ -89,12 +92,11 @@ class DialingModal extends React.PureComponent<Props, State> {
             <div className='container'>
 
                 <div className='content-body'>
-                    {/* <Avatars
+                    <Avatars
                         users={callInfo.users}
                         size='lg'
                         totalUsers={callInfo.users.length}
-
-                    /> */}
+                    />
 
                 </div>
                 <div className='content-calling'>
