@@ -1,13 +1,13 @@
 {
   "publish": {
     "provider": "s3",
-    "channel": "latest",
+    "channel": "alpha",
     "bucket": "kchat",
     "endpoint": "https://download.storage5.infomaniak.com",
     "path": "/"
   },
   "generateUpdatesFilesForAllChannels": true,
-  "appId": "com.infomaniak.kchat",
+  "appId": "com.infomaniak.chat",
   "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
   "directories": {
     "buildResources": "src/assets",
@@ -87,7 +87,9 @@
     }
   },
   "appImage": {
-    "executableArgs": [" "]
+    "executableArgs": [
+      " "
+    ]
   },
   "mac": {
     "category": "public.app-category.productivity",
@@ -105,14 +107,16 @@
       }
     ],
     "hardenedRuntime": true,
-    "gatekeeperAssess": false,
+    "gatekeeperAssess": true,
     "entitlements": "./entitlements.mac.plist",
     "entitlementsInherit": "./entitlements.mac.plist",
     "extendInfo": {
       "NSMicrophoneUsageDescription": "Microphone access may be used by kChat plugins, such as kMeet video conferencing.",
       "NSCameraUsageDescription": "Camera access may be used by kChat plugins, such as kMeet video conferencing.",
       "LSFileQuarantineEnabled": true
-    }
+    },
+    "bundleShortVersion": "3.0.0",
+    "bundleVersion": "2"
   },
   "mas": {
     "hardenedRuntime": false,
@@ -145,7 +149,7 @@
     "iconSize": 120,
     "iconTextSize": 14,
     "window": {
-        "height": 380
+      "height": 380
     }
   },
   "squirrelWindows": {
@@ -173,6 +177,9 @@
     "packElevateHelper": false
   },
   "rpm": {
-    "fpm": ["--rpm-rpmbuild-define", "_build_id_links none"]
+    "fpm": [
+      "--rpm-rpmbuild-define",
+      "_build_id_links none"
+    ]
   }
 }

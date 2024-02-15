@@ -1,20 +1,19 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-// Copyright (c) 2015-2016 Yuya Ochiai
-/* eslint-disable consistent-return */
+// Copyright (c) 2015-2016
 
 'use strict';
 
-const { GET_LANGUAGE_INFORMATION } = require('common/communication');
-// eslint-disable-next-line import/no-commonjs
-const {ipcRenderer} = require('electron');
+import { CALLS_JOINED_CALL, CALL_DECLINED, CALL_JOINED, GET_LANGUAGE_INFORMATION } from 'common/communication';
+import {ipcRenderer, contextBridge} from 'electron';
 
-window.ipcRenderer = {
-    send: ipcRenderer.send,
-    on: (channel, listener) => ipcRenderer.on(channel, (_, ...args) => listener(null, ...args)),
-    invoke: ipcRenderer.invoke,
-};
+contextBridge.exposeInMainWorld('dialApi', {
+    onInfo: (callback) => ipcRenderer.on('info-received', callback),
+    callAccept: (callInfo) => ipcRenderer.send(CALL_JOINED, callInfo),
+    callDeclined: (callInfo) => ipcRenderer.send(CALL_DECLINED, callInfo),
+    callDefault: () => ipcRenderer.send(CALLS_JOINED_CALL),
+})
 
-window.desktop = {
+contextBridge.exposeInMainWorld('desktop', {
     getLanguageInformation: () => ipcRenderer.invoke(GET_LANGUAGE_INFORMATION)
-}
+})

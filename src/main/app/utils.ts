@@ -189,7 +189,7 @@ export function initCookieManager(session: Session) {
 
 export function migrateMacAppStore() {
     const migrationPrefs = new JsonFileManager<MigrationInfo>(migrationInfoPath);
-    const oldPath = path.join(app.getPath('userData'), '../../../../../../../Library/Application Support/Mattermost');
+    const oldPath = path.join(app.getPath('userData'), '../../../../../../../Library/Application Support/kChat');
 
     // Check if we've already migrated
     if (migrationPrefs.getValue('masConfigs')) {
@@ -204,7 +204,7 @@ export function migrateMacAppStore() {
             return;
         }
     } catch (e) {
-        log.error('MAS: Failed to check for existing Mattermost Desktop install, skipping', e);
+        log.error('MAS: Failed to check for existing kChat Desktop install, skipping', e);
         return;
     }
 

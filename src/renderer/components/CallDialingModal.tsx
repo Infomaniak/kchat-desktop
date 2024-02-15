@@ -6,8 +6,6 @@
 import { Button } from 'react-bootstrap';
 import React from 'react';
 
-import { CALLS_JOINED_CALL, CALL_DECLINED, CALL_JOINED } from 'common/communication';
-
 import { playSoundLoop } from 'renderer/notificationSounds';
 
 import Avatars from './Avatars/Avatars';
@@ -18,7 +16,7 @@ type Props = Record<string, never> & {
 }
 
 type State = {
-    callInfo: {
+    callInfo?: {
         users: UserProfile[];
         channelID: string;
         url: string;
@@ -26,7 +24,7 @@ type State = {
         id: string;
         nicknames: string;
         toneTimeOut: number;
-    } | void;
+    };
     trad: string;
 }
 export type UserProfile = {
@@ -47,7 +45,7 @@ class DialingModal extends React.PureComponent<Props, State> {
     }
 
     componentDidMount() {
-        window.ipcRenderer.on('info-received', (_, msg) => {
+        window.dialApi.onInfo((_, msg) => {
             // this.setState({callInfo: msg, trad: localizeMessage('Call.dialing', 'is Calling')});
             this.setState({ callInfo: msg, trad: this.props.intl.formatMessage({
                 id: 'renderer.modals.call.calling',
@@ -56,19 +54,19 @@ class DialingModal extends React.PureComponent<Props, State> {
         });
         playSoundLoop('Ring');
         setTimeout(() => {
-            window.ipcRenderer.send(CALLS_JOINED_CALL);
+            window.dialApi.callDefault();
         }, 30000);
     }
 
     onHandleDecline() {
         const { callInfo } = this.state;
-        window.ipcRenderer.send(CALL_DECLINED, callInfo);
+        window.dialApi.callDeclined(callInfo);
         window.close();
     }
 
     onHandleAccept() {
         const { callInfo } = this.state;
-        window.ipcRenderer.send(CALL_JOINED, callInfo);
+        window.dialApi.callAccept(callInfo);
         window.close();
     }
 

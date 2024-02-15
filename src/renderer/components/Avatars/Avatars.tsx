@@ -33,7 +33,6 @@ function Avatars({
     size,
     users,
 }: Props) {
-    console.log(users, Object.keys(users));
     const [displayUserIds, , { nonDisplayCount }] = countMeta(Object.keys(users), Object.keys(users).length);
     return (
         <div

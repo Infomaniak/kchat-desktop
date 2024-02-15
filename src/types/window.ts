@@ -9,6 +9,7 @@ import {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer} from './co
 import {DownloadedItem, DownloadedItems, DownloadsMenuOpenEventPayload} from './downloads';
 import {SaveQueueItem} from './settings';
 import {URLValidationResult} from './server';
+import {CallInfo} from './callsIk'
 
 declare global {
     interface Window {
@@ -153,5 +154,11 @@ declare global {
                 ) => void) => void;
             };
         };
+        dialApi: {
+            onInfo: (callback: (...args: any[]) => unknown) => void;
+            callDeclined: (callInfo?: CallInfo) => void;
+            callAccept: (callInfo?: CallInfo) => void;
+            callDefault: () => void;
+        }
     }
 }
