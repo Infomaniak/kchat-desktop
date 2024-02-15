@@ -9,6 +9,11 @@ import React from 'react';
 import { playSoundLoop } from 'renderer/notificationSounds';
 
 import Avatars from './Avatars/Avatars';
+import { FormattedMessage, IntlShape, injectIntl } from 'react-intl';
+
+type Props = Record<string, never> & {
+    intl: IntlShape
+}
 
 type State = {
     callInfo?: {
@@ -25,9 +30,9 @@ type State = {
 export type UserProfile = {
     nickname: string;
 };
-export default class DialingModal extends React.PureComponent<Record<string, never>, State> {
+class DialingModal extends React.PureComponent<Props, State> {
     // callInfo: any;
-    constructor(props: Record<string, never>) {
+    constructor(props: Props) {
         super(props);
 
         this.state = {
@@ -42,7 +47,10 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
     componentDidMount() {
         window.dialApi.onInfo((_, msg) => {
             // this.setState({callInfo: msg, trad: localizeMessage('Call.dialing', 'is Calling')});
-            this.setState({ callInfo: msg, trad: 'is Calling' });
+            this.setState({ callInfo: msg, trad: this.props.intl.formatMessage({
+                id: 'renderer.modals.call.calling',
+                defaultMessage: 'Is calling'
+            }) });
         });
         playSoundLoop('Ring');
         setTimeout(() => {
@@ -74,6 +82,7 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
 
     render() {
         const { callInfo } = this.state;
+
         if (!callInfo) {
             return null;
         }
@@ -85,7 +94,6 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         users={callInfo.users}
                         size='lg'
                         totalUsers={callInfo.users.length}
-
                     />
 
                 </div>
@@ -105,7 +113,12 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         variant='danger'
                         style={{ fontSize: 14 }}
                     >
-                        <span>{'Decline'}</span>
+                        <span>
+                            <FormattedMessage
+                                id="renderer.modals.call.decline"
+                                defaultMessage="Decline"
+                            />
+                        </span>
                     </Button>
                     <Button
                         className='accept'
@@ -114,10 +127,17 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         variant='primary'
                         style={{ fontSize: 14 }}
                     >
-                        <span>{'Accept'}</span>
+                        <span>
+                            <FormattedMessage
+                                id="renderer.modals.call.accept"
+                                defaultMessage="Accept"
+                            />
+                        </span>
                     </Button>
                 </div>
             </div>
         );
     }
 }
+
+export default injectIntl(DialingModal)
