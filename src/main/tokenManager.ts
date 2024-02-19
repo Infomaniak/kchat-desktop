@@ -279,31 +279,31 @@ export class TokenManager {
         return this.revokePromise;
     }
 
-    encrypt = (string: string) => {
+    encrypt = (str: string) => {
         if (!this.safeStorageAvailable) {
-            return string
+            return str
         }
 
         try {
-            const encryptedString = safeStorage.encryptString(string)
+            const encryptedString = safeStorage.encryptString(str)
             return encryptedString.toString('base64')
         } catch (error) {
             console.error('Token encryption did not work', error)
-            return string
+            return str
         }
     }
 
-    decrypt = (string: string) => {
+    decrypt = (str: string) => {
         if (!this.safeStorageAvailable) {
-            return string
+            return str
         }
 
         try {
-            const buffer = Buffer.from(string, 'base64')
+            const buffer = Buffer.from(str, 'base64')
             return safeStorage.decryptString(buffer)
         } catch (error) {
             console.error('Token encryption did not work', error)
-            return string
+            return str
         }
 
     }
