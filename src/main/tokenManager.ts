@@ -4,7 +4,7 @@
 
 import fs from 'fs';
 
-import { IpcMainEvent, net, session, ipcMain, safeStorage } from 'electron';
+import { IpcMainEvent, net, session, ipcMain } from 'electron';
 
 import log from 'electron-log';
 
@@ -28,7 +28,6 @@ export class TokenManager {
     data: Token | Record<string, never>;
     requestPromise: Promise<Token> | void;
     revokePromise: Promise<any> | void;
-    safeStorageAvailable: boolean
 
     constructor(tokensStorePath: string) {
         this.clientID = 'A7376A6D-9A79-4B06-A837-7D92DB93965B';
@@ -38,7 +37,6 @@ export class TokenManager {
         this.data = {};
         this.requestPromise = undefined;
         this.revokePromise = undefined;
-        this.safeStorageAvailable = safeStorage.isEncryptionAvailable()
     }
 
     load = (): Promise<Token | Error> => {
@@ -55,12 +53,7 @@ export class TokenManager {
                 if (!jsonData) {
                     reject(new Error('Provided tokens store file does not validate, using defaults instead.'));
                 }
-                const decrypted = this.decrypt(jsonData.token)
-
-                this.data = {
-                    ...jsonData,
-                    token: decrypted
-                };
+                this.data = jsonData;
 
                 // const tokenExpired = this.checkValidity();
                 // if (tokenExpired) {
@@ -115,8 +108,7 @@ export class TokenManager {
 
     // Write token data to disk.
     save = () => {
-        const dataToSave = this.data?.token ? { ...this.data, token: this.encrypt(this.data.token) } : this.data
-        fs.writeFileSync(this.storeFile, JSON.stringify(dataToSave, null, '  '));
+        fs.writeFileSync(this.storeFile, JSON.stringify(this.data, null, '  '));
     };
 
     reset = () => {
@@ -277,35 +269,6 @@ export class TokenManager {
         });
 
         return this.revokePromise;
-    }
-
-    encrypt = (str: string) => {
-        if (!this.safeStorageAvailable) {
-            return str
-        }
-
-        try {
-            const encryptedString = safeStorage.encryptString(str)
-            return encryptedString.toString('base64')
-        } catch (error) {
-            console.error('Token encryption did not work', error)
-            return str
-        }
-    }
-
-    decrypt = (str: string) => {
-        if (!this.safeStorageAvailable) {
-            return str
-        }
-
-        try {
-            const buffer = Buffer.from(str, 'base64')
-            return safeStorage.decryptString(buffer)
-        } catch (error) {
-            console.error('Token encryption did not work', error)
-            return str
-        }
-
     }
 }
 
