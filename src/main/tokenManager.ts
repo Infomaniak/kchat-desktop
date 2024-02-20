@@ -163,7 +163,7 @@ export class TokenManager {
                                 refreshToken: refresh_token,
                                 expiresAt: (Date.now() / 1000) + parseInt(expires_in, 10),
                             } as Token;
-                            this.save(this.encrypt(this.data));
+                            this.encrypt(this.data);
                             if (callback) {
                                 callback(this.data);
                             }
