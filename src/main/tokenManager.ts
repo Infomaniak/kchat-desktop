@@ -54,15 +54,15 @@ export class TokenManager {
                     ? storeStr
                     : JSON.parse(storeStr));
 
-                jsonData = Validator.validateTokensStore(jsonData);
+                // jsonData = Validator.validateTokensStore(jsonData);
 
                 if (!jsonData) {
                     reject(new Error('Provided tokens store file does not validate, using defaults instead.'));
                 }
 
-                if ('encrypted' in jsonData) {
+                if (jsonData.token && 'encrypted' in jsonData) {
                     this.data = this.decrypt(jsonData);
-                } else {
+                } else if (jsonData.token) {
                     this.encrypt(jsonData)
                 }
 
@@ -98,7 +98,7 @@ export class TokenManager {
 
     // Returns available token data.
     getToken = () => {
-        return this.data;
+        return this.decrypt(this.data);
     }
 
     // Store token from api response and write to disk.
@@ -302,9 +302,13 @@ export class TokenManager {
         }
     }
 
-    decrypt = (tokenObj: EncryptedToken): EncryptedToken => {
+    decrypt = (tokenObj: Token | Record<string, never>) => {
         if (!this.safeStorageAvailable) {
             throw new Error('token can not be decrypted, safestorage not available');
+        }
+
+        if (!tokenObj.token || !tokenObj.encrypted) {
+            return tokenObj;
         }
 
         try {
