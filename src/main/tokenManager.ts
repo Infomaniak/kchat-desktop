@@ -12,17 +12,14 @@ import {UPDATE_PATHS} from 'common/communication';
 
 import {tokensStorePath} from './constants';
 import {tokenApiEndpoint} from '../common/config/ikConfig'
-import * as Validator from '../common/Validator';
+
+// import * as Validator from '../common/Validator';
 
 type Token = {
     token: string;
     refreshToken?: string;
     encrypted?: boolean;
     // expiresAt: number;
-}
-
-type EncryptedToken = Token & {
-    encrypted: boolean;
 }
 
 export class TokenManager {
@@ -98,7 +95,7 @@ export class TokenManager {
 
     // Returns available token data.
     getToken = () => {
-        return this.decrypt(this.data);
+        return this.data;
     }
 
     // Store token from api response and write to disk.
@@ -108,20 +105,20 @@ export class TokenManager {
         // expiresAt: message.expiresAt,
         // refreshToken: message.refreshToken,
 
-        this.data = this.encrypt(message);
+        this.data = message;
 
         log.silly('tokenManager.handleStoreToken');
-        this.save();
+        this.encrypt(this.data);
     }
 
-    // Write token data to disk.
-    save = () => {
-        fs.writeFileSync(this.storeFile, JSON.stringify(this.data, null, '  '));
+    // Write to disk.
+    save = (data: Token | Record<string, never>) => {
+        fs.writeFileSync(this.storeFile, JSON.stringify(data, null, '  '));
     };
 
     reset = () => {
         this.data = {};
-        this.save();
+        this.save(this.data);
     }
 
     // Setup api request for token refresh.
@@ -166,7 +163,7 @@ export class TokenManager {
                                 refreshToken: refresh_token,
                                 expiresAt: (Date.now() / 1000) + parseInt(expires_in, 10),
                             } as Token;
-                            this.save();
+                            this.save(this.encrypt(this.data));
                             if (callback) {
                                 callback(this.data);
                             }
@@ -279,26 +276,32 @@ export class TokenManager {
         return this.revokePromise;
     }
 
+    // Encrypts a token obj using Electron safeStorage and stores it to disk then returs it
     encrypt = (tokenObj: Token): Token => {
         if (!this.safeStorageAvailable) {
             if (tokenObj.encrypted) {
                 delete tokenObj.encrypted;
             }
-            return tokenObj
-        }
+            this.save(tokenObj)
+            return tokenObj;
+
+        };
 
         try {
-            const encryptedString = safeStorage.encryptString(tokenObj.token)
-            return {
+            const encryptedString = safeStorage.encryptString(tokenObj.token);
+            const token = {
                 token: encryptedString.toString('base64'),
                 encrypted: true
-            }
+            };
+            this.save(token);
+            return token;
         } catch (error) {
             log.error('Token encryption did not work', error)
             if (tokenObj.encrypted) {
                 delete tokenObj.encrypted;
             }
-            return tokenObj
+            this.save(tokenObj);
+            return tokenObj;
         }
     }
 
