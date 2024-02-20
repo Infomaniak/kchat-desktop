@@ -112,11 +112,11 @@ export class ViewManager {
     }
 
     private init = () => {
+
+        TokenManager.load();
         LoadingScreen.show();
-        TokenManager.load().finally(() => {
-            ServerManager.getAllServers().forEach((server) => this.loadServer(server));
-            this.showInitial();
-        });
+        ServerManager.getAllServers().forEach((server) => this.loadServer(server));
+        this.showInitial();
     }
 
     getView = (viewId: string) => {
