@@ -59,8 +59,8 @@ export class TokenManager {
 
                 if (jsonData.token && 'encrypted' in jsonData) {
                     this.data = this.decrypt(jsonData);
-                } else if (jsonData.token) {
-                    this.encrypt(jsonData)
+                } else if (jsonData.token) { // if migrating from unencrypted token
+                    this.data = this.encrypt(jsonData);
                 }
 
                 // const tokenExpired = this.checkValidity();
@@ -276,7 +276,7 @@ export class TokenManager {
         return this.revokePromise;
     }
 
-    // Encrypts a token obj using Electron safeStorage and stores it to disk then returs it
+    // Encrypts a token obj to disk then returs the decrypted version for the class to return
     encrypt = (tokenObj: Token): Token => {
         if (!this.safeStorageAvailable) {
             if (tokenObj.encrypted) {
@@ -294,7 +294,11 @@ export class TokenManager {
                 encrypted: true
             };
             this.save(token);
-            return token;
+            // return decrypted version for operations.
+            return {
+                token: tokenObj.token,
+                encrypted: true
+            };
         } catch (error) {
             log.error('Token encryption did not work', error)
             if (tokenObj.encrypted) {
