@@ -100,12 +100,10 @@ export class TokenManager {
 
     // Store token from api response and write to disk.
     handleStoreToken = (_: IpcMainEvent, message: Token) => {
-
-        // refreshToken: message.refreshToken,
-        // expiresAt: message.expiresAt,
-        // refreshToken: message.refreshToken,
-
-        this.data = message;
+        this.data = {
+            token: message.token,
+            encrypted: true
+        };
 
         log.silly('tokenManager.handleStoreToken');
         this.encrypt(this.data);
