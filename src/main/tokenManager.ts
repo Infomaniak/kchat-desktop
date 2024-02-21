@@ -4,20 +4,21 @@
 
 import fs from 'fs';
 
-import { IpcMainEvent, net, session, ipcMain } from 'electron';
+import {IpcMainEvent, net, session, ipcMain, safeStorage} from 'electron';
 
 import log from 'electron-log';
 
-import { UPDATE_PATHS } from 'common/communication';
+import {UPDATE_PATHS} from 'common/communication';
 
-import { tokensStorePath } from './constants';
+import {tokensStorePath} from './constants';
+import {tokenApiEndpoint} from '../common/config/ikConfig'
 
-import { tokenApiEndpoint } from '../common/config/ikConfig'
+// import * as Validator from '../common/Validator';
 
 type Token = {
     token: string;
     refreshToken?: string;
-
+    encrypted?: boolean;
     // expiresAt: number;
 }
 
@@ -28,6 +29,7 @@ export class TokenManager {
     data: Token | Record<string, never>;
     requestPromise: Promise<Token> | void;
     revokePromise: Promise<any> | void;
+    safeStorageAvailable: boolean
 
     constructor(tokensStorePath: string) {
         this.clientID = 'A7376A6D-9A79-4B06-A837-7D92DB93965B';
@@ -37,23 +39,29 @@ export class TokenManager {
         this.data = {};
         this.requestPromise = undefined;
         this.revokePromise = undefined;
+        this.safeStorageAvailable = safeStorage.isEncryptionAvailable()
     }
 
-    load = (): Promise<Token | Error> => {
-        // this.storeFile = tokensStorePath;
+    load = (): Promise<Token | Error | Record<string, never>> => {
         return new Promise((resolve, reject) => {
             let storeStr;
             try {
-                // const result = Validator.validateCertificateStore(storeStr);
-
-                // console.log(tokensStorePath);
-
                 storeStr = fs.readFileSync(tokensStorePath, 'utf-8');
-                const jsonData = (typeof storeStr === 'object' ? storeStr as Token : JSON.parse(storeStr) as Token);
+                let jsonData = (typeof storeStr === 'object'
+                    ? storeStr
+                    : JSON.parse(storeStr));
+
+                // jsonData = Validator.validateTokensStore(jsonData);
+
                 if (!jsonData) {
                     reject(new Error('Provided tokens store file does not validate, using defaults instead.'));
                 }
-                this.data = jsonData;
+
+                if (jsonData.token && 'encrypted' in jsonData) {
+                    this.data = this.decrypt(jsonData);
+                } else if (jsonData.token) {
+                    this.encrypt(jsonData)
+                }
 
                 // const tokenExpired = this.checkValidity();
                 // if (tokenExpired) {
@@ -61,6 +69,7 @@ export class TokenManager {
                 // } else {
                 //     resolve(this.data);
                 // }
+
                 resolve(this.data);
             } catch (e) {
                 this.data = {};
@@ -91,29 +100,25 @@ export class TokenManager {
 
     // Store token from api response and write to disk.
     handleStoreToken = (_: IpcMainEvent, message: Token) => {
-        // log.silly('tokenManager.handleStoreToken');
 
         // refreshToken: message.refreshToken,
         // expiresAt: message.expiresAt,
         // refreshToken: message.refreshToken,
 
-        this.data = {
-            token: message.token,
-        };
+        this.data = message;
 
-        log.silly('tokenManager.handleStoreToken', this.data);
-
-        this.save();
+        log.silly('tokenManager.handleStoreToken');
+        this.encrypt(this.data);
     }
 
-    // Write token data to disk.
-    save = () => {
-        fs.writeFileSync(this.storeFile, JSON.stringify(this.data, null, '  '));
+    // Write to disk.
+    save = (data: Token | Record<string, never>) => {
+        fs.writeFileSync(this.storeFile, JSON.stringify(data, null, '  '));
     };
 
     reset = () => {
         this.data = {};
-        this.save();
+        this.save(this.data);
     }
 
     // Setup api request for token refresh.
@@ -158,7 +163,7 @@ export class TokenManager {
                                 refreshToken: refresh_token,
                                 expiresAt: (Date.now() / 1000) + parseInt(expires_in, 10),
                             } as Token;
-                            this.save();
+                            this.encrypt(this.data);
                             if (callback) {
                                 callback(this.data);
                             }
@@ -261,7 +266,7 @@ export class TokenManager {
                 reject(e);
             });
 
-            console.log('DELETING', this.data.token);
+            log.silly('deleting token');
             req.setHeader('Authorization', `Bearer ${this.data.token}`);
             session.defaultSession.clearStorageData();
 
@@ -269,6 +274,57 @@ export class TokenManager {
         });
 
         return this.revokePromise;
+    }
+
+    // Encrypts a token obj using Electron safeStorage and stores it to disk then returs it
+    encrypt = (tokenObj: Token): Token => {
+        if (!this.safeStorageAvailable) {
+            if (tokenObj.encrypted) {
+                delete tokenObj.encrypted;
+            }
+            this.save(tokenObj)
+            return tokenObj;
+
+        };
+
+        try {
+            const encryptedString = safeStorage.encryptString(tokenObj.token);
+            const token = {
+                token: encryptedString.toString('base64'),
+                encrypted: true
+            };
+            this.save(token);
+            return token;
+        } catch (error) {
+            log.error('Token encryption did not work', error)
+            if (tokenObj.encrypted) {
+                delete tokenObj.encrypted;
+            }
+            this.save(tokenObj);
+            return tokenObj;
+        }
+    }
+
+    decrypt = (tokenObj: Token | Record<string, never>) => {
+        if (!this.safeStorageAvailable) {
+            throw new Error('token can not be decrypted, safestorage not available');
+        }
+
+        if (!tokenObj.token || !tokenObj.encrypted) {
+            return tokenObj;
+        }
+
+        try {
+            const buffer = Buffer.from(tokenObj.token, 'base64')
+            return {
+                ...tokenObj,
+                token: safeStorage.decryptString(buffer)
+            }
+        } catch (error) {
+            log.error('Token decryption did not work', error)
+            return tokenObj
+        }
+
     }
 }
 

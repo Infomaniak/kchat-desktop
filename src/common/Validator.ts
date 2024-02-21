@@ -160,6 +160,11 @@ const certificateStoreSchema = Joi.object().pattern(
     }),
 );
 
+const tokenStoreSchema = Joi.object({
+    token: Joi.string().required(),
+    encrypted: Joi.boolean().optional()
+});
+
 const originPermissionsSchema = Joi.object<TrustedOrigin>().keys({
     canBasicAuth: Joi.boolean().default(false), // we can add more permissions later if we want
 });
@@ -278,6 +283,12 @@ export function validateConfigData(data: AnyConfig) {
 export function validateCertificateStore(data: string | Record<string, ComparableCertificate>) {
     const jsonData = (typeof data === 'object' ? data : JSON.parse(data));
     return validateAgainstSchema(jsonData, certificateStoreSchema);
+}
+
+// validate tokens.json
+export function validateTokensStore(data: string | Record<string, string | boolean>) {
+    const jsonData = (typeof data === 'object' ? data : JSON.parse(data));
+    return validateAgainstSchema(jsonData, tokenStoreSchema);
 }
 
 // validate allowedProtocols.json
