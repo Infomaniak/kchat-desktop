@@ -39,7 +39,7 @@
     "renderer.modals.certificate.certificateModal.certInfoButton": "Sertifikato informacija",
     "renderer.modals.call.accept": "Accettare",
     "renderer.modals.call.decline": "Declinare",
-    "renderer.modals.call.calling": "Sta chiamando",
+    "renderer.modals.call.calling": "Ti chiama",
     "renderer.dropdown.servers": "Serveriai",
     "renderer.dropdown.addAServer": "Pridėti serverį",
     "renderer.downloadsDropdownMenu.ShowInFolder": "Rodyti aplanke",

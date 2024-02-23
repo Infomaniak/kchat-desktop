@@ -137,7 +137,7 @@
     "renderer.modals.certificate.certificateModal.certInfoButton": "Zertifikatsinformation",
     "renderer.modals.call.accept": "Akzeptieren",
     "renderer.modals.call.decline": "Ablehnen",
-    "renderer.modals.call.calling": "Ruft an",
+    "renderer.modals.call.calling": "ruft Sie an",
     "renderer.dropdown.servers": "Server",
     "renderer.dropdown.addAServer": "Server hinzufügen",
     "renderer.components.serverDropdownButton.noServersConfigured": "Keine Server konfiguriert",
