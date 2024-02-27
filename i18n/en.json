@@ -304,6 +304,9 @@
   "renderer.modals.permission.permissionModal.requestOriginatedFromOrigin": "This request originated from <link>{origin}</link>",
   "renderer.modals.permission.permissionModal.title": "{permission} Required",
   "renderer.modals.permission.permissionModal.unknownOrigin": "unknown origin",
+  "renderer.modals.call.accept": "Accept",
+  "renderer.modals.call.decline": "Decline",
+  "renderer.modals.call.calling": "is Calling",
   "renderer.time.hours": "hours",
   "renderer.time.mins": "mins",
   "renderer.time.sec": "sec"

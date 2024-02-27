@@ -6,14 +6,17 @@
 import { Button } from 'react-bootstrap';
 import React from 'react';
 
-import { CALLS_JOINED_CALL, CALL_DECLINED, CALL_JOINED } from 'common/communication';
-
 import { playSoundLoop } from 'renderer/notificationSounds';
 
 import Avatars from './Avatars/Avatars';
+import { FormattedMessage, IntlShape, injectIntl } from 'react-intl';
+
+type Props = Record<string, never> & {
+    intl: IntlShape
+}
 
 type State = {
-    callInfo: {
+    callInfo?: {
         users: UserProfile[];
         channelID: string;
         url: string;
@@ -21,15 +24,15 @@ type State = {
         id: string;
         nicknames: string;
         toneTimeOut: number;
-    } | void;
+    };
     trad: string;
 }
 export type UserProfile = {
     nickname: string;
 };
-export default class DialingModal extends React.PureComponent<Record<string, never>, State> {
+class DialingModal extends React.PureComponent<Props, State> {
     // callInfo: any;
-    constructor(props: Record<string, never>) {
+    constructor(props: Props) {
         super(props);
 
         this.state = {
@@ -42,25 +45,28 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
     }
 
     componentDidMount() {
-        window.ipcRenderer.on('info-received', (_, msg) => {
+        window.dialApi.onInfo((_, msg) => {
             // this.setState({callInfo: msg, trad: localizeMessage('Call.dialing', 'is Calling')});
-            this.setState({ callInfo: msg, trad: 'is Calling' });
+            this.setState({ callInfo: msg, trad: this.props.intl.formatMessage({
+                id: 'renderer.modals.call.calling',
+                defaultMessage: 'Is calling'
+            }) });
         });
         playSoundLoop('Ring');
         setTimeout(() => {
-            window.ipcRenderer.send(CALLS_JOINED_CALL);
+            window.dialApi.callDefault();
         }, 30000);
     }
 
     onHandleDecline() {
         const { callInfo } = this.state;
-        window.ipcRenderer.send(CALL_DECLINED, callInfo);
+        window.dialApi.callDeclined(callInfo);
         window.close();
     }
 
     onHandleAccept() {
         const { callInfo } = this.state;
-        window.ipcRenderer.send(CALL_JOINED, callInfo);
+        window.dialApi.callAccept(callInfo);
         window.close();
     }
 
@@ -76,6 +82,7 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
 
     render() {
         const { callInfo } = this.state;
+
         if (!callInfo) {
             return null;
         }
@@ -87,7 +94,6 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         users={callInfo.users}
                         size='lg'
                         totalUsers={callInfo.users.length}
-
                     />
 
                 </div>
@@ -107,7 +113,12 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         variant='danger'
                         style={{ fontSize: 14 }}
                     >
-                        <span>{'Decline'}</span>
+                        <span>
+                            <FormattedMessage
+                                id="renderer.modals.call.decline"
+                                defaultMessage="Decline"
+                            />
+                        </span>
                     </Button>
                     <Button
                         className='accept'
@@ -116,10 +127,17 @@ export default class DialingModal extends React.PureComponent<Record<string, nev
                         variant='primary'
                         style={{ fontSize: 14 }}
                     >
-                        <span>{'Accept'}</span>
+                        <span>
+                            <FormattedMessage
+                                id="renderer.modals.call.accept"
+                                defaultMessage="Accept"
+                            />
+                        </span>
                     </Button>
                 </div>
             </div>
         );
     }
 }
+
+export default injectIntl(DialingModal)

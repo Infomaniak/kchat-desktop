@@ -10,10 +10,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import CallDialingModal from './components/CallDialingModal';
+import IntlProvider from './intl_provider';
 
 const start = async () => {
     ReactDOM.render(
-        <CallDialingModal />,
+        <IntlProvider>
+            <CallDialingModal />
+        </IntlProvider>,
         document.getElementById('app'),
     );
 };

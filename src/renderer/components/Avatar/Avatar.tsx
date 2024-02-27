@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import classNames from 'classnames';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 
 import '../../css/components/Avatar.scss';
 
@@ -15,51 +15,6 @@ import {
     AVATAR_FALLBACK_COLORS,
 } from './Avatar.constants';
 import type PAvatar from './Avatar.props';
-
-type PLazyAvatarImage = {
-    source: string;
-    style: Object;
-};
-
-/**
- * will return a base64 value from a image endpoint or image source
- * @param {string} url
- */
-async function getBase64(url: string): Promise<string> {
-    const response = await fetch(url);
-    const buf = await response.arrayBuffer();
-    const dataString = Buffer.from(buf).toString('base64');
-    const dataType = response.headers.get('content-type');
-
-    return `data:${dataType};base64,${dataString}`;
-}
-
-const LazyAvatarImage = ({source, style}: PLazyAvatarImage): JSX.Element => {
-    const [image, setImage] = useState('');
-
-    useEffect(() => {
-        getBase64(source).
-            then((imageString) => setImage(imageString)).
-            catch(() => {});
-    }, [source]);
-
-    if (!image) {
-        return (
-            <div
-                style={style}
-                className={'StyledAvatarImage skeleton'}
-            />
-        );
-    }
-
-    return (
-        <img
-            className={'StyledAvatarImage'}
-            src={image}
-            style={style}
-        />
-    );
-};
 
 const Avatar = (props: PAvatar): JSX.Element => {
     const {
@@ -115,12 +70,13 @@ const Avatar = (props: PAvatar): JSX.Element => {
             className={classNames('AvatarRoot')}
             {...rootProperties}
         >
-            {/* Math.floor(Math.random() * (max - min + 1) + min) */}
             {image ?
-                <LazyAvatarImage
+                <img
+                    className={'StyledAvatarImage'}
+                    src={image}
                     style={childStyle}
-                    source={image}
-                /> : (
+                />
+                 : (
                     <div
                         style={{
                             backgroundColor: AVATAR_FALLBACK_COLORS[Math.floor(Math.random() * 8)],

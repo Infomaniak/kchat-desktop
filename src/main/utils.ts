@@ -103,10 +103,16 @@ export function getLocalPreload(file: string) {
 export function composeUserAgent() {
     const baseUserAgent = app.userAgentFallback.split(' ');
 
+    // specify if mas build to show migration banner
+    // eslint-disable-next-line no-undef
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const isMas = __IS_MAC_APP_STORE__ ? ` Mas/${app.getVersion()}` : ''
+
     // filter out the Mattermost tag that gets added earlier on
     const filteredUserAgent = baseUserAgent.filter((ua) => !ua.startsWith('Mattermost'));
 
-    return `${filteredUserAgent.join(' ')} Mattermost/${app.getVersion()}`;
+    return `${filteredUserAgent.join(' ')} Mattermost/${app.getVersion()}${isMas}`;
 }
 
 export function isStringWithLength(string: unknown): boolean {
