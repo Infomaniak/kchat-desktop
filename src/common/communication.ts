@@ -122,7 +122,6 @@ export const CONNECT_CALL = 'connect-call';
 export const WINDOW_WILL_UNLOADED = 'window-will-unloaded';
 
 export const DISPATCH_GET_DESKTOP_SOURCES = 'dispatch-get-desktop-sources';
-export const DESKTOP_SOURCES_RESULT = 'desktop-sources-result';
 
 export const RELOAD_CURRENT_VIEW = 'reload-current-view';
 
@@ -147,7 +146,7 @@ export const RESET_TEAMS_HARD = 'reset-teams-hard';
 
 // Calls
 export const GET_DESKTOP_SOURCES = 'get-desktop-sources';
-// export const DESKTOP_SOURCES_RESULT = 'desktop-sources-result';
+export const DESKTOP_SOURCES_RESULT = 'desktop-sources-result';
 export const DESKTOP_SOURCES_MODAL_REQUEST = 'desktop-sources-modal-request';
 export const CALL_DIALING = 'call-dialing';
 export const CALLS_JOIN_CALL = 'calls-join-call';
