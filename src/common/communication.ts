@@ -1,6 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+export const GET_APP_INFO = 'get-app-info';
+
 export const SWITCH_SERVER = 'switch-server';
 export const SWITCH_TAB = 'switch-tab';
 export const CLOSE_VIEW = 'close-view';
@@ -60,9 +62,9 @@ export const GET_DOWNLOAD_LOCATION = 'get_download_location';
 export const UPDATE_MENTIONS = 'update_mentions';
 export const IS_UNREAD = 'is_unread';
 export const UNREAD_RESULT = 'unread_result';
+export const UNREADS_AND_MENTIONS = 'unreads-and-mentions';
 export const SESSION_EXPIRED = 'session_expired';
 
-export const SET_VIEW_OPTIONS = 'set-view-name';
 export const REACT_APP_INITIALIZED = 'react-app-initialized';
 
 export const TOGGLE_BACK_BUTTON = 'toggle-back-button';
@@ -96,7 +98,6 @@ export const START_UPGRADE = 'start-upgrade';
 export const CHECK_FOR_UPDATES = 'check-for-updates';
 export const NO_UPDATE_AVAILABLE = 'no-update-available';
 
-export const BROWSER_HISTORY_BUTTON = 'browser-history-button';
 export const BROWSER_HISTORY_PUSH = 'browser-history-push';
 export const APP_LOGGED_IN = 'app-logged-in';
 export const APP_LOGGED_OUT = 'app-logged-out';
@@ -121,7 +122,6 @@ export const CONNECT_CALL = 'connect-call';
 export const WINDOW_WILL_UNLOADED = 'window-will-unloaded';
 
 export const DISPATCH_GET_DESKTOP_SOURCES = 'dispatch-get-desktop-sources';
-export const DESKTOP_SOURCES_RESULT = 'desktop-sources-result';
 
 export const RELOAD_CURRENT_VIEW = 'reload-current-view';
 
@@ -138,15 +138,17 @@ export const TOKEN_REFRESHED = 'token-refreshed';
 export const TOKEN_REQUEST = 'token-request';
 export const REFRESH_TOKEN = 'refresh-token';
 export const RESET_TOKEN = 'reset-token';
+export const RESET_TEAMS = 'reset-teams';
 export const SERVER_ADDED = 'server-added';
 export const SERVER_DELETED = 'server-deleted';
 export const RESET_AUTH = 'reset-auth';
-export const RESET_TEAMS = 'reset-teams-hard';
+export const RESET_TEAMS_HARD = 'reset-teams-hard';
 
-// Mattermost Calls
-// export const DISPATCH_GET_DESKTOP_SOURCES = 'dispatch-get-desktop-sources';
-// export const DESKTOP_SOURCES_RESULT = 'desktop-sources-result';
+// Calls
+export const GET_DESKTOP_SOURCES = 'get-desktop-sources';
+export const DESKTOP_SOURCES_RESULT = 'desktop-sources-result';
 export const DESKTOP_SOURCES_MODAL_REQUEST = 'desktop-sources-modal-request';
+export const CALL_DIALING = 'call-dialing';
 export const CALLS_JOIN_CALL = 'calls-join-call';
 export const CALLS_LEAVE_CALL = 'calls-leave-call';
 export const CALLS_WIDGET_RESIZE = 'calls-widget-resize';
@@ -203,3 +205,11 @@ export const VALIDATE_SERVER_URL = 'validate-server-url';
 export const GET_IS_DEV_MODE = 'get-is-dev-mode';
 
 export const TOGGLE_SECURE_INPUT = 'toggle-secure-input';
+
+export const REQUEST_BROWSER_HISTORY_STATUS = 'request-browser-history-status';
+export const BROWSER_HISTORY_STATUS_UPDATED = 'browser-history-status-updated';
+
+export const NOTIFICATION_CLICKED = 'notification-clicked';
+
+// Legacy code remove signal
+export const LEGACY_OFF = 'legacy-off';
