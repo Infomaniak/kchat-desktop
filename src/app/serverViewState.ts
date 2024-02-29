@@ -71,7 +71,7 @@ export class ServerViewState {
     }
 
     getCurrentServer = () => {
-        log.debug('getCurrentServer');
+        log.silly('getCurrentServer');
 
         if (!this.currentServerId) {
             throw new Error('No server set as current');
@@ -141,7 +141,7 @@ export class ServerViewState {
         const modalPromise = ModalManager.addModal<null, Server>(
             'newServer',
             getLocalURLString('newServer.html'),
-            getLocalPreload('desktopAPI.js'),
+            getLocalPreload('internalAPI.js'),
             null,
             mainWindow,
             !ServerManager.hasServers(),
@@ -173,7 +173,7 @@ export class ServerViewState {
         const modalPromise = ModalManager.addModal<UniqueServer, Server>(
             'editServer',
             getLocalURLString('editServer.html'),
-            getLocalPreload('desktopAPI.js'),
+            getLocalPreload('internalAPI.js'),
             server.toUniqueServer(),
             mainWindow);
 
@@ -200,7 +200,7 @@ export class ServerViewState {
         const modalPromise = ModalManager.addModal<string, boolean>(
             'removeServer',
             getLocalURLString('removeServer.html'),
-            getLocalPreload('desktopAPI.js'),
+            getLocalPreload('internalAPI.js'),
             server.name,
             mainWindow,
         );
@@ -309,7 +309,7 @@ export class ServerViewState {
             return { status: URLValidationStatus.URLUpdated, serverVersion: remoteInfo.serverVersion, serverName: remoteInfo.siteName, validatedURL: remoteInfo.siteURL };
         }
 
-        return { status: URLValidationStatus.OK, serverVersion: remoteInfo.serverVersion, serverName: remoteInfo.siteName, validatedURL: remoteInfo.siteURL };
+        return {status: URLValidationStatus.OK, serverVersion: remoteInfo.serverVersion, serverName: remoteInfo.siteName, validatedURL: remoteURL.toString()};
     };
 
     private handleCloseView = (event: IpcMainEvent, viewId: string) => {

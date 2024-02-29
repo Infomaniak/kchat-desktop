@@ -252,9 +252,9 @@ module.exports = {
         await window.waitForSelector('input[placeholder="Password"]');
         await window.waitForSelector('button[type="submit"]');
 
-        await window.type('input[placeholder="address@mail.com"]', 'e2e@ik-test-parner.ch');
-        await window.type('input[placeholder="Password"]', process.env.E2E_USER1_PWD);
-        await window.waitForSelector('button[type="submit"]');
+        await window.type('#input_loginId', process.env.MM_TEST_USER_NAME);
+        await window.type('#input_password-input', process.env.MM_TEST_PASSWORD);
+        await window.click('#saveSetting');
     },
 
     async openDownloadsDropdown(app) {

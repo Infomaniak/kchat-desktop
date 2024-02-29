@@ -34,6 +34,7 @@ import {
     TOGGLE_SECURE_INPUT,
     UPDATE_TEAMS,
     SERVERS_UPDATE,
+    GET_APP_INFO,
 } from 'common/communication';
 import Config from 'common/config';
 import { Logger } from 'common/log';
@@ -271,7 +272,7 @@ function initializeBeforeAppReady() {
 
 function initializeInterCommunicationEventListeners() {
     ipcMain.on(NOTIFY_MENTION, handleMentionNotification);
-    ipcMain.handle('get-app-version', handleAppVersion);
+    ipcMain.handle(GET_APP_INFO, handleAppVersion);
     ipcMain.on(UPDATE_SHORTCUT_MENU, handleUpdateMenuEvent);
     ipcMain.on(FOCUS_BROWSERVIEW, ViewManager.focusCurrentView);
 
@@ -464,7 +465,7 @@ async function initializeAfterAppReady() {
     // listen for status updates and pass on to renderer
     UserActivityMonitor.on('status', (status) => {
         log.debug('UserActivityMonitor.on(status)', status);
-        ViewManager.sendToAllViews(USER_ACTIVITY_UPDATE, status);
+        ViewManager.sendToAllViews(USER_ACTIVITY_UPDATE, status.userIsActive, status.idleTime, status.isSystemEvent);
     });
 
     // start monitoring user activity (needs to be started after the app is ready)

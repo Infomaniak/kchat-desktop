@@ -9,9 +9,10 @@ cat <<EOS > com.infomaniak.chat
 [Desktop Entry]
 Name=kChat
 Comment=kChat Desktop application for Linux
-Exec="${FULL_PATH}/kchat-desktop"
+Exec="${FULL_PATH}/kchat-desktop" %U
 Terminal=false
 Type=Application
+MimeType=x-scheme-handler/mattermost
 Icon=${FULL_PATH}/app_icon.png
 Categories=Network;InstantMessaging;
 EOS

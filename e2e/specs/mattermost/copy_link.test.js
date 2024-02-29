@@ -39,10 +39,6 @@ describe('copylink', function desc() {
         await firstServer.waitForSelector('#sidebarItem_town-square');
         await firstServer.click('#sidebarItem_town-square', {button: 'right'});
         await firstServer.click('li.SidebarChannel.expanded.active > span > nav > div');
-        await firstServer.waitForSelector('#sidebarItem_suscipit-4');
-        await firstServer.click('#sidebarItem_suscipit-4');
-        await firstServer.click('#sidebarItem_suscipit-4', {button: 'right'});
-        await firstServer.click('text=Copy Linksint >> span');
         await firstServer.click('#sidebarItem_town-square');
         await firstServer.click('#post_textbox');
         const clipboardText = clipboard.readText();
