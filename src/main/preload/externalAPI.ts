@@ -58,6 +58,7 @@ import {
     SERVER_DELETED,
     RESET_AUTH,
     RESET_TEAMS_HARD,
+    SWITCH_SERVER,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -391,6 +392,9 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
         }
         break;
     }
+    case SWITCH_SERVER:
+        ipcRenderer.send(SWITCH_SERVER, data.data);
+        break;
     case CALLS_WIDGET_SHARE_SCREEN: {
         ipcRenderer.send(CALLS_WIDGET_SHARE_SCREEN, message.sourceID, message.withAudio);
         break;
