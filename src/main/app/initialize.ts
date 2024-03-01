@@ -61,7 +61,7 @@ import MainWindow from 'main/windows/mainWindow';
 
 import { protocols } from '../../../electron-builder.json';
 
-import { IKDriveAllowedUrls, IKLoginAllowedUrls, KChatTokenWhitelist } from 'common/utils/constants';
+import { IKDriveAllowedUrls, IKLoginAllowedUrls, IKWelcomeAllowedUrls, KChatTokenWhitelist } from 'common/utils/constants';
 
 import ServerManager from 'common/servers/serverManager';
 
@@ -371,7 +371,8 @@ async function initializeAfterAppReady() {
      */
     defaultSession.webRequest.onBeforeSendHeaders({ urls: [
         ...KChatTokenWhitelist,
-        ...IKDriveAllowedUrls
+        ...IKDriveAllowedUrls,
+        ...IKWelcomeAllowedUrls,
     ] },
         (d, c) => {
             const authHeader = d.requestHeaders.Authorization ? d.requestHeaders.Authorization : null;
