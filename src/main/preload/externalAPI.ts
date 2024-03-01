@@ -3,7 +3,7 @@
 
 import {IpcRendererEvent, contextBridge, ipcRenderer, webFrame} from 'electron';
 
-import log from 'electron-log';
+// import log from 'electron-log';
 
 import {ExternalAPI} from 'types/externalAPI';
 
@@ -132,13 +132,13 @@ contextBridge.exposeInMainWorld('desktopAPI', desktopAPI);
 
 const logPrefix = '[current server]';
 
-contextBridge.exposeInMainWorld('logManager', {
-    info: (...args: unknown[]) => log.info(logPrefix, ...args),
-    debug: (...args: unknown[]) => log.debug(logPrefix, ...args),
-    log: (...args: unknown[]) => log.log(logPrefix, ...args),
-    warn: (...args: unknown[]) => log.warn(logPrefix, ...args),
-    error: (...args: unknown[]) => log.error(logPrefix, ...args),
-});
+// contextBridge.exposeInMainWorld('logManager', {
+//     info: (...args: unknown[]) => log.info(logPrefix, ...args),
+//     debug: (...args: unknown[]) => log.debug(logPrefix, ...args),
+//     log: (...args: unknown[]) => log.log(logPrefix, ...args),
+//     warn: (...args: unknown[]) => log.warn(logPrefix, ...args),
+//     error: (...args: unknown[]) => log.error(logPrefix, ...args),
+// });
 
 contextBridge.exposeInMainWorld('authManager', {
     tokenRequest: () => ipcRenderer.invoke(TOKEN_REQUEST),
@@ -365,7 +365,7 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
         break;
     }
     case RESET_TEAMS: {
-        ipcRenderer.invoke(UPDATE_TEAMS, [{
+        ipcRenderer.send(UPDATE_TEAMS, [{
             name: '.',
             url: IKOrigin,
             order: 0,
@@ -386,9 +386,9 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
         }, []);
 
         if (teams.length) {
-            ipcRenderer.invoke(UPDATE_TEAMS, teams);
+            ipcRenderer.send(UPDATE_TEAMS, teams);
         } else {
-            ipcRenderer.invoke(UPDATE_TEAMS, []);
+            ipcRenderer.send(UPDATE_TEAMS, []);
         }
         break;
     }
