@@ -57,7 +57,6 @@ import {
     SERVER_ADDED,
     SERVER_DELETED,
     RESET_AUTH,
-    RESET_TEAMS_HARD,
     SWITCH_SERVER,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
@@ -148,7 +147,7 @@ contextBridge.exposeInMainWorld('authManager', {
     deleteTeam: () => ipcRenderer.invoke(SERVER_DELETED),
     logout: async () => {
         await ipcRenderer.invoke(RESET_AUTH);
-        ipcRenderer.invoke(RESET_TEAMS_HARD);
+        ipcRenderer.invoke(RESET_TEAMS);
     },
 });
 
@@ -364,7 +363,7 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
         ipcRenderer.send('call-focus', message);
         break;
     }
-    case RESET_TEAMS: {
+    case 'reset-teams': {
         ipcRenderer.send(UPDATE_TEAMS, [{
             name: '.',
             url: IKOrigin,

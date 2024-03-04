@@ -198,14 +198,7 @@ export class ViewManager {
     }
 
     resetTeams = () => {
-        // TokenManager.reset();
-        Config.setServers([{
-            name: '.',
-            url: IKOrigin,
-            order: 0,
-            tabs: [{ name: 'TAB_MESSAGING', order: 0, isOpen: true }],
-        }]);
-        this.reload();
+        ServerManager.reloadFromConfig();
     }
 
     handleCallJoined = (_: IpcMainEvent, message: any) => {

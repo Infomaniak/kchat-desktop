@@ -138,11 +138,10 @@ export const TOKEN_REFRESHED = 'token-refreshed';
 export const TOKEN_REQUEST = 'token-request';
 export const REFRESH_TOKEN = 'refresh-token';
 export const RESET_TOKEN = 'reset-token';
-export const RESET_TEAMS = 'reset-teams';
 export const SERVER_ADDED = 'server-added';
 export const SERVER_DELETED = 'server-deleted';
 export const RESET_AUTH = 'reset-auth';
-export const RESET_TEAMS_HARD = 'reset-teams-hard';
+export const RESET_TEAMS = 'reset-teams-hard';
 
 // Calls
 export const GET_DESKTOP_SOURCES = 'get-desktop-sources';
