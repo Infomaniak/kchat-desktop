@@ -59,6 +59,8 @@ import {
     GET_IS_DEV_MODE,
     TOGGLE_SECURE_INPUT,
     CALL_JOINED_BROWSER,
+    THEME_CHANGED,
+    GET_APP_THEME,
 } from 'common/communication';
 import { IKOrigin } from 'common/config/ikConfig';
 
@@ -67,6 +69,7 @@ const CLEAR_CACHE_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours
 
 let appVersion;
 let appName;
+let appTheme;
 let sessionExpired;
 let viewId;
 let shouldSendNotifications;
@@ -111,6 +114,10 @@ contextBridge.exposeInMainWorld('desktopAPI', {
 ipcRenderer.invoke('get-app-version').then(({ name, version }) => {
     appVersion = version;
     appName = name;
+});
+
+ipcRenderer.invoke(GET_APP_THEME).then((theme) => {
+    appTheme =  theme
 });
 
 function isReactAppInitialized() {
@@ -185,6 +192,7 @@ window.addEventListener('message', ({ origin, data = {} } = {}) => {
                     message: {
                         version: appVersion,
                         name: appName,
+                        theme: appTheme
                     },
                 },
                 window.location.origin || '*',
@@ -287,6 +295,10 @@ window.addEventListener('message', ({ origin, data = {} } = {}) => {
         }
         case CALLS_LEAVE_CALL: {
             ipcRenderer.send(CALLS_LEAVE_CALL, viewId, message);
+            break;
+        }
+        case THEME_CHANGED: {
+            ipcRenderer.send(THEME_CHANGED, viewId, message);
             break;
         }
     }

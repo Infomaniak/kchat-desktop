@@ -3,6 +3,7 @@
 
 import { BrowserView, dialog, ipcMain, IpcMainEvent, IpcMainInvokeEvent, Event, shell, BrowserWindow } from 'electron';
 import isDev from 'electron-is-dev';
+import Store from 'electron-store'
 
 import ServerViewState from 'app/serverViewState';
 
@@ -42,6 +43,7 @@ import {
     CALL_DECLINED,
     CALL_RINGING,
     CALL_JOINED_BROWSER,
+    THEME_CHANGED,
 } from 'common/communication';
 import Config from 'common/config';
 import { Logger } from 'common/log';
@@ -71,12 +73,14 @@ export class ViewManager {
     private views: Map<string, MattermostBrowserView>;
     private currentView?: string;
     private callWindow?: BrowserWindow | null;
+    private store?: Store | null;
 
     private urlViewCancel?: () => void;
 
     constructor() {
         this.views = new Map(); // keep in mind that this doesn't need to hold server order, only views on the renderer need that.
         this.closedViews = new Map();
+        this.store = new Store({name: 'app.config'})
 
         MainWindow.on(MAIN_WINDOW_CREATED, this.init);
         MainWindow.on(MAIN_WINDOW_RESIZED, this.handleSetCurrentViewBounds);
@@ -107,6 +111,7 @@ export class ViewManager {
         ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(RESET_TEAMS, this.resetTeams);
+        ipcMain.on(THEME_CHANGED, this.handleThemeChanged);
 
         ServerManager.on(SERVERS_UPDATE, this.handleReloadConfiguration);
     }
@@ -201,6 +206,12 @@ export class ViewManager {
             tabs: [{ name: 'TAB_MESSAGING', order: 0, isOpen: true }],
         }]);
         this.reload();
+    }
+
+    handleThemeChanged = (_view: any, _viewId: any, data: object) => {
+        if (this.store) {
+            this.store.set('theme', data)
+        }
     }
 
     handleCallJoined = (_: IpcMainEvent, message: any) => {
