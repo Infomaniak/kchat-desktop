@@ -538,6 +538,17 @@ ipcRenderer.on(CALLS_JOIN_REQUEST, (event, message) => {
     );
 });
 
+ipcRenderer.on(THEME_CHANGED, (event, theme) => {
+    window.postMessage(
+        {
+            type: 'theme-changed-global',
+            theme
+        },
+        window.location.origin,
+    );
+})
+
+
 /* eslint-enable no-magic-numbers */
 
 window.addEventListener('resize', () => {

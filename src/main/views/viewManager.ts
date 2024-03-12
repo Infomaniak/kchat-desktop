@@ -211,6 +211,7 @@ export class ViewManager {
     handleThemeChanged = (_view: any, _viewId: any, data: object) => {
         if (this.store) {
             this.store.set('theme', data)
+            viewManager.sendToAllViews(THEME_CHANGED, data)
         }
     }
 
