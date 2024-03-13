@@ -42,6 +42,7 @@ import {
     GET_DESKTOP_SOURCES,
     UNREADS_AND_MENTIONS,
     LEGACY_OFF,
+
     // Infomaniak
     CALL_CLOSED,
     CALL_DECLINED,
@@ -129,7 +130,7 @@ const desktopAPI: DesktopAPI = {
 };
 contextBridge.exposeInMainWorld('desktopAPI', desktopAPI);
 
-const logPrefix = '[current server]';
+// const logPrefix = '[current server]';
 
 // contextBridge.exposeInMainWorld('logManager', {
 //     info: (...args: unknown[]) => log.info(logPrefix, ...args),
@@ -147,7 +148,12 @@ contextBridge.exposeInMainWorld('authManager', {
     deleteTeam: () => ipcRenderer.invoke(SERVER_DELETED),
     logout: async () => {
         await ipcRenderer.invoke(RESET_AUTH);
-        ipcRenderer.invoke(RESET_TEAMS);
+        ipcRenderer.send(UPDATE_TEAMS, [{
+            name: '.',
+            url: IKOrigin,
+            order: 0,
+            tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+        }]);
     },
 });
 
@@ -368,7 +374,7 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
             name: '.',
             url: IKOrigin,
             order: 0,
-            tabs: [{ name: 'TAB_MESSAGING', order: 0, isOpen: true }],
+            tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
         }]);
         break;
     }
@@ -378,7 +384,7 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
                 name: item.display_name,
                 url: item.url,
                 order: idx,
-                tabs: [{ name: 'TAB_MESSAGING', order: 0, isOpen: true }],
+                tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
             });
 
             return acc;
@@ -494,6 +500,7 @@ ipcRenderer.on('call-ss-status-change', (event, status) => {
         window.location.origin,
     );
 });
+
 // ----------------------------------------------------------------------
 
 ipcRenderer.on(BROWSER_HISTORY_PUSH, (event, pathName) => {

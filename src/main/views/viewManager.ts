@@ -1,13 +1,13 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import { BrowserView, dialog, ipcMain, IpcMainEvent, IpcMainInvokeEvent, shell, BrowserWindow } from 'electron';
+import {BrowserView, dialog, ipcMain, IpcMainEvent, IpcMainInvokeEvent, shell, BrowserWindow} from 'electron';
 import isDev from 'electron-is-dev';
 
 import ServerViewState from 'app/serverViewState';
 
 import AppState from 'common/appState';
-import { SECOND, TAB_BAR_HEIGHT } from 'common/utils/constants';
+import {SECOND, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import {
     UPDATE_TARGET_URL,
     LOAD_SUCCESS,
@@ -46,24 +46,24 @@ import {
     UNREADS_AND_MENTIONS,
 } from 'common/communication';
 import Config from 'common/config';
-import { Logger } from 'common/log';
+import {Logger} from 'common/log';
 import Utils from 'common/utils/util';
-import { MattermostServer } from 'common/servers/MattermostServer';
+import {MattermostServer} from 'common/servers/MattermostServer';
 import ServerManager from 'common/servers/serverManager';
-import { MattermostView, TAB_MESSAGING } from 'common/views/View';
-import { getFormattedPathName, parseURL } from 'common/utils/url';
+import {MattermostView, TAB_MESSAGING} from 'common/views/View';
+import {getFormattedPathName, parseURL} from 'common/utils/url';
 
-import { localizeMessage } from 'main/i18nManager';
+import {localizeMessage} from 'main/i18nManager';
 import MainWindow from 'main/windows/mainWindow';
 
-import { getLocalURLString, getLocalPreload, getAdjustedWindowBoundaries, shouldHaveBackBar } from '../utils';
+import {getLocalURLString, getLocalPreload, getAdjustedWindowBoundaries, shouldHaveBackBar} from '../utils';
 
-import { MattermostBrowserView } from './MattermostBrowserView';
-import modalManager from './modalManager';
-import LoadingScreen from './loadingScreen';
 import TokenManager from 'main/tokenManager';
-import { createCallDialingWindow } from 'main/windows/callDialingWindow';
-import { IKOrigin } from 'common/config/ikConfig';
+import {createCallDialingWindow} from 'main/windows/callDialingWindow';
+
+import LoadingScreen from './loadingScreen';
+import modalManager from './modalManager';
+import {MattermostBrowserView} from './MattermostBrowserView';
 
 const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
@@ -117,31 +117,30 @@ export class ViewManager {
     }
 
     private init = () => {
-
         TokenManager.load();
         LoadingScreen.show();
         ServerManager.getAllServers().forEach((server) => this.loadServer(server));
         this.showInitial();
-    }
+    };
 
     getView = (viewId: string) => {
         return this.views.get(viewId);
-    }
+    };
 
     getCurrentView = () => {
         if (this.currentView) {
             return this.views.get(this.currentView);
         }
         return undefined;
-    }
+    };
 
     getViewByWebContentsId = (webContentsId: number) => {
         return [...this.views.values()].find((view) => view.webContentsId === webContentsId);
-    }
+    };
 
     isViewClosed = (viewId: string) => {
         return this.closedViews.has(viewId);
-    }
+    };
 
     showById = (viewId: string) => {
         this.getViewLogger(viewId).debug('showById', viewId);
@@ -173,7 +172,7 @@ export class ViewManager {
             this.getViewLogger(viewId).warn(`Couldn't find a view with name: ${viewId}`);
         }
         modalManager.showModal();
-    }
+    };
 
     focusCurrentView = () => {
         log.debug('focusCurrentView');
@@ -187,7 +186,7 @@ export class ViewManager {
         if (view) {
             view.focus();
         }
-    }
+    };
 
     reload = () => {
         const currentView = this.getCurrentView();
@@ -207,11 +206,11 @@ export class ViewManager {
         shell.openExternal(message.url);
         this.sendToAllViews(CALL_JOINED, message);
         this.destroyCallWindow();
+
         /*const withDevTools = true;
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
         this.callWindow.loadURL(message.url);
         windowManager.sendToMattermostViews(CALL_JOINED, message);*/
-
     }
 
     handleCallJoinedBrowser = (_: IpcMainEvent, message: any) => {
@@ -221,7 +220,9 @@ export class ViewManager {
 
     handleCallDialing = (_: IpcMainEvent, message: any) => {
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
-        if (this.callWindow) return
+        if (this.callWindow) {
+            return;
+        }
         this.callWindow = createCallDialingWindow(MainWindow.get()!, withDevTools, message.calling);
         this.callWindow?.on('close', () => this.destroyCallWindow());
     }
@@ -256,7 +257,7 @@ export class ViewManager {
         if (Object.keys(token).length) {
             await TokenManager.handleRevokeToken();
         }
-    }
+    };
 
     sendToAllViews = (channel: string, ...args: unknown[]) => {
         this.views.forEach((view) => {
@@ -264,11 +265,11 @@ export class ViewManager {
                 view.sendToRenderer(channel, ...args);
             }
         });
-    }
+    };
 
     sendToFind = () => {
         this.getCurrentView()?.openFind();
-    }
+    };
 
     /**
      * Deep linking
@@ -305,7 +306,7 @@ export class ViewManager {
             } else {
                 dialog.showErrorBox(
                     localizeMessage('main.views.viewManager.handleDeepLink.error.title', 'No matching server'),
-                    localizeMessage('main.views.viewManager.handleDeepLink.error.body', 'There is no configured server in the app that matches the requested url: {url}', { url: parsedURL.toString() }),
+                    localizeMessage('main.views.viewManager.handleDeepLink.error.body', 'There is no configured server in the app that matches the requested url: {url}', {url: parsedURL.toString()}),
                 );
             }
         }
@@ -321,7 +322,7 @@ export class ViewManager {
     private deeplinkFailed = (viewId: string, err: string, url: string) => {
         this.getViewLogger(viewId).error(`failed to load deeplink ${url}`, err);
         this.views.get(viewId)?.removeListener(LOAD_SUCCESS, this.deeplinkSuccess);
-    }
+    };
 
     /**
      * View loading helpers
@@ -330,16 +331,16 @@ export class ViewManager {
     private loadServer = (server: MattermostServer) => {
         const views = ServerManager.getOrderedTabsForServer(server.id);
         views.forEach((view) => this.loadView(server, view));
-    }
+    };
 
     private loadView = (srv: MattermostServer, view: MattermostView, url?: string) => {
         if (!view.isOpen) {
-            this.closedViews.set(view.id, { srv, view });
+            this.closedViews.set(view.id, {srv, view});
             return;
         }
         const browserView = this.makeView(srv, view, url);
         this.addView(browserView);
-    }
+    };
 
     private makeView = (srv: MattermostServer, view: MattermostView, url?: string): MattermostBrowserView => {
         const mainWindow = MainWindow.get();
@@ -347,21 +348,21 @@ export class ViewManager {
             throw new Error('Cannot create view, no main window present');
         }
 
-        const browserView = new MattermostBrowserView(view, { webPreferences: { spellcheck: Config.useSpellChecker } });
+        const browserView = new MattermostBrowserView(view, {webPreferences: {spellcheck: Config.useSpellChecker}});
         browserView.once(LOAD_SUCCESS, this.activateView);
         browserView.on(LOADSCREEN_END, this.finishLoading);
         browserView.on(LOAD_FAILED, this.failLoading);
         browserView.on(UPDATE_TARGET_URL, this.showURLView);
         browserView.load(url);
         return browserView;
-    }
+    };
 
     private addView = (view: MattermostBrowserView): void => {
         this.views.set(view.id, view);
         if (this.closedViews.has(view.id)) {
             this.closedViews.delete(view.id);
         }
-    }
+    };
 
     private showInitial = () => {
         log.verbose('showInitial');
@@ -375,7 +376,7 @@ export class ViewManager {
         } else {
             MainWindow.get()?.webContents.send(SET_ACTIVE_VIEW);
         }
-    }
+    };
 
     /**
      * Mattermost view event handlers
@@ -387,7 +388,7 @@ export class ViewManager {
         if (this.currentView === viewId) {
             this.showById(this.currentView);
         }
-    }
+    };
 
     private finishLoading = (viewId: string) => {
         this.getViewLogger(viewId).debug('finishLoading');
@@ -396,7 +397,7 @@ export class ViewManager {
             this.showById(this.currentView);
             LoadingScreen.fade();
         }
-    }
+    };
 
     private failLoading = (viewId: string) => {
         this.getViewLogger(viewId).debug('failLoading');
@@ -405,7 +406,7 @@ export class ViewManager {
         if (this.currentView === viewId) {
             this.getCurrentView()?.hide();
         }
-    }
+    };
 
     private showURLView = (url: URL | string) => {
         log.silly('showURLView', url);
@@ -429,8 +430,7 @@ export class ViewManager {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     transparent: true,
-                }
-            });
+                }});
             const query = new Map([['url', urlString]]);
             const localURL = getLocalURLString('urlView.html', query);
             urlView.webContents.loadURL(localURL);
@@ -481,7 +481,7 @@ export class ViewManager {
                 hideView();
             };
         }
-    }
+    };
 
     /**
      * Event Handlers
@@ -502,7 +502,7 @@ export class ViewManager {
         }
 
         const views: Map<string, MattermostBrowserView> = new Map();
-        const closed: Map<string, { srv: MattermostServer; view: MattermostView }> = new Map();
+        const closed: Map<string, {srv: MattermostServer; view: MattermostView}> = new Map();
 
         const sortedViews = ServerManager.getAllServers().flatMap((x) => ServerManager.getOrderedTabsForServer(x.id).
             map((t): [MattermostServer, MattermostView] => [x, t]));
@@ -510,7 +510,7 @@ export class ViewManager {
         for (const [srv, view] of sortedViews) {
             const recycle = current.get(view.id);
             if (!view.isOpen) {
-                closed.set(view.id, { srv, view });
+                closed.set(view.id, {srv, view});
             } else if (recycle) {
                 views.set(view.id, recycle);
             } else {
@@ -534,7 +534,7 @@ export class ViewManager {
 
         // commit closed
         for (const x of closed.values()) {
-            this.closedViews.set(x.view.id, { srv: x.srv, view: x.view });
+            this.closedViews.set(x.view.id, {srv: x.srv, view: x.view});
         }
 
         if ((currentViewId && closed.has(currentViewId)) || (this.currentView && this.closedViews.has(this.currentView))) {
@@ -553,23 +553,25 @@ export class ViewManager {
                 this.currentView = view.id;
                 this.showById(view.id);
                 MainWindow.get()?.webContents.send(SET_ACTIVE_VIEW, view.view.server.id, view.view.id);
+            } else {
+                this.focusCurrentView();
             }
         } else {
             this.showInitial();
         }
-    }
+    };
 
     private handleHistory = (event: IpcMainEvent, offset: number) => {
         this.getCurrentView()?.goToOffset(offset);
-    }
+    };
 
     private handleAppLoggedIn = (event: IpcMainEvent) => {
         this.getViewByWebContentsId(event.sender.id)?.onLogin(true);
-    }
+    };
 
     private handleAppLoggedOut = (event: IpcMainEvent) => {
         this.getViewByWebContentsId(event.sender.id)?.onLogin(false);
-    }
+    };
 
     private handleBrowserHistoryPush = (e: IpcMainEvent, pathName: string) => {
         log.debug('handleBrowserHistoryPush', e.sender.id, pathName);
@@ -601,13 +603,13 @@ export class ViewManager {
             redirectedView?.sendToRenderer(BROWSER_HISTORY_PUSH, cleanedPathName);
             redirectedView?.updateHistoryButton();
         }
-    }
+    };
 
     private handleRequestBrowserHistoryStatus = (e: IpcMainInvokeEvent) => {
         log.silly('handleRequestBrowserHistoryStatus', e.sender.id);
 
         return this.getViewByWebContentsId(e.sender.id)?.getBrowserHistoryStatus();
-    }
+    };
 
     private handleReactAppInitialized = (e: IpcMainEvent) => {
         log.debug('handleReactAppInitialized', e.sender.id);
@@ -619,7 +621,7 @@ export class ViewManager {
                 LoadingScreen.fade();
             }
         }
-    }
+    };
 
     private handleReloadCurrentView = () => {
         log.debug('handleReloadCurrentView');
@@ -630,7 +632,7 @@ export class ViewManager {
         }
         view?.reload();
         this.showById(view?.id);
-    }
+    };
 
     private handleLegacyOff = (e: IpcMainEvent) => {
         log.silly('handleLegacyOff', {webContentsId: e.sender.id});
@@ -640,7 +642,7 @@ export class ViewManager {
             return;
         }
         view.offLegacyUnreads();
-    }
+    };
 
     // if favicon is null, it means it is the initial load,
     // so don't memoize as we don't have the favicons and there is no rush to find out.
@@ -652,7 +654,7 @@ export class ViewManager {
             return;
         }
         AppState.updateUnreads(view.id, result);
-    }
+    };
 
     private handleUnreadsAndMentionsChanged = (e: IpcMainEvent, isUnread: boolean, mentionCount: number) => {
         log.silly('handleUnreadsAndMentionsChanged', {webContentsId: e.sender.id, isUnread, mentionCount});
@@ -663,7 +665,7 @@ export class ViewManager {
         }
         AppState.updateUnreads(view.id, isUnread);
         AppState.updateMentions(view.id, mentionCount);
-    }
+    };
 
     private handleSessionExpired = (event: IpcMainEvent, isExpired: boolean) => {
         const view = this.getViewByWebContentsId(event.sender.id);
@@ -673,7 +675,7 @@ export class ViewManager {
         ServerManager.getViewLog(view.id, 'ViewManager').debug('handleSessionExpired', isExpired);
 
         AppState.updateExpired(view.id, isExpired);
-    }
+    };
 
     private handleSetCurrentViewBounds = (newBounds: Electron.Rectangle) => {
         log.debug('handleSetCurrentViewBounds', newBounds);
@@ -683,7 +685,7 @@ export class ViewManager {
             const adjustedBounds = getAdjustedWindowBoundaries(newBounds.width, newBounds.height, shouldHaveBackBar(currentView.view.url, currentView.currentURL));
             currentView.setBounds(adjustedBounds);
         }
-    }
+    };
 
     /**
      * Helper functions
@@ -693,7 +695,7 @@ export class ViewManager {
         if (!this.closedViews.has(id)) {
             return;
         }
-        const { srv, view } = this.closedViews.get(id)!;
+        const {srv, view} = this.closedViews.get(id)!;
         view.isOpen = true;
         this.loadView(srv, view, url);
         this.showById(id);
@@ -704,11 +706,11 @@ export class ViewManager {
             this.showById(id);
         });
         ipcMain.emit(OPEN_VIEW, null, view.id);
-    }
+    };
 
     private getViewLogger = (viewId: string) => {
         return ServerManager.getViewLog(viewId, 'ViewManager');
-    }
+    };
 
     private handleGetViewInfoForTest = (event: IpcMainInvokeEvent) => {
         const view = this.getViewByWebContentsId(event.sender.id);
@@ -721,7 +723,7 @@ export class ViewManager {
             serverName: view.view.server.name,
             viewType: view.view.type,
         };
-    }
+    };
 }
 
 const viewManager = new ViewManager();
