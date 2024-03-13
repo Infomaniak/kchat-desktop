@@ -2,17 +2,16 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import path from 'path';
-import fs from 'fs';
-
 import {exec as execOriginal} from 'child_process';
-
+import fs from 'fs';
+import path from 'path';
 import {promisify} from 'util';
 const exec = promisify(execOriginal);
 
-import {app, BrowserWindow} from 'electron';
+import type {BrowserWindow} from 'electron';
+import {app} from 'electron';
 
-import {Args} from 'types/args';
+import type {Args} from 'types/args';
 
 import {BACK_BAR_HEIGHT, customLoginRegexPaths, PRODUCTION, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import Utils from 'common/utils/util';
@@ -107,7 +106,7 @@ export function composeUserAgent() {
     // eslint-disable-next-line no-undef
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const isMas = __IS_MAC_APP_STORE__ ? ` Mas/${app.getVersion()}` : ''
+    const isMas = __IS_MAC_APP_STORE__ ? ` Mas/${app.getVersion()}` : '';
 
     // filter out the Mattermost tag that gets added earlier on
     const filteredUserAgent = baseUserAgent.filter((ua) => !ua.startsWith('Mattermost'));
