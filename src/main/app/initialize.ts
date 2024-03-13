@@ -308,6 +308,15 @@ function updateTeamsHandler(_: any, servers: ConfigServer[]) {
     const [defaultServer] = buildConfig.defaultServers!;
     const [firstServer] = servers;
 
+    if (!servers.length) {
+        ServerManager.removePredefinedServersHandler(true);
+        ServerManager.removePredefinedServersHandler(false);
+
+        ServerManager.emit(SERVERS_UPDATE);
+
+        return;
+    }
+
     // Check if it's first call to fetch kchat info with kchat.infomaniak.com
     if (defaultServer?.url && firstServer.url === defaultServer.url) {
         initIKserver();

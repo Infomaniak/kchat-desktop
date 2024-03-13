@@ -182,12 +182,6 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             ViewManager.reload();
         },
     }, {
-        label: localizeMessage('main.menus.app.view.updateTeams', 'Update organisations'),
-        accelerator: 'Shift+CmdOrCtrl+T',
-        click() {
-            ViewManager.resetTeams();
-        },
-    }, {
         role: 'togglefullscreen',
         label: localizeMessage('main.menus.app.view.fullscreen', 'Toggle Full Screen'),
         accelerator: isMac ? 'Ctrl+Cmd+F' : 'F11',

@@ -90,7 +90,10 @@ import {
     SERVERS_UPDATE,
     VALIDATE_SERVER_URL,
     GET_APP_INFO,
+    RESET_AUTH,
+    UPDATE_TEAMS,
 } from 'common/communication';
+import {IKOrigin} from 'common/config/ikConfig';
 
 console.log('Preload initialized');
 
@@ -175,6 +178,17 @@ contextBridge.exposeInMainWorld('desktop', {
     onAppMenuWillClose: (listener) => ipcRenderer.on(APP_MENU_WILL_CLOSE, () => listener()),
     onFocusThreeDotMenu: (listener) => ipcRenderer.on(FOCUS_THREE_DOT_MENU, () => listener()),
     updateURLViewWidth: (width) => ipcRenderer.send(UPDATE_URL_VIEW_WIDTH, width),
+
+    resetAuth: async () => {
+        await ipcRenderer.invoke(RESET_AUTH);
+        ipcRenderer.send(UPDATE_TEAMS, [{
+            name: '.',
+            url: IKOrigin,
+            order: 0,
+            tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+        }]);
+        ipcRenderer.send(MODAL_CANCEL, {});
+    },
 
     downloadsDropdown: {
         toggleDownloadsDropdownMenu: (payload) => ipcRenderer.send(TOGGLE_DOWNLOADS_DROPDOWN_MENU, payload),
