@@ -8,7 +8,7 @@ import path from 'path';
 import {EventEmitter} from 'events';
 
 import type {BrowserWindowConstructorOptions, Event, Input} from 'electron';
-import {app, BrowserWindow, dialog, globalShortcut, ipcMain, screen} from 'electron';
+import {app, BrowserWindow, dialog, globalShortcut, ipcMain, screen, systemPreferences} from 'electron';
 
 import type {SavedWindowState} from 'types/mainWindow';
 
@@ -42,6 +42,9 @@ import {getLocalPreload, getLocalURLString, isInsideRectangle} from '../utils';
 
 const log = new Logger('MainWindow');
 const ALT_MENU_KEYS = ['Alt+F', 'Alt+E', 'Alt+V', 'Alt+H', 'Alt+W', 'Alt+P'];
+
+systemPreferences.setUserDefault('NSDisabledDictationMenuItem', 'boolean', true);
+systemPreferences.setUserDefault('NSDisabledCharacterPaletteMenuItem', 'boolean', true);
 
 export class MainWindow extends EventEmitter {
     private win?: BrowserWindow;
