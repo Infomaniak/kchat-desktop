@@ -116,7 +116,7 @@
       "LSFileQuarantineEnabled": true
     },
     "bundleShortVersion": "3.0.0",
-    "bundleVersion": "6"
+    "bundleVersion": "7"
   },
   "mas": {
     "hardenedRuntime": false,
