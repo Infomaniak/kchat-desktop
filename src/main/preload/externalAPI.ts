@@ -59,6 +59,7 @@ import {
     SERVER_DELETED,
     RESET_AUTH,
     SWITCH_SERVER,
+    RELOAD_CURRENT_VIEW,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -154,6 +155,7 @@ contextBridge.exposeInMainWorld('authManager', {
             order: 0,
             tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
         }]);
+        ipcRenderer.send(RELOAD_CURRENT_VIEW);
     },
 });
 

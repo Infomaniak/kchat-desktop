@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserView, dialog, ipcMain, IpcMainEvent, IpcMainInvokeEvent, shell, BrowserWindow} from 'electron';
+import {BrowserView, dialog, ipcMain, IpcMainEvent, IpcMainInvokeEvent, shell, BrowserWindow, session} from 'electron';
 import isDev from 'electron-is-dev';
 
 import ServerViewState from 'app/serverViewState';
@@ -257,6 +257,8 @@ export class ViewManager {
         if (Object.keys(token).length) {
             await TokenManager.handleRevokeToken();
         }
+        session.defaultSession.clearCache();
+        session.defaultSession.clearStorageData();
     };
 
     sendToAllViews = (channel: string, ...args: unknown[]) => {
