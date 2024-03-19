@@ -324,9 +324,21 @@ function initIKserver() {
 
 function initReceivedServer(servers: ConfigServer[]) {
     ServerManager.removePredefinedServersHandler(true);
+
+    // Add newest servers if exists
     servers.forEach(server => {
         if (ServerManager.serverNameExist(server)) return
         ServerManager.addServer(server);
+    })
+
+    // Delete removed servers if exist
+    const managerServers = ServerManager.getAllServers()
+    managerServers.forEach(server => {
+        const exist = servers.some(s => s.name === server.name)
+
+        if (!exist) {
+            ServerManager.removeServer(server.id)
+        }
     })
 }
 
