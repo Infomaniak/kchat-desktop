@@ -13,7 +13,7 @@ import {app} from 'electron';
 
 import type {Args} from 'types/args';
 
-import {BACK_BAR_HEIGHT, customLoginRegexPaths, PRODUCTION, TAB_BAR_HEIGHT} from 'common/utils/constants';
+import {BACK_BAR_HEIGHT, customLoginRegexPaths, PRODUCTION, SERVERS_SIDEBAR_WIDTH, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import Utils from 'common/utils/util';
 import {isAdminUrl, isPluginUrl, isTeamUrl, isUrlType, parseURL} from 'common/utils/url';
 
@@ -40,9 +40,9 @@ export function getWindowBoundaries(win: BrowserWindow, hasBackBar = false) {
 
 export function getAdjustedWindowBoundaries(width: number, height: number, hasBackBar = false) {
     return {
-        x: 0,
+        x: SERVERS_SIDEBAR_WIDTH,
         y: TAB_BAR_HEIGHT + (hasBackBar ? BACK_BAR_HEIGHT : 0),
-        width,
+        width: width - SERVERS_SIDEBAR_WIDTH,
         height: height - TAB_BAR_HEIGHT - (hasBackBar ? BACK_BAR_HEIGHT : 0),
     };
 }

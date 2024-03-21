@@ -3,30 +3,46 @@
 
 import {BrowserView, app, ipcMain} from 'electron';
 
-import {DARK_MODE_CHANGE, LOADING_SCREEN_ANIMATION_FINISHED, MAIN_WINDOW_RESIZED, TOGGLE_LOADING_SCREEN_VISIBILITY} from 'common/communication';
+import {DARK_MODE_CHANGE, EMIT_CONFIGURATION, LOADING_SCREEN_ANIMATION_FINISHED, MAIN_WINDOW_RESIZED, SERVERS_UPDATE, TOGGLE_LOADING_SCREEN_VISIBILITY} from 'common/communication';
 import {Logger} from 'common/log';
 
 import {getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
 import { SERVERS_SIDEBAR_WIDTH } from 'common/utils/constants';
-
-enum LoadingScreenState {
-    VISIBLE = 1,
-    FADING = 2,
-    HIDDEN = 3,
-}
+import { UniqueServer } from 'types/config';
+import ServerManager from 'common/servers/serverManager';
 
 const log = new Logger('LoadingScreen');
 
-export class LoadingScreen {
+export class ServerSidebar {
     private view?: BrowserView;
-    private state: LoadingScreenState;
+    private servers: UniqueServer[];
+
+    private unreads: Map<string, boolean>;
+    private mentions: Map<string, number>;
+    private expired: Map<string, boolean>;
+
+    private windowBounds?: Electron.Rectangle;
 
     constructor() {
-        this.state = LoadingScreenState.HIDDEN;
+        this.servers = [];
 
-        MainWindow.on(MAIN_WINDOW_RESIZED, this.setBounds);
-        ipcMain.on(LOADING_SCREEN_ANIMATION_FINISHED, this.handleAnimationFinished);
+        this.unreads = new Map();
+        this.mentions = new Map();
+        this.expired = new Map();
+
+        // MainWindow.on(MAIN_WINDOW_CREATED, this.init);
+        MainWindow.on(MAIN_WINDOW_RESIZED, this.updateWindowBounds);
+
+
+        ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
+
+        // AppState.on(UPDATE_APPSTATE, this.updateMentions);
+        ServerManager.on(SERVERS_UPDATE, this.updateServers);
+    }
+
+    private updateWindowBounds = (newBounds: Electron.Rectangle) => {
+        this.windowBounds = newBounds;
     }
 
     /**
@@ -37,12 +53,10 @@ export class LoadingScreen {
         this.view?.webContents.send(DARK_MODE_CHANGE, darkMode);
     }
 
-    isHidden = () => {
-        return this.state === LoadingScreenState.HIDDEN;
-    }
 
     show = () => {
         const mainWindow = MainWindow.get();
+
         if (!mainWindow) {
             return;
         }
@@ -51,7 +65,6 @@ export class LoadingScreen {
             this.create();
         }
 
-        this.state = LoadingScreenState.VISIBLE;
 
         if (this.view?.webContents.isLoading()) {
             this.view.webContents.once('did-finish-load', () => {
@@ -70,14 +83,8 @@ export class LoadingScreen {
         this.setBounds();
     }
 
-    fade = () => {
-        if (this.view && this.state === LoadingScreenState.VISIBLE) {
-            this.state = LoadingScreenState.FADING;
-            this.view.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, false);
-        }
-    }
-
     private create = () => {
+        console.log('CREATING SERVER SIDEBAR')
         const preload = getLocalPreload('internalAPI.js');
         this.view = new BrowserView({webPreferences: {
             preload,
@@ -87,21 +94,9 @@ export class LoadingScreen {
             // @ts-ignore
             transparent: true,
         }});
-        const localURL = getLocalURLString('loadingScreen.html');
+        const localURL = getLocalURLString('serversSidebar.html');
+        console.log('SERVER SIDEBAR LOCAL URL', localURL)
         this.view.webContents.loadURL(localURL);
-    }
-
-    private handleAnimationFinished = () => {
-        log.debug('handleLoadingScreenAnimationFinished');
-
-        if (this.view && this.state !== LoadingScreenState.HIDDEN) {
-            this.state = LoadingScreenState.HIDDEN;
-            MainWindow.get()?.removeBrowserView(this.view);
-        }
-
-        if (process.env.NODE_ENV === 'test') {
-            app.emit('e2e-app-loaded');
-        }
     }
 
     private setBounds = () => {
@@ -111,10 +106,20 @@ export class LoadingScreen {
                 return;
             }
             const windowBoundaries = getWindowBoundaries(mainWindow)
-            this.view.setBounds({ ...windowBoundaries, width: windowBoundaries.width + SERVERS_SIDEBAR_WIDTH, x: windowBoundaries.x - SERVERS_SIDEBAR_WIDTH });
+            this.view.setBounds({...windowBoundaries, x: 0, width: SERVERS_SIDEBAR_WIDTH});
         }
+    }
+
+
+    private updateServers = () => {
+        this.setOrderedServers();
+    }
+
+    private setOrderedServers = () => {
+        this.servers = ServerManager.getOrderedServers().map((server) => server.toUniqueServer());
+        this.hasGPOServers = this.servers.some((srv) => srv.isPredefined);
     }
 }
 
-const loadingScreen = new LoadingScreen();
-export default loadingScreen;
+const serversSidebar = new ServerSidebar();
+export default serversSidebar;

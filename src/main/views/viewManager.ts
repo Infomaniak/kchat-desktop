@@ -64,6 +64,7 @@ import {createCallDialingWindow} from 'main/windows/callDialingWindow';
 import LoadingScreen from './loadingScreen';
 import modalManager from './modalManager';
 import {MattermostBrowserView} from './MattermostBrowserView';
+import ServersSidebar from './serversSidebar';
 
 const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
@@ -119,6 +120,7 @@ export class ViewManager {
     private init = () => {
         TokenManager.load();
         LoadingScreen.show();
+        ServersSidebar.show();
         ServerManager.getAllServers().forEach((server) => this.loadServer(server));
         this.showInitial();
     };
