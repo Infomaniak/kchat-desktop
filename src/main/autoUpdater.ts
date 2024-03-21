@@ -125,12 +125,12 @@ export class UpdateManager {
         } else if (this.versionAvailable) {
             this.notifyUpgrade();
         }
-    }
+    };
 
     notifyUpgrade = (): void => {
         ipcMain.emit(UPDATE_AVAILABLE, null, this.versionAvailable);
         NotificationManager.displayUpgrade(this.versionAvailable || 'unknown', this.handleDownload);
-    }
+    };
 
     notifyDownloaded = (): void => {
         ipcMain.emit(UPDATE_DOWNLOADED, null, this.downloadedInfo);
@@ -157,7 +157,7 @@ export class UpdateManager {
             // download update manually through browser.
             shell.openExternal(`https://download.storage5.infomaniak.com/kchat/${this.macosLink.url}`);
         }
-    }
+    };
 
     handleDownload = (): void => {
         if (this.lastCheck) {
@@ -165,16 +165,16 @@ export class UpdateManager {
         }
 
         autoUpdater.downloadUpdate(this.cancellationToken);
-    }
+    };
 
     handleCancelDownload = (): void => {
         this.cancellationToken?.cancel();
         this.cancellationToken = new CancellationToken();
-    }
+    };
 
     handleRemindLater = (): void => {
         // TODO
-    }
+    };
 
     handleOnQuit = (): void => {
         log.info(`Handle app will quit with version downloaded => ${this.versionDownloaded}`);
@@ -182,7 +182,7 @@ export class UpdateManager {
             log.info('this version downloaded');
             autoUpdater.quitAndInstall(true, false);
         }
-    }
+    };
 
     handleUpdate = (): void => {
         downloadsManager.removeUpdateBeforeRestart();
@@ -216,7 +216,7 @@ export class UpdateManager {
             buttons: [localizeMessage('label.ok', 'OK')],
             detail: localizeMessage('main.autoUpdater.noUpdate.detail', 'You are using the latest version of the {appName} Desktop App (version {version}). You\'ll be notified when a new version is available to install.', {appName: app.name, version}),
         });
-    }
+    };
 
     checkForUpdates = (manually: boolean): void => {
         if (!Config.canUpgrade) {
@@ -240,7 +240,7 @@ export class UpdateManager {
             });
             this.lastCheck = setTimeout(() => this.checkForUpdates(false), NEXT_CHECK);
         }
-    }
+    };
 }
 
 const updateManager = new UpdateManager();
