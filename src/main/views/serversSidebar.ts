@@ -76,7 +76,7 @@ export class ServerSidebar {
         }
 
         mainWindow.addBrowserView(this.view!);
-
+        this.view.webContents.openDevTools({ mode: 'detach' })
         this.setBounds()
     }
 
@@ -91,9 +91,6 @@ export class ServerSidebar {
             if (!mainWindow) {
                 return;
             }
-
-            console.log('mainWindow.getBrowserViews().includes(this.view!)', mainWindow.getBrowserViews().includes(this.view!))
-
 
             const windowBoundaries = getWindowBoundaries(mainWindow);
             this.view.setBounds({...windowBoundaries, x: 0, width: SERVERS_SIDEBAR_WIDTH});
@@ -123,7 +120,7 @@ export class ServerSidebar {
     }
 
     private updateWindowBounds = (newBounds: Electron.Rectangle) => {
-        this.windowBounds = newBounds;
+        this.setBounds()
         this.updateSidebar();
     }
 

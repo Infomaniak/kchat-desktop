@@ -31,7 +31,35 @@ type State = {
 const ServersSidebarRenderer = () => {
     const [state, setState] = useState<State>()
 
-    return <ServersSidebar />
+    const handleUpdate = (
+        servers: UniqueServer[],
+        darkMode: boolean,
+        windowBounds: Electron.Rectangle,
+        activeServer?: string,
+        enableServerManagement?: boolean,
+        hasGPOServers?: boolean,
+        expired?: Map<string, boolean>,
+        mentions?: Map<string, number>,
+        unreads?: Map<string, boolean>,
+    ) => {
+        setState({
+            servers,
+            activeServer,
+            darkMode,
+            enableServerManagement,
+            hasGPOServers,
+            unreads,
+            mentions,
+            expired,
+            windowBounds,
+        });
+    }
+
+    useEffect(() => {
+        window.desktop.serversSidebar.onUpdateSidebar(handleUpdate);
+    }, [])
+
+    return <ServersSidebar {...state} />
 }
 
 document.addEventListener('dragover', (event) => event.preventDefault());

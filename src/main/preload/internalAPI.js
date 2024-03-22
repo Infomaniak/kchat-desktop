@@ -92,6 +92,7 @@ import {
     GET_APP_INFO,
     RESET_AUTH,
     UPDATE_TEAMS,
+    UPDATE_SERVERS_SIDEBAR,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 

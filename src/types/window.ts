@@ -157,7 +157,7 @@ declare global {
             serversSidebar: {
                 switchServer: (serverId: string) => void;
 
-                onUpdateServerSidebar: (listener: (
+                onUpdateSidebar: (listener: (
                     servers: UniqueServer[],
                     darkMode: boolean,
                     windowBounds: Rectangle,
