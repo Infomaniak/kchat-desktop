@@ -50,11 +50,11 @@ const ServersSidebar: FC<Props> = ({
         <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
             <Droppable
                 isDropDisabled={isDropDisabled}
-                droppableId='ServerSidebar__droppable'
+                droppableId='ServersSidebar__droppable'
             >
                 {(provided) => (
                     <div
-                        className='ServerSidebar__droppable'
+                        className='ServersSidebar__droppable'
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                     >
