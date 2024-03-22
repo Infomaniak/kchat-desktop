@@ -26,6 +26,15 @@ export class ServerInfo {
         return this.remoteInfo;
     }
 
+    fetchTeamInfo = async () => {
+        await this.getRemoteInfo<ClientConfig>(
+            this.onGetConfig,
+            parseURL(`${this.server.url}/api/v4/teams/${this.server.id}`),
+        );
+
+        return this.remoteInfo;
+    }
+
     fetchRemoteInfo = async () => {
         await this.fetchConfigData();
         await this.getRemoteInfo<Array<{id: string; version: string}>>(
