@@ -31,6 +31,8 @@ type State = {
 
 const ServersSidebarRenderer = () => {
     const [state, setState] = useState<State>()
+    const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
+    const [buttonsRefs, setButtonsRefs] = useState<Map<any, any>>(new Map())
 
     const handleUpdate = (
         servers: UniqueServer[],
@@ -80,17 +82,46 @@ const ServersSidebarRenderer = () => {
         window.desktop.updateServerOrder(serversCopy.map((server) => server.id!));
     }
 
+    const addButtonRef = (serverIndex: number, ref: HTMLButtonElement | null) => {
+        if (ref) {
+            buttonsRefs.set(serverIndex, ref);
+            ref.addEventListener('focusin', () => {
+                setFocusedIndex(serverIndex)
+            });
+            ref.addEventListener('blur', () => {
+                setFocusedIndex(null)
+            });
+        }
+    }
+
+
+    const setButtonRef = (serverIndex: number, refMethod?: (element: HTMLButtonElement) => unknown) => {
+        return (ref: HTMLButtonElement) => {
+            addButtonRef(serverIndex, ref);
+            refMethod?.(ref);
+        };
+    }
+
+    const orderedServers = useMemo(() => state?.servers?.map(server => ({
+            name: server.name,
+            id: server.id || '',
+            url: server.url,
+            isPredefined: !!server.isPredefined
+        })) || [],
+    [state])
+
     useEffect(() => {
         window.desktop.serversSidebar.onUpdateSidebar(handleUpdate);
     }, [])
 
-    const orderedServers = useMemo(() => state?.servers?.map(server => ({ name: server.name, id: server.id || '', url: server.url })) || [], [state])
-
     return <ServersSidebar
         servers={orderedServers}
+        activeServerId={state?.activeServer}
         isDropDisabled={!!state?.hasGPOServers}
+        isAnyDragging={!!state?.isAnyDragging}
         onDragEnd={onDragEnd}
         onDragStart={onDragStart}
+        setButtonRef={setButtonRef}
     />
 }
 

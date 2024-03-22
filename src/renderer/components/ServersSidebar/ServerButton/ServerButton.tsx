@@ -4,32 +4,45 @@ import { Draggable } from "react-beautiful-dnd";
 
 type Props = {
     index: number
-    sessionExpired: boolean
+    sessionExpired?: boolean
     hasUnreads: boolean
-    mentionCount: number
+    mentionCount?: number
     isPredefined: boolean
     orderedIndex: number
     isActive: boolean
+    isAnyDragging: boolean
+
+    setButtonRef: (serverIndex: number, refMethod?: (element: HTMLButtonElement) => unknown) => (ref: HTMLButtonElement) => void
 }
 
-const ServerButton: FC<Props> = ({index, sessionExpired, hasUnreads, mentionCount, orderedIndex, isActive, isPredefined}) => {
+const ServerButton: FC<Props> = ({
+    index,
+    sessionExpired,
+    hasUnreads,
+    mentionCount,
+    orderedIndex,
+    isActive,
+    isPredefined,
+    isAnyDragging,
+    setButtonRef,
+}) => {
     let badgeDiv: React.ReactNode;
 
     if (sessionExpired) {
         badgeDiv = (
-            <div className='ServerSidebar__badge-expired'>
+            <div className='ServerButton__badge-expired'>
                 <i className='icon-alert-circle-outline'/>
             </div>
         );
     } else if (mentionCount && mentionCount > 0) {
         badgeDiv = (
-            <div className='ServerSidebar__badge-count'>
+            <div className='ServerButton__badge-count'>
                 <span>{mentionCount > 99 ? '99+' : mentionCount}</span>
             </div>
         );
     } else if (hasUnreads) {
         badgeDiv = (
-            <div className='ServerSidebar__badge-dot'/>
+            <div className='ServerButton__badge-dot'/>
         );
     }
 
@@ -41,44 +54,15 @@ const ServerButton: FC<Props> = ({index, sessionExpired, hasUnreads, mentionCoun
             >
                 {(provided, snapshot) => (
                     <button
-                        className={classNames('ServerSidebar__button', {
+                        className={classNames('ServerButton', {
                             dragging: snapshot.isDragging,
-                            anyDragging: this.state.isAnyDragging,
-                            active: this.isActiveServer(server),
+                            anyDragging: isAnyDragging,
+                            active: isActive,
                         })}
-                        ref={this.setButtonRef(orderedIndex, provided.innerRef)}
+                        ref={setButtonRef(orderedIndex, provided.innerRef)}
                         {...provided.draggableProps}
-                        onClick={this.selectServer(server)}
-                        style={getStyle(provided.draggableProps.style)}
                     >
-                        <div
-                            className={classNames('ServerButton-handle', {
-                                dragging: snapshot.isDragging,
-                            })}
-                            {...provided.dragHandleProps}
-                            onClick={this.handleClickOnDragHandle}
-                        >
-                            <i className='icon-drag-vertical'/>
-                            {this.isActiveServer(server) ? <i className='icon-check'/> : <i className='icon-server-variant'/>}
-                            <span>{server.name}</span>
-                        </div>
-                        {!server.isPredefined && <div className='ServerSidebar__indicators'>
-                            <button
-                                className='ServerSidebar__button-edit'
-                                onClick={this.editServer(server.id!)}
-                            >
-                                <i className='icon-pencil-outline'/>
-                            </button>
-                            <button
-                                className='ServerSidebar__button-remove'
-                                onClick={this.removeServer(server.id!)}
-                            >
-                                <i className='icon-trash-can-outline'/>
-                            </button>
-                            {badgeDiv && <div className='ServerSidebar__badge'>
-                                {badgeDiv}
-                            </div>}
-                        </div>}
+
                     </button>
                 )}
             </Draggable>
