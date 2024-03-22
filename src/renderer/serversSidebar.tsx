@@ -6,12 +6,13 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'renderer/css/settings.css';
 import 'renderer/css/call-dialing.css';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import IntlProvider from './intl_provider';
 import ServersSidebar from './components/ServersSidebar';
 import { UniqueServer } from 'types/config';
+import { DropResult } from 'react-beautiful-dnd';
 
 type State = {
     servers?: UniqueServer[];
@@ -55,11 +56,42 @@ const ServersSidebarRenderer = () => {
         });
     }
 
+    const onDragStart = () => {
+        setState({isAnyDragging: true});
+    }
+
+    const onDragEnd = (result: DropResult) => {
+        const removedIndex = result.source.index;
+        const addedIndex = result.destination?.index;
+        if (addedIndex === undefined || removedIndex === addedIndex) {
+            setState({isAnyDragging: false});
+            return;
+        }
+        if (!state?.servers) {
+            throw new Error('No config');
+        }
+        const serversCopy = state.servers.concat();
+
+        const server = serversCopy.splice(removedIndex, 1);
+        const newOrder = addedIndex < state.servers.length ? addedIndex : state.servers.length - 1;
+        serversCopy.splice(newOrder, 0, server[0]);
+
+        setState({servers: serversCopy, isAnyDragging: false});
+        window.desktop.updateServerOrder(serversCopy.map((server) => server.id!));
+    }
+
     useEffect(() => {
         window.desktop.serversSidebar.onUpdateSidebar(handleUpdate);
     }, [])
 
-    return <ServersSidebar {...state} />
+    const orderedServers = useMemo(() => state?.servers?.map(server => ({ name: server.name, id: server.id || '', url: server.url })) || [], [state])
+
+    return <ServersSidebar
+        servers={orderedServers}
+        isDropDisabled={!!state?.hasGPOServers}
+        onDragEnd={onDragEnd}
+        onDragStart={onDragStart}
+    />
 }
 
 document.addEventListener('dragover', (event) => event.preventDefault());

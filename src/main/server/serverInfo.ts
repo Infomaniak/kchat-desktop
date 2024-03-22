@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ClientConfig, RemoteInfo} from 'types/server';
+import {ClientConfig, RemoteInfo, ServerTeam} from 'types/server';
 
 import {MattermostServer} from 'common/servers/MattermostServer';
 import {parseURL} from 'common/utils/url';
@@ -27,9 +27,9 @@ export class ServerInfo {
     }
 
     fetchTeamInfo = async () => {
-        await this.getRemoteInfo<ClientConfig>(
-            this.onGetConfig,
-            parseURL(`${this.server.url}/api/v4/teams/${this.server.id}`),
+        await this.getRemoteInfo<ServerTeam[]>(
+            this.onGetServerInfo,
+            parseURL(`${this.server.url}/api/v4/teams`),
         );
 
         return this.remoteInfo;
@@ -41,6 +41,7 @@ export class ServerInfo {
             this.onGetPlugins,
             parseURL(`${this.server.url}/api/v4/plugins/webapp`),
         );
+        await this.fetchTeamInfo();
 
         return this.remoteInfo;
     }
@@ -63,6 +64,16 @@ export class ServerInfo {
                 () => reject(new Error('Aborted')),
                 (error: Error) => reject(error));
         });
+    }
+
+    private onGetServerInfo = (data: ServerTeam[]) => {
+        const matchedTeam = data.find(team => team.url === this.remoteInfo.siteURL)
+
+        if (!matchedTeam) {
+            throw new Error('No team is available for your current server')
+        }
+
+        this.remoteInfo.team = matchedTeam
     }
 
     private onGetConfig = (data: ClientConfig) => {

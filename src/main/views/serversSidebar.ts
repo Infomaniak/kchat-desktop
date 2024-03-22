@@ -20,12 +20,14 @@ import ServerManager from 'common/servers/serverManager';
 import Config from 'common/config';
 import ServerViewState from 'app/serverViewState';
 import AppState from 'common/appState';
+import { RemoteInfo } from 'types/server';
 
 const log = new Logger('ServersSidebar');
 
 export class ServerSidebar {
     private view?: BrowserView;
     private servers: UniqueServer[];
+    private serversRemoteInfo: RemoteInfo[];
 
     private unreads: Map<string, boolean>;
     private mentions: Map<string, number>;
@@ -37,6 +39,7 @@ export class ServerSidebar {
 
     constructor() {
         this.servers = [];
+        this.serversRemoteInfo = []
         this.hasGPOServers = false
 
         this.unreads = new Map();
@@ -146,7 +149,11 @@ export class ServerSidebar {
     }
 
     private setOrderedServers = () => {
-        this.servers = ServerManager.getOrderedServers().map((server) => server.toUniqueServer());
+        this.servers =  ServerManager.getOrderedServers().map((server) => {
+            const remoteInfo = ServerManager.getRemoteInfo(server.id)
+            return {...server.toUniqueServer(), remoteInfo}
+        });
+
         this.hasGPOServers = this.servers.some((srv) => srv.isPredefined);
     }
 }

@@ -1,6 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type { RemoteInfo } from "./server";
+
 export type View = {
     name: string;
     isOpen?: boolean;
@@ -24,6 +26,7 @@ export type ConfigServer = Server & {
 export type UniqueServer = Server & {
     id?: string;
     isPredefined?: boolean;
+    remoteInfo?: RemoteInfo
 }
 
 export type UniqueView = View & {
