@@ -153,6 +153,22 @@ declare global {
                     unreads?: Map<string, boolean>,
                 ) => void) => void;
             };
+
+            serversSidebar: {
+                switchServer: (serverId: string) => void;
+
+                onUpdateServerSidebar: (listener: (
+                    servers: UniqueServer[],
+                    darkMode: boolean,
+                    windowBounds: Rectangle,
+                    activeServer?: string,
+                    enableServerManagement?: boolean,
+                    hasGPOServers?: boolean,
+                    expired?: Map<string, boolean>,
+                    mentions?: Map<string, number>,
+                    unreads?: Map<string, boolean>,
+                ) => void) => void;
+            };
         };
         dialApi: {
             onInfo: (callback: (...args: any[]) => unknown) => void;

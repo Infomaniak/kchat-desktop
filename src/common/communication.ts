@@ -212,3 +212,5 @@ export const NOTIFICATION_CLICKED = 'notification-clicked';
 
 // Legacy code remove signal
 export const LEGACY_OFF = 'legacy-off';
+
+export const UPDATE_SERVERS_SIDEBAR = 'update-servers-sidebar';

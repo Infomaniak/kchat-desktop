@@ -6,23 +6,46 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'renderer/css/settings.css';
 import 'renderer/css/call-dialing.css';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import IntlProvider from './intl_provider';
-import { SERVERS_SIDEBAR_WIDTH } from 'common/utils/constants';
+import ServersSidebar from './components/ServersSidebar';
+import { UniqueServer } from 'types/config';
+
+type State = {
+    servers?: UniqueServer[];
+    serverOrder?: string[];
+    orderedServers?: UniqueServer[];
+    activeServer?: string;
+    darkMode?: boolean;
+    enableServerManagement?: boolean;
+    unreads?: Map<string, boolean>;
+    mentions?: Map<string, number>;
+    expired?: Map<string, boolean>;
+    hasGPOServers?: boolean;
+    isAnyDragging?: boolean;
+    windowBounds?: Electron.Rectangle;
+}
+
+const ServersSidebarRenderer = () => {
+    const [state, setState] = useState<State>()
+
+    return <ServersSidebar />
+}
+
+document.addEventListener('dragover', (event) => event.preventDefault());
+document.addEventListener('drop', (event) => event.preventDefault());
 
 const start = async () => {
     ReactDOM.render(
         <IntlProvider>
-            <div style={{ background: 'red', width: SERVERS_SIDEBAR_WIDTH, height: 500 }}></div>
+            <ServersSidebarRenderer/>
         </IntlProvider>,
         document.getElementById('app'),
-    );
-};
+    )
+}
 
-// Deny drag&drop navigation in mainWindow.
-document.addEventListener('dragover', (event) => event.preventDefault());
-document.addEventListener('drop', (event) => event.preventDefault());
+start()
 
-start();
+

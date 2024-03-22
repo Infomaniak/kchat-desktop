@@ -242,6 +242,32 @@ contextBridge.exposeInMainWorld('desktop', {
         )),
     },
 
+    serversSidebar: {
+        switchServer: (serverId) => ipcRenderer.send(SWITCH_SERVER, serverId),
+
+        onUpdateSidebar: (listener) => ipcRenderer.on(UPDATE_SERVERS_SIDEBAR, (_,
+            servers,
+            activeServer,
+            darkMode,
+            enableServerManagement,
+            hasGPOServers,
+            expired,
+            mentions,
+            unreads,
+            windowBounds,
+        ) => listener(
+            servers,
+            activeServer,
+            darkMode,
+            enableServerManagement,
+            hasGPOServers,
+            expired,
+            mentions,
+            unreads,
+            windowBounds,
+        )),
+    },
+
     loadingScreen: {
         loadingScreenAnimationFinished: () => ipcRenderer.send(LOADING_SCREEN_ANIMATION_FINISHED),
         onToggleLoadingScreenVisibility: (listener) => ipcRenderer.on(TOGGLE_LOADING_SCREEN_VISIBILITY, (_, toggle) => listener(toggle)),
