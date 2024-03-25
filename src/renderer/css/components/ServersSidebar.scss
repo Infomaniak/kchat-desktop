@@ -24,7 +24,6 @@ button {
 
 .ServerButton {
     display: block;
-
     width: 40px;
     height: 40px;
     border-radius: 8px;
@@ -32,7 +31,8 @@ button {
     margin: 0;
     background-color: red;
     border: none;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
 
     &:hover {
         box-shadow: 0 0 0 3px red;
