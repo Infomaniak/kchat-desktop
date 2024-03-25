@@ -6,6 +6,7 @@ export type ServerTeam = {
     display_name: string,
     name: string
     url: string
+    last_team_icon_update: string
     [key: string]: any
 };
 

@@ -58,11 +58,12 @@ const ServersSidebarRenderer = () => {
         });
     }
 
-    const onDragStart = () => {
-        setState({isAnyDragging: true});
+    const onButtonClick = (serverId: string) => {
+        window.desktop.serversSidebar.switchServer(serverId)
     }
 
     const onDragEnd = (result: DropResult) => {
+        console.log('END DRAGGING')
         const removedIndex = result.source.index;
         const addedIndex = result.destination?.index;
         if (addedIndex === undefined || removedIndex === addedIndex) {
@@ -106,7 +107,8 @@ const ServersSidebarRenderer = () => {
             name: server.name,
             id: server.id || '',
             url: server.url,
-            isPredefined: !!server.isPredefined
+            isPredefined: !!server.isPredefined,
+            team: server.remoteInfo?.team
         })) || [],
     [state])
 
@@ -119,14 +121,13 @@ const ServersSidebarRenderer = () => {
         activeServerId={state?.activeServer}
         isDropDisabled={!!state?.hasGPOServers}
         isAnyDragging={!!state?.isAnyDragging}
+        onButtonClick={onButtonClick}
         onDragEnd={onDragEnd}
-        onDragStart={onDragStart}
-        setButtonRef={setButtonRef}
     />
 }
 
-document.addEventListener('dragover', (event) => event.preventDefault());
-document.addEventListener('drop', (event) => event.preventDefault());
+// document.addEventListener('dragover', (event) => event.preventDefault());
+// document.addEventListener('drop', (event) => event.preventDefault());
 
 const start = async () => {
     ReactDOM.render(

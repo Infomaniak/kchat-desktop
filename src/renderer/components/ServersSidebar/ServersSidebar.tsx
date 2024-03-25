@@ -7,12 +7,16 @@ import '../../css/components/ServersSidebar.scss';
 import classNames from 'classnames';
 import ServerButton from './ServerButton';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
+import type { ServerTeam } from 'types/server';
+import { imageURLForTeam, initialForTeam } from './utils';
 
 type Server = {
     name: string
     id: string
     url: string
     isPredefined: boolean
+
+    team?: ServerTeam
 }
 
 type Props = {
@@ -24,9 +28,8 @@ type Props = {
     mentions?: Map<string, number>;
     expired?: Map<string, boolean>;
 
-    onDragStart: () => void
     onDragEnd: (_: DropResult) => void
-    setButtonRef: (serverIndex: number, refMethod?: (element: HTMLButtonElement) => unknown) => (ref: HTMLButtonElement) => void
+    onButtonClick?: (_: string) => void;
 
     darkMode?: boolean,
     isDropDisabled: boolean
@@ -43,23 +46,22 @@ const ServersSidebar: FC<Props> = ({
     mentions,
     unreads,
     onDragEnd,
-    onDragStart,
-    setButtonRef,
+    onButtonClick,
 }) => {
     return <div className={classNames('ServersSidebar')}>
-        <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
+        <DragDropContext onDragEnd={onDragEnd}>
             <Droppable
                 isDropDisabled={isDropDisabled}
                 droppableId='ServersSidebar__droppable'
+                type='TEAM_BUTTON'
             >
                 {(provided) => (
                     <div
                         className='ServersSidebar__droppable'
-                        ref={provided.innerRef}
                         {...provided.droppableProps}
+                        ref={provided.innerRef}
                     >
-                        {servers?.map((server, orderedIndex) => {
-                            const index = servers?.indexOf(server);
+                        {servers?.map((server, index) => {
                             const sessionExpired = expired?.get(server.id!);
                             const hasUnreads = unreads?.get(server.id!);
                             const mentionCount = mentions?.get(server.id!);
@@ -67,18 +69,21 @@ const ServersSidebar: FC<Props> = ({
                             return (
                                 <ServerButton
                                     key={server.id}
-                                    index={index}
+                                    draggableId={server.id}
                                     hasUnreads={!!hasUnreads}
-                                    orderedIndex={orderedIndex}
+                                    orderedIndex={index}
                                     isPredefined={server.isPredefined}
                                     mentionCount={mentionCount}
                                     sessionExpired={sessionExpired}
                                     isActive={server.id === activeServerId}
                                     isAnyDragging={isAnyDragging}
-                                    setButtonRef={setButtonRef}
+                                    iconUrl={imageURLForTeam(server.team)}
+                                    initial={initialForTeam(server.team)}
+                                    onClick={() => onButtonClick?.(server.name)}
                                 />
                             );
                         })}
+                        {provided.placeholder}
                     </div>
                 )}
             </Droppable>

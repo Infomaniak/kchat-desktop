@@ -1,13 +1,13 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserView, app, ipcMain} from 'electron';
+import {BrowserView, ipcMain} from 'electron';
 
 import {
     DARK_MODE_CHANGE,
     EMIT_CONFIGURATION,
     MAIN_WINDOW_CREATED, MAIN_WINDOW_RESIZED,
-    SERVERS_UPDATE, UPDATE_APPSTATE,
+    SERVERS_UPDATE, SWITCH_SERVER, UPDATE_APPSTATE,
     UPDATE_SERVERS_SIDEBAR
 } from 'common/communication';
 
@@ -21,6 +21,7 @@ import Config from 'common/config';
 import ServerViewState from 'app/serverViewState';
 import AppState from 'common/appState';
 import { RemoteInfo } from 'types/server';
+import serverViewState from 'app/serverViewState';
 
 const log = new Logger('ServersSidebar');
 
@@ -53,15 +54,18 @@ export class ServerSidebar {
         AppState.on(UPDATE_APPSTATE, this.updateMentions);
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
+        ServerManager.on(SWITCH_SERVER, this.updateServers);
     }
 
     init = () => {
         log.info('Init')
         const preload = getLocalPreload('internalAPI.js');
+        const mainWindow = MainWindow.get()
+        const mainSession = mainWindow?.webContents.session
 
         this.view = new BrowserView({webPreferences: {
             preload,
-
+            session: mainSession,
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             transparent: true,
@@ -72,7 +76,6 @@ export class ServerSidebar {
 
         this.setOrderedServers();
 
-        const mainWindow = MainWindow.get()
 
         if (!mainWindow) {
             return

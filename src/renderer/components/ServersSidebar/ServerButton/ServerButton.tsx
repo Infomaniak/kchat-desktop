@@ -3,7 +3,7 @@ import React, { FC } from "react";
 import { Draggable } from "react-beautiful-dnd";
 
 type Props = {
-    index: number
+    draggableId: string
     sessionExpired?: boolean
     hasUnreads: boolean
     mentionCount?: number
@@ -11,20 +11,24 @@ type Props = {
     orderedIndex: number
     isActive: boolean
     isAnyDragging: boolean
+    iconUrl: string | null
+    initial: string
 
-    setButtonRef: (serverIndex: number, refMethod?: (element: HTMLButtonElement) => unknown) => (ref: HTMLButtonElement) => void
+    onClick?: () => void;
 }
 
 const ServerButton: FC<Props> = ({
-    index,
+    draggableId,
     sessionExpired,
     hasUnreads,
     mentionCount,
     orderedIndex,
     isActive,
     isPredefined,
+    iconUrl,
     isAnyDragging,
-    setButtonRef,
+    initial,
+    onClick,
 }) => {
     let badgeDiv: React.ReactNode;
 
@@ -47,8 +51,7 @@ const ServerButton: FC<Props> = ({
     }
 
     return  <Draggable
-                key={index}
-                draggableId={`ServerButton-${index}`}
+                draggableId={draggableId}
                 index={orderedIndex}
                 disableInteractiveElementBlocking={true}
             >
@@ -59,10 +62,17 @@ const ServerButton: FC<Props> = ({
                             anyDragging: isAnyDragging,
                             active: isActive,
                         })}
-                        ref={setButtonRef(orderedIndex, provided.innerRef)}
                         {...provided.draggableProps}
-                    >
+                        {...provided.dragHandleProps}
+                        ref={provided.innerRef}
+                        onClick={onClick}
 
+                    >
+                        <span className="ServerButton__content">
+                            <span className="ServerButton__initial">{initial}</span>
+                        </span>
+                       {/* {iconUrl && <span style={{backgroundImage: `url(${iconUrl})`}} />} */}
+                       {/* {iconUrl && <span className="ServerButton__initial">{initial}</span>} */}
                     </button>
                 )}
             </Draggable>

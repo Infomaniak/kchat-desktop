@@ -37,11 +37,12 @@ export class ServerInfo {
 
     fetchRemoteInfo = async () => {
         await this.fetchConfigData();
+        await this.fetchTeamInfo();
+
         await this.getRemoteInfo<Array<{id: string; version: string}>>(
             this.onGetPlugins,
             parseURL(`${this.server.url}/api/v4/plugins/webapp`),
         );
-        await this.fetchTeamInfo();
 
         return this.remoteInfo;
     }
