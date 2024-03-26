@@ -32,8 +32,39 @@ button {
     border: 3px solid rgba(255, 255, 255, 0);
     background-color: rgba(var(--sidebar-text-color-rgb), 0.16);
     margin-bottom: 12px;
-    cursor: pointer;
     transition: all .3s ease;
+    position: relative;
+    cursor: pointer;
+
+    &__badge {
+        display: inline-block;
+        position: absolute;
+        z-index: 5;
+        top: 0;
+        right: 0;
+        background-color: #E91E63;
+        color: #FFF;
+        min-width: 17px;
+        min-height: 17px;
+        padding: 0 6px;
+        border-radius: 8px;
+        font-size: 10px;
+        letter-spacing: 0;
+        line-height: 17px;
+        text-align: center;
+        transform: translate(6px, -8px);
+    }
+
+    &__unread {
+        position: absolute;
+        z-index: 1;
+        top: -6px;
+        right: -6px;
+        width: 8px;
+        height: 8px;
+        background-color: #E91E63;
+        border-radius: 100%;
+    }
 
     &:hover {
         border-color: var(--sidebar-team-bg);

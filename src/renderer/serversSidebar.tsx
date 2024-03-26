@@ -107,6 +107,9 @@ const ServersSidebarRenderer = () => {
         onButtonClick={onButtonClick}
         onDragEnd={onDragEnd}
         theme={state?.preferredTheme}
+        unreads={state?.unreads}
+        mentions={state?.mentions}
+        expired={state?.expired}
     />
 }
 

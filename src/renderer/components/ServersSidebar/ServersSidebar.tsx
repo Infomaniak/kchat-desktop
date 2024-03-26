@@ -73,7 +73,6 @@ const ServersSidebar: FC<Props> = ({
                                     draggableId={server.id}
                                     hasUnreads={!!hasUnreads}
                                     orderedIndex={index}
-                                    isPredefined={server.isPredefined}
                                     mentionCount={mentionCount}
                                     sessionExpired={sessionExpired}
                                     isActive={server.id === activeServerId}

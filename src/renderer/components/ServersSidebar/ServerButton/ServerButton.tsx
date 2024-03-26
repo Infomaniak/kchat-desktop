@@ -8,7 +8,6 @@ type Props = {
     sessionExpired?: boolean
     hasUnreads: boolean
     mentionCount?: number
-    isPredefined: boolean
     orderedIndex: number
     isActive: boolean
     isAnyDragging: boolean
@@ -26,10 +25,10 @@ const ServerButton: FC<Props> = ({
     mentionCount,
     orderedIndex,
     isActive,
-    isPredefined,
     iconUrl,
     isAnyDragging,
     initial,
+
     onClick,
 }) => {
     let badgeDiv: React.ReactNode;
@@ -42,13 +41,13 @@ const ServerButton: FC<Props> = ({
         );
     } else if (mentionCount && mentionCount > 0) {
         badgeDiv = (
-            <div className='ServerButton__badge-count'>
+            <div className='ServerButton__badge'>
                 <span>{mentionCount > 99 ? '99+' : mentionCount}</span>
             </div>
         );
     } else if (hasUnreads) {
         badgeDiv = (
-            <div className='ServerButton__badge-dot'/>
+            <div className='ServerButton__unread'/>
         );
     }
 
@@ -63,6 +62,7 @@ const ServerButton: FC<Props> = ({
                             dragging: snapshot.isDragging,
                             anyDragging: isAnyDragging,
                             active: isActive,
+                            hasMentions: mentionCount && mentionCount > 0
                         })}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
@@ -70,6 +70,7 @@ const ServerButton: FC<Props> = ({
                         onClick={onClick}
 
                     >
+                        {!isActive && badgeDiv}
                         <span className="ServerButton__content">
                             <span className="ServerButton__initial">{initial}</span>
                         </span>
