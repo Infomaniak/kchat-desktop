@@ -41,7 +41,6 @@ export class ServerSidebar {
 
     constructor() {
         this.servers = [];
-        this.serversRemoteInfo = []
         this.hasGPOServers = false
         this.preferredTheme = {} as Theme
 
