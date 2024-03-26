@@ -17,7 +17,7 @@ export function toRgbValues(hexStr: string): string {
 export const applyCssVars = (theme: Theme) => {
     return {
         '--sidebar-background': theme.sidebarHeaderBg,
-        '--sidebar-border-color-rgb': toRgbValues(theme.centerChannelBg),
+        '--sidebar-border-color-rgb': toRgbValues(theme.centerChannelColor),
         '--sidebar-team-bg': theme.sidebarTeamBarBg,
         '--sidebar-text-header-color': theme.sidebarHeaderTextColor,
         '--sidebar-text-color-rgb': toRgbValues(theme.sidebarText)

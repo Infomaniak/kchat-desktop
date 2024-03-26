@@ -9,4 +9,5 @@ export type Theme = {
     sidebarHeaderBg: string;
     sidebarTeamBarBg: string;
     centerChannelBg: string
+    centerChannelColor: string
 };

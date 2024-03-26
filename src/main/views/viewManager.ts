@@ -64,6 +64,7 @@ import {createCallDialingWindow} from 'main/windows/callDialingWindow';
 import LoadingScreen from './loadingScreen';
 import modalManager from './modalManager';
 import {MattermostBrowserView} from './MattermostBrowserView';
+import ServerSidebar from './serversSidebar';
 
 const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
@@ -620,6 +621,7 @@ export class ViewManager {
         if (view) {
             view.setInitialized();
             if (this.getCurrentView() === view) {
+                ServerSidebar.init();
                 LoadingScreen.fade();
             }
         }

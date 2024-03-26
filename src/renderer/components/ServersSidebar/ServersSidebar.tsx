@@ -8,7 +8,7 @@ import classNames from 'classnames';
 import ServerButton from './ServerButton';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import type { ServerTeam } from 'types/server';
-import { applyCssVars, convertHexToRGBA, imageURLForTeam, initialForTeam } from './utils';
+import { applyCssVars, imageURLForTeam, initialForTeam } from './utils';
 import { Theme } from 'types/theme';
 
 type Server = {
@@ -35,8 +35,6 @@ type Props = {
     isDropDisabled: boolean
     theme?: Theme
 }
-// backgroundColor: theme?.sidebarHeaderBg, borderRight: `solid 1px ${convertHexToRGBA(theme?.centerChannelColor, 0.08)}`
-
 
 const ServersSidebar: FC<Props> = ({
     servers,

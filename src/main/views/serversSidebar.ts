@@ -50,7 +50,6 @@ export class ServerSidebar {
         this.mentions = new Map();
         this.expired = new Map();
 
-        MainWindow.on(MAIN_WINDOW_CREATED, this.init);
         MainWindow.on(MAIN_WINDOW_RESIZED, this.updateWindowBounds);
 
         ipcMain.on(EMIT_CONFIGURATION, this.updateServers);

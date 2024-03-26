@@ -13,7 +13,7 @@ button {
     height: 100vh;
     padding-top: 10px;
     background-color: var(--sidebar-background);
-    border-right: 1px solid rgba(var(--sidebar-border-color-rgb), 0,08);
+    border-right: 1px solid rgba(var(--sidebar-border-color-rgb), 0.08);
 
     &__droppable {
         display: flex;
@@ -31,7 +31,7 @@ button {
     margin: 0;
     border: 3px solid rgba(255, 255, 255, 0);
     background-color: rgba(var(--sidebar-text-color-rgb), 0.16);
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     cursor: pointer;
     transition: all .3s ease;
 
