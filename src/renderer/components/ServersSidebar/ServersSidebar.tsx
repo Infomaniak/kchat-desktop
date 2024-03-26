@@ -8,14 +8,14 @@ import classNames from 'classnames';
 import ServerButton from './ServerButton';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
 import type { ServerTeam } from 'types/server';
-import { imageURLForTeam, initialForTeam } from './utils';
+import { convertHexToRGBA, imageURLForTeam, initialForTeam } from './utils';
+import { Theme } from 'types/theme';
 
 type Server = {
     name: string
     id: string
     url: string
     isPredefined: boolean
-
     team?: ServerTeam
 }
 
@@ -33,22 +33,24 @@ type Props = {
 
     darkMode?: boolean,
     isDropDisabled: boolean
+    theme?: Theme
 }
 
 
 const ServersSidebar: FC<Props> = ({
     servers,
-    darkMode,
     isAnyDragging,
     activeServerId,
     isDropDisabled,
     expired,
     mentions,
     unreads,
+    theme,
+
     onDragEnd,
     onButtonClick,
 }) => {
-    return <div className={classNames('ServersSidebar')}>
+    return <div className={classNames('ServersSidebar')} style={{ backgroundColor: theme?.sidebarHeaderBg, borderRight: `solid 1px ${convertHexToRGBA(theme?.centerChannelColor, 0.08)}` }}>
         <DragDropContext onDragEnd={onDragEnd}>
             <Droppable
                 isDropDisabled={isDropDisabled}
@@ -80,6 +82,7 @@ const ServersSidebar: FC<Props> = ({
                                     iconUrl={imageURLForTeam(server.team)}
                                     initial={initialForTeam(server.team)}
                                     onClick={() => onButtonClick?.(server.name)}
+                                    theme={theme}
                                 />
                             );
                         })}

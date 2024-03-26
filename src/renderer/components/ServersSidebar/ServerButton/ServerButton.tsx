@@ -1,6 +1,7 @@
 import classNames from "classnames";
 import React, { FC } from "react";
 import { Draggable } from "react-beautiful-dnd";
+import { Theme } from "types/theme";
 
 type Props = {
     draggableId: string
@@ -13,6 +14,7 @@ type Props = {
     isAnyDragging: boolean
     iconUrl: string | null
     initial: string
+    theme?: Theme
 
     onClick?: () => void;
 }

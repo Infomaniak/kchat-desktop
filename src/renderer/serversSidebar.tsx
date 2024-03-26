@@ -13,6 +13,7 @@ import IntlProvider from './intl_provider';
 import ServersSidebar from './components/ServersSidebar';
 import { UniqueServer } from 'types/config';
 import { DropResult } from 'react-beautiful-dnd';
+import { Theme } from 'types/theme';
 
 type State = {
     servers?: UniqueServer[];
@@ -27,12 +28,11 @@ type State = {
     hasGPOServers?: boolean;
     isAnyDragging?: boolean;
     windowBounds?: Electron.Rectangle;
+    preferredTheme?: Theme
 }
 
 const ServersSidebarRenderer = () => {
     const [state, setState] = useState<State>()
-    const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
-    const [buttonsRefs, setButtonsRefs] = useState<Map<any, any>>(new Map())
 
     const handleUpdate = (
         servers: UniqueServer[],
@@ -44,6 +44,7 @@ const ServersSidebarRenderer = () => {
         expired?: Map<string, boolean>,
         mentions?: Map<string, number>,
         unreads?: Map<string, boolean>,
+        preferredTheme?: Theme
     ) => {
         setState({
             servers,
@@ -55,6 +56,7 @@ const ServersSidebarRenderer = () => {
             mentions,
             expired,
             windowBounds,
+            preferredTheme
         });
     }
 
@@ -63,7 +65,6 @@ const ServersSidebarRenderer = () => {
     }
 
     const onDragEnd = (result: DropResult) => {
-        console.log('END DRAGGING')
         const removedIndex = result.source.index;
         const addedIndex = result.destination?.index;
         if (addedIndex === undefined || removedIndex === addedIndex) {
@@ -83,26 +84,6 @@ const ServersSidebarRenderer = () => {
         window.desktop.updateServerOrder(serversCopy.map((server) => server.id!));
     }
 
-    const addButtonRef = (serverIndex: number, ref: HTMLButtonElement | null) => {
-        if (ref) {
-            buttonsRefs.set(serverIndex, ref);
-            ref.addEventListener('focusin', () => {
-                setFocusedIndex(serverIndex)
-            });
-            ref.addEventListener('blur', () => {
-                setFocusedIndex(null)
-            });
-        }
-    }
-
-
-    const setButtonRef = (serverIndex: number, refMethod?: (element: HTMLButtonElement) => unknown) => {
-        return (ref: HTMLButtonElement) => {
-            addButtonRef(serverIndex, ref);
-            refMethod?.(ref);
-        };
-    }
-
     const orderedServers = useMemo(() => state?.servers?.map(server => ({
             name: server.name,
             id: server.id || '',
@@ -116,6 +97,8 @@ const ServersSidebarRenderer = () => {
         window.desktop.serversSidebar.onUpdateSidebar(handleUpdate);
     }, [])
 
+    console.log('STATE', state)
+
     return <ServersSidebar
         servers={orderedServers}
         activeServerId={state?.activeServer}
@@ -123,6 +106,7 @@ const ServersSidebarRenderer = () => {
         isAnyDragging={!!state?.isAnyDragging}
         onButtonClick={onButtonClick}
         onDragEnd={onDragEnd}
+        theme={state?.preferredTheme}
     />
 }
 

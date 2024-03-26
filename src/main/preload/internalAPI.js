@@ -244,7 +244,7 @@ contextBridge.exposeInMainWorld('desktop', {
     },
 
     serversSidebar: {
-        switchServer: (serverId) => ipcRenderer.send(SWITCH_SERVER, serverId),
+        switchServer: (serverName) => ipcRenderer.send(SWITCH_SERVER, serverName),
 
         onUpdateSidebar: (listener) => ipcRenderer.on(UPDATE_SERVERS_SIDEBAR, (_,
             servers,
@@ -256,6 +256,7 @@ contextBridge.exposeInMainWorld('desktop', {
             mentions,
             unreads,
             windowBounds,
+            preferredTheme
         ) => listener(
             servers,
             activeServer,
@@ -266,6 +267,7 @@ contextBridge.exposeInMainWorld('desktop', {
             mentions,
             unreads,
             windowBounds,
+            preferredTheme
         )),
     },
 

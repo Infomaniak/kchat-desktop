@@ -35,9 +35,20 @@ export class ServerInfo {
         return this.remoteInfo;
     }
 
+    fetchUserPreferences = async () => {
+        await this.getRemoteInfo<ServerTeam[]>(
+            this.onGetUserPreferences,
+            parseURL(`${this.server.url}/api/v4/users/me/preferences`),
+        );
+
+        return this.remoteInfo;
+    }
+
+
     fetchRemoteInfo = async () => {
         await this.fetchConfigData();
         await this.fetchTeamInfo();
+        // await this.fetchUserPreferences();
 
         await this.getRemoteInfo<Array<{id: string; version: string}>>(
             this.onGetPlugins,
@@ -75,6 +86,10 @@ export class ServerInfo {
         }
 
         this.remoteInfo.team = matchedTeam
+    }
+
+    private onGetUserPreferences = (data: any[]) => {
+        console.log('onGetUserPreferences DATA', data)
     }
 
     private onGetConfig = (data: ClientConfig) => {

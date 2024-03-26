@@ -7,6 +7,7 @@ import {
     DARK_MODE_CHANGE,
     EMIT_CONFIGURATION,
     MAIN_WINDOW_CREATED, MAIN_WINDOW_RESIZED,
+    PREFERRED_THEME,
     SERVERS_UPDATE, SWITCH_SERVER, UPDATE_APPSTATE,
     UPDATE_SERVERS_SIDEBAR
 } from 'common/communication';
@@ -21,7 +22,7 @@ import Config from 'common/config';
 import ServerViewState from 'app/serverViewState';
 import AppState from 'common/appState';
 import { RemoteInfo } from 'types/server';
-import serverViewState from 'app/serverViewState';
+import { Theme } from 'types/theme';
 
 const log = new Logger('ServersSidebar');
 
@@ -29,6 +30,7 @@ export class ServerSidebar {
     private view?: BrowserView;
     private servers: UniqueServer[];
     private serversRemoteInfo: RemoteInfo[];
+    private preferredTheme: Theme
 
     private unreads: Map<string, boolean>;
     private mentions: Map<string, number>;
@@ -42,6 +44,7 @@ export class ServerSidebar {
         this.servers = [];
         this.serversRemoteInfo = []
         this.hasGPOServers = false
+        this.preferredTheme = {} as Theme
 
         this.unreads = new Map();
         this.mentions = new Map();
@@ -51,6 +54,7 @@ export class ServerSidebar {
         MainWindow.on(MAIN_WINDOW_RESIZED, this.updateWindowBounds);
 
         ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
+        ipcMain.on(PREFERRED_THEME, this.updatePreferredTheme)
         AppState.on(UPDATE_APPSTATE, this.updateMentions);
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
@@ -108,6 +112,11 @@ export class ServerSidebar {
         this.updateSidebar()
     }
 
+    private updatePreferredTheme = (_: any, theme: any) => {
+        this.preferredTheme = theme
+        this.updateSidebar()
+    }
+
     private updateSidebar = () => {
         log.silly('update sidebar');
 
@@ -122,6 +131,7 @@ export class ServerSidebar {
             this.expired,
             this.mentions,
             this.unreads,
+            this.preferredTheme
         );
     }
 

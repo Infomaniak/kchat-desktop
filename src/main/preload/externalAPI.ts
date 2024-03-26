@@ -60,6 +60,7 @@ import {
     RESET_AUTH,
     SWITCH_SERVER,
     RELOAD_CURRENT_VIEW,
+    PREFERRED_THEME,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -401,6 +402,9 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
     }
     case SWITCH_SERVER:
         ipcRenderer.send(SWITCH_SERVER, data.data);
+        break;
+    case PREFERRED_THEME:
+        ipcRenderer.send(PREFERRED_THEME, data.data);
         break;
     case CALLS_WIDGET_SHARE_SCREEN: {
         ipcRenderer.send(CALLS_WIDGET_SHARE_SCREEN, message.sourceID, message.withAudio);
