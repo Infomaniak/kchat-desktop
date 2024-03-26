@@ -11,8 +11,9 @@ button {
 
 .ServersSidebar {
     height: 100vh;
-    border-right: 1px solid rgba(221, 223, 228, 0.12);
     padding-top: 10px;
+    background-color: var(--sidebar-background);
+    border-right: 1px solid rgba(var(--sidebar-border-color-rgb), 0,08);
 
     &__droppable {
         display: flex;
@@ -28,23 +29,27 @@ button {
     border-radius: 8px;
     padding: 0;
     margin: 0;
-    background-color: red;
-    border: none;
+    border: 3px solid rgba(255, 255, 255, 0);
+    background-color: rgba(var(--sidebar-text-color-rgb), 0.16);
     margin-bottom: 10px;
     cursor: pointer;
+    transition: all .3s ease;
 
     &:hover {
-        box-shadow: 0 0 0 3px red;
+        border-color: var(--sidebar-team-bg);
+        background-color: rgba(var(--sidebar-text-color-rgb), 0.3);
+        box-shadow: 0 0 0 3px rgba(var(--sidebar-text-color-rgb), 0.3);
+    }
 
-        & .ServerButton__content {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
-            box-shadow: inset 0 0 0 3px blue;
-        }
+    &:active {
+        border-color: var(--sidebar-team-bg);
+        box-shadow: 0 0 0 3px var(--sidebar-text-active-border);
+    }
+
+    &.active {
+        border-color: var(--sidebar-team-bg);
+        background-color: rgba(var(--sidebar-text-color-rgb), 0.3);
+        box-shadow: 0 0 0 3px var(--sidebar-text-active-border);
     }
 
     &__initial {
