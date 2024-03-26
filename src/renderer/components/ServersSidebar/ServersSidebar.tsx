@@ -15,7 +15,6 @@ type Server = {
     name: string
     id: string
     url: string
-    isPredefined: boolean
     team?: ServerTeam
 }
 

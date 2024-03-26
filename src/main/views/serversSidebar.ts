@@ -1,19 +1,19 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserView, ipcMain} from 'electron';
+import {BrowserView, ipcMain, session} from 'electron';
 
 import {
     DARK_MODE_CHANGE,
     EMIT_CONFIGURATION,
-    MAIN_WINDOW_CREATED, MAIN_WINDOW_RESIZED,
+    MAIN_WINDOW_RESIZED,
     PREFERRED_THEME,
     SERVERS_UPDATE, SWITCH_SERVER, UPDATE_APPSTATE,
     UPDATE_SERVERS_SIDEBAR
 } from 'common/communication';
 
 import {Logger} from 'common/log';
-import {getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
+import {composeUserAgent, getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
 import { SERVERS_SIDEBAR_WIDTH } from 'common/utils/constants';
 import { UniqueServer } from 'types/config';
@@ -62,31 +62,33 @@ export class ServerSidebar {
 
     init = () => {
         log.info('Init')
-        const preload = getLocalPreload('internalAPI.js');
         const mainWindow = MainWindow.get()
-        const mainSession = mainWindow?.webContents.session
-
-        this.view = new BrowserView({webPreferences: {
-            preload,
-            session: mainSession,
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            transparent: true,
-        }});
-
-        this.view.webContents.loadURL(getLocalURLString('serversSidebar.html'));
-        this.windowBounds = MainWindow.getBounds();
-
-        this.setOrderedServers();
-
 
         if (!mainWindow) {
             return
         }
 
+        const preload = getLocalPreload('internalAPI.js');
+
+        this.view = new BrowserView({
+            webPreferences: {
+                preload,
+            }
+        });
+
+        this.setBounds()
+        this.view.webContents.loadURL(getLocalURLString('serversSidebar.html'), { userAgent: composeUserAgent() })
+            .catch((reason) => {
+                    log.error(`Servers sidebar window failed to load: ${reason}`);
+                    log.info(process.env);
+                });
+
+        this.windowBounds = MainWindow.getBounds();
+
+        this.setOrderedServers();
+
         mainWindow.addBrowserView(this.view!);
         this.view.webContents.openDevTools({ mode: 'detach' })
-        this.setBounds()
     }
 
     setDarkMode = (darkMode: boolean) => {

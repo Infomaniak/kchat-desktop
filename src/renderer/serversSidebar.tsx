@@ -68,7 +68,7 @@ const ServersSidebarRenderer = () => {
         const removedIndex = result.source.index;
         const addedIndex = result.destination?.index;
         if (addedIndex === undefined || removedIndex === addedIndex) {
-            setState({isAnyDragging: false});
+            setState({...state, isAnyDragging: false});
             return;
         }
         if (!state?.servers) {
@@ -80,7 +80,7 @@ const ServersSidebarRenderer = () => {
         const newOrder = addedIndex < state.servers.length ? addedIndex : state.servers.length - 1;
         serversCopy.splice(newOrder, 0, server[0]);
 
-        setState({servers: serversCopy, isAnyDragging: false});
+        setState({...state, ...{servers: serversCopy, isAnyDragging: false}});
         window.desktop.updateServerOrder(serversCopy.map((server) => server.id!));
     }
 
@@ -88,7 +88,6 @@ const ServersSidebarRenderer = () => {
             name: server.name,
             id: server.id || '',
             url: server.url,
-            isPredefined: !!server.isPredefined,
             team: server.remoteInfo?.team
         })) || [],
     [state])

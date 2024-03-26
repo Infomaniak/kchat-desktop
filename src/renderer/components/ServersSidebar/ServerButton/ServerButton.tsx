@@ -74,7 +74,7 @@ const ServerButton: FC<Props> = ({
                         <span className="ServerButton__content">
                             <span className="ServerButton__initial">{initial}</span>
                         </span>
-                       {/* {iconUrl && <span style={{backgroundImage: `url(${iconUrl})`}} />} */}
+                       {iconUrl && <span style={{backgroundImage: `url(${iconUrl})`}} />}
                        {/* {iconUrl && <span className="ServerButton__initial">{initial}</span>} */}
                     </button>
                 )}
