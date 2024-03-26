@@ -20,6 +20,7 @@ type Server = {
 
 type Props = {
     servers: Server[],
+    activeServer?: Server
     activeServerId?: string
     isAnyDragging: boolean
 
@@ -38,6 +39,7 @@ type Props = {
 const ServersSidebar: FC<Props> = ({
     servers,
     isAnyDragging,
+    activeServer,
     activeServerId,
     isDropDisabled,
     expired,
@@ -76,7 +78,7 @@ const ServersSidebar: FC<Props> = ({
                                     sessionExpired={sessionExpired}
                                     isActive={server.id === activeServerId}
                                     isAnyDragging={isAnyDragging}
-                                    iconUrl={imageURLForTeam(server.team)}
+                                    iconUrl={activeServer && server.team ? imageURLForTeam(activeServer, server.team) : null}
                                     initial={initialForTeam(server.team)}
                                     onClick={() => onButtonClick?.(server.name)}
                                     theme={theme}

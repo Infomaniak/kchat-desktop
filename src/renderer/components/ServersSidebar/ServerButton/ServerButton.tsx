@@ -51,6 +51,8 @@ const ServerButton: FC<Props> = ({
         );
     }
 
+    console.log('iconUrl', iconUrl)
+
     return  <Draggable
                 draggableId={draggableId}
                 index={orderedIndex}

@@ -92,14 +92,15 @@ const ServersSidebarRenderer = () => {
         })) || [],
     [state])
 
+    const currentServer = useMemo(() => state?.servers?.find(s => s.id === state.activeServer) as any, [state?.servers, state?.activeServer])
+
     useEffect(() => {
         window.desktop.serversSidebar.onUpdateSidebar(handleUpdate);
     }, [])
 
-    console.log('STATE', state)
-
     return <ServersSidebar
         servers={orderedServers}
+        activeServer={currentServer}
         activeServerId={state?.activeServer}
         isDropDisabled={!!state?.hasGPOServers}
         isAnyDragging={!!state?.isAnyDragging}

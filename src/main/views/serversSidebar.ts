@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserView, ipcMain, session} from 'electron';
+import {BrowserView, ipcMain} from 'electron';
 
 import {
     DARK_MODE_CHANGE,
@@ -29,7 +29,6 @@ const log = new Logger('ServersSidebar');
 export class ServerSidebar {
     private view?: BrowserView;
     private servers: UniqueServer[];
-    private serversRemoteInfo: RemoteInfo[];
     private preferredTheme: Theme
 
     private unreads: Map<string, boolean>;
@@ -61,18 +60,22 @@ export class ServerSidebar {
     }
 
     init = () => {
-        log.info('Init')
         const mainWindow = MainWindow.get()
 
         if (!mainWindow) {
+            log.error('Main window was not available')
             return
         }
 
+        log.info('Init')
+
         const preload = getLocalPreload('internalAPI.js');
+        this.windowBounds = MainWindow.getBounds();
 
         this.view = new BrowserView({
             webPreferences: {
                 preload,
+                session: mainWindow.webContents.session
             }
         });
 
@@ -82,8 +85,6 @@ export class ServerSidebar {
                     log.error(`Servers sidebar window failed to load: ${reason}`);
                     log.info(process.env);
                 });
-
-        this.windowBounds = MainWindow.getBounds();
 
         this.setOrderedServers();
 
