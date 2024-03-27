@@ -5,11 +5,12 @@ import {ipcRenderer, Rectangle} from 'electron/renderer';
 
 import {Language} from '../../i18n/i18n';
 
-import {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer} from './config';
+import {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer, ConfigServer} from './config';
 import {DownloadedItem, DownloadedItems, DownloadsMenuOpenEventPayload} from './downloads';
 import {SaveQueueItem} from './settings';
 import {URLValidationResult} from './server';
 import {CallInfo} from './callsIk'
+import { Theme } from './theme';
 
 declare global {
     interface Window {
@@ -159,11 +160,13 @@ declare global {
 
                 onUpdateSidebar: (listener: (
                     servers: UniqueServer[],
-                    windowBounds: Rectangle,
+                    teams: ConfigServer[],
                     activeServer?: string,
                     expired?: Map<string, boolean>,
                     mentions?: Map<string, number>,
                     unreads?: Map<string, boolean>,
+                    windowBounds?: Rectangle,
+                    preferredTheme?: Theme
                 ) => void) => void;
             };
         };

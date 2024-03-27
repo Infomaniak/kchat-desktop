@@ -7,20 +7,12 @@ import '../../css/components/ServersSidebar.scss';
 import classNames from 'classnames';
 import ServerButton from './ServerButton';
 import { DragDropContext, Droppable, DropResult } from 'react-beautiful-dnd';
-import type { ServerTeam } from 'types/server';
 import { applyCssVars, imageURLForTeam, initialForTeam } from './utils';
 import { Theme } from 'types/theme';
-
-type Server = {
-    name: string
-    id: string
-    url: string
-    team?: ServerTeam
-}
+import { ServerTeam } from 'types/config';
 
 type Props = {
-    servers: Server[],
-    activeServer?: Server
+    teams: Array<ServerTeam & { serverName: string, serverId?: string }>,
     activeServerId?: string
     isAnyDragging: boolean
 
@@ -36,9 +28,8 @@ type Props = {
 }
 
 const ServersSidebar: FC<Props> = ({
-    servers,
+    teams,
     isAnyDragging,
-    activeServer,
     activeServerId,
     isDropDisabled,
     expired,
@@ -62,24 +53,24 @@ const ServersSidebar: FC<Props> = ({
                         {...provided.droppableProps}
                         ref={provided.innerRef}
                     >
-                        {servers?.map((server, index) => {
-                            const sessionExpired = expired?.get(server.id!);
-                            const hasUnreads = unreads?.get(server.id!);
-                            const mentionCount = mentions?.get(server.id!);
+                        {teams?.map((team, index) => {
+                            const sessionExpired = expired?.get(team.serverId!);
+                            const hasUnreads = unreads?.get(team.serverId!);
+                            const mentionCount = mentions?.get(team.serverId!);
 
                             return (
                                 <ServerButton
-                                    key={server.id}
-                                    draggableId={server.id}
+                                    key={team.id}
+                                    draggableId={team.id}
                                     hasUnreads={!!hasUnreads}
                                     orderedIndex={index}
                                     mentionCount={mentionCount}
                                     sessionExpired={sessionExpired}
-                                    isActive={server.id === activeServerId}
+                                    isActive={team.id === activeServerId}
                                     isAnyDragging={isAnyDragging}
-                                    iconUrl={activeServer && server.team ? imageURLForTeam(activeServer, server.team) : null}
-                                    initial={initialForTeam(server.team)}
-                                    onClick={() => onButtonClick?.(server.name)}
+                                    iconUrl={team ? imageURLForTeam(team) : null}
+                                    initial={initialForTeam(team)}
+                                    onClick={() => onButtonClick?.(team.serverName)}
                                     theme={theme}
                                 />
                             );

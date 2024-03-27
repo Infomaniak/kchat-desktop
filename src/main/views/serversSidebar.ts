@@ -19,10 +19,8 @@ import MainWindow from 'main/windows/mainWindow';
 import { SERVERS_SIDEBAR_WIDTH } from 'common/utils/constants';
 import { ConfigServer, UniqueServer } from 'types/config';
 import ServerManager from 'common/servers/serverManager';
-import Config from 'common/config';
 import ServerViewState from 'app/serverViewState';
 import AppState from 'common/appState';
-import { RemoteInfo } from 'types/server';
 import { Theme } from 'types/theme';
 
 const log = new Logger('ServersSidebar');
@@ -30,19 +28,18 @@ const log = new Logger('ServersSidebar');
 export class ServerSidebar {
     private view?: BrowserView;
     private servers: UniqueServer[];
+    private teams: ConfigServer[];
     private preferredTheme: Theme
 
     private unreads: Map<string, boolean>;
     private mentions: Map<string, number>;
     private expired: Map<string, boolean>;
 
-    private hasGPOServers: boolean;
-
     private windowBounds?: Electron.Rectangle;
 
     constructor() {
         this.servers = [];
-        this.hasGPOServers = false
+        this.teams = []
         this.preferredTheme = {} as Theme
 
         this.unreads = new Map();
@@ -50,10 +47,12 @@ export class ServerSidebar {
         this.expired = new Map();
 
         MainWindow.on(MAIN_WINDOW_RESIZED, this.updateWindowBounds);
+        AppState.on(UPDATE_APPSTATE, this.updateMentions);
 
         ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
         ipcMain.on(PREFERRED_THEME, this.updatePreferredTheme)
-        AppState.on(UPDATE_APPSTATE, this.updateMentions);
+        ipcMain.on(UPDATE_TEAMS, this.updateTeams)
+
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
         ServerManager.on(UPDATE_TEAMS, this.updateServers);
@@ -110,8 +109,13 @@ export class ServerSidebar {
         }
     }
 
+    private updateTeams = (_: any, teams: ConfigServer[]) => {
+        this.teams = teams
+        console.log('teams', teams)
+        this.updateSidebar()
+    }
+
     private updateServers = (_: any, servers: ConfigServer[]) => {
-        console.log('servers', servers)
         this.setOrderedServers();
         this.updateSidebar()
     }
@@ -127,6 +131,7 @@ export class ServerSidebar {
         this.view?.webContents.send(
             UPDATE_SERVERS_SIDEBAR,
             this.servers,
+            this.teams,
             ServerManager.hasServers() ? ServerViewState.getCurrentServer().id : undefined,
             this.expired,
             this.mentions,
@@ -167,8 +172,6 @@ export class ServerSidebar {
             const remoteInfo = ServerManager.getRemoteInfo(server.id)
             return {...server.toUniqueServer(), remoteInfo}
         });
-
-        this.hasGPOServers = this.servers.some((srv) => srv.isPredefined);
     }
 }
 

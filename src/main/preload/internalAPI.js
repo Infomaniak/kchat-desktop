@@ -248,6 +248,7 @@ contextBridge.exposeInMainWorld('desktop', {
 
         onUpdateSidebar: (listener) => ipcRenderer.on(UPDATE_SERVERS_SIDEBAR, (_,
             servers,
+            teams,
             activeServer,
             expired,
             mentions,
@@ -256,6 +257,7 @@ contextBridge.exposeInMainWorld('desktop', {
             preferredTheme
         ) => listener(
             servers,
+            teams,
             activeServer,
             expired,
             mentions,

@@ -11,12 +11,13 @@ import ReactDOM from 'react-dom';
 
 import IntlProvider from './intl_provider';
 import ServersSidebar from './components/ServersSidebar';
-import { UniqueServer } from 'types/config';
+import { ConfigServer, UniqueServer } from 'types/config';
 import { DropResult } from 'react-beautiful-dnd';
 import { Theme } from 'types/theme';
 
 type State = {
     servers?: UniqueServer[];
+    teams?: ConfigServer[];
     serverOrder?: string[];
     orderedServers?: UniqueServer[];
     activeServer?: string;
@@ -33,6 +34,7 @@ const ServersSidebarRenderer = () => {
 
     const handleUpdate = (
         servers: UniqueServer[],
+        teams: ConfigServer[],
         activeServer?: string,
         expired?: Map<string, boolean>,
         mentions?: Map<string, number>,
@@ -42,6 +44,7 @@ const ServersSidebarRenderer = () => {
     ) => {
         setState({
             servers,
+            teams,
             activeServer,
             unreads,
             mentions,
@@ -51,8 +54,8 @@ const ServersSidebarRenderer = () => {
         });
     }
 
-    const onButtonClick = (serverId: string) => {
-        window.desktop.serversSidebar.switchServer(serverId)
+    const onButtonClick = (serverName: string) => {
+        window.desktop.serversSidebar.switchServer(serverName)
     }
 
     const onDragEnd = (result: DropResult) => {
@@ -75,24 +78,29 @@ const ServersSidebarRenderer = () => {
         window.desktop.updateServerOrder(serversCopy.map((server) => server.id!));
     }
 
-    const orderedServers = useMemo(() => state?.servers?.map(server => ({
-            name: server.name,
-            id: server.id || '',
-            url: server.url,
-            team: server.remoteInfo?.team
-        })) || [],
-    [state])
+    const teams = useMemo(() => state?.teams?.map(team => {
+        const server = state?.servers?.find(s => s.name === team.name);
 
-    const currentServer = useMemo(() => state?.servers?.find(s => s.id === state.activeServer) as any, [state?.servers, state?.activeServer])
+        return {
+            ...team.teamInfo,
+            serverId: server?.id,
+            serverName: team.name,
+        }
+    }) || [], [state])
+
+    const activeTeamId = useMemo(() => {
+        const server = state?.servers?.find(s => s.id === state.activeServer);
+        const team = state?.teams?.find(t => t.name === server?.name)
+        return team?.teamInfo?.id
+    }, [state?.teams, state?.servers, state?.activeServer])
 
     useEffect(() => {
         window.desktop.serversSidebar.onUpdateSidebar(handleUpdate);
     }, [])
 
     return <ServersSidebar
-        servers={orderedServers}
-        activeServer={currentServer}
-        activeServerId={state?.activeServer}
+        teams={teams}
+        activeServerId={activeTeamId}
         isDropDisabled={!!state?.servers?.length}
         isAnyDragging={!!state?.isAnyDragging}
         onButtonClick={onButtonClick}
@@ -103,9 +111,6 @@ const ServersSidebarRenderer = () => {
         expired={state?.expired}
     />
 }
-
-// document.addEventListener('dragover', (event) => event.preventDefault());
-// document.addEventListener('drop', (event) => event.preventDefault());
 
 const start = async () => {
     ReactDOM.render(

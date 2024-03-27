@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ClientConfig, RemoteInfo, ServerTeam} from 'types/server';
+import {ClientConfig, RemoteInfo,} from 'types/server';
 
 import {MattermostServer} from 'common/servers/MattermostServer';
 import {parseURL} from 'common/utils/url';
@@ -26,29 +26,8 @@ export class ServerInfo {
         return this.remoteInfo;
     }
 
-    fetchTeamInfo = async () => {
-        await this.getRemoteInfo<ServerTeam[]>(
-            this.onGetServerInfo,
-            parseURL(`${this.server.url}/api/v4/teams`),
-        );
-
-        return this.remoteInfo;
-    }
-
-    fetchUserPreferences = async () => {
-        await this.getRemoteInfo<ServerTeam[]>(
-            this.onGetUserPreferences,
-            parseURL(`${this.server.url}/api/v4/users/me/preferences`),
-        );
-
-        return this.remoteInfo;
-    }
-
-
     fetchRemoteInfo = async () => {
         await this.fetchConfigData();
-        await this.fetchTeamInfo();
-        // await this.fetchUserPreferences();
 
         await this.getRemoteInfo<Array<{id: string; version: string}>>(
             this.onGetPlugins,
@@ -76,16 +55,6 @@ export class ServerInfo {
                 () => reject(new Error('Aborted')),
                 (error: Error) => reject(error));
         });
-    }
-
-    private onGetServerInfo = (data: ServerTeam[]) => {
-        const matchedTeam = data.find(team => team.url === this.remoteInfo.siteURL)
-
-        if (!matchedTeam) {
-            throw new Error('No team is available for your current server')
-        }
-
-        this.remoteInfo.team = matchedTeam
     }
 
     private onGetUserPreferences = (data: any[]) => {

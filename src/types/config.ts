@@ -17,11 +17,20 @@ export type ConfigView = View & {
     order: number;
 }
 
+export type ServerTeam = {
+    id: string
+    display_name: string,
+    name: string
+    url: string
+    last_team_icon_update: string
+    [key: string]: any
+};
+
 export type ConfigServer = Server & {
     order: number;
     lastActiveTab?: number;
     tabs: ConfigView[];
-    teamInfo: any
+    teamInfo: ServerTeam
 }
 
 export type UniqueServer = Server & {

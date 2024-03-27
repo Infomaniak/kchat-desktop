@@ -1,10 +1,9 @@
 import { CSSProperties } from "react";
-import { Server } from "types/config";
-import { ServerTeam } from "types/server";
+import { Server, ServerTeam } from "types/config";
 import { Theme } from "types/theme";
 
-export function imageURLForTeam(activeServer: Server, team: ServerTeam) {
-    return team?.last_team_icon_update ? `${activeServer.url}api/v4/teams/${team.id}/image?_=${team.last_team_icon_update}`: null;
+export function imageURLForTeam(team: ServerTeam) {
+    return team?.last_team_icon_update ? `${team.url}/api/v4/teams/${team.id}/image?_=${team.last_team_icon_update}`: null;
 }
 
 export function initialForTeam(team?: ServerTeam) {
