@@ -32,7 +32,7 @@ import type {Boundaries} from 'types/utils';
 import {mainProtocol} from './initialize';
 
 const assetsDir = path.resolve(app.getAppPath(), 'assets');
-const appIconURL = path.resolve(assetsDir, 'appicon_with_spacing_32.png');
+const appIconURL = path.resolve(assetsDir, 'appicon_with_spacing_96.png');
 const appIcon = nativeImage.createFromPath(appIconURL);
 const log = new Logger('App.Utils');
 
