@@ -136,7 +136,7 @@ module.exports = merge(base, {
         }),
         new HtmlWebpackPlugin({
             title: 'kChat Desktop Servers Sidebar',
-            template: 'src/renderer/index.html',
+            template: 'src/renderer/servers-sidebar.html',
             chunks: ['serversSidebar'],
             filename: 'serversSidebar.html',
         }),

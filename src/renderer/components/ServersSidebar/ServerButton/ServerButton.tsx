@@ -51,8 +51,6 @@ const ServerButton: FC<Props> = ({
         );
     }
 
-    console.log('iconUrl', iconUrl)
-
     return  <Draggable
                 draggableId={draggableId}
                 index={orderedIndex}
@@ -63,6 +61,7 @@ const ServerButton: FC<Props> = ({
                         className={classNames('ServerButton', {
                             dragging: snapshot.isDragging,
                             anyDragging: isAnyDragging,
+                            withImage: !!iconUrl,
                             active: isActive,
                             hasMentions: mentionCount && mentionCount > 0
                         })}
@@ -74,10 +73,9 @@ const ServerButton: FC<Props> = ({
                     >
                         {!isActive && badgeDiv}
                         <span className="ServerButton__content">
-                            <span className="ServerButton__initial">{initial}</span>
+                            {!iconUrl &&  <span className="ServerButton__initial">{initial}</span>}
+                            {iconUrl && <img className="ServerButton__image" src={iconUrl} />}
                         </span>
-                       {iconUrl && <span style={{backgroundImage: `url(${iconUrl})`}} />}
-                       {/* {iconUrl && <span className="ServerButton__initial">{initial}</span>} */}
                     </button>
                 )}
             </Draggable>

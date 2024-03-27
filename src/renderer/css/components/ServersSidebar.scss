@@ -32,9 +32,48 @@ button {
     border: 3px solid rgba(255, 255, 255, 0);
     background-color: rgba(var(--sidebar-text-color-rgb), 0.16);
     margin-bottom: 12px;
-    transition: background-color .3s ease, border-color .3s ease;
+    transition: background-color .3s ease, border-color .3s ease, box-shadow .3s ease;
     position: relative;
     cursor: pointer;
+
+    &.withImage {
+        border: none;
+
+        &:after {
+            content: '';
+            display: block;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            width: 100%;
+            border-radius: 8px;
+            transition: all .3s ease;
+        }
+
+        &:hover, &.active {
+            &:after {
+                box-shadow: inset 0 0 0 3px var(--sidebar-team-bg);
+            }
+        }
+    }
+
+    &__content {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    &__image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 8px;
+        overflow: hidden;
+    }
 
     &__badge {
         display: inline-block;
