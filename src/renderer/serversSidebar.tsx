@@ -65,21 +65,24 @@ const ServersSidebarRenderer = () => {
     const onDragEnd = (result: DropResult) => {
         const removedIndex = result.source.index;
         const addedIndex = result.destination?.index;
+
         if (addedIndex === undefined || removedIndex === addedIndex) {
             setState({...state, isAnyDragging: false});
             return;
         }
-        if (!state?.servers) {
+
+        if (!state?.teams) {
             throw new Error('No config');
         }
-        const serversCopy = state.servers.concat();
 
-        const server = serversCopy.splice(removedIndex, 1);
-        const newOrder = addedIndex < state.servers.length ? addedIndex : state.servers.length - 1;
-        serversCopy.splice(newOrder, 0, server[0]);
+        const teamsCopy = filterAndSortTeamsByDisplayName(state.teams.concat(), '', state.teamsOrderPreference);
+        const server = teamsCopy.splice(removedIndex, 1);
+        const newOrder = addedIndex < state.teams.length ? addedIndex : state.teams.length - 1;
+        teamsCopy.splice(newOrder, 0, server[0]);
+        const newTeamsOrder = teamsCopy.map((team) => team.teamInfo.id!)
 
-        setState({...state, ...{servers: serversCopy, isAnyDragging: false}});
-        window.desktop.updateServerOrder(serversCopy.map((server) => server.id!));
+        setState({...state, ...{teams: teamsCopy, isAnyDragging: false, teamsOrderPreference: newTeamsOrder.join(',')}});
+        window.desktop.serversSidebar.updateTeamsOrder(newTeamsOrder);
     }
 
     const teams = useMemo(() => {
@@ -87,7 +90,9 @@ const ServersSidebarRenderer = () => {
             return []
         }
 
-        const teams = state.teams.map(team => {
+        const orderedTeams = filterAndSortTeamsByDisplayName(state.teams, '', state.teamsOrderPreference)
+
+        return orderedTeams.map(team => {
             const server = state?.servers?.find(s => s.name === team.name);
 
             return {
@@ -96,8 +101,6 @@ const ServersSidebarRenderer = () => {
                 serverName: team.name,
             }
         })
-
-        return filterAndSortTeamsByDisplayName(teams, '', state.teamsOrderPreference)
     }, [state])
 
     const activeTeamId = useMemo(() => {
@@ -106,6 +109,8 @@ const ServersSidebarRenderer = () => {
         return team?.teamInfo?.id
     }, [state?.teams, state?.servers, state?.activeServer])
 
+    const isMultiServer = useMemo(() => teams && teams.length > 1, [teams])
+
     useEffect(() => {
         window.desktop.serversSidebar.onUpdateSidebar(handleUpdate);
     }, [])
@@ -113,7 +118,7 @@ const ServersSidebarRenderer = () => {
     return <ServersSidebar
         teams={teams}
         activeServerId={activeTeamId}
-        isDropDisabled={!!state?.servers?.length}
+        isDropDisabled={!isMultiServer}
         isAnyDragging={!!state?.isAnyDragging}
         onButtonClick={onButtonClick}
         onDragEnd={onDragEnd}
@@ -134,5 +139,3 @@ const start = async () => {
 }
 
 start()
-
-

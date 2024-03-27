@@ -62,6 +62,7 @@ import {
     RELOAD_CURRENT_VIEW,
     PREFERRED_THEME,
     TEAMS_ORDER_PREFERENCE,
+    TEAMS_ORDER_PREFERENCE_UPDATED,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -327,7 +328,6 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
     case 'get-app-version': {
         // register with the webapp to enable custom integration functionality
         ipcRenderer.invoke(GET_APP_INFO).then((info) => {
-            console.log(`registering ${info.name} v${info.version} with the server`);
             window.postMessage(
                 {
                     type: 'register-desktop',
@@ -610,6 +610,11 @@ ipcRenderer.on(USER_ACTIVITY_UPDATE, (event, userIsActive, isSystemEvent) => {
         window.postMessage({type: USER_ACTIVITY_UPDATE, message: {userIsActive, manual: isSystemEvent}}, window.location.origin);
     }
 });
+
+ipcRenderer.on(TEAMS_ORDER_PREFERENCE_UPDATED, (_, teamsOrder) => {
+    window.postMessage({type: TEAMS_ORDER_PREFERENCE_UPDATED, message: {teamsOrder}}, window.location.origin);
+});
+
 
 /**
  * Legacy functionality that needs to be disabled with the new API

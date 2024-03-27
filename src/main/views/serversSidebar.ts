@@ -8,7 +8,7 @@ import {
     EMIT_CONFIGURATION,
     MAIN_WINDOW_RESIZED,
     PREFERRED_THEME,
-    SERVERS_UPDATE, SWITCH_SERVER, TEAMS_ORDER_PREFERENCE, UPDATE_APPSTATE,
+    SERVERS_UPDATE, SWITCH_SERVER, TEAMS_ORDER_PREFERENCE, TEAMS_ORDER_PREFERENCE_UPDATED, UPDATE_APPSTATE,
     UPDATE_SERVERS_SIDEBAR,
     UPDATE_TEAMS
 } from 'common/communication';
@@ -22,6 +22,7 @@ import ServerManager from 'common/servers/serverManager';
 import ServerViewState from 'app/serverViewState';
 import AppState from 'common/appState';
 import { Theme } from 'types/theme';
+import viewManager from './viewManager';
 
 const log = new Logger('ServersSidebar');
 
@@ -55,10 +56,9 @@ export class ServerSidebar {
         ipcMain.on(PREFERRED_THEME, this.updatePreferredTheme)
         ipcMain.on(UPDATE_TEAMS, this.updateTeams)
         ipcMain.on(TEAMS_ORDER_PREFERENCE, this.updateTeamsOrderPreference)
-
+        ipcMain.on(TEAMS_ORDER_PREFERENCE_UPDATED, this.handleUpdateTeamsOrder)
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
-        ServerManager.on(UPDATE_TEAMS, this.updateServers);
         ServerManager.on(SWITCH_SERVER, this.updateServers);
     }
 
@@ -122,6 +122,9 @@ export class ServerSidebar {
         this.updateSidebar()
     }
 
+    private handleUpdateTeamsOrder = (_: any, order: string[]) => {
+        viewManager.sendToAllViews(TEAMS_ORDER_PREFERENCE_UPDATED, order)
+    }
 
     private updateServers = (_: any, servers: ConfigServer[]) => {
         this.setOrderedServers();

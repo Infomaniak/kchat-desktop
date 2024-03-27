@@ -1,5 +1,5 @@
 import { CSSProperties } from "react";
-import { Server, ServerTeam } from "types/config";
+import { ConfigServer, Server, ServerTeam } from "types/config";
 import { Theme } from "types/theme";
 
 export function imageURLForTeam(team: ServerTeam) {
@@ -26,23 +26,23 @@ export const applyCssVars = (theme: Theme) => {
     } as CSSProperties
 }
 
-export function filterAndSortTeamsByDisplayName(teams: ServerTeam[], locale: string, teamsOrder = '') {
-    if (!teams) {
+export function filterAndSortTeamsByDisplayName(servers: ConfigServer[], locale: string, teamsOrder = '') {
+    if (!servers) {
         return [];
     }
 
     const teamsOrderList = teamsOrder.split(',');
 
-    const customSortedTeams = teams.filter((team) => {
-        if (team !== null) {
-            return teamsOrderList.includes(team.id);
+    const customSortedTeams = servers.filter((server) => {
+        if (server.teamInfo !== null) {
+            return teamsOrderList.includes(server.teamInfo.id);
         }
         return false;
     }).sort((a, b) => {
-        return teamsOrderList.indexOf(a.id) - teamsOrderList.indexOf(b.id);
+        return teamsOrderList.indexOf(a.teamInfo.id) - teamsOrderList.indexOf(b.teamInfo.id);
     });
 
-    return customSortedTeams.filter((team) => {
-        return team && (!team.delete_at as unknown as number) > 0 && team.display_name != null;
+    return customSortedTeams.filter((server) => {
+        return server && (!server.teamInfo.delete_at as unknown as number) > 0 && server.teamInfo.display_name != null;
     });
 }

@@ -12,7 +12,7 @@ import { Theme } from 'types/theme';
 import { ServerTeam } from 'types/config';
 
 type Props = {
-    teams: Array<ServerTeam & { serverName: string, serverId?: string }>,
+    teams: Array<ServerTeam>,
     activeServerId?: string
     isAnyDragging: boolean
 

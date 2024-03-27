@@ -157,6 +157,7 @@ declare global {
 
             serversSidebar: {
                 switchServer: (serverId: string) => void;
+                updateTeamsOrder: (teamsOrder: Array<string>) => void,
 
                 onUpdateSidebar: (listener: (
                     servers: UniqueServer[],
