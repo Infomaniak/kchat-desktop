@@ -245,7 +245,7 @@ contextBridge.exposeInMainWorld('desktop', {
 
     serversSidebar: {
         switchServer: (serverName) => ipcRenderer.send(SWITCH_SERVER, serverName),
-        updateTeamsOrder: (teamsOrder) => ipcRenderer.send('teams-order-updated', teamsOrder),
+        updateTeamsOrder: (teamsOrder) => ipcRenderer.send(TEAMS_ORDER_PREFERENCE_UPDATED, teamsOrder),
 
         onUpdateSidebar: (listener) => ipcRenderer.on(UPDATE_SERVERS_SIDEBAR, (_,
             servers,
