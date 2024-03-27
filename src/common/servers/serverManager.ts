@@ -3,7 +3,7 @@
 
 import EventEmitter from 'events';
 
-import type {Server, ConfigServer, ConfigView, ServerWithRemoteInfo, MattermostServerWithRemoteInfo} from 'types/config';
+import type {Server, ConfigServer, ConfigView} from 'types/config';
 
 import type {RemoteInfo} from 'types/server';
 

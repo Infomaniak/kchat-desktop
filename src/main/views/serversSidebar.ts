@@ -9,14 +9,15 @@ import {
     MAIN_WINDOW_RESIZED,
     PREFERRED_THEME,
     SERVERS_UPDATE, SWITCH_SERVER, UPDATE_APPSTATE,
-    UPDATE_SERVERS_SIDEBAR
+    UPDATE_SERVERS_SIDEBAR,
+    UPDATE_TEAMS
 } from 'common/communication';
 
 import {Logger} from 'common/log';
 import {composeUserAgent, getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
 import { SERVERS_SIDEBAR_WIDTH } from 'common/utils/constants';
-import { UniqueServer } from 'types/config';
+import { ConfigServer, UniqueServer } from 'types/config';
 import ServerManager from 'common/servers/serverManager';
 import Config from 'common/config';
 import ServerViewState from 'app/serverViewState';
@@ -55,6 +56,7 @@ export class ServerSidebar {
         AppState.on(UPDATE_APPSTATE, this.updateMentions);
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
+        ServerManager.on(UPDATE_TEAMS, this.updateServers);
         ServerManager.on(SWITCH_SERVER, this.updateServers);
     }
 
@@ -108,7 +110,8 @@ export class ServerSidebar {
         }
     }
 
-    private updateServers = () => {
+    private updateServers = (_: any, servers: ConfigServer[]) => {
+        console.log('servers', servers)
         this.setOrderedServers();
         this.updateSidebar()
     }
@@ -124,14 +127,11 @@ export class ServerSidebar {
         this.view?.webContents.send(
             UPDATE_SERVERS_SIDEBAR,
             this.servers,
-            Config.darkMode,
-            this.windowBounds,
             ServerManager.hasServers() ? ServerViewState.getCurrentServer().id : undefined,
-            Config.enableServerManagement,
-            this.hasGPOServers,
             this.expired,
             this.mentions,
             this.unreads,
+            this.windowBounds,
             this.preferredTheme
         );
     }

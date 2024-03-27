@@ -21,6 +21,7 @@ export type ConfigServer = Server & {
     order: number;
     lastActiveTab?: number;
     tabs: ConfigView[];
+    teamInfo: any
 }
 
 export type UniqueServer = Server & {

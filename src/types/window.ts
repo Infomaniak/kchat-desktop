@@ -159,11 +159,8 @@ declare global {
 
                 onUpdateSidebar: (listener: (
                     servers: UniqueServer[],
-                    darkMode: boolean,
                     windowBounds: Rectangle,
                     activeServer?: string,
-                    enableServerManagement?: boolean,
-                    hasGPOServers?: boolean,
                     expired?: Map<string, boolean>,
                     mentions?: Map<string, number>,
                     unreads?: Map<string, boolean>,

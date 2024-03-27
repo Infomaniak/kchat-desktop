@@ -20,12 +20,9 @@ type State = {
     serverOrder?: string[];
     orderedServers?: UniqueServer[];
     activeServer?: string;
-    darkMode?: boolean;
-    enableServerManagement?: boolean;
     unreads?: Map<string, boolean>;
     mentions?: Map<string, number>;
     expired?: Map<string, boolean>;
-    hasGPOServers?: boolean;
     isAnyDragging?: boolean;
     windowBounds?: Electron.Rectangle;
     preferredTheme?: Theme
@@ -36,22 +33,16 @@ const ServersSidebarRenderer = () => {
 
     const handleUpdate = (
         servers: UniqueServer[],
-        darkMode: boolean,
-        windowBounds: Electron.Rectangle,
         activeServer?: string,
-        enableServerManagement?: boolean,
-        hasGPOServers?: boolean,
         expired?: Map<string, boolean>,
         mentions?: Map<string, number>,
         unreads?: Map<string, boolean>,
+        windowBounds?: Electron.Rectangle,
         preferredTheme?: Theme
     ) => {
         setState({
             servers,
             activeServer,
-            darkMode,
-            enableServerManagement,
-            hasGPOServers,
             unreads,
             mentions,
             expired,
@@ -102,7 +93,7 @@ const ServersSidebarRenderer = () => {
         servers={orderedServers}
         activeServer={currentServer}
         activeServerId={state?.activeServer}
-        isDropDisabled={!!state?.hasGPOServers}
+        isDropDisabled={!!state?.servers?.length}
         isAnyDragging={!!state?.isAnyDragging}
         onButtonClick={onButtonClick}
         onDragEnd={onDragEnd}

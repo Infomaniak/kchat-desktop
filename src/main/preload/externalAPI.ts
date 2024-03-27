@@ -388,6 +388,7 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
                 url: item.url,
                 order: idx,
                 tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+                teamInfo: item
             });
 
             return acc;

@@ -31,7 +31,6 @@ type Props = {
     onDragEnd: (_: DropResult) => void
     onButtonClick?: (_: string) => void;
 
-    darkMode?: boolean,
     isDropDisabled: boolean
     theme?: Theme
 }
