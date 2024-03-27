@@ -316,7 +316,7 @@
     "label.allow": "Erlauben",
     "label.deny": "Verweigern",
     "label.denyPermanently": "Dauerhaft verweigern",
-    "main.permissionsManager.checkPermission.dialog.message.notifications": "{appName} ({url}) würde dir gerne Benachrichtigungen schicken.",
+    "main.permissionsManager.checkPermission.dialog.message.notifications": "{appName} würde dir gerne Benachrichtigungen schicken.",
     "main.permissionsManager.checkPermission.dialog.detail.geolocation": "{appName} wird den Standort für die Einrichtung deiner Zeitzone verwendet. Du kannst dies später in den Einstellungen deines Computers jederzeit ändern.",
     "main.permissionsManager.checkPermission.dialog.message.media": "{appName} ({url}) würde gerne auf das Mikrofon und die Kamera zugreifen.",
     "main.permissionsManager.checkPermission.dialog.detail.notifications": "{appName} sendet dir Benachrichtigungen über Nachrichten und Anrufe. Du kannst deine Benachrichtigungseinstellungen in den Einstellungen konfigurieren.",
