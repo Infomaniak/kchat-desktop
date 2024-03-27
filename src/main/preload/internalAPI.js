@@ -254,7 +254,8 @@ contextBridge.exposeInMainWorld('desktop', {
             mentions,
             unreads,
             windowBounds,
-            preferredTheme
+            preferredTheme,
+            teamsOrderPreference
         ) => listener(
             servers,
             teams,
@@ -263,7 +264,8 @@ contextBridge.exposeInMainWorld('desktop', {
             mentions,
             unreads,
             windowBounds,
-            preferredTheme
+            preferredTheme,
+            teamsOrderPreference
         )),
     },
 

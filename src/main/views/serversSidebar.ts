@@ -8,7 +8,7 @@ import {
     EMIT_CONFIGURATION,
     MAIN_WINDOW_RESIZED,
     PREFERRED_THEME,
-    SERVERS_UPDATE, SWITCH_SERVER, UPDATE_APPSTATE,
+    SERVERS_UPDATE, SWITCH_SERVER, TEAMS_ORDER_PREFERENCE, UPDATE_APPSTATE,
     UPDATE_SERVERS_SIDEBAR,
     UPDATE_TEAMS
 } from 'common/communication';
@@ -30,6 +30,7 @@ export class ServerSidebar {
     private servers: UniqueServer[];
     private teams: ConfigServer[];
     private preferredTheme: Theme
+    private teamsOrderPreference: string
 
     private unreads: Map<string, boolean>;
     private mentions: Map<string, number>;
@@ -41,6 +42,7 @@ export class ServerSidebar {
         this.servers = [];
         this.teams = []
         this.preferredTheme = {} as Theme
+        this.teamsOrderPreference = ''
 
         this.unreads = new Map();
         this.mentions = new Map();
@@ -52,6 +54,7 @@ export class ServerSidebar {
         ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
         ipcMain.on(PREFERRED_THEME, this.updatePreferredTheme)
         ipcMain.on(UPDATE_TEAMS, this.updateTeams)
+        ipcMain.on(TEAMS_ORDER_PREFERENCE, this.updateTeamsOrderPreference)
 
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
@@ -111,9 +114,14 @@ export class ServerSidebar {
 
     private updateTeams = (_: any, teams: ConfigServer[]) => {
         this.teams = teams
-        console.log('teams', teams)
         this.updateSidebar()
     }
+
+    private updateTeamsOrderPreference = (_: any, preference: string) => {
+        this.teamsOrderPreference = preference
+        this.updateSidebar()
+    }
+
 
     private updateServers = (_: any, servers: ConfigServer[]) => {
         this.setOrderedServers();
@@ -137,7 +145,8 @@ export class ServerSidebar {
             this.mentions,
             this.unreads,
             this.windowBounds,
-            this.preferredTheme
+            this.preferredTheme,
+            this.teamsOrderPreference
         );
     }
 

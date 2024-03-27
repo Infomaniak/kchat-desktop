@@ -61,6 +61,7 @@ import {
     SWITCH_SERVER,
     RELOAD_CURRENT_VIEW,
     PREFERRED_THEME,
+    TEAMS_ORDER_PREFERENCE,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -403,6 +404,9 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
     }
     case SWITCH_SERVER:
         ipcRenderer.send(SWITCH_SERVER, data.data);
+        break;
+    case TEAMS_ORDER_PREFERENCE:
+        ipcRenderer.send(TEAMS_ORDER_PREFERENCE, data.data);
         break;
     case PREFERRED_THEME:
         ipcRenderer.send(PREFERRED_THEME, data.data);

@@ -166,7 +166,8 @@ declare global {
                     mentions?: Map<string, number>,
                     unreads?: Map<string, boolean>,
                     windowBounds?: Rectangle,
-                    preferredTheme?: Theme
+                    preferredTheme?: Theme,
+                    teamsOrderPreference?: string
                 ) => void) => void;
             };
         };

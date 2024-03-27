@@ -14,6 +14,7 @@ export function toRgbValues(hexStr: string): string {
     const rgbaStr = `${parseInt(hexStr.substr(1, 2), 16)}, ${parseInt(hexStr.substr(3, 2), 16)}, ${parseInt(hexStr.substr(5, 2), 16)}`;
     return rgbaStr;
 }
+
 export const applyCssVars = (theme: Theme) => {
     return {
         '--sidebar-background': theme.sidebarHeaderBg,
@@ -23,4 +24,25 @@ export const applyCssVars = (theme: Theme) => {
         '--sidebar-text-color-rgb': toRgbValues(theme.sidebarText),
         '--mention-bg': theme.mentionBg,
     } as CSSProperties
+}
+
+export function filterAndSortTeamsByDisplayName(teams: ServerTeam[], locale: string, teamsOrder = '') {
+    if (!teams) {
+        return [];
+    }
+
+    const teamsOrderList = teamsOrder.split(',');
+
+    const customSortedTeams = teams.filter((team) => {
+        if (team !== null) {
+            return teamsOrderList.includes(team.id);
+        }
+        return false;
+    }).sort((a, b) => {
+        return teamsOrderList.indexOf(a.id) - teamsOrderList.indexOf(b.id);
+    });
+
+    return customSortedTeams.filter((team) => {
+        return team && (!team.delete_at as unknown as number) > 0 && team.display_name != null;
+    });
 }

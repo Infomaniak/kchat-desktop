@@ -4,6 +4,7 @@
 export const GET_APP_INFO = 'get-app-info';
 
 export const PREFERRED_THEME = 'preferred-theme';
+export const TEAMS_ORDER_PREFERENCE = 'teams-order-preference';
 export const SWITCH_SERVER = 'switch-server';
 export const SWITCH_TAB = 'switch-tab';
 export const CLOSE_VIEW = 'close-view';

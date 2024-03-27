@@ -14,6 +14,7 @@ import ServersSidebar from './components/ServersSidebar';
 import { ConfigServer, UniqueServer } from 'types/config';
 import { DropResult } from 'react-beautiful-dnd';
 import { Theme } from 'types/theme';
+import { filterAndSortTeamsByDisplayName } from './components/ServersSidebar/utils';
 
 type State = {
     servers?: UniqueServer[];
@@ -27,6 +28,7 @@ type State = {
     isAnyDragging?: boolean;
     windowBounds?: Electron.Rectangle;
     preferredTheme?: Theme
+    teamsOrderPreference?: string
 }
 
 const ServersSidebarRenderer = () => {
@@ -40,7 +42,8 @@ const ServersSidebarRenderer = () => {
         mentions?: Map<string, number>,
         unreads?: Map<string, boolean>,
         windowBounds?: Electron.Rectangle,
-        preferredTheme?: Theme
+        preferredTheme?: Theme,
+        teamsOrderPreference?: string
     ) => {
         setState({
             servers,
@@ -50,7 +53,8 @@ const ServersSidebarRenderer = () => {
             mentions,
             expired,
             windowBounds,
-            preferredTheme
+            preferredTheme,
+            teamsOrderPreference
         });
     }
 
@@ -78,15 +82,23 @@ const ServersSidebarRenderer = () => {
         window.desktop.updateServerOrder(serversCopy.map((server) => server.id!));
     }
 
-    const teams = useMemo(() => state?.teams?.map(team => {
-        const server = state?.servers?.find(s => s.name === team.name);
-
-        return {
-            ...team.teamInfo,
-            serverId: server?.id,
-            serverName: team.name,
+    const teams = useMemo(() => {
+        if (!state?.teams) {
+            return []
         }
-    }) || [], [state])
+
+        const teams = state.teams.map(team => {
+            const server = state?.servers?.find(s => s.name === team.name);
+
+            return {
+                ...team.teamInfo,
+                serverId: server?.id,
+                serverName: team.name,
+            }
+        })
+
+        return filterAndSortTeamsByDisplayName(teams, '', state.teamsOrderPreference)
+    }, [state])
 
     const activeTeamId = useMemo(() => {
         const server = state?.servers?.find(s => s.id === state.activeServer);
