@@ -3,7 +3,7 @@
 // See LICENSE.txt for license information.
 'use strict';
 
-import {Menu, MenuItem, MenuItemConstructorOptions} from 'electron';
+import {Menu, MenuItem, MenuItemConstructorOptions, app} from 'electron';
 
 import ServerViewState from 'app/serverViewState';
 
@@ -33,6 +33,7 @@ export function createTemplate() {
             type: 'separator',
         }, {
             role: 'quit',
+            label: localizeMessage('main.menus.tray.quit', 'Quit {appName}', {appName: app.getName()}),
         },
     ];
     return template;

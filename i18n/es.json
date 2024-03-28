@@ -79,6 +79,7 @@
     "main.notifications.download.complete.body": "Descarga Completa\n {fileName}",
     "main.menus.tray.settings": "Ajustes...",
     "main.menus.tray.preferences": "Preferencias...",
+    "main.menus.tray.quit": "Salir de {appName}",
     "main.menus.app.window.zoom": "Zoom",
     "main.menus.app.window.showServers": "Mostrar Servidores",
     "main.menus.app.window.selectPreviousTab": "Seleccionar la pestaña anterior",

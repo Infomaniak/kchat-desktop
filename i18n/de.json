@@ -15,6 +15,7 @@
     "main.notifications.download.complete.body": "Download abgeschlossen \n {fileName}",
     "main.menus.tray.settings": "Einstellungen...",
     "main.menus.tray.preferences": "Voreinstellungen...",
+    "main.menus.tray.quit": "Beende {appName}",
     "main.menus.app.window.zoom": "Zoom",
     "main.menus.app.window.showServers": "Zeige Server",
     "main.menus.app.window.selectPreviousTab": "Vorherigen Tab wählen",

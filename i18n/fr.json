@@ -144,6 +144,7 @@
     "main.notifications.download.complete.body": "Téléchargement terminé \n {fileName}",
     "main.menus.tray.settings": "Les paramètres...",
     "main.menus.tray.preferences": "Préférences...",
+    "main.menus.tray.quit": "Quitter {appName}",
     "main.menus.app.window.zoom": "Zoom",
     "main.menus.app.window.showServers": "Afficher les serveurs",
     "main.menus.app.window.selectPreviousTab": "Sélectionner l'onglet précédent",
