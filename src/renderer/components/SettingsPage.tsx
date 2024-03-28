@@ -1038,6 +1038,7 @@ class SettingsPage extends React.PureComponent<Props, State> {
                     />
                 </div>
                 <input
+                    className={'SettingsPage__downloadInput'}
                     disabled={true}
                     style={settingsPage.downloadLocationInput}
                     key='inputDownloadLocation'

@@ -41,3 +41,7 @@ body {
     margin-left: 16px;
     width: 50%;
 }
+
+.SettingsPage__spellCheckerLocalesDropdown__placeholder span {
+    color: #212529;
+}

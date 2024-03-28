@@ -5,7 +5,7 @@
 }
 
 .SettingsPage__spellCheckerLocalesDropdown .SettingsPage__spellCheckerLocalesDropdown__control {
-    background: #242a30;
+    background: #343a40;
 }
 
 .SettingsPage__spellCheckerLocalesDropdown .SettingsPage__spellCheckerLocalesDropdown__menu {
@@ -22,4 +22,13 @@
 
 .SettingsPage__spellCheckerLocalesDropdown .SettingsPage__spellCheckerLocalesDropdown__input-container {
     color: #fff;
+}
+
+.SettingsPage__spellCheckerLocalesDropdown__placeholder span {
+    color: #fff;
+}
+
+.SettingsPage__downloadInput {
+    color: #fff;
+    background: #343a40;
 }
