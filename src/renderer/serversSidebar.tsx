@@ -13,10 +13,15 @@ import ReactDOM from 'react-dom';
 import {ConfigServer, UniqueServer} from 'types/config';
 import {DropResult} from 'react-beautiful-dnd';
 import {Theme} from 'types/theme';
+import * as Sentry from '@sentry/electron/renderer';
 
 import ServersSidebar from './components/ServersSidebar';
 import IntlProvider from './intl_provider';
 import {filterAndSortTeamsByDisplayName} from './components/ServersSidebar/utils';
+
+Sentry.init({
+    dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
+});
 
 type State = {
     servers?: UniqueServer[];
