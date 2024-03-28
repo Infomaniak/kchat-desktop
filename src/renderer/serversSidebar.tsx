@@ -97,6 +97,8 @@ const ServersSidebarRenderer = () => {
             return [];
         }
 
+        console.log('state.teams', state.teams);
+
         const orderedTeams = filterAndSortTeamsByDisplayName(state.teams, '', state.teamsOrderPreference);
 
         return orderedTeams.map((team) => {

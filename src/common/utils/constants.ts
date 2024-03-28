@@ -5,6 +5,8 @@
 export const PRODUCTION = 'production';
 export const DEVELOPMENT = 'development';
 
+export const DEFAULT_TEAM_NAME = '.';
+
 export const SECOND = 1000;
 export const RELOAD_INTERVAL = 5 * SECOND;
 export const MODAL_TRANSITION_TIMEOUT = 400;
@@ -331,9 +333,11 @@ export const IKWelcomeAllowedUrls = [
 ];
 
 export const KChatTokenWhitelist = [
+
     // Prod whitelist
     'https://*.infomaniak.com/api/v4/*',
     'https://*.infomaniak.com/broadcasting/auth',
+
     // Preprod whitelist
     'https://*.preprod.dev.infomaniak.ch/api/v4/*',
     'https://*.preprod.dev.infomaniak.ch/broadcasting/auth',

@@ -20,7 +20,7 @@ import {
 import {Logger} from 'common/log';
 import {composeUserAgent, getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
-import {SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
+import {DEFAULT_TEAM_NAME, SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
 import ServerManager from 'common/servers/serverManager';
 import ServerViewState from 'app/serverViewState';
 import AppState from 'common/appState';
@@ -116,7 +116,7 @@ export class ServerSidebar {
     }
 
     private updateTeams = (_: any, teams: ConfigServer[]) => {
-        this.teams = teams;
+        this.teams = teams.filter((t) => t.name !== DEFAULT_TEAM_NAME);
         this.updateSidebar();
     }
 
@@ -146,7 +146,7 @@ export class ServerSidebar {
             UPDATE_SERVERS_SIDEBAR,
             this.servers,
             this.teams,
-            ServerManager.hasServers() ? ServerViewState.getCurrentServer().id : undefined,
+            ServerViewState.hasCurrentServer() ? ServerViewState.getCurrentServer().id : undefined,
             this.expired,
             this.mentions,
             this.unreads,
