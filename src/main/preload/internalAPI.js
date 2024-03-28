@@ -93,6 +93,7 @@ import {
     RESET_AUTH,
     UPDATE_TEAMS,
     UPDATE_SERVERS_SIDEBAR,
+    TEAMS_ORDER_PREFERENCE_UPDATED,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -256,7 +257,7 @@ contextBridge.exposeInMainWorld('desktop', {
             unreads,
             windowBounds,
             preferredTheme,
-            teamsOrderPreference
+            teamsOrderPreference,
         ) => listener(
             servers,
             teams,
@@ -266,7 +267,7 @@ contextBridge.exposeInMainWorld('desktop', {
             unreads,
             windowBounds,
             preferredTheme,
-            teamsOrderPreference
+            teamsOrderPreference,
         )),
     },
 

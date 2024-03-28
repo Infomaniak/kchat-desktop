@@ -1,19 +1,21 @@
-import classNames from "classnames";
-import React, { FC } from "react";
-import { Draggable } from "react-beautiful-dnd";
-import { Theme } from "types/theme";
+// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+import classNames from 'classnames';
+import React, {FC} from 'react';
+import {Draggable} from 'react-beautiful-dnd';
+import {Theme} from 'types/theme';
 
 type Props = {
-    draggableId: string
-    sessionExpired?: boolean
-    hasUnreads: boolean
-    mentionCount?: number
-    orderedIndex: number
-    isActive: boolean
-    isAnyDragging: boolean
-    iconUrl: string | null
-    initial: string
-    theme?: Theme
+    draggableId: string;
+    sessionExpired?: boolean;
+    hasUnreads: boolean;
+    mentionCount?: number;
+    orderedIndex: number;
+    isActive: boolean;
+    isAnyDragging: boolean;
+    iconUrl: string | null;
+    initial: string;
+    theme?: Theme;
 
     onClick?: () => void;
 }
@@ -51,34 +53,41 @@ const ServerButton: FC<Props> = ({
         );
     }
 
-    return  <Draggable
-                draggableId={draggableId}
-                index={orderedIndex}
-                disableInteractiveElementBlocking={true}
-            >
-                {(provided, snapshot) => (
-                    <button
-                        className={classNames('ServerButton', {
-                            dragging: snapshot.isDragging,
-                            anyDragging: isAnyDragging,
-                            withImage: !!iconUrl,
-                            active: isActive,
-                            hasMentions: mentionCount && mentionCount > 0
-                        })}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        ref={provided.innerRef}
-                        onClick={onClick}
+    return (
+        <Draggable
+            draggableId={draggableId}
+            index={orderedIndex}
+            disableInteractiveElementBlocking={true}
+        >
+            {(provided, snapshot) => (
+                <button
+                    className={classNames('ServerButton', {
+                        dragging: snapshot.isDragging,
+                        anyDragging: isAnyDragging,
+                        withImage: Boolean(iconUrl),
+                        active: isActive,
+                        hasMentions: mentionCount && mentionCount > 0,
+                    })}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    ref={provided.innerRef}
+                    onClick={onClick}
 
-                    >
-                        {!isActive && badgeDiv}
-                        <span className="ServerButton__content">
-                            {!iconUrl &&  <span className="ServerButton__initial">{initial}</span>}
-                            {iconUrl && <img className="ServerButton__image" src={iconUrl} />}
-                        </span>
-                    </button>
-                )}
-            </Draggable>
-}
+                >
+                    {!isActive && badgeDiv}
+                    <span className='ServerButton__content'>
+                        {!iconUrl && <span className='ServerButton__initial'>{initial}</span>}
+                        {iconUrl && (
+                            <img
+                                className='ServerButton__image'
+                                src={iconUrl}
+                            />)
+                        }
+                    </span>
+                </button>
+            )}
+        </Draggable>
+    );
+};
 
-export default ServerButton
+export default ServerButton;

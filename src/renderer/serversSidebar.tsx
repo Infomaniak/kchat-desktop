@@ -2,19 +2,21 @@
 // See LICENSE.txt for license information.
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+
 // import 'renderer/css/index.css';
 // import 'renderer/css/settings.css';
 import 'renderer/css/call-dialing.css';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import ReactDOM from 'react-dom';
 
-import IntlProvider from './intl_provider';
+import {ConfigServer, UniqueServer} from 'types/config';
+import {DropResult} from 'react-beautiful-dnd';
+import {Theme} from 'types/theme';
+
 import ServersSidebar from './components/ServersSidebar';
-import { ConfigServer, UniqueServer } from 'types/config';
-import { DropResult } from 'react-beautiful-dnd';
-import { Theme } from 'types/theme';
-import { filterAndSortTeamsByDisplayName } from './components/ServersSidebar/utils';
+import IntlProvider from './intl_provider';
+import {filterAndSortTeamsByDisplayName} from './components/ServersSidebar/utils';
 
 type State = {
     servers?: UniqueServer[];
@@ -27,12 +29,12 @@ type State = {
     expired?: Map<string, boolean>;
     isAnyDragging?: boolean;
     windowBounds?: Electron.Rectangle;
-    preferredTheme?: Theme
-    teamsOrderPreference?: string
+    preferredTheme?: Theme;
+    teamsOrderPreference?: string;
 }
 
 const ServersSidebarRenderer = () => {
-    const [state, setState] = useState<State>()
+    const [state, setState] = useState<State>();
 
     const handleUpdate = (
         servers: UniqueServer[],
@@ -43,7 +45,7 @@ const ServersSidebarRenderer = () => {
         unreads?: Map<string, boolean>,
         windowBounds?: Electron.Rectangle,
         preferredTheme?: Theme,
-        teamsOrderPreference?: string
+        teamsOrderPreference?: string,
     ) => {
         setState({
             servers,
@@ -54,13 +56,13 @@ const ServersSidebarRenderer = () => {
             expired,
             windowBounds,
             preferredTheme,
-            teamsOrderPreference
+            teamsOrderPreference,
         });
-    }
+    };
 
     const onButtonClick = (serverName: string) => {
-        window.desktop.serversSidebar.switchServer(serverName)
-    }
+        window.desktop.serversSidebar.switchServer(serverName);
+    };
 
     const onDragEnd = (result: DropResult) => {
         const removedIndex = result.source.index;
@@ -79,55 +81,57 @@ const ServersSidebarRenderer = () => {
         const server = teamsCopy.splice(removedIndex, 1);
         const newOrder = addedIndex < state.teams.length ? addedIndex : state.teams.length - 1;
         teamsCopy.splice(newOrder, 0, server[0]);
-        const newTeamsOrder = teamsCopy.map((team) => team.teamInfo.id!)
+        const newTeamsOrder = teamsCopy.map((team) => team.teamInfo.id!);
 
         setState({...state, ...{teams: teamsCopy, isAnyDragging: false, teamsOrderPreference: newTeamsOrder.join(',')}});
         window.desktop.serversSidebar.updateTeamsOrder(newTeamsOrder);
-    }
+    };
 
     const teams = useMemo(() => {
         if (!state?.teams) {
-            return []
+            return [];
         }
 
-        const orderedTeams = filterAndSortTeamsByDisplayName(state.teams, '', state.teamsOrderPreference)
+        const orderedTeams = filterAndSortTeamsByDisplayName(state.teams, '', state.teamsOrderPreference);
 
-        return orderedTeams.map(team => {
-            const server = state?.servers?.find(s => s.name === team.name);
+        return orderedTeams.map((team) => {
+            const server = state?.servers?.find((s) => s.name === team.name);
 
             return {
                 ...team.teamInfo,
                 serverId: server?.id,
                 serverName: team.name,
-            }
-        })
-    }, [state])
+            };
+        });
+    }, [state]);
 
     const activeTeamId = useMemo(() => {
-        const server = state?.servers?.find(s => s.id === state.activeServer);
-        const team = state?.teams?.find(t => t.name === server?.name)
-        return team?.teamInfo?.id
-    }, [state?.teams, state?.servers, state?.activeServer])
+        const server = state?.servers?.find((s) => s.id === state.activeServer);
+        const team = state?.teams?.find((t) => t.name === server?.name);
+        return team?.teamInfo?.id;
+    }, [state?.teams, state?.servers, state?.activeServer]);
 
-    const isMultiServer = useMemo(() => teams && teams.length > 1, [teams])
+    const isMultiServer = useMemo(() => teams && teams.length > 1, [teams]);
 
     useEffect(() => {
         window.desktop.serversSidebar.onUpdateSidebar(handleUpdate);
-    }, [])
+    }, []);
 
-    return <ServersSidebar
-        teams={teams}
-        activeServerId={activeTeamId}
-        isDropDisabled={!isMultiServer}
-        isAnyDragging={!!state?.isAnyDragging}
-        onButtonClick={onButtonClick}
-        onDragEnd={onDragEnd}
-        theme={state?.preferredTheme}
-        unreads={state?.unreads}
-        mentions={state?.mentions}
-        expired={state?.expired}
-    />
-}
+    return (
+        <ServersSidebar
+            teams={teams}
+            activeServerId={activeTeamId}
+            isDropDisabled={!isMultiServer}
+            isAnyDragging={Boolean(state?.isAnyDragging)}
+            onButtonClick={onButtonClick}
+            onDragEnd={onDragEnd}
+            theme={state?.preferredTheme}
+            unreads={state?.unreads}
+            mentions={state?.mentions}
+            expired={state?.expired}
+        />
+    );
+};
 
 const start = async () => {
     ReactDOM.render(
@@ -135,7 +139,7 @@ const start = async () => {
             <ServersSidebarRenderer/>
         </IntlProvider>,
         document.getElementById('app'),
-    )
-}
+    );
+};
 
-start()
+start();

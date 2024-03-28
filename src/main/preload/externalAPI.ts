@@ -389,7 +389,7 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
                 url: item.url,
                 order: idx,
                 tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
-                teamInfo: item
+                teamInfo: item,
             });
 
             return acc;
@@ -614,7 +614,6 @@ ipcRenderer.on(USER_ACTIVITY_UPDATE, (event, userIsActive, isSystemEvent) => {
 ipcRenderer.on(TEAMS_ORDER_PREFERENCE_UPDATED, (_, teamsOrder) => {
     window.postMessage({type: TEAMS_ORDER_PREFERENCE_UPDATED, message: {teamsOrder}}, window.location.origin);
 });
-
 
 /**
  * Legacy functionality that needs to be disabled with the new API

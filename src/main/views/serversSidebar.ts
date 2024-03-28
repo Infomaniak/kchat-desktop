@@ -3,6 +3,10 @@
 
 import {BrowserView, ipcMain} from 'electron';
 
+import {ConfigServer, UniqueServer} from 'types/config';
+
+import {Theme} from 'types/theme';
+
 import {
     DARK_MODE_CHANGE,
     EMIT_CONFIGURATION,
@@ -10,18 +14,17 @@ import {
     PREFERRED_THEME,
     SERVERS_UPDATE, SWITCH_SERVER, TEAMS_ORDER_PREFERENCE, TEAMS_ORDER_PREFERENCE_UPDATED, UPDATE_APPSTATE,
     UPDATE_SERVERS_SIDEBAR,
-    UPDATE_TEAMS
+    UPDATE_TEAMS,
 } from 'common/communication';
 
 import {Logger} from 'common/log';
 import {composeUserAgent, getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
-import { SERVERS_SIDEBAR_WIDTH } from 'common/utils/constants';
-import { ConfigServer, UniqueServer } from 'types/config';
+import {SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
 import ServerManager from 'common/servers/serverManager';
 import ServerViewState from 'app/serverViewState';
 import AppState from 'common/appState';
-import { Theme } from 'types/theme';
+
 import viewManager from './viewManager';
 
 const log = new Logger('ServersSidebar');
@@ -41,9 +44,9 @@ export class ServerSidebar {
 
     constructor() {
         this.servers = [];
-        this.teams = []
-        this.preferredTheme = {} as Theme
-        this.teamsOrderPreference = ''
+        this.teams = [];
+        this.preferredTheme = {} as Theme;
+        this.teamsOrderPreference = '';
 
         this.unreads = new Map();
         this.mentions = new Map();
@@ -53,24 +56,24 @@ export class ServerSidebar {
         AppState.on(UPDATE_APPSTATE, this.updateMentions);
 
         ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
-        ipcMain.on(PREFERRED_THEME, this.updatePreferredTheme)
-        ipcMain.on(UPDATE_TEAMS, this.updateTeams)
-        ipcMain.on(TEAMS_ORDER_PREFERENCE, this.updateTeamsOrderPreference)
-        ipcMain.on(TEAMS_ORDER_PREFERENCE_UPDATED, this.handleUpdateTeamsOrder)
+        ipcMain.on(PREFERRED_THEME, this.updatePreferredTheme);
+        ipcMain.on(UPDATE_TEAMS, this.updateTeams);
+        ipcMain.on(TEAMS_ORDER_PREFERENCE, this.updateTeamsOrderPreference);
+        ipcMain.on(TEAMS_ORDER_PREFERENCE_UPDATED, this.handleUpdateTeamsOrder);
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
         ServerManager.on(SWITCH_SERVER, this.updateServers);
     }
 
     init = () => {
-        const mainWindow = MainWindow.get()
+        const mainWindow = MainWindow.get();
 
         if (!mainWindow) {
-            log.error('Main window was not available')
-            return
+            log.error('Main window was not available');
+            return;
         }
 
-        log.info('Init')
+        log.info('Init');
 
         const preload = getLocalPreload('internalAPI.js');
         this.windowBounds = MainWindow.getBounds();
@@ -78,21 +81,21 @@ export class ServerSidebar {
         this.view = new BrowserView({
             webPreferences: {
                 preload,
-                session: mainWindow.webContents.session
-            }
+                session: mainWindow.webContents.session,
+            },
         });
 
-        this.setBounds()
-        this.view.webContents.loadURL(getLocalURLString('serversSidebar.html'), { userAgent: composeUserAgent() })
-            .catch((reason) => {
-                    log.error(`Servers sidebar window failed to load: ${reason}`);
-                    log.info(process.env);
-                });
+        this.setBounds();
+        this.view.webContents.loadURL(getLocalURLString('serversSidebar.html'), {userAgent: composeUserAgent()}).
+            catch((reason) => {
+                log.error(`Servers sidebar window failed to load: ${reason}`);
+                log.info(process.env);
+            });
 
         this.setOrderedServers();
 
         mainWindow.addBrowserView(this.view!);
-        this.view.webContents.openDevTools({ mode: 'detach' })
+        this.view.webContents.openDevTools({mode: 'detach'});
     }
 
     setDarkMode = (darkMode: boolean) => {
@@ -113,27 +116,27 @@ export class ServerSidebar {
     }
 
     private updateTeams = (_: any, teams: ConfigServer[]) => {
-        this.teams = teams
-        this.updateSidebar()
+        this.teams = teams;
+        this.updateSidebar();
     }
 
     private updateTeamsOrderPreference = (_: any, preference: string) => {
-        this.teamsOrderPreference = preference
-        this.updateSidebar()
+        this.teamsOrderPreference = preference;
+        this.updateSidebar();
     }
 
     private handleUpdateTeamsOrder = (_: any, order: string[]) => {
-        viewManager.sendToAllViews(TEAMS_ORDER_PREFERENCE_UPDATED, order)
+        viewManager.sendToAllViews(TEAMS_ORDER_PREFERENCE_UPDATED, order);
     }
 
-    private updateServers = (_: any, servers: ConfigServer[]) => {
+    private updateServers = () => {
         this.setOrderedServers();
-        this.updateSidebar()
+        this.updateSidebar();
     }
 
     private updatePreferredTheme = (_: any, theme: any) => {
-        this.preferredTheme = theme
-        this.updateSidebar()
+        this.preferredTheme = theme;
+        this.updateSidebar();
     }
 
     private updateSidebar = () => {
@@ -149,12 +152,12 @@ export class ServerSidebar {
             this.unreads,
             this.windowBounds,
             this.preferredTheme,
-            this.teamsOrderPreference
+            this.teamsOrderPreference,
         );
     }
 
-    private updateWindowBounds = (newBounds: Electron.Rectangle) => {
-        this.setBounds()
+    private updateWindowBounds = () => {
+        this.setBounds();
         this.updateSidebar();
     }
 
@@ -180,9 +183,9 @@ export class ServerSidebar {
     }
 
     private setOrderedServers = () => {
-        this.servers =  ServerManager.getOrderedServers().map((server) => {
-            const remoteInfo = ServerManager.getRemoteInfo(server.id)
-            return {...server.toUniqueServer(), remoteInfo}
+        this.servers = ServerManager.getOrderedServers().map((server) => {
+            const remoteInfo = ServerManager.getRemoteInfo(server.id);
+            return {...server.toUniqueServer(), remoteInfo};
         });
     }
 }
