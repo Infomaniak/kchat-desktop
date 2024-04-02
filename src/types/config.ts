@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type { RemoteInfo } from "./server";
+import type {RemoteInfo} from './server';
 
 export type View = {
     name: string;
@@ -11,6 +11,7 @@ export type View = {
 export type Server = {
     name: string;
     url: string;
+    teamInfo?: ServerTeam;
 }
 
 export type ConfigView = View & {
@@ -18,25 +19,25 @@ export type ConfigView = View & {
 }
 
 export type ServerTeam = {
-    id: string
-    display_name: string,
-    name: string
-    url: string
-    last_team_icon_update: string
-    [key: string]: any
+    id: string;
+    display_name: string;
+    name: string;
+    url: string;
+    last_team_icon_update: string;
+    [key: string]: any;
 };
 
 export type ConfigServer = Server & {
     order: number;
     lastActiveTab?: number;
     tabs: ConfigView[];
-    teamInfo: ServerTeam
+    teamInfo: ServerTeam;
 }
 
 export type UniqueServer = Server & {
     id?: string;
     isPredefined?: boolean;
-    remoteInfo?: RemoteInfo
+    remoteInfo?: RemoteInfo;
 }
 
 export type UniqueView = View & {

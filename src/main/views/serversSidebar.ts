@@ -157,6 +157,7 @@ export class ServerSidebar {
     private updateServers = () => {
         this.setOrderedServers();
         this.updateSidebar();
+        this.registerKeyboardEvents();
     }
 
     private updatePreferredTheme = (_: any, theme: any) => {
@@ -208,9 +209,26 @@ export class ServerSidebar {
     }
 
     private setOrderedServers = () => {
-        this.servers = ServerManager.getOrderedServers().map((server) => {
-            const remoteInfo = ServerManager.getRemoteInfo(server.id);
-            return {...server.toUniqueServer(), remoteInfo};
+        this.servers = ServerManager.getOrderedServers().map((server) => server.toUniqueServer());
+    }
+
+    private registerKeyboardEvents = () => {
+        viewManager.getCurrentView()?.registerWebContentEvent('before-input-event', (_: any, event: Electron.Event<any>) => {
+            const code = String(event.code);
+            if (event.alt && event.meta && code.startsWith('Digit')) {
+                const codeIndex = Number(code.split('Digit').pop());
+                const preferenceIds = this.teamsOrderPreference.split(',');
+                const teamId = preferenceIds?.[codeIndex - 1];
+
+                const team = this.teams.find((t) => t.teamInfo?.id === teamId);
+                const server = this.servers.find((s) => s.name === team?.name);
+
+                if (!server?.id) {
+                    return;
+                }
+
+                ServerViewState.switchServer(server.id);
+            }
         });
     }
 }

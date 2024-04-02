@@ -358,6 +358,10 @@ export class MattermostBrowserView extends EventEmitter {
         }
     }
 
+    registerWebContentEvent = (event: any, callback: CallableFunction) => {
+        this.browserView.webContents.on(event, callback);
+    }
+
     /**
      * ALT key handling for the 3-dot menu (Windows/Linux)
      */

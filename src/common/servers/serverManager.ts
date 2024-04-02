@@ -3,7 +3,7 @@
 
 import EventEmitter from 'events';
 
-import type {Server, ConfigServer, ConfigView} from 'types/config';
+import type {Server, ConfigServer, ConfigView, ServerTeam} from 'types/config';
 
 import type {RemoteInfo} from 'types/server';
 
@@ -343,6 +343,7 @@ export class ServerManager extends EventEmitter {
             url: `${server.url}`,
             order: this.serverOrder.indexOf(server.id),
             lastActiveTab: this.getLastActiveView(server.id),
+            teamInfo: server.teamInfo ?? {} as ServerTeam,
             tabs: this.viewOrder.get(server.id)?.reduce((views, viewId, index) => {
                 const view = this.views.get(viewId);
                 if (!view) {
