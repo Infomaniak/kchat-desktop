@@ -9,8 +9,8 @@ import {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer, ConfigServ
 import {DownloadedItem, DownloadedItems, DownloadsMenuOpenEventPayload} from './downloads';
 import {SaveQueueItem} from './settings';
 import {URLValidationResult} from './server';
-import {CallInfo} from './callsIk'
-import { Theme } from './theme';
+import {CallInfo} from './callsIk';
+import {Theme} from './theme';
 
 declare global {
     interface Window {
@@ -157,7 +157,7 @@ declare global {
 
             serversSidebar: {
                 switchServer: (serverId: string) => void;
-                updateTeamsOrder: (teamsOrder: Array<string>) => void,
+                updateTeamsOrder: (teamsOrder: string[]) => void;
 
                 onUpdateSidebar: (listener: (
                     servers: UniqueServer[],
@@ -168,7 +168,7 @@ declare global {
                     unreads?: Map<string, boolean>,
                     windowBounds?: Rectangle,
                     preferredTheme?: Theme,
-                    teamsOrderPreference?: string
+                    teamsOrderPreference?: string[]
                 ) => void) => void;
             };
         };
@@ -177,6 +177,6 @@ declare global {
             callDeclined: (callInfo?: CallInfo) => void;
             callAccept: (callInfo?: CallInfo) => void;
             callDefault: () => void;
-        }
+        };
     }
 }

@@ -63,6 +63,7 @@ import {
     PREFERRED_THEME,
     TEAMS_ORDER_PREFERENCE,
     TEAMS_ORDER_PREFERENCE_UPDATED,
+    USER_LOCALE,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -402,6 +403,9 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
         }
         break;
     }
+    case USER_LOCALE:
+        ipcRenderer.send(USER_LOCALE, data.data);
+        break;
     case SWITCH_SERVER:
         ipcRenderer.send(SWITCH_SERVER, data.data);
         break;

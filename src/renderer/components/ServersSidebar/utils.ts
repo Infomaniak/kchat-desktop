@@ -29,12 +29,12 @@ export const applyCssVars = (theme: Theme) => {
     } as CSSProperties;
 };
 
-export function filterAndSortTeamsByDisplayName(servers: ConfigServer[], locale: string, teamsOrder = '') {
+export function filterAndSortTeamsByDisplayName(servers: ConfigServer[], locale: string, teamsOrder: string[] = []) {
     if (!servers) {
         return [];
     }
 
-    const teamsOrderList = teamsOrder.split(',');
+    const teamsOrderList = teamsOrder;
 
     const customSortedTeams = servers.filter((server) => {
         if (server.teamInfo !== null) {

@@ -16,6 +16,7 @@ import {
     SERVERS_UPDATE, SWITCH_SERVER, TEAMS_ORDER_PREFERENCE, TEAMS_ORDER_PREFERENCE_UPDATED, UPDATE_APPSTATE,
     UPDATE_SERVERS_SIDEBAR,
     UPDATE_TEAMS,
+    USER_LOCALE,
 } from 'common/communication';
 
 import {Logger} from 'common/log';
@@ -35,7 +36,8 @@ export class ServerSidebar {
     private servers: UniqueServer[];
     private teams: ConfigServer[];
     private preferredTheme: Theme
-    private teamsOrderPreference: string
+    private userLocale: string
+    private teamsOrderPreference: string[]
 
     private unreads: Map<string, boolean>;
     private mentions: Map<string, number>;
@@ -47,7 +49,8 @@ export class ServerSidebar {
         this.servers = [];
         this.teams = [];
         this.preferredTheme = {} as Theme;
-        this.teamsOrderPreference = '';
+        this.teamsOrderPreference = [];
+        this.userLocale = '';
 
         this.unreads = new Map();
         this.mentions = new Map();
@@ -57,14 +60,15 @@ export class ServerSidebar {
         MainWindow.on(MAIN_WINDOW_RESIZED, this.updateWindowBounds);
         AppState.on(UPDATE_APPSTATE, this.updateMentions);
 
-        ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
         ipcMain.on(PREFERRED_THEME, this.updatePreferredTheme);
+        ipcMain.on(USER_LOCALE, this.updateUserLocale);
         ipcMain.on(UPDATE_TEAMS, this.updateTeams);
         ipcMain.on(TEAMS_ORDER_PREFERENCE, this.updateTeamsOrderPreference);
         ipcMain.on(TEAMS_ORDER_PREFERENCE_UPDATED, this.handleUpdateTeamsOrder);
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
         ServerManager.on(SWITCH_SERVER, this.updateServers);
+        ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
     }
 
     init = () => {
@@ -123,10 +127,6 @@ export class ServerSidebar {
         mainWindow.addBrowserView(this.view!);
     }
 
-    setDarkMode = (darkMode: boolean) => {
-        this.view?.webContents.send(DARK_MODE_CHANGE, darkMode);
-    }
-
     private setBounds = () => {
         if (this.view) {
             const mainWindow = MainWindow.get();
@@ -146,7 +146,7 @@ export class ServerSidebar {
     }
 
     private updateTeamsOrderPreference = (_: any, preference: string) => {
-        this.teamsOrderPreference = preference;
+        this.teamsOrderPreference = preference ? preference.split(',') : this.teams.map((t) => t.teamInfo?.id);
         this.updateSidebar();
     }
 
@@ -163,6 +163,10 @@ export class ServerSidebar {
     private updatePreferredTheme = (_: any, theme: any) => {
         this.preferredTheme = theme;
         this.updateSidebar();
+    }
+
+    private updateUserLocale = (_: any, locale: string) => {
+        this.userLocale = locale;
     }
 
     private updateSidebar = () => {
@@ -217,9 +221,7 @@ export class ServerSidebar {
             const code = String(event.code);
             if (event.alt && event.meta && code.startsWith('Digit')) {
                 const codeIndex = Number(code.split('Digit').pop());
-                const preferenceIds = this.teamsOrderPreference.split(',');
-                const teamId = preferenceIds?.[codeIndex - 1];
-
+                const teamId = this.teamsOrderPreference?.[codeIndex - 1];
                 const team = this.teams.find((t) => t.teamInfo?.id === teamId);
                 const server = this.servers.find((s) => s.name === team?.name);
 

@@ -35,7 +35,7 @@ type State = {
     isAnyDragging?: boolean;
     windowBounds?: Electron.Rectangle;
     preferredTheme?: Theme;
-    teamsOrderPreference?: string;
+    teamsOrderPreference?: string[];
 }
 
 const ServersSidebarRenderer = () => {
@@ -50,7 +50,7 @@ const ServersSidebarRenderer = () => {
         unreads?: Map<string, boolean>,
         windowBounds?: Electron.Rectangle,
         preferredTheme?: Theme,
-        teamsOrderPreference?: string,
+        teamsOrderPreference?: string[],
     ) => {
         setState({
             servers,
@@ -88,7 +88,7 @@ const ServersSidebarRenderer = () => {
         teamsCopy.splice(newOrder, 0, server[0]);
         const newTeamsOrder = teamsCopy.map((team) => team.teamInfo.id!);
 
-        setState({...state, ...{teams: teamsCopy, isAnyDragging: false, teamsOrderPreference: newTeamsOrder.join(',')}});
+        setState({...state, ...{teams: teamsCopy, isAnyDragging: false, teamsOrderPreference: newTeamsOrder}});
         window.desktop.serversSidebar.updateTeamsOrder(newTeamsOrder);
     };
 
