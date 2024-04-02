@@ -10,6 +10,7 @@ import {Theme} from 'types/theme';
 import {
     DARK_MODE_CHANGE,
     EMIT_CONFIGURATION,
+    MAIN_WINDOW_CREATED,
     MAIN_WINDOW_RESIZED,
     PREFERRED_THEME,
     SERVERS_UPDATE, SWITCH_SERVER, TEAMS_ORDER_PREFERENCE, TEAMS_ORDER_PREFERENCE_UPDATED, UPDATE_APPSTATE,
@@ -52,6 +53,7 @@ export class ServerSidebar {
         this.mentions = new Map();
         this.expired = new Map();
 
+        MainWindow.on(MAIN_WINDOW_CREATED, this.init);
         MainWindow.on(MAIN_WINDOW_RESIZED, this.updateWindowBounds);
         AppState.on(UPDATE_APPSTATE, this.updateMentions);
 
@@ -86,6 +88,7 @@ export class ServerSidebar {
         });
 
         this.setBounds();
+
         this.view.webContents.loadURL(getLocalURLString('serversSidebar.html'), {userAgent: composeUserAgent()}).
             catch((reason) => {
                 log.error(`Servers sidebar window failed to load: ${reason}`);
@@ -94,8 +97,30 @@ export class ServerSidebar {
 
         this.setOrderedServers();
 
+        // mainWindow.addBrowserView(this.view!);
+    }
+
+    hide = () => {
+        const mainWindow = MainWindow.get();
+
+        if (!mainWindow) {
+            log.error('Main window was not available');
+            return;
+        }
+
+        mainWindow.removeBrowserView(this.view!);
+    }
+
+    show = () => {
+        const mainWindow = MainWindow.get();
+
+        if (!mainWindow) {
+            log.error('Main window was not available');
+            return;
+        }
+
+        this?.view?.webContents.openDevTools({mode: 'detach'});
         mainWindow.addBrowserView(this.view!);
-        this.view.webContents.openDevTools({mode: 'detach'});
     }
 
     setDarkMode = (darkMode: boolean) => {

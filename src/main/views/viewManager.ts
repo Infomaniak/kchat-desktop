@@ -164,6 +164,7 @@ export class ViewManager {
                 newView.show();
                 if (newView.needsLoadingScreen()) {
                     LoadingScreen.show();
+                    ServerSidebar.hide();
                 }
             }
             hidePrevious?.();
@@ -621,7 +622,7 @@ export class ViewManager {
         if (view) {
             view.setInitialized();
             if (this.getCurrentView() === view) {
-                ServerSidebar.init();
+                ServerSidebar.show();
                 LoadingScreen.fade();
             }
         }

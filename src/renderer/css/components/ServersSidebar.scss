@@ -125,5 +125,6 @@ button {
     &__initial {
         font-size: 14px;
         text-transform: uppercase;
+        color: rgb(var(--sidebar-header-text-color-rgb));
     }
 }

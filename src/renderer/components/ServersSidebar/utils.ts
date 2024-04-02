@@ -24,6 +24,7 @@ export const applyCssVars = (theme: Theme) => {
         '--sidebar-team-bg': theme.sidebarTeamBarBg,
         '--sidebar-text-header-color': theme.sidebarHeaderTextColor,
         '--sidebar-text-color-rgb': toRgbValues(theme.sidebarText),
+        '--sidebar-header-text-color-rgb': toRgbValues(theme.sidebarText!),
         '--mention-bg': theme.mentionBg,
     } as CSSProperties;
 };
