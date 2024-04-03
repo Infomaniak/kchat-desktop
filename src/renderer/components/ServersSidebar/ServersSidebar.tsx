@@ -18,6 +18,7 @@ type Props = {
     teams: ServerTeam[];
     activeServerId?: string;
     isAnyDragging: boolean;
+    showButtonsIndex: boolean;
 
     unreads?: Map<string, boolean>;
     mentions?: Map<string, number>;
@@ -39,6 +40,7 @@ const ServersSidebar: FC<Props> = ({
     mentions,
     unreads,
     theme,
+    showButtonsIndex,
 
     onDragEnd,
     onButtonClick,
@@ -79,6 +81,7 @@ const ServersSidebar: FC<Props> = ({
                                         initial={initialForTeam(team)}
                                         onClick={() => onButtonClick?.(team.serverName)}
                                         theme={theme}
+                                        showButtonsIndex={showButtonsIndex}
                                     />
                                 );
                             })}

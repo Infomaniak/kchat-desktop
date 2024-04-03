@@ -16,6 +16,7 @@ type Props = {
     iconUrl: string | null;
     initial: string;
     theme?: Theme;
+    showButtonsIndex: boolean;
 
     onClick?: () => void;
 }
@@ -30,6 +31,7 @@ const ServerButton: FC<Props> = ({
     iconUrl,
     isAnyDragging,
     initial,
+    showButtonsIndex,
 
     onClick,
 }) => {
@@ -67,9 +69,11 @@ const ServerButton: FC<Props> = ({
                         withImage: Boolean(iconUrl),
                         active: isActive,
                         hasMentions: mentionCount && mentionCount > 0,
+                        showDot: showButtonsIndex,
                     })}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
+                    data-index={orderedIndex + 1}
                     ref={provided.innerRef}
                     onClick={onClick}
 

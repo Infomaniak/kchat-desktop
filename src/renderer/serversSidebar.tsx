@@ -36,6 +36,7 @@ type State = {
     windowBounds?: Electron.Rectangle;
     preferredTheme?: Theme;
     teamsOrderPreference?: string[];
+    isReadyToSwitchServer?: boolean;
 }
 
 const ServersSidebarRenderer = () => {
@@ -51,6 +52,7 @@ const ServersSidebarRenderer = () => {
         windowBounds?: Electron.Rectangle,
         preferredTheme?: Theme,
         teamsOrderPreference?: string[],
+        isReadyToSwitchServer?: boolean,
     ) => {
         setState({
             servers,
@@ -62,6 +64,7 @@ const ServersSidebarRenderer = () => {
             windowBounds,
             preferredTheme,
             teamsOrderPreference,
+            isReadyToSwitchServer,
         });
     };
 
@@ -134,6 +137,7 @@ const ServersSidebarRenderer = () => {
             unreads={state?.unreads}
             mentions={state?.mentions}
             expired={state?.expired}
+            showButtonsIndex={Boolean(state?.isReadyToSwitchServer)}
         />
     );
 };

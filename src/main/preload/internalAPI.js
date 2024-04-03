@@ -258,6 +258,7 @@ contextBridge.exposeInMainWorld('desktop', {
             windowBounds,
             preferredTheme,
             teamsOrderPreference,
+            isReadyToSwitchServer,
         ) => listener(
             servers,
             teams,
@@ -268,6 +269,7 @@ contextBridge.exposeInMainWorld('desktop', {
             windowBounds,
             preferredTheme,
             teamsOrderPreference,
+            isReadyToSwitchServer,
         )),
     },
 

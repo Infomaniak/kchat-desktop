@@ -168,7 +168,8 @@ declare global {
                     unreads?: Map<string, boolean>,
                     windowBounds?: Rectangle,
                     preferredTheme?: Theme,
-                    teamsOrderPreference?: string[]
+                    teamsOrderPreference?: string[],
+                    isReadyToSwitchServer?: boolean
                 ) => void) => void;
             };
         };

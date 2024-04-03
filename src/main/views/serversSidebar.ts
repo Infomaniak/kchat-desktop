@@ -8,7 +8,6 @@ import {ConfigServer, UniqueServer} from 'types/config';
 import {Theme} from 'types/theme';
 
 import {
-    DARK_MODE_CHANGE,
     EMIT_CONFIGURATION,
     MAIN_WINDOW_CREATED,
     MAIN_WINDOW_RESIZED,
@@ -38,6 +37,7 @@ export class ServerSidebar {
     private preferredTheme: Theme
     private userLocale: string
     private teamsOrderPreference: string[]
+    private isReadyToSwitchServer: boolean
 
     private unreads: Map<string, boolean>;
     private mentions: Map<string, number>;
@@ -51,6 +51,7 @@ export class ServerSidebar {
         this.preferredTheme = {} as Theme;
         this.teamsOrderPreference = [];
         this.userLocale = '';
+        this.isReadyToSwitchServer = false;
 
         this.unreads = new Map();
         this.mentions = new Map();
@@ -100,8 +101,6 @@ export class ServerSidebar {
             });
 
         this.setOrderedServers();
-
-        // mainWindow.addBrowserView(this.view!);
     }
 
     hide = () => {
@@ -183,6 +182,7 @@ export class ServerSidebar {
             this.windowBounds,
             this.preferredTheme,
             this.teamsOrderPreference,
+            this.isReadyToSwitchServer,
         );
     }
 
@@ -216,8 +216,19 @@ export class ServerSidebar {
         this.servers = ServerManager.getOrderedServers().map((server) => server.toUniqueServer());
     }
 
+    private setIsReadyToSwitchServer = (value: boolean) => {
+        this.isReadyToSwitchServer = value;
+        this.updateSidebar();
+    }
+
     private registerKeyboardEvents = () => {
         viewManager.getCurrentView()?.registerWebContentEvent('before-input-event', (_: any, event: Electron.Event<any>) => {
+            this.setIsReadyToSwitchServer(false);
+
+            if (event.alt && event.meta) {
+                this.setIsReadyToSwitchServer(true);
+            }
+
             const code = String(event.code);
             if (event.alt && event.meta && code.startsWith('Digit')) {
                 const codeIndex = Number(code.split('Digit').pop());
