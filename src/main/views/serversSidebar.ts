@@ -27,6 +27,7 @@ import ServerViewState from 'app/serverViewState';
 import AppState from 'common/appState';
 
 import viewManager from './viewManager';
+import {ServerSidebarShortcutModalView} from './serversSidebarShortcutModalView';
 
 const log = new Logger('ServersSidebar');
 
@@ -44,6 +45,8 @@ export class ServerSidebar {
     private expired: Map<string, boolean>;
 
     private windowBounds?: Electron.Rectangle;
+
+    private modal: ServerSidebarShortcutModalView
 
     constructor() {
         this.servers = [];
@@ -101,6 +104,8 @@ export class ServerSidebar {
             });
 
         this.setOrderedServers();
+
+        this.modal = new ServerSidebarShortcutModalView();
     }
 
     hide = () => {
@@ -122,7 +127,7 @@ export class ServerSidebar {
             return;
         }
 
-        this?.view?.webContents.openDevTools({mode: 'detach'});
+        // this?.view?.webContents.openDevTools({mode: 'detach'});
         mainWindow.addBrowserView(this.view!);
     }
 

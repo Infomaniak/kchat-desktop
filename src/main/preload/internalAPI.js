@@ -94,6 +94,9 @@ import {
     UPDATE_TEAMS,
     UPDATE_SERVERS_SIDEBAR,
     TEAMS_ORDER_PREFERENCE_UPDATED,
+    TEAM_MOUSE_IN,
+    TEAM_MOUSE_OUT,
+    UPDATE_SIDEBAR_MODAL,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -248,6 +251,9 @@ contextBridge.exposeInMainWorld('desktop', {
         switchServer: (serverName) => ipcRenderer.send(SWITCH_SERVER, serverName),
         updateTeamsOrder: (teamsOrder) => ipcRenderer.send(TEAMS_ORDER_PREFERENCE_UPDATED, teamsOrder),
 
+        handleMouseInServerButton: (index, teamName) => ipcRenderer.send(TEAM_MOUSE_IN, index, teamName),
+        handleMouseOutServerButton: () => ipcRenderer.send(TEAM_MOUSE_OUT),
+
         onUpdateSidebar: (listener) => ipcRenderer.on(UPDATE_SERVERS_SIDEBAR, (_,
             servers,
             teams,
@@ -270,6 +276,12 @@ contextBridge.exposeInMainWorld('desktop', {
             preferredTheme,
             teamsOrderPreference,
             isReadyToSwitchServer,
+        )),
+
+        onUpdateModal: (listener) => ipcRenderer.on(UPDATE_SIDEBAR_MODAL, (_,
+            currentTeam,
+        ) => listener(
+            currentTeam,
         )),
     },
 

@@ -82,6 +82,7 @@ const ServersSidebar: FC<Props> = ({
                                         onClick={() => onButtonClick?.(team.serverName)}
                                         theme={theme}
                                         showButtonsIndex={showButtonsIndex}
+                                        name={team.display_name}
                                     />
                                 );
                             })}

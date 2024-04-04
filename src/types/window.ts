@@ -159,6 +159,9 @@ declare global {
                 switchServer: (serverId: string) => void;
                 updateTeamsOrder: (teamsOrder: string[]) => void;
 
+                handleMouseInServerButton: (index: number, teamName: string) => void;
+                handleMouseOutServerButton: () => void;
+
                 onUpdateSidebar: (listener: (
                     servers: UniqueServer[],
                     teams: ConfigServer[],
@@ -170,6 +173,10 @@ declare global {
                     preferredTheme?: Theme,
                     teamsOrderPreference?: string[],
                     isReadyToSwitchServer?: boolean
+                ) => void) => void;
+
+                onUpdateModal: (listener: (
+                    currentTeam?: {index: number; name: string},
                 ) => void) => void;
             };
         };

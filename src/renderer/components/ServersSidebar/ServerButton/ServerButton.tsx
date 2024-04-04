@@ -17,6 +17,7 @@ type Props = {
     initial: string;
     theme?: Theme;
     showButtonsIndex: boolean;
+    name: string;
 
     onClick?: () => void;
 }
@@ -32,6 +33,7 @@ const ServerButton: FC<Props> = ({
     isAnyDragging,
     initial,
     showButtonsIndex,
+    name,
 
     onClick,
 }) => {
@@ -76,7 +78,8 @@ const ServerButton: FC<Props> = ({
                     data-index={orderedIndex + 1}
                     ref={provided.innerRef}
                     onClick={onClick}
-
+                    onMouseEnter={() => window.desktop.serversSidebar.handleMouseInServerButton(orderedIndex + 1, name)}
+                    onMouseOut={() => window.desktop.serversSidebar.handleMouseOutServerButton()}
                 >
                     {!isActive && badgeDiv}
                     <span className='ServerButton__content'>

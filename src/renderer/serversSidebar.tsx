@@ -3,10 +3,6 @@
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// import 'renderer/css/index.css';
-// import 'renderer/css/settings.css';
-import 'renderer/css/call-dialing.css';
-
 import React, {useEffect, useMemo, useState} from 'react';
 import ReactDOM from 'react-dom';
 

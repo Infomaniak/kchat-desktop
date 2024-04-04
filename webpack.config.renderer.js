@@ -37,6 +37,7 @@ module.exports = merge(base, {
         loadingScreen: './src/renderer/modals/loadingScreen/index.tsx',
         welcomeScreen: './src/renderer/modals/welcomeScreen/welcomeScreen.tsx',
         serversSidebar: './src/renderer/serversSidebar.tsx',
+        serversSidebarShortcutModal: './src/renderer/modals/serversSidebarShortcut/serversSidebarShortcut.tsx',
     },
     output: {
         path: path.resolve(__dirname, 'dist/renderer'),
@@ -139,6 +140,12 @@ module.exports = merge(base, {
             template: 'src/renderer/servers-sidebar.html',
             chunks: ['serversSidebar'],
             filename: 'serversSidebar.html',
+        }),
+        new HtmlWebpackPlugin({
+            title: 'kChat Desktop Servers Sidebar',
+            template: 'src/renderer/index.html',
+            chunks: ['serversSidebarShortcutModal'],
+            filename: 'serversSidebarShortcutModal.html',
         }),
         new HtmlWebpackPlugin({
             title: 'Mattermost Desktop Settings',
