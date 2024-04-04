@@ -8,21 +8,16 @@ import {TEAM_MOUSE_IN, TEAM_MOUSE_OUT, UPDATE_SIDEBAR_MODAL} from 'common/commun
 import {Logger} from 'common/log';
 import {composeUserAgent, getLocalPreload, getLocalURLString} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
-import {SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
+import {SERVERS_SIDEBAR_WIDTH, TAB_BAR_HEIGHT} from 'common/utils/constants';
 
 const log = new Logger('ServerSidebarShortcutModalView');
 
 export class ServerSidebarShortcutModalView {
     private view?: BrowserView;
-    private userLocale: string
     private currentTeam?: { index: number; name: string }
-    private windowBounds?: Electron.Rectangle;
     private timeOutId?: NodeJS.Timeout
 
     constructor() {
-        this.userLocale = '';
-        this.windowBounds = MainWindow.getBounds();
-
         ipcMain.on(TEAM_MOUSE_IN, this.handleMouseIn);
         ipcMain.on(TEAM_MOUSE_OUT, this.handleMouseOut);
 
@@ -84,7 +79,7 @@ export class ServerSidebarShortcutModalView {
             clearTimeout(this.timeOutId);
         }
 
-        this.view.setBounds(this.getBounds(300, 300));
+        this.view.setBounds(this.getBounds(500, 60));
         this.timeOutId = setTimeout(() => this.updateModal(), 300);
         MainWindow.get()?.setTopBrowserView(this.view);
     }
@@ -100,8 +95,13 @@ export class ServerSidebarShortcutModalView {
     }
 
     private getBounds = (width: number, height: number) => {
+        const PADDING_TOP = 10;
+        const DEFAULT_MARGIN = 10;
+        const BUTTON_HEIGHT = 40;
+        const MODAL_HEIGHT = 60;
+
         const x = SERVERS_SIDEBAR_WIDTH;
-        const y = this.currentTeam ? this.currentTeam.index * 48 : 0;
+        const y = (TAB_BAR_HEIGHT + PADDING_TOP) + (this.currentTeam?.index ? (this.currentTeam.index - 1) * ((BUTTON_HEIGHT) + DEFAULT_MARGIN) : 0);
 
         return {
             x,

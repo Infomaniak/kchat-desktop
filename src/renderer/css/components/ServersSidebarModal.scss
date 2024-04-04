@@ -1,5 +1,10 @@
 @import url("../_css_variables.scss");
 
+* {
+
+    background: red;
+}
+
 .ShortcutTooltip {
     width: fit-content;
     padding: 5px;
