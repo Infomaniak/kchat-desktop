@@ -177,6 +177,7 @@ declare global {
 
                 onUpdateModal: (listener: (
                     currentTeam?: {index: number; name: string},
+                    isMac?: boolean
                 ) => void) => void;
             };
         };

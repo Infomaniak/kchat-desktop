@@ -23,9 +23,6 @@ export class ServerSidebarShortcutModalView {
         this.userLocale = '';
         this.windowBounds = MainWindow.getBounds();
 
-        // MainWindow.on(MAIN_WINDOW_RESIZED, this.updateWindowBounds);
-
-        // ipcMain.on(USER_LOCALE, this.updateUserLocale);
         ipcMain.on(TEAM_MOUSE_IN, this.handleMouseIn);
         ipcMain.on(TEAM_MOUSE_OUT, this.handleMouseOut);
 
@@ -105,7 +102,7 @@ export class ServerSidebarShortcutModalView {
 
     private getBounds = (width: number, height: number) => {
         const x = SERVERS_SIDEBAR_WIDTH;
-        const y = this.currentTeam ? this.currentTeam.index * 52 : 0;
+        const y = this.currentTeam ? this.currentTeam.index * 48 : 0;
 
         return {
             x,
@@ -121,6 +118,7 @@ export class ServerSidebarShortcutModalView {
         this.view?.webContents.send(
             UPDATE_SIDEBAR_MODAL,
             this.currentTeam,
+            process.platform === 'darwin',
         );
     }
 }

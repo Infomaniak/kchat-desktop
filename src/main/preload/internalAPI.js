@@ -280,8 +280,10 @@ contextBridge.exposeInMainWorld('desktop', {
 
         onUpdateModal: (listener) => ipcRenderer.on(UPDATE_SIDEBAR_MODAL, (_,
             currentTeam,
+            isMac,
         ) => listener(
             currentTeam,
+            isMac,
         )),
     },
 
