@@ -45,14 +45,29 @@ export function filterAndSortTeamsByDisplayName(servers: ConfigServer[], locale:
         return teamsOrderList.indexOf(a.teamInfo.id) - teamsOrderList.indexOf(b.teamInfo.id);
     });
 
-    const otherTeams = servers.filter((team) => {
+    let otherTeams = servers.filter((team) => {
         if (team !== null) {
             return !teamsOrderList.includes(team.teamInfo.id);
         }
         return false;
     });
 
+    if (locale) {
+        otherTeams = otherTeams.sort((a, b) => compareTeamsByDisplayName(locale, a, b));
+    }
+
     return [...customSortedTeams, ...otherTeams].filter((server) => {
         return server && (!server.teamInfo.delete_at as unknown as number) > 0 && server.teamInfo.display_name != null;
     });
 }
+
+function compareTeamsByDisplayName(locale: string, a: ConfigServer, b: ConfigServer) {
+    if (a.teamInfo.display_name !== null) {
+        if (a.teamInfo.display_name !== b.teamInfo.display_name) {
+            return a.teamInfo.display_name.localeCompare(b.teamInfo.display_name, locale, {numeric: true});
+        }
+    }
+
+    return a.name.localeCompare(b.name, locale, {numeric: true});
+}
+

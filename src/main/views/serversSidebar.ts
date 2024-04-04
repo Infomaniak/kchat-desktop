@@ -188,6 +188,7 @@ export class ServerSidebar {
             this.preferredTheme,
             this.teamsOrderPreference,
             this.isReadyToSwitchServer,
+            this.userLocale,
         );
     }
 

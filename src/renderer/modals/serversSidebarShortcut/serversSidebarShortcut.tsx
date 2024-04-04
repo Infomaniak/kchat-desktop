@@ -4,8 +4,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import IntlProvider from 'renderer/intl_provider';
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'renderer/css/modals.css';
 import 'renderer/css/components/ServersSidebarModal.scss';
@@ -14,9 +12,7 @@ import {ServerSidebarModal} from './modal';
 
 const start = async () => {
     ReactDOM.render(
-        <IntlProvider>
-            <ServerSidebarModal/>
-        </IntlProvider>,
+        <ServerSidebarModal/>,
         document.getElementById('app'),
     );
 };

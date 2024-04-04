@@ -172,7 +172,8 @@ declare global {
                     windowBounds?: Rectangle,
                     preferredTheme?: Theme,
                     teamsOrderPreference?: string[],
-                    isReadyToSwitchServer?: boolean
+                    isReadyToSwitchServer?: boolean,
+                    userLocale?: string
                 ) => void) => void;
 
                 onUpdateModal: (listener: (

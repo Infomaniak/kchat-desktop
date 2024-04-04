@@ -15,9 +15,9 @@ import ServersSidebar from './components/ServersSidebar';
 import IntlProvider from './intl_provider';
 import {filterAndSortTeamsByDisplayName} from './components/ServersSidebar/utils';
 
-Sentry.init({
-    dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
-});
+// Sentry.init({
+//     dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
+// });
 
 type State = {
     servers?: UniqueServer[];
@@ -33,6 +33,7 @@ type State = {
     preferredTheme?: Theme;
     teamsOrderPreference?: string[];
     isReadyToSwitchServer?: boolean;
+    locale?: string;
 }
 
 const ServersSidebarRenderer = () => {
@@ -49,6 +50,7 @@ const ServersSidebarRenderer = () => {
         preferredTheme?: Theme,
         teamsOrderPreference?: string[],
         isReadyToSwitchServer?: boolean,
+        locale?: string,
     ) => {
         setState({
             servers,
@@ -61,6 +63,7 @@ const ServersSidebarRenderer = () => {
             preferredTheme,
             teamsOrderPreference,
             isReadyToSwitchServer,
+            locale,
         });
     };
 
@@ -96,7 +99,7 @@ const ServersSidebarRenderer = () => {
             return [];
         }
 
-        const orderedTeams = filterAndSortTeamsByDisplayName(state.teams, '', state.teamsOrderPreference);
+        const orderedTeams = filterAndSortTeamsByDisplayName(state.teams, state.locale ?? '', state.teamsOrderPreference);
 
         return orderedTeams.map((team) => {
             const server = state?.servers?.find((s) => s.name === team.name);
@@ -140,9 +143,7 @@ const ServersSidebarRenderer = () => {
 
 const start = async () => {
     ReactDOM.render(
-        <IntlProvider>
-            <ServersSidebarRenderer/>
-        </IntlProvider>,
+        <ServersSidebarRenderer/>,
         document.getElementById('app'),
     );
 };
