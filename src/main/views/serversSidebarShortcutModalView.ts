@@ -84,7 +84,6 @@ export class ServerSidebarShortcutModalView {
             clearTimeout(this.timeOutId);
         }
 
-        this.view.webContents.openDevTools({mode: 'detach'});
         this.view.setBounds(this.getBounds(300, 300));
         this.timeOutId = setTimeout(() => this.updateModal(), 300);
         MainWindow.get()?.setTopBrowserView(this.view);

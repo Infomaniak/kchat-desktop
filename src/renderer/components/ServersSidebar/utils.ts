@@ -45,7 +45,14 @@ export function filterAndSortTeamsByDisplayName(servers: ConfigServer[], locale:
         return teamsOrderList.indexOf(a.teamInfo.id) - teamsOrderList.indexOf(b.teamInfo.id);
     });
 
-    return customSortedTeams.filter((server) => {
+    const otherTeams = servers.filter((team) => {
+        if (team !== null) {
+            return !teamsOrderList.includes(team.teamInfo.id);
+        }
+        return false;
+    });
+
+    return [...customSortedTeams, ...otherTeams].filter((server) => {
         return server && (!server.teamInfo.delete_at as unknown as number) > 0 && server.teamInfo.display_name != null;
     });
 }
