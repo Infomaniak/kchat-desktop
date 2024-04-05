@@ -28,7 +28,6 @@ export class ServerInfo {
 
     fetchRemoteInfo = async () => {
         await this.fetchConfigData();
-
         await this.getRemoteInfo<Array<{id: string; version: string}>>(
             this.onGetPlugins,
             parseURL(`${this.server.url}/api/v4/plugins/webapp`),
@@ -55,10 +54,6 @@ export class ServerInfo {
                 () => reject(new Error('Aborted')),
                 (error: Error) => reject(error));
         });
-    }
-
-    private onGetUserPreferences = (data: any[]) => {
-        console.log('onGetUserPreferences DATA', data)
     }
 
     private onGetConfig = (data: ClientConfig) => {

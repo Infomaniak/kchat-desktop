@@ -8,7 +8,7 @@ import path from 'path';
 import {EventEmitter} from 'events';
 
 import type {BrowserWindowConstructorOptions, Event, Input} from 'electron';
-import {app, BrowserWindow, BrowserView, dialog, globalShortcut, ipcMain, screen} from 'electron';
+import {app, BrowserWindow, dialog, globalShortcut, ipcMain, screen} from 'electron';
 
 import type {SavedWindowState} from 'types/mainWindow';
 
@@ -150,7 +150,6 @@ export class MainWindow extends EventEmitter {
         contextMenu.reload();
 
         const localURL = getLocalURLString('index.html');
-
         this.win.loadURL(localURL).catch(
             (reason) => {
                 log.error('failed to load', reason);
