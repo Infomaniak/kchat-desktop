@@ -9,6 +9,7 @@ import {Theme} from 'types/theme';
 
 import {
     EMIT_CONFIGURATION,
+    GET_SERVER_THEME,
     MAIN_WINDOW_CREATED,
     MAIN_WINDOW_RESIZED,
     PREFERRED_THEME,
@@ -69,10 +70,10 @@ export class ServerSidebar {
         ipcMain.on(UPDATE_TEAMS, this.updateTeams);
         ipcMain.on(TEAMS_ORDER_PREFERENCE, this.updateTeamsOrderPreference);
         ipcMain.on(TEAMS_ORDER_PREFERENCE_UPDATED, this.handleUpdateTeamsOrder);
+        ipcMain.on(SWITCH_SERVER, this.handleSwitchServer);
+        ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
-        ServerManager.on(SWITCH_SERVER, this.updateServers);
-        ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
     }
 
     init = () => {
@@ -127,7 +128,6 @@ export class ServerSidebar {
             return;
         }
 
-        // this?.view?.webContents.openDevTools({mode: 'detach'});
         mainWindow.addBrowserView(this.view!);
     }
 
@@ -164,9 +164,18 @@ export class ServerSidebar {
         this.registerKeyboardEvents();
     }
 
-    private updatePreferredTheme = (_: any, theme: any) => {
-        this.preferredTheme = theme;
-        this.updateSidebar();
+    private handleSwitchServer = () => {
+        viewManager.getCurrentView()?.sendToRenderer(GET_SERVER_THEME);
+    }
+
+    private updatePreferredTheme = (_: any, data: any) => {
+        const theme = data.theme;
+        const teamName = data.teamName;
+
+        if (ServerViewState.hasCurrentServer() && ServerViewState.getCurrentServer().name === teamName) {
+            this.preferredTheme = theme;
+            this.updateSidebar();
+        }
     }
 
     private updateUserLocale = (_: any, locale: string) => {

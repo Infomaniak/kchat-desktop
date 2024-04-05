@@ -8,7 +8,13 @@ import {TEAM_MOUSE_IN, TEAM_MOUSE_OUT, UPDATE_SIDEBAR_MODAL} from 'common/commun
 import {Logger} from 'common/log';
 import {composeUserAgent, getLocalPreload, getLocalURLString} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
-import {SERVERS_SIDEBAR_WIDTH, TAB_BAR_HEIGHT} from 'common/utils/constants';
+import {
+    SERVERS_SIDEBAR_BUTTON_HEIGHT,
+    SERVERS_SIDEBAR_DEFAULT_MARGIN,
+    SERVERS_SIDEBAR_PADDING_TOP,
+    SERVERS_SIDEBAR_WIDTH,
+    TAB_BAR_HEIGHT,
+} from 'common/utils/constants';
 
 const log = new Logger('ServerSidebarShortcutModalView');
 
@@ -95,13 +101,9 @@ export class ServerSidebarShortcutModalView {
     }
 
     private getBounds = (width: number, height: number) => {
-        const PADDING_TOP = 10;
-        const DEFAULT_MARGIN = 10;
-        const BUTTON_HEIGHT = 40;
-        const MODAL_HEIGHT = 60;
-
         const x = SERVERS_SIDEBAR_WIDTH;
-        const y = (TAB_BAR_HEIGHT + PADDING_TOP) + (this.currentTeam?.index ? (this.currentTeam.index - 1) * ((BUTTON_HEIGHT) + DEFAULT_MARGIN) : 0);
+        const y = (TAB_BAR_HEIGHT + SERVERS_SIDEBAR_PADDING_TOP) +
+            (this.currentTeam?.index ? ((this.currentTeam.index - 1) * ((SERVERS_SIDEBAR_BUTTON_HEIGHT) + SERVERS_SIDEBAR_DEFAULT_MARGIN)) : 0);
 
         return {
             x,

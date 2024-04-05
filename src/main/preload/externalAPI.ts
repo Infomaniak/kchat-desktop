@@ -64,6 +64,7 @@ import {
     TEAMS_ORDER_PREFERENCE,
     TEAMS_ORDER_PREFERENCE_UPDATED,
     USER_LOCALE,
+    GET_SERVER_THEME,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -617,6 +618,10 @@ ipcRenderer.on(USER_ACTIVITY_UPDATE, (event, userIsActive, isSystemEvent) => {
 
 ipcRenderer.on(TEAMS_ORDER_PREFERENCE_UPDATED, (_, teamsOrder) => {
     window.postMessage({type: TEAMS_ORDER_PREFERENCE_UPDATED, message: {teamsOrder}}, window.location.origin);
+});
+
+ipcRenderer.on(GET_SERVER_THEME, () => {
+    window.postMessage({type: GET_SERVER_THEME, message: {}}, window.location.origin);
 });
 
 /**
