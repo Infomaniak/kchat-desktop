@@ -1,4 +1,9 @@
+@import url("../fonts.css");
 @import url("../_css_variables.scss");
+
+body {
+    font-family: "Open Sans", sans-serif;
+}
 
 .ShortcutTooltip {
     width: fit-content;
