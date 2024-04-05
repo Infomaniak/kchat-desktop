@@ -53,6 +53,7 @@
     "main.notifications.mention.title": "Qualcuno ti ha menzionato/a",
     "main.notifications.download.complete.title": "Download completato",
     "main.menus.tray.settings": "Impostazioni...",
+    "main.menus.tray.quit": "Esci da {appName}",
     "main.menus.app.window.zoom": "Zoom",
     "main.menus.app.view.find": "Trova..",
     "main.menus.app.history.forward": "Avanti",

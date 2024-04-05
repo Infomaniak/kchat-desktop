@@ -108,6 +108,7 @@
   "main.menus.app.window.zoom": "Zoom",
   "main.menus.tray.preferences": "Preferences...",
   "main.menus.tray.settings": "Settings...",
+  "main.menus.tray.quit": "Quit {appName}",
   "main.notifications.download.complete.body": "Download Complete \n {fileName}",
   "main.notifications.download.complete.title": "Download Complete",
   "main.notifications.mention.title": "Someone mentioned you",
