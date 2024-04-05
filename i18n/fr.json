@@ -293,7 +293,7 @@
     "label.denyPermanently": "Décliner Définitivement",
     "renderer.components.welcomeScreen.slides.boards.subtitle": "Expédiez à temps, à chaque fois, grâce à une solution de gestion des projets et des tâches conçue pour les opérations numériques.",
     "renderer.components.welcomeScreen.slides.playbooks.title": "Playbooks",
-    "main.permissionsManager.checkPermission.dialog.message.notifications": "{appName} ({url}) souhaite vous envoyer des notifications.",
+    "main.permissionsManager.checkPermission.dialog.message.notifications": "{appName} souhaite vous envoyer des notifications.",
     "renderer.components.welcomeScreen.slides.boards.title": "Tableaux",
     "main.permissionsManager.checkPermission.dialog.detail.geolocation": "{appName} utilisera votre emplacement pour configurer votre fuseau horaire. Vous pouvez toujours modifier ce paramètre ultérieurement dans les réglages de votre ordinateur.",
     "main.permissionsManager.checkPermission.dialog.message.media": "{appName} ({url}) souhaite accéder au microphone et à la caméra.",

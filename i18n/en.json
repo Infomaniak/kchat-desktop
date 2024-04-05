@@ -121,7 +121,7 @@
   "main.permissionsManager.checkPermission.dialog.detail.notifications": "{appName} will send you notifications for messages and calls. You can configure your notification preferences in Settings.",
   "main.permissionsManager.checkPermission.dialog.message.geolocation": "{appName} ({url}) would like to access your location.",
   "main.permissionsManager.checkPermission.dialog.message.media": "{appName} ({url}) would like to access the microphone and camera.",
-  "main.permissionsManager.checkPermission.dialog.message.notifications": "{appName} ({url}) would like to send you notifications.",
+  "main.permissionsManager.checkPermission.dialog.message.notifications": "{appName} would like to send you notifications.",
   "main.permissionsManager.checkPermission.dialog.title": "Permission Requested",
   "main.tray.tray.expired": "Session Expired: Please sign in to continue receiving notifications.",
   "main.tray.tray.mention": "You have been mentioned",
