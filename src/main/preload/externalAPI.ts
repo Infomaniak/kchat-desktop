@@ -327,7 +327,6 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
     case 'get-app-version': {
         // register with the webapp to enable custom integration functionality
         ipcRenderer.invoke(GET_APP_INFO).then((info) => {
-
             ipcRenderer.invoke(GET_APP_THEME).then((theme) => {
                 console.log(`registering ${info.name} v${info.version} with the server`);
                 window.postMessage(
@@ -335,7 +334,7 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
                         type: 'register-desktop',
                         message: {
                             ...info,
-                            theme
+                            theme,
                         },
                     },
                     window.location.origin || '*',
@@ -439,6 +438,7 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
     case DESKTOP_SOURCES_MODAL_REQUEST:
     case CALLS_POPOUT_FOCUS: {
         ipcRenderer.send(type);
+        break;
     }
     case THEME_CHANGED: {
         ipcRenderer.send(THEME_CHANGED, message.callID, message);
@@ -611,11 +611,11 @@ ipcRenderer.on(THEME_CHANGED, (_, theme) => {
     window.postMessage(
         {
             type: 'theme-changed-global',
-            theme
+            theme,
         },
         window.location.origin,
     );
-})
+});
 
 // push user activity updates to the webapp
 ipcRenderer.on(USER_ACTIVITY_UPDATE, (event, userIsActive, isSystemEvent) => {
