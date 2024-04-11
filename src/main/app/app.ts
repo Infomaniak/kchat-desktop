@@ -1,7 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {app, BrowserWindow, Event, dialog, WebContents, Certificate, Details} from 'electron';
+import type {BrowserWindow, Event, WebContents, Certificate, Details} from 'electron';
+import {app, dialog} from 'electron';
 
 import {Logger} from 'common/log';
 import {parseURL} from 'common/utils/url';
@@ -63,22 +64,6 @@ export function handleAppBrowserWindowCreated(event: Event, newWindow: BrowserWi
 export function handleAppWillFinishLaunching() {
     // Protocol handler for osx
     app.on('open-url', (event, url) => {
-        // if (process.platform === 'linux' && url.includes('ktalk://auth-desktop')) {
-        //     if (app.isReady()) {
-        //         const currentServerURL = WindowManager.getCurrentServerUrl();
-
-        //         const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
-        //         openDeepLink(newUrl);
-        //     } else {
-        //         const currentServerURL = WindowManager.getCurrentServerUrl();
-
-        //         const newUrl = url.replace('ktalk://auth-desktop', `${currentServerURL}/login`);
-        //         app.once('ready', () => openDeepLink(newUrl));
-        //     }
-
-        // // return url;
-        // }
-
         log.info(`Handling deeplinking url: ${url}`);
         event.preventDefault();
         const deeplinkingUrl = getDeeplinkingURL([url]);

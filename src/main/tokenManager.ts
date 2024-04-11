@@ -10,8 +10,9 @@ import log from 'electron-log';
 
 import {UPDATE_PATHS} from 'common/communication';
 
+import {tokenApiEndpoint} from '../common/config/ikConfig';
+
 import {tokensStorePath} from './constants';
-import {tokenApiEndpoint} from '../common/config/ikConfig'
 
 // import * as Validator from '../common/Validator';
 
@@ -19,6 +20,7 @@ type Token = {
     token: string;
     refreshToken?: string;
     encrypted?: boolean;
+
     // expiresAt: number;
 }
 
@@ -39,7 +41,7 @@ export class TokenManager {
         this.data = {};
         this.requestPromise = undefined;
         this.revokePromise = undefined;
-        this.safeStorageAvailable = safeStorage.isEncryptionAvailable()
+        this.safeStorageAvailable = safeStorage.isEncryptionAvailable();
     }
 
     load = (): Promise<Token | Error | Record<string, never>> => {
@@ -47,9 +49,9 @@ export class TokenManager {
             let storeStr;
             try {
                 storeStr = fs.readFileSync(tokensStorePath, 'utf-8');
-                let jsonData = (typeof storeStr === 'object'
-                    ? storeStr
-                    : JSON.parse(storeStr));
+                const jsonData = (typeof storeStr === 'object' ?
+                    storeStr :
+                    JSON.parse(storeStr));
 
                 // jsonData = Validator.validateTokensStore(jsonData);
 
@@ -102,7 +104,7 @@ export class TokenManager {
     handleStoreToken = (_: IpcMainEvent, message: Token) => {
         this.data = {
             token: message.token,
-            encrypted: true
+            encrypted: true,
         };
 
         log.silly('tokenManager.handleStoreToken');
@@ -155,7 +157,7 @@ export class TokenManager {
                         try {
                             const data = JSON.parse(raw) as Record<string, string>;
                             // eslint-disable-next-line @typescript-eslint/naming-convention
-                            const { access_token, expires_in, refresh_token } = data;
+                            const {access_token, expires_in, refresh_token} = data;
                             this.data = {
                                 token: access_token,
                                 refreshToken: refresh_token,
@@ -280,25 +282,25 @@ export class TokenManager {
             if (tokenObj.encrypted) {
                 delete tokenObj.encrypted;
             }
-            this.save(tokenObj)
+            this.save(tokenObj);
             return tokenObj;
-
-        };
+        }
 
         try {
             const encryptedString = safeStorage.encryptString(tokenObj.token);
             const token = {
                 token: encryptedString.toString('base64'),
-                encrypted: true
+                encrypted: true,
             };
             this.save(token);
+
             // return decrypted version for operations.
             return {
                 token: tokenObj.token,
-                encrypted: true
+                encrypted: true,
             };
         } catch (error) {
-            log.error('Token encryption did not work', error)
+            log.error('Token encryption did not work', error);
             if (tokenObj.encrypted) {
                 delete tokenObj.encrypted;
             }
@@ -317,16 +319,15 @@ export class TokenManager {
         }
 
         try {
-            const buffer = Buffer.from(tokenObj.token, 'base64')
+            const buffer = Buffer.from(tokenObj.token, 'base64');
             return {
                 ...tokenObj,
-                token: safeStorage.decryptString(buffer)
-            }
+                token: safeStorage.decryptString(buffer),
+            };
         } catch (error) {
-            log.error('Token decryption did not work', error)
-            return tokenObj
+            log.error('Token decryption did not work', error);
+            return tokenObj;
         }
-
     }
 }
 

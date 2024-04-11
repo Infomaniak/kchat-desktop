@@ -2,16 +2,15 @@
 // See LICENSE.txt for license information.
 
 import fs from 'fs';
-
+import os from 'os';
 import path from 'path';
 
-import os from 'os';
+import {EventEmitter} from 'events';
 
-import { EventEmitter } from 'events';
+import type {BrowserWindowConstructorOptions, Event, Input} from 'electron';
+import {app, BrowserWindow, dialog, globalShortcut, ipcMain, screen, systemPreferences} from 'electron';
 
-import { app, BrowserWindow, BrowserWindowConstructorOptions, dialog, Event, globalShortcut, Input, ipcMain, screen } from 'electron';
-
-import { SavedWindowState } from 'types/mainWindow';
+import type {SavedWindowState} from 'types/mainWindow';
 
 import AppState from 'common/appState';
 import {
@@ -30,20 +29,22 @@ import {
     TOGGLE_SECURE_INPUT,
 } from 'common/communication';
 import Config from 'common/config';
-import { Logger } from 'common/log';
+import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
-import { DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_WIDTH, SECOND } from 'common/utils/constants';
+import {DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_WIDTH, SECOND} from 'common/utils/constants';
 import Utils from 'common/utils/util';
 import * as Validator from 'common/Validator';
-
-import { boundsInfoPath } from 'main/constants';
-import { localizeMessage } from 'main/i18nManager';
+import {boundsInfoPath} from 'main/constants';
+import {localizeMessage} from 'main/i18nManager';
 
 import ContextMenu from '../contextMenu';
-import { getLocalPreload, getLocalURLString, isInsideRectangle } from '../utils';
+import {getLocalPreload, getLocalURLString, isInsideRectangle} from '../utils';
 
 const log = new Logger('MainWindow');
 const ALT_MENU_KEYS = ['Alt+F', 'Alt+E', 'Alt+V', 'Alt+H', 'Alt+W', 'Alt+P'];
+
+systemPreferences.setUserDefault('NSDisabledDictationMenuItem', 'boolean', true);
+systemPreferences.setUserDefault('NSDisabledCharacterPaletteMenuItem', 'boolean', true);
 
 export class MainWindow extends EventEmitter {
     private win?: BrowserWindow;
@@ -51,7 +52,7 @@ export class MainWindow extends EventEmitter {
     private savedWindowState?: SavedWindowState;
     private ready: boolean;
     private isResizing: boolean;
-    private lastEmittedBounds?: Electron.Rectangle
+    private lastEmittedBounds?: Electron.Rectangle;
 
     constructor() {
         super();
@@ -82,11 +83,11 @@ export class MainWindow extends EventEmitter {
             frame: !this.isFramelessWindow(),
             fullscreen: this.shouldStartFullScreen(),
             titleBarStyle: 'hidden' as const,
-            trafficLightPosition: { x: 12, y: 12 },
+            trafficLightPosition: {x: 12, y: 12},
             backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
             webPreferences: {
                 disableBlinkFeatures: 'Auxclick',
-                preload: getLocalPreload('desktopAPI.js'),
+                preload: getLocalPreload('internalAPI.js'),
                 spellcheck: typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker,
             },
         });
@@ -143,9 +144,9 @@ export class MainWindow extends EventEmitter {
         this.win.webContents.on('before-input-event', this.onBeforeInputEvent);
 
         // Should not allow the main window to generate a window of its own
-        this.win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+        this.win.webContents.setWindowOpenHandler(() => ({action: 'deny'}));
         if (process.env.MM_DEBUG_SETTINGS) {
-            this.win.webContents.openDevTools({ mode: 'detach' });
+            this.win.webContents.openDevTools({mode: 'detach'});
         }
 
         const contextMenu = new ContextMenu({}, this.win);
@@ -158,7 +159,7 @@ export class MainWindow extends EventEmitter {
             });
 
         this.emit(MAIN_WINDOW_CREATED);
-    }
+    };
 
     get isReady() {
         return this.ready;
@@ -166,9 +167,9 @@ export class MainWindow extends EventEmitter {
 
     get = () => {
         return this.win;
-    }
+    };
 
-    show = async () => {
+    show = () => {
         if (this.win && this.isReady) {
             // There's a bug on Windows in Electron where if the window is snapped, it will unsnap when you call show()
             // See here: https://github.com/electron/electron/issues/25359
@@ -184,11 +185,9 @@ export class MainWindow extends EventEmitter {
                 this.win.show();
             }
         } else {
-            // Keep this "app ready" check to avoid the error "Cannot create BrowserWindow before app is ready".
-            (!app.isReady) && await app.whenReady();
             this.init();
         }
-    }
+    };
 
     getBounds = (): Electron.Rectangle | undefined => {
         if (!this.win) {
@@ -200,22 +199,22 @@ export class MainWindow extends EventEmitter {
         // https://github.com/electron/electron/issues/28106
         if (process.platform === 'linux') {
             const size = this.win.getSize();
-            return { ...this.win.getContentBounds(), width: size[0], height: size[1] };
+            return {...this.win.getContentBounds(), width: size[0], height: size[1]};
         }
 
         return this.win.getContentBounds();
-    }
+    };
 
     focusThreeDotMenu = () => {
         if (this.win) {
             this.win.webContents.focus();
             this.win.webContents.send(FOCUS_THREE_DOT_MENU);
         }
-    }
+    };
 
     sendToRenderer = (channel: string, ...args: unknown[]) => {
         this.sendToRendererWithRetry(3, channel, ...args);
-    }
+    };
 
     private sendToRendererWithRetry = (maxRetries: number, channel: string, ...args: unknown[]) => {
         if (!this.win || !this.isReady) {
@@ -230,7 +229,7 @@ export class MainWindow extends EventEmitter {
             return;
         }
         this.win.webContents.send(channel, ...args);
-    }
+    };
 
     private shouldStartFullScreen = () => {
         if (global?.args?.fullscreen !== undefined) {
@@ -241,11 +240,11 @@ export class MainWindow extends EventEmitter {
             return Config.startInFullscreen;
         }
         return this.savedWindowState?.fullscreen || false;
-    }
+    };
 
     private isFramelessWindow = () => {
         return os.platform() === 'darwin' || (os.platform() === 'win32' && Utils.isVersionGreaterThanOrEqualTo(os.release(), '6.2'));
-    }
+    };
 
     private getSavedWindowState = () => {
         let savedWindowState: any;
@@ -263,10 +262,10 @@ export class MainWindow extends EventEmitter {
             log.error(e);
 
             // Follow Electron's defaults, except for window dimensions which targets 1024x768 screen resolution.
-            savedWindowState = { width: DEFAULT_WINDOW_WIDTH, height: DEFAULT_WINDOW_HEIGHT };
+            savedWindowState = {width: DEFAULT_WINDOW_WIDTH, height: DEFAULT_WINDOW_HEIGHT};
         }
         return savedWindowState;
-    }
+    };
 
     private saveWindowState = (file: string, window: BrowserWindow) => {
         const windowState: SavedWindowState = {
@@ -277,10 +276,10 @@ export class MainWindow extends EventEmitter {
         try {
             fs.writeFileSync(file, JSON.stringify(windowState));
         } catch (e) {
-            // [Linux] error happens only when the window state is changed before the config dir is created.
+        // [Linux] error happens only when the window state is changed before the config dir is created.
             log.error('failed to save window state', e);
         }
-    }
+    };
 
     private onBeforeInputEvent = (event: Event, input: Input) => {
         // Register keyboard shortcuts
@@ -295,7 +294,7 @@ export class MainWindow extends EventEmitter {
                 }
             }
         }
-    }
+    };
 
     private onFocus = () => {
         // Only add shortcuts when window is in focus
@@ -307,7 +306,7 @@ export class MainWindow extends EventEmitter {
 
         this.emit(MAIN_WINDOW_RESIZED, this.getBounds());
         this.emit(MAIN_WINDOW_FOCUSED);
-    }
+    };
 
     private onBlur = () => {
         if (!this.win) {
@@ -325,7 +324,7 @@ export class MainWindow extends EventEmitter {
         // 'blur' event was effective in order to avoid this.
         // Ideally, app should detect that OS is shutting down.
         this.saveWindowState(boundsInfoPath, this.win);
-    }
+    };
 
     private onClose = (event: Event) => {
         log.debug('onClose');
@@ -343,66 +342,66 @@ export class MainWindow extends EventEmitter {
                 window.hide();
             }
             switch (process.platform) {
-                case 'win32':
-                case 'linux':
-                    if (Config.minimizeToTray) {
-                        if (Config.alwaysMinimize) {
-                            hideWindow(this.win);
-                        } else {
-                            dialog.showMessageBox(this.win, {
-                                title: localizeMessage('main.windows.mainWindow.minimizeToTray.dialog.title', 'Minimize to Tray'),
-                                message: localizeMessage('main.windows.mainWindow.minimizeToTray.dialog.message', '{appName} will continue to run in the system tray. This can be disabled in Settings.', { appName: app.name }),
-                                type: 'info',
-                                checkboxChecked: true,
-                                checkboxLabel: localizeMessage('main.windows.mainWindow.minimizeToTray.dialog.checkboxLabel', 'Don\'t show again'),
-                            }).then((result: { response: number; checkboxChecked: boolean }) => {
-                                Config.set('alwaysMinimize', result.checkboxChecked);
-                                hideWindow(this.win!);
-                            });
-                        }
-                    } else if (Config.alwaysClose) {
-                        app.quit();
+            case 'win32':
+            case 'linux':
+                if (Config.minimizeToTray) {
+                    if (Config.alwaysMinimize) {
+                        hideWindow(this.win);
                     } else {
                         dialog.showMessageBox(this.win, {
-                            title: localizeMessage('main.windows.mainWindow.closeApp.dialog.title', 'Close Application'),
-                            message: localizeMessage('main.windows.mainWindow.closeApp.dialog.message', 'Are you sure you want to quit?'),
-                            detail: localizeMessage('main.windows.mainWindow.closeApp.dialog.detail', 'You will no longer receive notifications for messages. If you want to leave {appName} running in the system tray, you can enable this in Settings.', { appName: app.name }),
-                            type: 'question',
-                            buttons: [
-                                localizeMessage('label.yes', 'Yes'),
-                                localizeMessage('label.no', 'No'),
-                            ],
+                            title: localizeMessage('main.windows.mainWindow.minimizeToTray.dialog.title', 'Minimize to Tray'),
+                            message: localizeMessage('main.windows.mainWindow.minimizeToTray.dialog.message', '{appName} will continue to run in the system tray. This can be disabled in Settings.', {appName: app.name}),
+                            type: 'info',
                             checkboxChecked: true,
-                            checkboxLabel: localizeMessage('main.windows.mainWindow.closeApp.dialog.checkboxLabel', 'Don\'t ask again'),
-                        }).then((result: { response: number; checkboxChecked: boolean }) => {
-                            Config.set('alwaysClose', result.checkboxChecked && result.response === 0);
-                            if (result.response === 0) {
-                                app.quit();
-                            }
+                            checkboxLabel: localizeMessage('main.windows.mainWindow.minimizeToTray.dialog.checkboxLabel', 'Don\'t show again'),
+                        }).then((result: {response: number; checkboxChecked: boolean}) => {
+                            Config.set('alwaysMinimize', result.checkboxChecked);
+                            hideWindow(this.win!);
                         });
                     }
-                    break;
-                case 'darwin':
-                    // need to leave fullscreen first, then hide the window
-                    if (this.win.isFullScreen()) {
-                        this.win.once('leave-full-screen', () => {
-                            app.hide();
-                        });
-                        this.win.setFullScreen(false);
-                    } else {
+                } else if (Config.alwaysClose) {
+                    app.quit();
+                } else {
+                    dialog.showMessageBox(this.win, {
+                        title: localizeMessage('main.windows.mainWindow.closeApp.dialog.title', 'Close Application'),
+                        message: localizeMessage('main.windows.mainWindow.closeApp.dialog.message', 'Are you sure you want to quit?'),
+                        detail: localizeMessage('main.windows.mainWindow.closeApp.dialog.detail', 'You will no longer receive notifications for messages. If you want to leave {appName} running in the system tray, you can enable this in Settings.', {appName: app.name}),
+                        type: 'question',
+                        buttons: [
+                            localizeMessage('label.yes', 'Yes'),
+                            localizeMessage('label.no', 'No'),
+                        ],
+                        checkboxChecked: true,
+                        checkboxLabel: localizeMessage('main.windows.mainWindow.closeApp.dialog.checkboxLabel', 'Don\'t ask again'),
+                    }).then((result: {response: number; checkboxChecked: boolean}) => {
+                        Config.set('alwaysClose', result.checkboxChecked && result.response === 0);
+                        if (result.response === 0) {
+                            app.quit();
+                        }
+                    });
+                }
+                break;
+            case 'darwin':
+                // need to leave fullscreen first, then hide the window
+                if (this.win.isFullScreen()) {
+                    this.win.once('leave-full-screen', () => {
                         app.hide();
-                    }
-                    break;
-                default:
+                    });
+                    this.win.setFullScreen(false);
+                } else {
+                    app.hide();
+                }
+                break;
+            default:
             }
         }
-    }
+    };
 
     private onClosed = () => {
         log.verbose('main window closed');
         delete this.win;
         this.ready = false;
-    }
+    };
 
     private onUnresponsive = () => {
         if (!this.win) {
@@ -417,13 +416,13 @@ export class MainWindow extends EventEmitter {
                 localizeMessage('label.yes', 'Yes'),
             ],
             defaultId: 0,
-        }).then(({ response }) => {
+        }).then(({response}) => {
             if (response === 0) {
                 log.error('BrowserWindow \'unresponsive\' event has been emitted');
                 app.relaunch();
             }
         });
-    }
+    };
 
     private emitBounds = (bounds?: Electron.Rectangle, force?: boolean) => {
         // Workaround since the window bounds aren't updated immediately when the window is maximized for some reason
@@ -440,27 +439,27 @@ export class MainWindow extends EventEmitter {
             this.emit(MAIN_WINDOW_RESIZED, newBounds);
             this.lastEmittedBounds = newBounds;
         }, 10);
-    }
+    };
 
     private onMaximize = () => {
         this.win?.webContents.send(MAXIMIZE_CHANGE, true);
         this.emitBounds();
-    }
+    };
 
     private onUnmaximize = () => {
         this.win?.webContents.send(MAXIMIZE_CHANGE, false);
         this.emitBounds();
-    }
+    };
 
     private onEnterFullScreen = () => {
         this.win?.webContents.send('enter-full-screen');
         this.emitBounds();
-    }
+    };
 
     private onLeaveFullScreen = () => {
         this.win?.webContents.send('leave-full-screen');
         this.emitBounds();
-    }
+    };
 
     /**
      * Resizing code
@@ -489,7 +488,7 @@ export class MainWindow extends EventEmitter {
 
         this.isResizing = true;
         this.emitBounds(newBounds);
-    }
+    };
 
     private onResize = () => {
         log.silly('onResize');
@@ -499,7 +498,7 @@ export class MainWindow extends EventEmitter {
             return;
         }
         this.emitBounds();
-    }
+    };
 
     private onResized = () => {
         log.debug('onResized');
@@ -507,18 +506,18 @@ export class MainWindow extends EventEmitter {
         // Because this is the final window state after a resize, we force the size here
         this.emitBounds(this.getBounds(), true);
         this.isResizing = false;
-    }
+    };
 
     private handleViewFinishedResizing = () => {
         this.isResizing = false;
-    }
+    };
 
     /**
      * Server Manager update handler
      */
     private handleUpdateConfig = () => {
         this.win?.webContents.send(SERVERS_UPDATE);
-    }
+    };
 
     /**
      * App State update handler
@@ -526,7 +525,7 @@ export class MainWindow extends EventEmitter {
 
     private handleUpdateAppStateForViewId = (viewId: string, isExpired: boolean, newMentions: number, newUnreads: boolean) => {
         this.win?.webContents.send(UPDATE_MENTIONS, viewId, newMentions, newUnreads, isExpired);
-    }
+    };
 }
 
 const mainWindow = new MainWindow();

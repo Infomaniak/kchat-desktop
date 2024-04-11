@@ -189,7 +189,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
                 this.clearFile(file);
             }
         }
-    }
+    };
 
     checkForDeletedFiles = () => {
         log.debug('checkForDeletedFiles');
@@ -388,7 +388,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
             startFrom,
             localizeMessage('main.downloadsManager.specifyDownloadsFolder', 'Specify the folder where files will download'),
         );
-    }
+    };
 
     private selectDefaultDownloadDirectory = async (startFrom: string, message: string) => {
         log.debug('handleSelectDownload', startFrom);
@@ -398,7 +398,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
             properties:
         ['openDirectory', 'createDirectory', 'dontAddToRecent', 'promptToCreate']});
         return result.filePaths[0];
-    }
+    };
 
     private verifyMacAppStoreDownloadFolder = async (fileName: string) => {
         let downloadLocation = Config.downloadLocation;
@@ -421,7 +421,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
         }
 
         return downloadLocation;
-    }
+    };
 
     private markFileAsDeleted = (item: DownloadedItem) => {
         const fileId = this.getDownloadedFileId(item);
@@ -650,7 +650,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
 
     private getBookmark = (item: DownloadItem) => {
         return this.bookmarks.get(this.getFileId(item))?.bookmark;
-    }
+    };
 
     private getFileSize = (item: DownloadItem) => {
         const itemTotalBytes = item.getTotalBytes();

@@ -3,10 +3,12 @@
 
 import path from 'path';
 
-import { app, ipcMain, nativeTheme, session } from 'electron';
+import {app, ipcMain, nativeTheme, session} from 'electron';
 import isDev from 'electron-is-dev';
-import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-extension-installer';
-import { init } from '@sentry/electron/main';
+import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-extension-installer';
+import {init} from '@sentry/electron/main';
+
+import {ConfigServer} from 'types/config';
 
 import {
     FOCUS_BROWSERVIEW,
@@ -35,18 +37,19 @@ import {
     UPDATE_TEAMS,
     SERVERS_UPDATE,
     GET_APP_THEME,
+    GET_APP_INFO,
 } from 'common/communication';
 import Config from 'common/config';
-import { Logger } from 'common/log';
+import {Logger} from 'common/log';
 
 import AllowProtocolDialog from 'main/allowProtocolDialog';
 import AppVersionManager from 'main/AppVersionManager';
 import AuthManager from 'main/authManager';
 import AutoLauncher from 'main/AutoLauncher';
 import updateManager from 'main/autoUpdater';
-import { setupBadge } from 'main/badge';
+import {setupBadge} from 'main/badge';
 import CertificateManager from 'main/certificateManager';
-import { configPath, updatePaths } from 'main/constants';
+import {configPath, updatePaths} from 'main/constants';
 import CriticalErrorHandler from 'main/CriticalErrorHandler';
 import downloadsManager from 'main/downloadsManager';
 import i18nManager from 'main/i18nManager';
@@ -59,11 +62,15 @@ import TokenManager from 'main/tokenManager';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
 
-import { protocols } from '../../../electron-builder.json';
+import {protocols} from '../../../electron-builder.json';
 
-import { IKDriveAllowedUrls, IKLoginAllowedUrls, KChatTokenWhitelist } from 'common/utils/constants';
+import {IKDriveAllowedUrls, IKLoginAllowedUrls, IKWelcomeAllowedUrls, KChatTokenWhitelist} from 'common/utils/constants';
 
 import ServerManager from 'common/servers/serverManager';
+
+import buildConfig from 'common/config/buildConfig';
+
+import {IKOrigin, devServerUrl, isLocalEnv} from 'common/config/ikConfig';
 
 import {
     handleAppBeforeQuit,
@@ -111,9 +118,6 @@ import {
     handleMinimize,
     handleRestore,
 } from './windows';
-import { ConfigServer } from 'types/config';
-import buildConfig from 'common/config/buildConfig';
-import { IKOrigin, devServerUrl, isLocalEnv } from 'common/config/ikConfig';
 
 export const mainProtocol = protocols?.[0]?.schemes?.[0];
 
@@ -273,8 +277,8 @@ function initializeBeforeAppReady() {
 
 function initializeInterCommunicationEventListeners() {
     ipcMain.on(NOTIFY_MENTION, handleMentionNotification);
-    ipcMain.handle('get-app-version', handleAppVersion);
     ipcMain.handle(GET_APP_THEME, handleGetTheme);
+    ipcMain.handle(GET_APP_INFO, handleAppVersion);
     ipcMain.on(UPDATE_SHORTCUT_MENU, handleUpdateMenuEvent);
     ipcMain.on(FOCUS_BROWSERVIEW, ViewManager.focusCurrentView);
 
@@ -292,7 +296,7 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.handle(GET_CONFIGURATION, handleGetConfiguration);
     ipcMain.handle(GET_LOCAL_CONFIGURATION, handleGetLocalConfiguration);
     ipcMain.on(UPDATE_CONFIGURATION, updateConfiguration);
-    ipcMain.handle(UPDATE_TEAMS, updateTeamsHandler);
+    ipcMain.on(UPDATE_TEAMS, updateTeamsHandler);
     ipcMain.handle(GET_DARK_MODE, handleGetDarkMode);
     ipcMain.on(WINDOW_CLOSE, handleClose);
     ipcMain.on(WINDOW_MAXIMIZE, handleMaximize);
@@ -304,9 +308,17 @@ function initializeInterCommunicationEventListeners() {
 }
 
 function updateTeamsHandler(_: any, servers: ConfigServer[]) {
-
     const [defaultServer] = buildConfig.defaultServers!;
     const [firstServer] = servers;
+
+    if (!servers.length) {
+        ServerManager.removePredefinedServersHandler(true);
+        ServerManager.removePredefinedServersHandler(false);
+
+        ServerManager.emit(SERVERS_UPDATE);
+
+        return;
+    }
 
     // Check if it's first call to fetch kchat info with kchat.infomaniak.com
     if (defaultServer?.url && firstServer.url === defaultServer.url) {
@@ -327,10 +339,12 @@ function initIKserver() {
 
 function initReceivedServer(servers: ConfigServer[]) {
     ServerManager.removePredefinedServersHandler(true);
-    servers.forEach(server => {
-        if (ServerManager.serverNameExist(server)) return
+    servers.forEach((server) => {
+        if (ServerManager.serverNameExist(server)) {
+            return;
+        }
         ServerManager.addServer(server);
-    })
+    });
 }
 
 async function initializeAfterAppReady() {
@@ -344,7 +358,7 @@ async function initializeAfterAppReady() {
 
     app.setAppUserModelId('Kchat.Desktop'); // Use explicit AppUserModelID
     const defaultSession = session.defaultSession;
-    defaultSession.webRequest.onHeadersReceived({ urls: IKLoginAllowedUrls },
+    defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
         (d, c) => {
             if (d.url.includes('/token') && d.responseHeaders) {
                 if (!d.responseHeaders['access-control-allow-origin']) {
@@ -371,24 +385,25 @@ async function initializeAfterAppReady() {
     /*
         Inject token, for kdrive, images and websocket, rest is handled by the web client.
      */
-    defaultSession.webRequest.onBeforeSendHeaders({ urls: [
+    defaultSession.webRequest.onBeforeSendHeaders({urls: [
         ...KChatTokenWhitelist,
-        ...IKDriveAllowedUrls
-    ] },
-        (d, c) => {
-            const authHeader = d.requestHeaders.Authorization ? d.requestHeaders.Authorization : null;
-            const ikToken = TokenManager.getToken();
+        ...IKDriveAllowedUrls,
+        ...IKWelcomeAllowedUrls,
+    ]},
+    (d, c) => {
+        const authHeader = d.requestHeaders.Authorization ? d.requestHeaders.Authorization : null;
+        const ikToken = TokenManager.getToken();
 
-            // No Authorization header or bearer is empty
-            if ((!authHeader || !authHeader?.split(' ')[1]) && ikToken.token) {
-                d.requestHeaders.Authorization = `Bearer ${ikToken.token}`;
-            }
+        // No Authorization header or bearer is empty
+        if ((!authHeader || !authHeader?.split(' ')[1]) && ikToken.token) {
+            d.requestHeaders.Authorization = `Bearer ${ikToken.token}`;
+        }
 
-            c({
-                cancel: false,
-                requestHeaders: d.requestHeaders,
-            });
-        },
+        c({
+            cancel: false,
+            requestHeaders: d.requestHeaders,
+        });
+    },
     );
     if (process.platform !== 'darwin') {
         defaultSession.on('spellcheck-dictionary-download-failure', (event, lang) => {
@@ -467,7 +482,7 @@ async function initializeAfterAppReady() {
     // listen for status updates and pass on to renderer
     UserActivityMonitor.on('status', (status) => {
         log.debug('UserActivityMonitor.on(status)', status);
-        ViewManager.sendToAllViews(USER_ACTIVITY_UPDATE, status);
+        ViewManager.sendToAllViews(USER_ACTIVITY_UPDATE, status.userIsActive, status.idleTime, status.isSystemEvent);
     });
 
     // start monitoring user activity (needs to be started after the app is ready)

@@ -17,9 +17,8 @@ module.exports = merge(base, {
         index: './src/main/app/index.ts',
         call: './src/main/preload/call.js',
         callDial: './src/main/preload/callDial.js',
-        desktopAPI: './src/main/preload/desktopAPI.js',
-        preload: './src/main/preload/mattermost.js',
-        callsWidget: './src/main/preload/callsWidget.js',
+        internalAPI: './src/main/preload/internalAPI.js',
+        externalAPI: './src/main/preload/externalAPI.ts',
     },
     externals: {
         'macos-notification-state': 'require("macos-notification-state")',
