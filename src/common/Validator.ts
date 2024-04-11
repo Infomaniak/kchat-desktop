@@ -149,6 +149,7 @@ const configDataSchemaV3 = Joi.object<ConfigV3>({
     alwaysClose: Joi.boolean(),
     logLevel: Joi.string().default('info'),
     appLanguage: Joi.string().allow(''),
+    theme: Joi.object().default(undefined),
 });
 
 // eg. data['community.mattermost.com'] = { data: 'certificate data', issuerName: 'COMODO RSA Domain Validation Secure Server CA'};
@@ -162,7 +163,7 @@ const certificateStoreSchema = Joi.object().pattern(
 
 const tokenStoreSchema = Joi.object({
     token: Joi.string().required(),
-    encrypted: Joi.boolean().optional()
+    encrypted: Joi.boolean().optional(),
 });
 
 const originPermissionsSchema = Joi.object<TrustedOrigin>().keys({

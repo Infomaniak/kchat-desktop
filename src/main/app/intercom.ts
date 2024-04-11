@@ -2,8 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {app, IpcMainEvent, IpcMainInvokeEvent, Menu} from 'electron';
-
-import ElectronStore from 'electron-store';
 import {UniqueServer} from 'types/config';
 
 import ServerViewState from 'app/serverViewState';
@@ -17,10 +15,11 @@ import {getLocalPreload, getLocalURLString} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
+import Config from 'common/config';
+
 import {handleAppBeforeQuit} from './app';
 
 const log = new Logger('App.Intercom');
-const store = new ElectronStore({name: 'app.config'});
 
 export function handleAppVersion() {
     return {
@@ -30,8 +29,7 @@ export function handleAppVersion() {
 }
 
 export function handleGetTheme() {
-    const theme = store.get('theme', null);
-    return theme;
+    return Config.theme;
 }
 
 export function handleQuit(e: IpcMainEvent, reason: string, stack: string) {
