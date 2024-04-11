@@ -115,8 +115,8 @@
       "NSCameraUsageDescription": "Camera access may be used by kChat plugins, such as kMeet video conferencing.",
       "LSFileQuarantineEnabled": true
     },
-    "bundleShortVersion": "3.0.0",
-    "bundleVersion": "9"
+    "bundleShortVersion": "3.0.1",
+    "bundleVersion": "1"
   },
   "mas": {
     "hardenedRuntime": false,
