@@ -41,6 +41,7 @@ import {
     CALL_DECLINED,
     CALL_RINGING,
     CALL_JOINED_BROWSER,
+    THEME_CHANGED,
     REQUEST_BROWSER_HISTORY_STATUS,
     LEGACY_OFF,
     UNREADS_AND_MENTIONS,
@@ -112,6 +113,7 @@ export class ViewManager {
         ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(RESET_TEAMS, this.resetTeams);
+        ipcMain.on(THEME_CHANGED, this.handleThemeChanged);
 
         ServerManager.on(SERVERS_UPDATE, this.handleReloadConfiguration);
     }
@@ -198,6 +200,11 @@ export class ViewManager {
 
     resetTeams = () => {
         ServerManager.reloadFromConfig();
+    }
+
+    handleThemeChanged = (_view: any, _viewId: any, data: object) => {
+        Config.set('theme', data);
+        viewManager.sendToAllViews(THEME_CHANGED, data);
     }
 
     handleCallJoined = (_: IpcMainEvent, message: any) => {

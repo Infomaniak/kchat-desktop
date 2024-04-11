@@ -143,6 +143,9 @@ export const SERVER_DELETED = 'server-deleted';
 export const RESET_AUTH = 'reset-auth';
 export const RESET_TEAMS = 'reset-teams-hard';
 
+export const THEME_CHANGED = 'theme-changed';
+export const GET_APP_THEME = 'get-app-theme';
+
 // Calls
 export const GET_DESKTOP_SOURCES = 'get-desktop-sources';
 export const DESKTOP_SOURCES_RESULT = 'desktop-sources-result';
