@@ -7,7 +7,6 @@ const fs = require('fs');
 const robot = require('robotjs');
 
 const {SHOW_SETTINGS_WINDOW} = require('../../src/common/communication');
-
 const env = require('../modules/environment');
 const {asyncSleep} = require('../modules/utils');
 
@@ -18,7 +17,10 @@ describe('focus', function desc() {
         ...env.demoMattermostConfig,
     };
 
-    beforeEach(async () => {
+    let firstServer;
+    let loadingScreen;
+
+    before(async () => {
         env.cleanDataDir();
         env.createTestUserDataDir();
         env.cleanTestConfig();
@@ -26,9 +28,16 @@ describe('focus', function desc() {
         await asyncSleep(1000);
         this.app = await env.getApp();
         this.serverMap = await env.getServerMap(this.app);
+
+        loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
+        await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
+        firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
+        await env.loginToMattermost(firstServer);
+        const textbox = await firstServer.waitForSelector('#post_textbox');
+        textbox.focus();
     });
 
-    afterEach(async () => {
+    after(async () => {
         if (this.app) {
             await this.app.close();
         }
@@ -36,17 +45,6 @@ describe('focus', function desc() {
     });
 
     describe('Focus textbox tests', () => {
-        let firstServer;
-
-        beforeEach(async () => {
-            const loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
-            await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
-            firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
-            await env.loginToMattermost(firstServer);
-            const textbox = await firstServer.waitForSelector('#post_textbox');
-            textbox.focus();
-        });
-
         it('MM-T1315 should return focus to the message box when closing the settings window', async () => {
             this.app.evaluate(({ipcMain}, showWindow) => {
                 ipcMain.emit(showWindow);
@@ -59,6 +57,8 @@ describe('focus', function desc() {
 
             const isTextboxFocused = await firstServer.$eval('#post_textbox', (el) => el === document.activeElement);
             isTextboxFocused.should.be.true;
+
+            await firstServer.fill('#post_textbox', '');
 
             // Make sure you can just start typing and it'll go in the post textbox
             await asyncSleep(500);
@@ -83,6 +83,8 @@ describe('focus', function desc() {
             const isTextboxFocused = await firstServer.$eval('#post_textbox', (el) => el === document.activeElement);
             isTextboxFocused.should.be.true;
 
+            await firstServer.fill('#post_textbox', '');
+
             // Make sure you can just start typing and it'll go in the post textbox
             await asyncSleep(500);
             robot.typeString('Mattermost');
@@ -106,6 +108,8 @@ describe('focus', function desc() {
             await dropdownView.click(`.ServerDropdown .ServerDropdown__button:has-text("${config.teams[0].name}")`);
             const isTextboxFocused = await firstServer.$eval('#post_textbox', (el) => el === document.activeElement);
             isTextboxFocused.should.be.true;
+
+            await firstServer.fill('#post_textbox', '');
 
             // Make sure you can just start typing and it'll go in the post textbox
             await asyncSleep(500);

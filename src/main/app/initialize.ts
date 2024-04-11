@@ -40,7 +40,10 @@ import {
 } from 'common/communication';
 import Config from 'common/config';
 import {Logger} from 'common/log';
-
+import ServerManager from 'common/servers/serverManager';
+import {IKDriveAllowedUrls, IKLoginAllowedUrls, IKWelcomeAllowedUrls, KChatTokenWhitelist} from 'common/utils/constants';
+import buildConfig from 'common/config/buildConfig';
+import {IKOrigin, devServerUrl, isLocalEnv} from 'common/config/ikConfig';
 import AllowProtocolDialog from 'main/allowProtocolDialog';
 import AppVersionManager from 'main/AppVersionManager';
 import AuthManager from 'main/authManager';
@@ -54,22 +57,12 @@ import downloadsManager from 'main/downloadsManager';
 import i18nManager from 'main/i18nManager';
 import parseArgs from 'main/ParseArgs';
 import PermissionsManager from 'main/permissionsManager';
-import TrustedOriginsStore from 'main/trustedOrigins';
 import Tray from 'main/tray/tray';
+import TrustedOriginsStore from 'main/trustedOrigins';
 import UserActivityMonitor from 'main/UserActivityMonitor';
 import TokenManager from 'main/tokenManager';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
-
-import {protocols} from '../../../electron-builder.json';
-
-import {IKDriveAllowedUrls, IKLoginAllowedUrls, IKWelcomeAllowedUrls, KChatTokenWhitelist} from 'common/utils/constants';
-
-import ServerManager from 'common/servers/serverManager';
-
-import buildConfig from 'common/config/buildConfig';
-
-import {IKOrigin, devServerUrl, isLocalEnv} from 'common/config/ikConfig';
 
 import {
     handleAppBeforeQuit,
@@ -104,9 +97,9 @@ import {
     shouldShowTrayIcon,
     updateSpellCheckerLocales,
     wasUpdated,
-    initCookieManager,
     migrateMacAppStore,
     updateServerInfos,
+    flushCookiesStore,
 } from './utils';
 import {
     handleClose,
@@ -116,6 +109,8 @@ import {
     handleMinimize,
     handleRestore,
 } from './windows';
+
+import {protocols} from '../../../electron-builder.json';
 
 export const mainProtocol = protocols?.[0]?.schemes?.[0];
 
@@ -220,6 +215,12 @@ function initializeAppEventListeners() {
     app.on('child-process-gone', handleChildProcessGone);
     app.on('login', AuthManager.handleAppLogin);
     app.on('will-finish-launching', handleAppWillFinishLaunching);
+
+    // Somehow cookies are not immediately saved to disk.
+    // So manually flush cookie store to disk on closing the app.
+    // https://github.com/electron/electron/issues/8416
+    // TODO: We can remove this once every server supported will flush on login/logout
+    app.on('before-quit', flushCookiesStore);
 }
 
 function initializeBeforeAppReady() {
@@ -274,7 +275,7 @@ function initializeBeforeAppReady() {
 }
 
 function initializeInterCommunicationEventListeners() {
-    ipcMain.on(NOTIFY_MENTION, handleMentionNotification);
+    ipcMain.handle(NOTIFY_MENTION, handleMentionNotification);
     ipcMain.handle(GET_APP_INFO, handleAppVersion);
     ipcMain.on(UPDATE_SHORTCUT_MENU, handleUpdateMenuEvent);
     ipcMain.on(FOCUS_BROWSERVIEW, ViewManager.focusCurrentView);
@@ -460,7 +461,6 @@ async function initializeAfterAppReady() {
             catch((err) => log.error('An error occurred: ', err));
     }
 
-    initCookieManager(defaultSession);
     MainWindow.show();
 
     let deeplinkingURL;

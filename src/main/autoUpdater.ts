@@ -4,14 +4,8 @@
 import path from 'path';
 
 import {dialog, ipcMain, app, nativeImage, shell, BrowserWindow} from 'electron';
-
-import {autoUpdater, CancellationToken, ProgressInfo, UpdateFileInfo, UpdateInfo} from 'electron-updater';
-
-import {Logger} from 'common/log';
-
-import downloadsManager from 'main/downloadsManager';
-import {localizeMessage} from 'main/i18nManager';
-import NotificationManager from 'main/notifications';
+import type {ProgressInfo, UpdateInfo, UpdateFileInfo} from 'electron-updater';
+import {autoUpdater, CancellationToken} from 'electron-updater';
 
 import {
     CANCEL_UPGRADE,
@@ -25,6 +19,10 @@ import {
     UPDATE_REMIND_LATER,
 } from 'common/communication';
 import Config from 'common/config';
+import {Logger} from 'common/log';
+import downloadsManager from 'main/downloadsManager';
+import {localizeMessage} from 'main/i18nManager';
+import NotificationManager from 'main/notifications';
 
 import tray from './tray/tray';
 
@@ -135,7 +133,7 @@ export class UpdateManager {
     notifyDownloaded = (): void => {
         ipcMain.emit(UPDATE_DOWNLOADED, null, this.downloadedInfo);
         NotificationManager.displayRestartToUpgrade(this.versionDownloaded || 'unknown', this.handleUpdate);
-    }
+    };
 
     handleDownloadManual = (): void => {
         if (this.macosLink?.url) {

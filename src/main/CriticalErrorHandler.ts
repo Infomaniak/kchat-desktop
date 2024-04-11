@@ -3,14 +3,12 @@
 // See LICENSE.txt for license information.
 import {spawn} from 'child_process';
 import fs from 'fs';
-
 import os from 'os';
 import path from 'path';
 
 import {app, dialog} from 'electron';
 
 import {Logger} from 'common/log';
-
 import {localizeMessage} from 'main/i18nManager';
 import { isSigPipeError } from './utils';
 
@@ -20,7 +18,7 @@ export class CriticalErrorHandler {
     init = () => {
         process.on('unhandledRejection', this.processUncaughtExceptionHandler);
         process.on('uncaughtException', this.processUncaughtExceptionHandler);
-    }
+    };
 
     private processUncaughtExceptionHandler = (err: Error) => {
         if (process.env.NODE_ENV === 'test') {
@@ -38,7 +36,7 @@ export class CriticalErrorHandler {
                 this.showExceptionDialog(err);
             });
         }
-    }
+    };
 
     private showExceptionDialog = (err: Error) => {
         const file = path.join(app.getPath('userData'), `uncaughtException-${Date.now()}.txt`);
@@ -96,7 +94,7 @@ export class CriticalErrorHandler {
             }
             app.exit(-1);
         });
-    }
+    };
 
     private openDetachedExternal = (url: string) => {
         const spawnOption = {detached: true, stdio: 'ignore' as const};
@@ -110,7 +108,7 @@ export class CriticalErrorHandler {
         default:
             return undefined;
         }
-    }
+    };
 
     private createErrorReport = (err: Error) => {
         // eslint-disable-next-line no-undef
@@ -119,7 +117,7 @@ export class CriticalErrorHandler {
         return `Application: ${app.name} ${app.getVersion()}${__HASH_VERSION__ ? ` [commit: ${__HASH_VERSION__}]` : ''}\n` +
              `Platform: ${os.type()} ${os.release()} ${os.arch()}\n` +
              `${err.stack}`;
-    }
+    };
 }
 
 const criticalErrorHandler = new CriticalErrorHandler();

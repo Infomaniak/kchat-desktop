@@ -29,9 +29,10 @@
 
 const path = require('path');
 
-const chai = require('chai');
 const generator = require('mochawesome-report-generator');
 
+const {saveArtifacts} = require('./utils/artifacts');
+const {MOCHAWESOME_REPORT_DIR} = require('./utils/constants');
 const {
     generateShortSummary,
     generateTestReport,
@@ -40,8 +41,6 @@ const {
     readJsonFromFile,
     writeJsonToFile,
 } = require('./utils/report');
-const {saveArtifacts} = require('./utils/artifacts');
-const {MOCHAWESOME_REPORT_DIR} = require('./utils/constants');
 const {createTestCycle, createTestExecutions} = require('./utils/test_cases');
 
 require('dotenv').config();
@@ -51,7 +50,6 @@ const saveReport = async () => {
         BRANCH,
         BUILD_ID,
         BUILD_TAG,
-        FAILURE_MESSAGE,
         ZEPHYR_ENABLE,
         ZEPHYR_CYCLE_KEY,
         TYPE,
@@ -73,7 +71,8 @@ const saveReport = async () => {
     );
 
     // Generate short summary, write to file and then send report via webhook
-    const summary = generateShortSummary(jsonReport);
+    const {stats, statsFieldValue} = generateShortSummary(jsonReport);
+    const summary = {stats, statsFieldValue};
     console.log(summary);
     writeJsonToFile(summary, 'summary.json', MOCHAWESOME_REPORT_DIR);
 

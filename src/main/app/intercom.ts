@@ -1,20 +1,19 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {app, IpcMainEvent, IpcMainInvokeEvent, Menu} from 'electron';
-
-import {UniqueServer} from 'types/config';
+import type {IpcMainEvent, IpcMainInvokeEvent} from 'electron';
+import {app, Menu} from 'electron';
 
 import ServerViewState from 'app/serverViewState';
-
 import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {ping} from 'common/utils/requests';
-
 import NotificationManager from 'main/notifications';
 import {getLocalPreload, getLocalURLString} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
+
+import type {UniqueServer} from 'types/config';
 
 import {handleAppBeforeQuit} from './app';
 
@@ -113,9 +112,9 @@ export function handleWelcomeScreenModal() {
     }
 }
 
-export function handleMentionNotification(event: IpcMainEvent, title: string, body: string, channelId: string, teamId: string, url: string, silent: boolean, soundName: string) {
+export function handleMentionNotification(event: IpcMainInvokeEvent, title: string, body: string, channelId: string, teamId: string, url: string, silent: boolean, soundName: string) {
     log.debug('handleMentionNotification', {title, body, channelId, teamId, url, silent, soundName});
-    NotificationManager.displayMention(title, body, channelId, teamId, url, silent, event.sender, soundName);
+    return NotificationManager.displayMention(title, body, channelId, teamId, url, silent, event.sender, soundName);
 }
 
 export function handleOpenAppMenu() {

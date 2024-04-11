@@ -1,10 +1,11 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MainLogger} from 'electron-log';
-import {DiagnosticStepResponse} from 'types/diagnostics';
+import type {MainLogger} from 'electron-log';
 
 import config from 'common/config';
+
+import type {DiagnosticStepResponse} from 'types/diagnostics';
 
 import DiagnosticsStep from '../DiagnosticStep';
 

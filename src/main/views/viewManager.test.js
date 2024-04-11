@@ -1,23 +1,18 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
-'use strict';
-
 import {dialog} from 'electron';
 
 import ServerViewState from 'app/serverViewState';
-
 import {BROWSER_HISTORY_PUSH, LOAD_SUCCESS, SET_ACTIVE_VIEW} from 'common/communication';
-import {TAB_MESSAGING} from 'common/views/View';
 import ServerManager from 'common/servers/serverManager';
 import urlUtils from 'common/utils/url';
-
+import {TAB_MESSAGING} from 'common/views/View';
 import MainWindow from 'main/windows/mainWindow';
 
+import LoadingScreen from './loadingScreen';
 import {MattermostBrowserView} from './MattermostBrowserView';
 import {ViewManager} from './viewManager';
-import LoadingScreen from './loadingScreen';
 
 jest.mock('electron', () => ({
     app: {
@@ -60,6 +55,10 @@ jest.mock('common/utils/url', () => ({
     },
     getFormattedPathName: (pathname) => (pathname.length ? pathname : '/'),
     equalUrlsIgnoringSubpath: jest.fn(),
+}));
+
+jest.mock('main/app/utils', () => ({
+    flushCookiesStore: jest.fn(),
 }));
 
 jest.mock('main/i18nManager', () => ({

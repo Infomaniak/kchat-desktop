@@ -2,10 +2,6 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// This file uses CommonJS.
-/* eslint-disable import/no-commonjs */
-'use strict';
-
 const childProcess = require('child_process');
 const path = require('path');
 
@@ -15,10 +11,10 @@ const {
 
 const webpack = require('webpack');
 
-const VERSION = childProcess.execSync('git rev-parse --short HEAD').toString();
+const VERSION = childProcess.execSync('git rev-parse --short HEAD', {cwd: __dirname}).toString();
 const isProduction = process.env.NODE_ENV === 'production';
 const isTest = process.env.NODE_ENV === 'test';
-const isRelease = process.env.CIRCLE_BRANCH && process.env.CIRCLE_BRANCH.startsWith('release-');
+const isRelease = process.env.GITHUB_WORKFLOW && process.env.GITHUB_WORKFLOW.startsWith('release');
 
 const codeDefinitions = {
     __HASH_VERSION__: !isRelease && JSON.stringify(VERSION),
@@ -34,10 +30,7 @@ if (isTest) {
 }
 
 module.exports = {
-
-    // Some plugins cause errors on the app, so use few plugins.
-    // https://webpack.js.org/concepts/mode/#mode-production
-    mode: isProduction ? 'none' : 'development',
+    mode: isProduction ? 'production' : 'development',
     bail: true,
     plugins: [
         new webpack.DefinePlugin(codeDefinitions),
@@ -49,7 +42,18 @@ module.exports = {
             url: 'https://sentry-kchat.infomaniak.com/',
         })],
     devtool: 'source-map',
+    module: {
+        rules: [{
+            test: /\.(js|jsx|ts|tsx)?$/,
+            exclude: /node_modules/,
+            loader: 'babel-loader',
+        }],
+    },
     resolve: {
+        modules: [
+            'node_modules',
+            './src',
+        ],
         alias: {
             renderer: path.resolve(__dirname, 'src/renderer'),
             main: path.resolve(__dirname, './src/main'),
@@ -60,5 +64,3 @@ module.exports = {
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
     },
 };
-
-/* eslint-enable import/no-commonjs */

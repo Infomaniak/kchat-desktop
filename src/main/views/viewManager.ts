@@ -1,13 +1,12 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserView, dialog, ipcMain, IpcMainEvent, IpcMainInvokeEvent, shell, BrowserWindow, session} from 'electron';
+import type {IpcMainEvent, IpcMainInvokeEvent} from 'electron';
+import {BrowserView, dialog, ipcMain, session, shell} from 'electron';
 import isDev from 'electron-is-dev';
 
 import ServerViewState from 'app/serverViewState';
-
 import AppState from 'common/appState';
-import {SECOND, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import {
     UPDATE_TARGET_URL,
     LOAD_SUCCESS,
@@ -47,23 +46,25 @@ import {
 } from 'common/communication';
 import Config from 'common/config';
 import {Logger} from 'common/log';
-import Utils from 'common/utils/util';
-import {MattermostServer} from 'common/servers/MattermostServer';
+import type {MattermostServer} from 'common/servers/MattermostServer';
 import ServerManager from 'common/servers/serverManager';
-import {MattermostView, TAB_MESSAGING} from 'common/views/View';
+import {SECOND, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import {getFormattedPathName, parseURL} from 'common/utils/url';
-
+import Utils from 'common/utils/util';
+import type {MattermostView} from 'common/views/View';
+import {TAB_MESSAGING} from 'common/views/View';
+import {flushCookiesStore} from 'main/app/utils';
 import {localizeMessage} from 'main/i18nManager';
 import MainWindow from 'main/windows/mainWindow';
-
-import {getLocalURLString, getLocalPreload, getAdjustedWindowBoundaries, shouldHaveBackBar} from '../utils';
 
 import TokenManager from 'main/tokenManager';
 import {createCallDialingWindow} from 'main/windows/callDialingWindow';
 
 import LoadingScreen from './loadingScreen';
-import modalManager from './modalManager';
 import {MattermostBrowserView} from './MattermostBrowserView';
+import modalManager from './modalManager';
+
+import {getLocalURLString, getLocalPreload, getAdjustedWindowBoundaries, shouldHaveBackBar} from '../utils';
 
 const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
@@ -194,7 +195,7 @@ export class ViewManager {
             LoadingScreen.show();
             currentView.reload();
         }
-    }
+    };
 
     resetTeams = () => {
         ServerManager.reloadFromConfig();
@@ -447,11 +448,7 @@ export class ViewManager {
                     log.error('Failed to remove URL view', e);
                 }
 
-                // workaround to eliminate zombie processes
-                // https://github.com/mattermost/desktop/pull/1519
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                urlView.webContents.destroy();
+                urlView.webContents.close();
             };
 
             const adjustWidth = (event: IpcMainEvent, width: number) => {
@@ -568,11 +565,24 @@ export class ViewManager {
     };
 
     private handleAppLoggedIn = (event: IpcMainEvent) => {
-        this.getViewByWebContentsId(event.sender.id)?.onLogin(true);
+        log.debug('handleAppLoggedIn', event.sender.id);
+        const view = this.getViewByWebContentsId(event.sender.id);
+        if (!view) {
+            return;
+        }
+        view.onLogin(true);
+        flushCookiesStore();
     };
 
     private handleAppLoggedOut = (event: IpcMainEvent) => {
-        this.getViewByWebContentsId(event.sender.id)?.onLogin(false);
+        log.debug('handleAppLoggedOut', event.sender.id);
+        const view = this.getViewByWebContentsId(event.sender.id);
+        if (!view) {
+            return;
+        }
+        view.onLogin(false);
+        AppState.clear(view.id);
+        flushCookiesStore();
     };
 
     private handleBrowserHistoryPush = (e: IpcMainEvent, pathName: string) => {

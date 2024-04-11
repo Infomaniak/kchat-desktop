@@ -2,22 +2,22 @@
 // See LICENSE.txt for license information.
 
 import {app, shell, Notification} from 'electron';
-
+import isDev from 'electron-is-dev';
 import {getDoNotDisturb as getDarwinDoNotDisturb} from 'macos-notification-state';
 
-import Config from 'common/config';
 import {PLAY_SOUND, NOTIFICATION_CLICKED} from 'common/communication';
+import Config from 'common/config';
 import {Logger} from 'common/log';
+
+import getLinuxDoNotDisturb from './dnd-linux';
+import getWindowsDoNotDisturb from './dnd-windows';
+import {DownloadNotification} from './Download';
+import {Mention} from './Mention';
+import {NewVersionNotification, UpgradeNotification} from './Upgrade';
 
 import PermissionsManager from '../permissionsManager';
 import ViewManager from '../views/viewManager';
 import MainWindow from '../windows/mainWindow';
-
-import {Mention} from './Mention';
-import {DownloadNotification} from './Download';
-import {NewVersionNotification, UpgradeNotification} from './Upgrade';
-import getLinuxDoNotDisturb from './dnd-linux';
-import getWindowsDoNotDisturb from './dnd-windows';
 
 const log = new Logger('Notifications');
 
@@ -32,19 +32,19 @@ class NotificationManager {
 
         if (!Notification.isSupported()) {
             log.error('notification not supported');
-            return;
+            return {result: 'error', reason: 'notification_api', data: 'notification not supported'};
         }
 
-        if (getDoNotDisturb()) {
-            return;
+        if (await getDoNotDisturb()) {
+            return {result: 'not_sent', reason: 'os_dnd'};
         }
 
         const view = ViewManager.getViewByWebContentsId(webcontents.id);
         if (!view) {
-            return;
+            return {result: 'error', reason: 'missing_view'};
         }
         if (!view.view.shouldNotify) {
-            return;
+            return {result: 'error', reason: 'view_should_not_notify'};
         }
         const serverName = view.view.server.name;
 
@@ -56,31 +56,12 @@ class NotificationManager {
         };
 
         if (!await PermissionsManager.doPermissionRequest(webcontents.id, 'notifications', view.view.server.url.toString())) {
-            return;
+            return {result: 'not_sent', reason: 'notifications_permission_disallowed'};
         }
 
         const mention = new Mention(options, channelId, teamId);
         const mentionKey = `${mention.teamId}:${mention.channelId}`;
         this.allActiveNotifications.set(mention.uId, mention);
-
-        mention.on('show', () => {
-            log.debug('displayMention.show');
-
-            // On Windows, manually dismiss notifications from the same channel and only show the latest one
-            if (process.platform === 'win32') {
-                if (this.mentionsPerChannel.has(mentionKey)) {
-                    log.debug(`close ${mentionKey}`);
-                    this.mentionsPerChannel.get(mentionKey)?.close();
-                    this.mentionsPerChannel.delete(mentionKey);
-                }
-                this.mentionsPerChannel.set(mentionKey, mention);
-            }
-            const notificationSound = mention.getNotificationSound();
-            if (notificationSound) {
-                MainWindow.sendToRenderer(PLAY_SOUND, notificationSound);
-            }
-            flashFrame(true);
-        });
 
         mention.on('click', () => {
             log.debug('notification click', serverName, mention);
@@ -97,13 +78,43 @@ class NotificationManager {
             this.allActiveNotifications.delete(mention.uId);
         });
 
-        mention.on('failed', () => {
-            this.allActiveNotifications.delete(mention.uId);
+        return new Promise((resolve) => {
+            // If mention never shows somehow, resolve the promise after 10s
+            const timeout = setTimeout(() => {
+                resolve({result: 'error', reason: 'notification_timeout'});
+            }, 10000);
+
+            mention.on('show', () => {
+                log.debug('displayMention.show');
+
+                // On Windows, manually dismiss notifications from the same channel and only show the latest one
+                if (process.platform === 'win32') {
+                    if (this.mentionsPerChannel.has(mentionKey)) {
+                        log.debug(`close ${mentionKey}`);
+                        this.mentionsPerChannel.get(mentionKey)?.close();
+                        this.mentionsPerChannel.delete(mentionKey);
+                    }
+                    this.mentionsPerChannel.set(mentionKey, mention);
+                }
+                const notificationSound = mention.getNotificationSound();
+                if (notificationSound) {
+                    MainWindow.sendToRenderer(PLAY_SOUND, notificationSound);
+                }
+                flashFrame(true);
+                clearTimeout(timeout);
+                resolve({result: 'success'});
+            });
+
+            mention.on('failed', (_, error) => {
+                this.allActiveNotifications.delete(mention.uId);
+                clearTimeout(timeout);
+                resolve({result: 'error', reason: 'electron_notification_failed', data: error});
+            });
+            mention.show();
         });
-        mention.show();
     }
 
-    public displayDownloadCompleted(fileName: string, path: string, serverName: string) {
+    public async displayDownloadCompleted(fileName: string, path: string, serverName: string) {
         log.debug('displayDownloadCompleted', {fileName, path, serverName});
 
         if (!Notification.isSupported()) {
@@ -111,7 +122,7 @@ class NotificationManager {
             return;
         }
 
-        if (getDoNotDisturb()) {
+        if (await getDoNotDisturb()) {
             return;
         }
 
@@ -137,12 +148,12 @@ class NotificationManager {
         download.show();
     }
 
-    public displayUpgrade(version: string, handleUpgrade: () => void): void {
+    public async displayUpgrade(version: string, handleUpgrade: () => void) {
         if (!Notification.isSupported()) {
             log.error('notification not supported');
             return;
         }
-        if (getDoNotDisturb()) {
+        if (await getDoNotDisturb()) {
             return;
         }
 
@@ -157,12 +168,12 @@ class NotificationManager {
         this.upgradeNotification.show();
     }
 
-    public displayRestartToUpgrade(version: string, handleUpgrade: () => void): void {
+    public async displayRestartToUpgrade(version: string, handleUpgrade: () => void) {
         if (!Notification.isSupported()) {
             log.error('notification not supported');
             return;
         }
-        if (getDoNotDisturb()) {
+        if (await getDoNotDisturb()) {
             return;
         }
 
@@ -175,12 +186,13 @@ class NotificationManager {
     }
 }
 
-function getDoNotDisturb() {
+async function getDoNotDisturb() {
     if (process.platform === 'win32') {
         return getWindowsDoNotDisturb();
     }
 
-    if (process.platform === 'darwin') {
+    // We have to turn this off for dev mode because the Electron binary doesn't have the focus center API entitlement
+    if (process.platform === 'darwin' && !isDev) {
         return getDarwinDoNotDisturb();
     }
 

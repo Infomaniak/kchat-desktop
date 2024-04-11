@@ -2,19 +2,7 @@
 // See LICENSE.txt for license information.
 
 const fs = require('fs');
-const jq = require('node-jq');
 const path = require('path');
-
-// Patch the macos-notification-state library so we can build correctly
-jq.run(
-    '.scripts.install = "node-gyp rebuild"',
-    './node_modules/macos-notification-state/package.json',
-).then((result) => {
-    fs.writeFileSync(
-        './node_modules/macos-notification-state/package.json',
-        result,
-    );
-});
 
 // For linux dev, drop a desktop shortcut so deep linking works correctly
 if (process.platform === 'linux') {
@@ -22,7 +10,7 @@ if (process.platform === 'linux') {
     if (fs.existsSync(xdgDir) && !fs.existsSync(path.resolve(xdgDir, 'mattermost-desktop-dev.desktop'))) {
         fs.writeFileSync(
             path.resolve(xdgDir, 'mattermost-desktop-dev.desktop'),
-`[Desktop Entry]
+            `[Desktop Entry]
 Name=Mattermost.Dev
 Exec=${path.resolve(process.cwd(), 'node_modules/electron/dist/electron')} ${path.resolve(process.cwd(), 'dist')} %U
 Terminal=false
@@ -32,7 +20,7 @@ StartupWMClass=Mattermost
 Comment=Mattermost
 MimeType=x-scheme-handler/mattermost-dev;
 Categories=contrib/net;
-`
+`,
         );
 
         const defaultsListPath = path.resolve(xdgDir, 'defaults.list');

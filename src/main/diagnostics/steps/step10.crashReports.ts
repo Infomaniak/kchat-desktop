@@ -4,8 +4,9 @@ import fs from 'fs';
 import path from 'path';
 
 import {app} from 'electron';
-import {MainLogger} from 'electron-log';
-import {DiagnosticStepResponse} from 'types/diagnostics';
+import type {MainLogger} from 'electron-log';
+
+import type {DiagnosticStepResponse} from 'types/diagnostics';
 
 import DiagnosticsStep from '../DiagnosticStep';
 

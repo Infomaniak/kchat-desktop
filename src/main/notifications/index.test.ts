@@ -4,18 +4,17 @@
 'use strict';
 import notMockedCP from 'child_process';
 
-import {Notification as NotMockedNotification, shell, app, BrowserWindow, WebContents} from 'electron';
-
-import {getFocusAssist as notMockedGetFocusAssist} from 'windows-focus-assist';
+import type {BrowserWindow, WebContents} from 'electron';
+import {Notification as NotMockedNotification, shell, app} from 'electron';
 import {getDoNotDisturb as notMockedGetDarwinDoNotDisturb} from 'macos-notification-state';
+import {getFocusAssist as notMockedGetFocusAssist} from 'windows-focus-assist';
 
 import {PLAY_SOUND} from 'common/communication';
 import notMockedConfig from 'common/config';
-
 import {localizeMessage as notMockedLocalizeMessage} from 'main/i18nManager';
 import notMockedPermissionsManager from 'main/permissionsManager';
-import notMockedMainWindow from 'main/windows/mainWindow';
 import ViewManager from 'main/views/viewManager';
+import notMockedMainWindow from 'main/windows/mainWindow';
 
 import getLinuxDoNotDisturb from './dnd-linux';
 
@@ -50,7 +49,7 @@ jest.mock('electron', () => {
 
         on = (event: string, callback: () => void) => {
             this.callbackMap.set(event, callback);
-        }
+        };
 
         show = jest.fn().mockImplementation(() => {
             this.callbackMap.get('show')?.();
@@ -122,7 +121,7 @@ describe('main/notifications', () => {
             PermissionsManager.doPermissionRequest.mockReturnValue(Promise.resolve(true));
             Notification.isSupported.mockImplementation(() => true);
             getFocusAssist.mockReturnValue({value: 0, name: ''});
-            getDarwinDoNotDisturb.mockReturnValue(false);
+            getDarwinDoNotDisturb.mockReturnValue(Promise.resolve(false));
             Config.notifications = {
                 flashWindow: 0,
                 bounceIcon: false,
@@ -185,7 +184,7 @@ describe('main/notifications', () => {
                 value: 'darwin',
             });
 
-            getDarwinDoNotDisturb.mockReturnValue(true);
+            getDarwinDoNotDisturb.mockReturnValue(Promise.resolve(true));
             await NotificationManager.displayMention(
                 'test',
                 'test body',
@@ -390,13 +389,13 @@ describe('main/notifications', () => {
         beforeEach(() => {
             Notification.isSupported.mockImplementation(() => true);
             getFocusAssist.mockReturnValue({value: 0, name: ''});
-            getDarwinDoNotDisturb.mockReturnValue(false);
+            getDarwinDoNotDisturb.mockReturnValue(Promise.resolve(false));
         });
 
-        it('should open file when clicked', () => {
-            getDarwinDoNotDisturb.mockReturnValue(false);
+        it('should open file when clicked', async () => {
+            getDarwinDoNotDisturb.mockReturnValue(Promise.resolve(false));
             localizeMessage.mockReturnValue('test_filename');
-            NotificationManager.displayDownloadCompleted(
+            await NotificationManager.displayDownloadCompleted(
                 'test_filename',
                 '/path/to/file',
                 'server_name',

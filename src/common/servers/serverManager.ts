@@ -3,10 +3,6 @@
 
 import EventEmitter from 'events';
 
-import type {Server, ConfigServer, ConfigView} from 'types/config';
-
-import type {RemoteInfo} from 'types/server';
-
 import {
     SERVERS_URL_MODIFIED,
     SERVERS_UPDATE,
@@ -20,6 +16,9 @@ import MessagingView from 'common/views/MessagingView';
 import PlaybooksView from 'common/views/PlaybooksView';
 import type {MattermostView} from 'common/views/View';
 import {TAB_FOCALBOARD, TAB_MESSAGING, TAB_PLAYBOOKS, getDefaultViews} from 'common/views/View';
+
+import type {Server, ConfigServer, ConfigView} from 'types/config';
+import type {RemoteInfo} from 'types/server';
 
 const log = new Logger('ServerManager');
 
