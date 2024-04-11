@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {app, IpcMainEvent, IpcMainInvokeEvent, Menu} from 'electron';
+
 import {UniqueServer} from 'types/config';
 
 import ServerViewState from 'app/serverViewState';
