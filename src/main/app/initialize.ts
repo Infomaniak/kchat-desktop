@@ -36,6 +36,7 @@ import {
     TOGGLE_SECURE_INPUT,
     UPDATE_TEAMS,
     SERVERS_UPDATE,
+    GET_APP_THEME,
     GET_APP_INFO,
 } from 'common/communication';
 import Config from 'common/config';
@@ -96,6 +97,7 @@ import {
     handleQuit,
     handlePingDomain,
     handleToggleSecureInput,
+    handleGetTheme,
 } from './intercom';
 import {
     clearAppCache,
@@ -275,6 +277,7 @@ function initializeBeforeAppReady() {
 
 function initializeInterCommunicationEventListeners() {
     ipcMain.on(NOTIFY_MENTION, handleMentionNotification);
+    ipcMain.handle(GET_APP_THEME, handleGetTheme);
     ipcMain.handle(GET_APP_INFO, handleAppVersion);
     ipcMain.on(UPDATE_SHORTCUT_MENU, handleUpdateMenuEvent);
     ipcMain.on(FOCUS_BROWSERVIEW, ViewManager.focusCurrentView);

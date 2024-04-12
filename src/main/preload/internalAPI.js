@@ -89,6 +89,7 @@ import {
     GET_ORDERED_TABS_FOR_SERVER,
     SERVERS_UPDATE,
     VALIDATE_SERVER_URL,
+    GET_APP_THEME,
     GET_APP_INFO,
     RESET_AUTH,
     UPDATE_TEAMS,
@@ -148,6 +149,7 @@ contextBridge.exposeInMainWorld('desktop', {
     validateServerURL: (url, currentId) => ipcRenderer.invoke(VALIDATE_SERVER_URL, url, currentId),
 
     getConfiguration: () => ipcRenderer.invoke(GET_CONFIGURATION),
+    getTheme: () => ipcRenderer.invoke(GET_APP_THEME),
     getVersion: () => ipcRenderer.invoke(GET_APP_INFO),
     getDarkMode: () => ipcRenderer.invoke(GET_DARK_MODE),
     requestHasDownloads: () => ipcRenderer.invoke(REQUEST_HAS_DOWNLOADS),

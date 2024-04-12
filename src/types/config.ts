@@ -73,6 +73,7 @@ export type ConfigV3 = {
     alwaysClose?: boolean;
     logLevel?: string;
     appLanguage?: string;
+    theme?: object;
 }
 
 export type ConfigV2 =

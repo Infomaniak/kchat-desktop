@@ -65,6 +65,8 @@ import {
     TEAMS_ORDER_PREFERENCE_UPDATED,
     USER_LOCALE,
     GET_SERVER_THEME,
+    GET_APP_THEME,
+    THEME_CHANGED,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -330,14 +332,19 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
     case 'get-app-version': {
         // register with the webapp to enable custom integration functionality
         ipcRenderer.invoke(GET_APP_INFO).then((info) => {
-            console.log(`registering ${info.name} v${info.version} with the server`);
-            window.postMessage(
-                {
-                    type: 'register-desktop',
-                    message: info,
-                },
-                window.location.origin || '*',
-            );
+            ipcRenderer.invoke(GET_APP_THEME).then((theme) => {
+                console.log(`registering ${info.name} v${info.version} with the server`);
+                window.postMessage(
+                    {
+                        type: 'register-desktop',
+                        message: {
+                            ...info,
+                            theme,
+                        },
+                    },
+                    window.location.origin || '*',
+                );
+            });
         });
         break;
     }
@@ -446,6 +453,11 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
     case DESKTOP_SOURCES_MODAL_REQUEST:
     case CALLS_POPOUT_FOCUS: {
         ipcRenderer.send(type);
+        break;
+    }
+    case THEME_CHANGED: {
+        ipcRenderer.send(THEME_CHANGED, message.callID, message);
+        break;
     }
     }
 });
@@ -605,6 +617,16 @@ ipcRenderer.on(CALLS_ERROR, (_, err, callID, errMsg) => {
         {
             type: CALLS_ERROR,
             message: {err, callID, errMsg},
+        },
+        window.location.origin,
+    );
+});
+
+ipcRenderer.on(THEME_CHANGED, (_, theme) => {
+    window.postMessage(
+        {
+            type: 'theme-changed-global',
+            theme,
         },
         window.location.origin,
     );

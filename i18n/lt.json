@@ -113,7 +113,7 @@
   "main.permissionsManager.checkPermission.dialog.detail.notifications": "{appName} siųs jums pranešimus apie žinutes ir skambučius. Galite pakeisti savo pranešimų nuostatatas Parametruose.",
   "main.permissionsManager.checkPermission.dialog.message.geolocation": "{appName} ({url}) norėtų naudotis jūsų vietos informacija.",
   "main.permissionsManager.checkPermission.dialog.message.media": "{appName} ({url}) norėtų naudotis jūsų mikrofonu ir kamera.",
-  "main.permissionsManager.checkPermission.dialog.message.notifications": "{appName} ({url}) norėtų siųsti jums pranešimus.",
+  "main.permissionsManager.checkPermission.dialog.message.notifications": "{appName} vorrebbe inviarti notifiche.",
   "main.permissionsManager.checkPermission.dialog.title": "Leidimo užklausa",
   "main.tray.tray.expired": "Sesija baigėsi: prisijunkite, kad ir toliau gautumėte pranešimus.",
   "main.tray.tray.mention": "Jus paminėjo",

@@ -16,6 +16,8 @@ import {getLocalPreload, getLocalURLString} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
+import Config from 'common/config';
+
 import {handleAppBeforeQuit} from './app';
 
 const log = new Logger('App.Intercom');
@@ -25,6 +27,10 @@ export function handleAppVersion() {
         name: app.getName(),
         version: app.getVersion(),
     };
+}
+
+export function handleGetTheme() {
+    return Config.theme;
 }
 
 export function handleQuit(e: IpcMainEvent, reason: string, stack: string) {
