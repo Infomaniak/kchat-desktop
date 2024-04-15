@@ -33,6 +33,7 @@ import {getWindowBoundaries, getLocalPreload, composeUserAgent, shouldHaveBackBa
 
 import WebContentsEventManager from './webContentEvents';
 import LoadingScreen from './loadingScreen';
+import ServersSidebar from './serversSidebar';
 
 enum Status {
     LOADING,
@@ -227,7 +228,7 @@ export class MattermostBrowserView extends EventEmitter {
         this.isVisible = true;
         mainWindow.addBrowserView(this.browserView);
         mainWindow.setTopBrowserView(this.browserView);
-        this.setBounds(getWindowBoundaries(mainWindow, shouldHaveBackBar(this.view.url || '', this.currentURL)));
+        this.setBounds(getWindowBoundaries(mainWindow, shouldHaveBackBar(this.view.url || '', this.currentURL), ServersSidebar.shouldDisplaySidebar));
         if (this.status === Status.READY) {
             this.focus();
         }
@@ -495,7 +496,7 @@ export class MattermostBrowserView extends EventEmitter {
             }
 
             if (mainWindow && this.currentURL) {
-                this.setBounds(getWindowBoundaries(mainWindow, shouldHaveBackBar(this.view.url || '', this.currentURL)));
+                this.setBounds(getWindowBoundaries(mainWindow, shouldHaveBackBar(this.view.url || '', this.currentURL), ServersSidebar.shouldDisplaySidebar));
             }
         };
     }
@@ -517,11 +518,11 @@ export class MattermostBrowserView extends EventEmitter {
         }
 
         if (shouldHaveBackBar(this.view.url || '', parsedURL)) {
-            this.setBounds(getWindowBoundaries(mainWindow, true));
+            this.setBounds(getWindowBoundaries(mainWindow, true, ServersSidebar.shouldDisplaySidebar));
             MainWindow.sendToRenderer(TOGGLE_BACK_BUTTON, true);
             this.log.debug('show back button');
         } else {
-            this.setBounds(getWindowBoundaries(mainWindow));
+            this.setBounds(getWindowBoundaries(mainWindow, false, ServersSidebar.shouldDisplaySidebar));
             MainWindow.sendToRenderer(TOGGLE_BACK_BUTTON, false);
             this.log.debug('hide back button');
         }

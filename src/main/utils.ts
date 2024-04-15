@@ -33,16 +33,16 @@ export function shouldBeHiddenOnStartup(parsedArgv: Args) {
     return false;
 }
 
-export function getWindowBoundaries(win: BrowserWindow, hasBackBar = false) {
+export function getWindowBoundaries(win: BrowserWindow, hasBackBar = false, hasServersSidebar = true) {
     const {width, height} = win.getContentBounds();
-    return getAdjustedWindowBoundaries(width, height, hasBackBar);
+    return getAdjustedWindowBoundaries(width, height, hasBackBar, hasServersSidebar);
 }
 
-export function getAdjustedWindowBoundaries(width: number, height: number, hasBackBar = false) {
+export function getAdjustedWindowBoundaries(width: number, height: number, hasBackBar = false, hasServersSidebar = true) {
     return {
-        x: SERVERS_SIDEBAR_WIDTH,
+        x: hasServersSidebar ? SERVERS_SIDEBAR_WIDTH : 0,
         y: TAB_BAR_HEIGHT + (hasBackBar ? BACK_BAR_HEIGHT : 0),
-        width: width - SERVERS_SIDEBAR_WIDTH,
+        width: width - (hasServersSidebar ? SERVERS_SIDEBAR_WIDTH : 0),
         height: height - TAB_BAR_HEIGHT - (hasBackBar ? BACK_BAR_HEIGHT : 0),
     };
 }

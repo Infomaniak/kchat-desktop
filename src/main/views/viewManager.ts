@@ -65,7 +65,7 @@ import {createCallDialingWindow} from 'main/windows/callDialingWindow';
 import LoadingScreen from './loadingScreen';
 import modalManager from './modalManager';
 import {MattermostBrowserView} from './MattermostBrowserView';
-import ServerSidebar from './serversSidebar';
+import ServersSidebar from './serversSidebar';
 
 const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
@@ -168,7 +168,7 @@ export class ViewManager {
                     LoadingScreen.show();
 
                     if (!TokenManager.hasToken()) {
-                        ServerSidebar.hide();
+                        ServersSidebar.hide();
                     }
                 }
             }
@@ -632,7 +632,7 @@ export class ViewManager {
         if (view) {
             view.setInitialized();
             if (this.getCurrentView() === view) {
-                ServerSidebar.show();
+                ServersSidebar.show();
                 LoadingScreen.fade();
             }
         }
@@ -697,7 +697,7 @@ export class ViewManager {
 
         const currentView = this.getCurrentView();
         if (currentView && currentView.currentURL) {
-            const adjustedBounds = getAdjustedWindowBoundaries(newBounds.width, newBounds.height, shouldHaveBackBar(currentView.view.url, currentView.currentURL));
+            const adjustedBounds = getAdjustedWindowBoundaries(newBounds.width, newBounds.height, shouldHaveBackBar(currentView.view.url, currentView.currentURL), ServersSidebar.shouldDisplaySidebar);
             currentView.setBounds(adjustedBounds);
         }
     };

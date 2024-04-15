@@ -10,6 +10,8 @@ import {getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/util
 import MainWindow from 'main/windows/mainWindow';
 import { SERVERS_SIDEBAR_WIDTH } from 'common/utils/constants';
 
+import ServersSidebar from './serversSidebar';
+
 enum LoadingScreenState {
     VISIBLE = 1,
     FADING = 2,
@@ -119,7 +121,7 @@ export class LoadingScreen {
             if (!mainWindow) {
                 return;
             }
-            const windowBoundaries = getWindowBoundaries(mainWindow)
+            const windowBoundaries = getWindowBoundaries(mainWindow, false, ServersSidebar.shouldDisplaySidebar)
             this.view.setBounds({ ...windowBoundaries, width: windowBoundaries.width + SERVERS_SIDEBAR_WIDTH, x: windowBoundaries.x - SERVERS_SIDEBAR_WIDTH });
         }
     }

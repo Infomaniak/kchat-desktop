@@ -27,6 +27,8 @@ import ServerManager from 'common/servers/serverManager';
 import ServerViewState from 'app/serverViewState';
 import AppState from 'common/appState';
 
+import mainWindow from 'main/windows/mainWindow';
+
 import viewManager from './viewManager';
 import {ServerSidebarShortcutModalView} from './serversSidebarShortcutModalView';
 
@@ -40,6 +42,7 @@ export class ServerSidebar {
     private userLocale: string
     private teamsOrderPreference: string[]
     private isReadyToSwitchServer: boolean
+    private shouldDisplay: boolean
 
     private unreads: Map<string, boolean>;
     private mentions: Map<string, number>;
@@ -56,6 +59,7 @@ export class ServerSidebar {
         this.teamsOrderPreference = [];
         this.userLocale = '';
         this.isReadyToSwitchServer = false;
+        this.shouldDisplay = false;
 
         this.unreads = new Map();
         this.mentions = new Map();
@@ -74,6 +78,10 @@ export class ServerSidebar {
         ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
+    }
+
+    get shouldDisplaySidebar() {
+        return this.shouldDisplay;
     }
 
     init = () => {
@@ -131,7 +139,13 @@ export class ServerSidebar {
 
         this.setBounds();
 
-        mainWindow.addBrowserView(this.view!);
+        if (this.shouldDisplay) {
+            mainWindow.addBrowserView(this.view!);
+        }
+    }
+
+    private countActiveTeams = () => {
+        return this.teams.filter((t) => t.teamInfo.delete_at === 0).length;
     }
 
     private setBounds = () => {
@@ -142,14 +156,29 @@ export class ServerSidebar {
                 return;
             }
 
-            const windowBoundaries = getWindowBoundaries(mainWindow);
+            const windowBoundaries = getWindowBoundaries(mainWindow, false, true);
             this.view.setBounds({...windowBoundaries, x: 0, width: SERVERS_SIDEBAR_WIDTH});
         }
     }
 
     private updateTeams = (_: any, teams: ConfigServer[]) => {
-        this.teams = teams.filter((t) => t.name !== DEFAULT_TEAM_NAME);
+        const newTeams = teams.filter((t) => t.name !== DEFAULT_TEAM_NAME);
+        const previousCount = this.countActiveTeams();
+
+        this.teams = newTeams;
+        const newCount = this.countActiveTeams();
+        this.shouldDisplay = newCount > 1;
         this.updateSidebar();
+
+        if (previousCount === 1 && newCount > 1) {
+            MainWindow.emit(MAIN_WINDOW_RESIZED, mainWindow.getBounds());
+            this.show();
+        }
+
+        if (previousCount > 1 && newCount === 1) {
+            MainWindow.emit(MAIN_WINDOW_RESIZED, mainWindow.getBounds());
+            this.hide();
+        }
     }
 
     private updateTeamsOrderPreference = (_: any, preference: string) => {
