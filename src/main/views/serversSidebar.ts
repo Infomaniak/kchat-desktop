@@ -104,6 +104,7 @@ export class ServerSidebar {
                 log.info(process.env);
             });
 
+        // this.view.webContents.openDevTools({mode: 'detach'});
         this.setOrderedServers();
 
         this.modal = new ServerSidebarShortcutModalView();

@@ -170,7 +170,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         label: localizeMessage('main.menus.app.view.reload', 'Reload'),
         accelerator: 'CmdOrCtrl+R',
         click() {
-            ViewManager.reload();
+            ViewManager.reload(!TokenManager.hasToken());
         },
     }, {
         label: localizeMessage('main.menus.app.view.clearCacheAndReload', 'Clear Cache and Reload'),
@@ -179,7 +179,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             session.defaultSession.clearCache();
             session.defaultSession.clearStorageData();
             TokenManager.reset();
-            ViewManager.reload();
+            ViewManager.reload(true);
         },
     }, {
         role: 'togglefullscreen',

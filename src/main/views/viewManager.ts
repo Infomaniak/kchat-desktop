@@ -166,7 +166,10 @@ export class ViewManager {
                 newView.show();
                 if (newView.needsLoadingScreen()) {
                     LoadingScreen.show();
-                    ServerSidebar.hide();
+
+                    if (!TokenManager.hasToken()) {
+                        ServerSidebar.hide();
+                    }
                 }
             }
             hidePrevious?.();
@@ -192,11 +195,11 @@ export class ViewManager {
         }
     };
 
-    reload = () => {
+    reload = (force = false) => {
         const currentView = this.getCurrentView();
         if (currentView) {
             LoadingScreen.show();
-            currentView.reload();
+            currentView.reload(force);
         }
     }
 

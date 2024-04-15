@@ -32,6 +32,7 @@ import ContextMenu from '../contextMenu';
 import {getWindowBoundaries, getLocalPreload, composeUserAgent, shouldHaveBackBar} from '../utils';
 
 import WebContentsEventManager from './webContentEvents';
+import LoadingScreen from './loadingScreen';
 
 enum Status {
     LOADING,
@@ -58,6 +59,7 @@ export class MattermostBrowserView extends EventEmitter {
     private retryLoad?: NodeJS.Timeout;
     private maxRetries: number;
     private altPressStatus: boolean;
+    private isReloading: boolean
 
     constructor(view: MattermostView, options: BrowserViewConstructorOptions) {
         super();
@@ -76,6 +78,7 @@ export class MattermostBrowserView extends EventEmitter {
         this.isVisible = false;
         this.loggedIn = false;
         this.atRoot = true;
+        this.isReloading = false;
         this.browserView = new BrowserView(this.options);
         this.resetLoadingStatus();
 
@@ -237,9 +240,10 @@ export class MattermostBrowserView extends EventEmitter {
         }
     }
 
-    reload = () => {
+    reload = (force = false) => {
         this.resetLoadingStatus();
         AppState.updateExpired(this.id, false);
+        this.isReloading = !force;
         this.load();
     }
 
@@ -484,6 +488,12 @@ export class MattermostBrowserView extends EventEmitter {
             this.removeLoading = setTimeout(this.setInitialized, MAX_LOADING_SCREEN_SECONDS, true);
             this.emit(LOAD_SUCCESS, this.id, loadURL);
             const mainWindow = MainWindow.get();
+
+            if (this.isReloading) {
+                LoadingScreen.hide();
+                this.isReloading = false;
+            }
+
             if (mainWindow && this.currentURL) {
                 this.setBounds(getWindowBoundaries(mainWindow, shouldHaveBackBar(this.view.url || '', this.currentURL)));
             }

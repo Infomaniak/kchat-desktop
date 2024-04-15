@@ -77,6 +77,15 @@ export class LoadingScreen {
         }
     }
 
+    hide = () => {
+        if (this.view && this.state === LoadingScreenState.VISIBLE) {
+            this.state = LoadingScreenState.FADING;
+            this.view.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, false);
+            const mainWindow = MainWindow.get();
+            mainWindow?.removeBrowserView(this.view!);
+        }
+    }
+
     private create = () => {
         const preload = getLocalPreload('internalAPI.js');
         this.view = new BrowserView({webPreferences: {
