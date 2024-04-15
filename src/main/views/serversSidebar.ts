@@ -129,6 +129,8 @@ export class ServerSidebar {
             return;
         }
 
+        this.setBounds();
+
         mainWindow.addBrowserView(this.view!);
     }
 
