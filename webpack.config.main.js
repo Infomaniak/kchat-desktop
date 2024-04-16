@@ -17,6 +17,7 @@ module.exports = merge(base, {
         index: './src/main/app/index.ts',
         call: './src/main/preload/call.js',
         callDial: './src/main/preload/callDial.js',
+        kmeetCall: './src/main/preload/kmeetCall.js',
         internalAPI: './src/main/preload/internalAPI.js',
         externalAPI: './src/main/preload/externalAPI.ts',
     },

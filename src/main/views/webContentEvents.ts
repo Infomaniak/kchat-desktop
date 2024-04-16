@@ -14,6 +14,7 @@ import {
     isHelpUrl,
     isImageProxyUrl,
     isInternalURL,
+    isKmeetUrl,
     isLoginUrl,
     isManagedResource,
     isPluginUrl,
@@ -208,7 +209,7 @@ export class WebContentsEventManager {
                 return {action: 'deny'};
             }
 
-            if (isTeamUrl(serverURL, parsedURL, true)) {
+            if (isTeamUrl(serverURL, parsedURL, true) && !isKmeetUrl(serverURL, parsedURL)) {
                 ViewManager.handleDeepLink(parsedURL);
                 return {action: 'deny'};
             }
@@ -222,7 +223,7 @@ export class WebContentsEventManager {
             }
 
             // TODO: move popups to its own and have more than one.
-            if (isPluginUrl(serverURL, parsedURL) || isManagedResource(serverURL, parsedURL)) {
+            if (isPluginUrl(serverURL, parsedURL) || isKmeetUrl(serverURL, parsedURL) || isManagedResource(serverURL, parsedURL)) {
                 let popup: BrowserWindow;
                 if (this.popupWindow) {
                     this.popupWindow.win.once('ready-to-show', () => {
