@@ -35,7 +35,8 @@ import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 import {protocols} from '../../../electron-builder.json';
 
 import allowProtocolDialog from '../allowProtocolDialog';
-import {composeUserAgent, getLocalPreload} from '../utils';
+import {composeUserAgent} from '../utils';
+import {createKmeetCallWindow} from 'main/windows/kmeetCallWindow';
 
 type CustomLogin = {
     inProgress: boolean;
@@ -234,13 +235,11 @@ export class WebContentsEventManager {
                     popup = this.popupWindow.win;
                 } else {
                     this.popupWindow = {
-                        win: new BrowserWindow({
+                        win: isKmeet ? createKmeetCallWindow(MainWindow.get()!) : new BrowserWindow({
                             backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
-                            parent: MainWindow.get(),
                             show: false,
                             center: true,
                             webPreferences: {
-                                preload: isKmeet ? getLocalPreload('kmeetCall.js') : undefined,
                                 spellcheck: (typeof spellcheck === 'undefined' ? true : spellcheck),
                             },
                         }),

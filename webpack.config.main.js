@@ -6,6 +6,8 @@
 /* eslint-disable import/no-commonjs */
 'use strict';
 
+const path = require('path');
+
 const {merge} = require('webpack-merge');
 
 const CopyPlugin = require('copy-webpack-plugin');
@@ -25,9 +27,9 @@ module.exports = merge(base, {
         'macos-notification-state': 'require("macos-notification-state")',
         'windows-focus-assist': 'require("windows-focus-assist")',
         '@sentry/electron': 'require("@sentry/electron")',
+        '@infomaniak/jitsi-meet-electron-sdk': 'require("@infomaniak/jitsi-meet-electron-sdk")',
     },
     module: {
-        noParse: /external_api\\.js/,
         rules: [{
             test: /\.(js|ts)?$/,
             use: {

@@ -6,12 +6,13 @@
 
 import {ipcRenderer} from 'electron';
 
-import {RemoteControl,
+import {
+    RemoteControl,
     setupScreenSharingRender,
     setupAlwaysOnTopRender,
     initPopupsConfigurationRender,
     setupPowerMonitorRender,
-} from '@jitsi/electron-sdk';
+} from '@infomaniak/jitsi-meet-electron-sdk';
 
 const whitelistedIpcChannels = ['protocol-data-msg', 'renderer-ready'];
 
@@ -77,4 +78,6 @@ window.jitsiNodeAPI = {
             ipcRenderer.removeListener(channel, listener);
         },
     },
+
 };
+

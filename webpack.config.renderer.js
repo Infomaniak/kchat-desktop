@@ -152,7 +152,6 @@ module.exports = merge(base, {
         }),
     ],
     module: {
-        noParse: /external_api\\.js/,
         rules: [{
             test: /\.(js|jsx|ts|tsx)?$/,
             use: {
@@ -193,6 +192,9 @@ module.exports = merge(base, {
             test: /\.(eot|ttf|woff|woff2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
             type: 'asset/resource',
         }],
+    },
+    externals: {
+        '@infomaniak/jitsi-meet-electron-sdk': 'require("@infomaniak/jitsi-meet-electron-sdk")',
     },
     node: {
         __filename: false,

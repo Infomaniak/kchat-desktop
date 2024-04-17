@@ -238,7 +238,7 @@
         "yargs": "17.4.0"
     },
     "dependencies": {
-        "@jitsi/electron-sdk": "^6.0.33",
+        "@infomaniak/jitsi-meet-electron-sdk": "^6.0.10-nightly.15",
         "@sentry/electron": "^4.19.0",
         "macos-notification-state": "2.0.2",
         "windows-focus-assist": "1.3.0"
