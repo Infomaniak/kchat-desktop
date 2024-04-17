@@ -3,11 +3,12 @@
 
 import path from 'path';
 
+import URL from 'url';
+
 import {app, ipcMain, nativeTheme, session} from 'electron';
 import isDev from 'electron-is-dev';
 import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-extension-installer';
 import {init} from '@sentry/electron/main';
-
 import {ConfigServer} from 'types/config';
 
 import {
@@ -230,9 +231,9 @@ function initializeBeforeAppReady() {
         return;
     }
 
-    if (process.env.NODE_ENV !== 'test') {
-        app.enableSandbox();
-    }
+    // if (process.env.NODE_ENV !== 'test') {
+    // app.enableSandbox();
+    // }
     TrustedOriginsStore.load();
 
     // prevent using a different working directory, which happens on windows running after installation.
@@ -276,6 +277,7 @@ function initializeBeforeAppReady() {
 }
 
 function initializeInterCommunicationEventListeners() {
+    ipcMain.on('initialize-jitsi', handleInitializeJitsi);
     ipcMain.on(NOTIFY_MENTION, handleMentionNotification);
     ipcMain.handle(GET_APP_THEME, handleGetTheme);
     ipcMain.handle(GET_APP_INFO, handleAppVersion);
@@ -305,6 +307,10 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(DOUBLE_CLICK_ON_WINDOW, handleDoubleClick);
 
     ipcMain.on(TOGGLE_SECURE_INPUT, handleToggleSecureInput);
+}
+
+function handleInitializeJitsi() {
+
 }
 
 function updateTeamsHandler(_: any, servers: ConfigServer[]) {

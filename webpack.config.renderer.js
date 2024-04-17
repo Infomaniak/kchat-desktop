@@ -152,6 +152,7 @@ module.exports = merge(base, {
         }),
     ],
     module: {
+        noParse: /external_api\\.js/,
         rules: [{
             test: /\.(js|jsx|ts|tsx)?$/,
             use: {

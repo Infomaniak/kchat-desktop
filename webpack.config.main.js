@@ -6,8 +6,6 @@
 /* eslint-disable import/no-commonjs */
 'use strict';
 
-const path = require('path');
-
 const {merge} = require('webpack-merge');
 
 const CopyPlugin = require('copy-webpack-plugin');
@@ -30,6 +28,7 @@ module.exports = merge(base, {
         '@infomaniak/jitsi-meet-electron-sdk': 'require("@infomaniak/jitsi-meet-electron-sdk")',
     },
     module: {
+        noParse: /external_api\\.js/,
         rules: [{
             test: /\.(js|ts)?$/,
             use: {

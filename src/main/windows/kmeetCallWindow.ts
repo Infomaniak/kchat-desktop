@@ -22,6 +22,7 @@ export function createKmeetCallWindow(mainWindow: BrowserWindow) {
     const session = mainWindow.webContents.session;
 
     const kmeetCallWindow = new BrowserWindow({
+        parent: mainWindow,
         show: false,
         center: true,
         webPreferences: {
@@ -29,7 +30,6 @@ export function createKmeetCallWindow(mainWindow: BrowserWindow) {
             session,
             sandbox: false,
             enableBlinkFeatures: 'WebAssemblyCSP',
-            contextIsolation: false,
             nodeIntegration: false,
         },
     });
