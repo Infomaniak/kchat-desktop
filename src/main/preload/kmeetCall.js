@@ -4,7 +4,7 @@
 
 'use strict';
 
-import {contextBridge} from 'electron';
+import {contextBridge, ipcRenderer} from 'electron';
 
 import {
     RemoteControl,
@@ -15,6 +15,8 @@ import {
 } from '@infomaniak/jitsi-meet-electron-sdk';
 
 import JitsiApi from '../../common/utils/external_api';
+
+const whitelistedIpcChannels = ['protocol-data-msg', 'renderer-ready'];
 
 /**
  * Setup the renderer process.
@@ -43,12 +45,34 @@ function setupRenderer(options = {}) {
 
 contextBridge.exposeInMainWorld('jitsiNodeAPI', {
     setupRenderer,
+    ipc: {
+        on: (channel, listener) => {
+            if (!whitelistedIpcChannels.includes(channel)) {
+                return;
+            }
+
+            ipcRenderer.on(channel, listener);
+        },
+        send: (channel) => {
+            if (!whitelistedIpcChannels.includes(channel)) {
+                return;
+            }
+
+            ipcRenderer.send(channel);
+        },
+        removeListener: (channel, listener) => {
+            if (!whitelistedIpcChannels.includes(channel)) {
+                return;
+            }
+
+            ipcRenderer.removeListener(channel, listener);
+        },
+    },
 });
 
 // window.jitsiNodeAPI = {
 //     openExternalLink,
 //     setupRenderer,
-//     initializeJitsi: (api) => ipcRenderer.send('initialize-jitsi', api),
 //     ipc: {
 //         on: (channel, listener) => {
 //             if (!whitelistedIpcChannels.includes(channel)) {
