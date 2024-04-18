@@ -267,12 +267,13 @@ export class WebContentsEventManager {
                     popup.once('closed', () => {
                         this.popupWindow = undefined;
                     });
-
                     const contextMenu = new ContextMenu({}, popup);
                     contextMenu.reload();
                 }
 
-                popup.once('ready-to-show', () => popup.show());
+                popup.once('ready-to-show', () => {
+                    popup.show();
+                });
 
                 if (isManagedResource(serverURL, parsedURL)) {
                     popup.loadURL(details.url);
@@ -282,6 +283,10 @@ export class WebContentsEventManager {
                     popup.loadURL(details.url, {
                         userAgent: composeUserAgent(),
                     });
+
+                    // popup.loadURL(getLocalURLString('kmeetCall.html'), {
+                    //     userAgent: composeUserAgent(),
+                    // });
                 }
 
                 return {action: 'deny'};

@@ -54,6 +54,7 @@ export function createKmeetCallWindow(mainWindow: BrowserWindow) {
             session,
             sandbox: false,
             enableBlinkFeatures: 'WebAssemblyCSP',
+            contextIsolation: false,
             nodeIntegration: false,
         },
     });

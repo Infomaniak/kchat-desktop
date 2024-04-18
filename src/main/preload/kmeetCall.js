@@ -4,7 +4,7 @@
 
 'use strict';
 
-import {contextBridge, ipcRenderer} from 'electron';
+import {ipcRenderer} from 'electron';
 
 import {
     RemoteControl,
@@ -43,35 +43,7 @@ function setupRenderer(options = {}) {
     setupPowerMonitorRender(api);
 }
 
-contextBridge.exposeInMainWorld('jitsiNodeAPI', {
-    setupRenderer,
-    ipc: {
-        on: (channel, listener) => {
-            if (!whitelistedIpcChannels.includes(channel)) {
-                return;
-            }
-
-            ipcRenderer.on(channel, listener);
-        },
-        send: (channel) => {
-            if (!whitelistedIpcChannels.includes(channel)) {
-                return;
-            }
-
-            ipcRenderer.send(channel);
-        },
-        removeListener: (channel, listener) => {
-            if (!whitelistedIpcChannels.includes(channel)) {
-                return;
-            }
-
-            ipcRenderer.removeListener(channel, listener);
-        },
-    },
-});
-
-// window.jitsiNodeAPI = {
-//     openExternalLink,
+// contextBridge.exposeInMainWorld('jitsiNodeAPI', {
 //     setupRenderer,
 //     ipc: {
 //         on: (channel, listener) => {
@@ -96,5 +68,32 @@ contextBridge.exposeInMainWorld('jitsiNodeAPI', {
 //             ipcRenderer.removeListener(channel, listener);
 //         },
 //     },
-// };
+// });
+
+window.jitsiNodeAPI = {
+    setupRenderer,
+    ipc: {
+        on: (channel, listener) => {
+            if (!whitelistedIpcChannels.includes(channel)) {
+                return;
+            }
+
+            ipcRenderer.on(channel, listener);
+        },
+        send: (channel) => {
+            if (!whitelistedIpcChannels.includes(channel)) {
+                return;
+            }
+
+            ipcRenderer.send(channel);
+        },
+        removeListener: (channel, listener) => {
+            if (!whitelistedIpcChannels.includes(channel)) {
+                return;
+            }
+
+            ipcRenderer.removeListener(channel, listener);
+        },
+    },
+};
 
