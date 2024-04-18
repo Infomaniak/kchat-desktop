@@ -236,7 +236,7 @@ export class WebContentsEventManager {
                 } else {
                     let win;
                     if (isKmeet) {
-                        win = createKmeetCallWindow(MainWindow.get()!);
+                        win = createKmeetCallWindow(MainWindow.get()!, details.url);
                     } else {
                         win = new BrowserWindow({
                             backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do

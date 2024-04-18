@@ -59,7 +59,7 @@ export const isUrlType = (urlType: string, serverURL: URL, inputURL: URL) => {
 
 export const isLoginUrl = (serverURL: URL, inputURL: URL) => isUrlType('login', serverURL, inputURL);
 export const isHelpUrl = (serverURL: URL, inputURL: URL) => isUrlType('help', serverURL, inputURL);
-export const isKmeetUrl = (serverURL: URL, inputURL: URL) => isUrlType('kmeet', serverURL, inputURL);
+export const isKmeetUrl = (serverURL: URL, inputURL: URL) => isUrlType('static/kmeet.js', serverURL, inputURL);
 export const isImageProxyUrl = (serverURL: URL, inputURL: URL) => isUrlType('api/v4/image', serverURL, inputURL);
 export const isPublicFilesUrl = (serverURL: URL, inputURL: URL) => isUrlType('files', serverURL, inputURL);
 export const isAdminUrl = (serverURL: URL, inputURL: URL) => isUrlType('admin_console', serverURL, inputURL);

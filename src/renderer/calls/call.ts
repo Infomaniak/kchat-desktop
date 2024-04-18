@@ -1,13 +1,9 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-[
+function loadFile(src: string) {
+    console.log('src', src);
 
-    // compiled javascript of call component in webapp
-    'https://infomaniak.local.preprod.dev.infomaniak.ch/static/kmeet.js',
-].forEach((src) => loadFile(src));
-
-function loadFile(src) {
     if (src.endsWith('.js')) {
         const script = document.createElement('script');
 
@@ -23,3 +19,8 @@ function loadFile(src) {
         document.head.appendChild(link);
     }
 }
+
+window.jitsiNodeAPI.onLoadServerUrl((serverUrl) => {
+    loadFile(serverUrl);
+});
+

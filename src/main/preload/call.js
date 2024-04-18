@@ -1,27 +1,21 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-// Copyright (c) 2015-2016 Yuya Ochiai
-/* eslint-disable consistent-return */
+// Copyright (c) 2015-2016
 
 'use strict';
 
-// eslint-disable-next-line import/no-commonjs
-const {ipcRenderer} = require('electron');
+import {
+    setupScreenSharingRender,
+    setupAlwaysOnTopRender,
 
-// eslint-disable-next-line import/no-commonjs
-// const {setupScreenSharingRender, setupAlwaysOnTopRender, setupWiFiStats, setupPowerMonitorRender, initPopupsConfigurationRender} = require('@jitsi/electron-sdk');
+    // RemoteControl,
+    // initPopupsConfigurationRender,
+    setupPowerMonitorRender,
+} from '@infomaniak/jitsi-meet-electron-sdk';
 
-// eslint-disable-next-line import/no-commonjs
-// const {platform} = require('process');
+import {ipcRenderer} from 'electron';
 
-// const whitelistedIpcChannels = [
-//     'protocol-data-msg',
-//     'protocol-data-homepage',
-//     'protocol-data-create-meeting',
-//     'protocol-data-join-meeting',
-//     'protocol-data-plan-meeting',
-//     'renderer-ready',
-// ];
+import JitsiMeetExternalAPI from 'common/utils/external_api';
 
 /**
  * Setup the renderer process.
@@ -30,61 +24,33 @@ const {ipcRenderer} = require('electron');
  * @param {*} options - Options for what to enable.
  * @returns {void}
  */
-// function setupRenderer(api, options = {}) {
-//     // initPopupsConfigurationRender(api);
+function setupRenderer(parentNode) {
+    const api = new JitsiMeetExternalAPI('kmeet.preprod.dev.infomaniak.ch', {
+        width: '100%',
+        height: '100%',
+        roomName: 'test',
+        parentNode,
+        sandbox: 'allow-scripts allow-same-origin allow-popups allow-forms',
+        userInfo: {
+            displayName: 'test',
+        },
+        configOverwrite: {
 
-//     const iframe = api.getIFrame();
+            // defaultLanguage: this.props.locale,
 
-//     initPopupsConfigurationRender(api);
+            prejoinPageEnabled: true,
+        },
+    });
+    console.log(api);
 
-//     setupScreenSharingRender(api);
+    setupScreenSharingRender(api);
+    setupAlwaysOnTopRender(api);
+    setupPowerMonitorRender(api);
 
-//     // if (options.enableRemoteControl) {
-//     //     new RemoteControl(iframe); // eslint-disable-line no-new
-//     // }
+    return api;
+}
 
-//     // // Allow window to be on top if enabled in settings
-//     if (options.enableAlwaysOnTopWindow) {
-//         setupAlwaysOnTopRender(api);
-//     }
-
-//     // // Disable WiFiStats on mac due to jitsi-meet-electron#585
-//     if (platform !== 'darwin') {
-//         setupWiFiStats(iframe);
-//     }
-
-//     setupPowerMonitorRender(api);
-// }
-
-window.ipcRenderer = {
-    send: ipcRenderer.send,
-    on: (channel, listener) => ipcRenderer.on(channel, (_, ...args) => listener(null, ...args)),
-    invoke: ipcRenderer.invoke,
+window.jitsiNodeAPI = {
+    setupRenderer,
+    onLoadServerUrl: (listener) => ipcRenderer.on('load-server-url', (_, url) => listener(url)),
 };
-
-// window.jitsiNodeAPI = {
-//     setupRenderer,
-//     ipc: {
-//         on: (channel, listener) => {
-//             if (!whitelistedIpcChannels.includes(channel)) {
-//                 return;
-//             }
-
-//             return ipcRenderer.on(channel, listener);
-//         },
-//         send: (channel) => {
-//             if (!whitelistedIpcChannels.includes(channel)) {
-//                 return;
-//             }
-
-//             return ipcRenderer.send(channel);
-//         },
-//         removeListener: (channel, listener) => {
-//             if (!whitelistedIpcChannels.includes(channel)) {
-//                 return;
-//             }
-
-//             return ipcRenderer.removeListener(channel, listener);
-//         },
-//     },
-// };

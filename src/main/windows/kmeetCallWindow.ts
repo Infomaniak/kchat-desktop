@@ -7,7 +7,6 @@ import {app, BrowserWindow, shell} from 'electron';
 
 import {
     initPopupsConfigurationMain,
-    RemoteControlMain,
     setupAlwaysOnTopMain,
     setupPowerMonitorMain,
     setupScreenSharingMain,
@@ -41,8 +40,8 @@ export function openExternalLink(link: string) {
     }
 }
 
-export function createKmeetCallWindow(mainWindow: BrowserWindow) {
-    const preload = getLocalPreload('kmeetCall.js');
+export function createKmeetCallWindow(mainWindow: BrowserWindow, serverUrl: string) {
+    const preload = getLocalPreload('call.js');
     const session = mainWindow.webContents.session;
 
     const kmeetCallWindow = new BrowserWindow({
@@ -57,6 +56,10 @@ export function createKmeetCallWindow(mainWindow: BrowserWindow) {
             nodeIntegration: false,
             contextIsolation: false,
         },
+    });
+
+    kmeetCallWindow.webContents.on('dom-ready', () => {
+        kmeetCallWindow.webContents.send('load-server-url', serverUrl);
     });
 
     kmeetCallWindow.webContents.openDevTools({mode: 'detach'});
@@ -81,9 +84,6 @@ export function createKmeetCallWindow(mainWindow: BrowserWindow) {
     setupAlwaysOnTopMain(kmeetCallWindow, null, windowOpenHandler);
     setupPowerMonitorMain(kmeetCallWindow);
     setupScreenSharingMain(kmeetCallWindow, app.getName(), 'com.infomaniak.chat');
-
-    // eslint-disable-next-line no-new
-    // new RemoteControlMain(kmeetCallWindow);
 
     return kmeetCallWindow;
 }

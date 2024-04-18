@@ -13,7 +13,7 @@ import {UPDATE_PATHS} from 'common/communication';
 import JsonFileManager from 'common/JsonFileManager';
 import {Logger} from 'common/log';
 import {t} from 'common/utils/util';
-import {isKmeetUrl, isTrustedURL, parseURL} from 'common/utils/url';
+import {isTrustedURL, parseURL} from 'common/utils/url';
 
 import {permissionsJson} from 'main/constants';
 import {localizeMessage} from 'main/i18nManager';
