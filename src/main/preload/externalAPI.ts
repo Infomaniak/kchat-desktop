@@ -67,6 +67,7 @@ import {
     GET_SERVER_THEME,
     GET_APP_THEME,
     THEME_CHANGED,
+    SWITCH_SERVER_SIDEBAR,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -645,6 +646,10 @@ ipcRenderer.on(TEAMS_ORDER_PREFERENCE_UPDATED, (_, teamsOrder) => {
 
 ipcRenderer.on(GET_SERVER_THEME, () => {
     window.postMessage({type: GET_SERVER_THEME, message: {}}, window.location.origin);
+});
+
+ipcRenderer.on(SWITCH_SERVER_SIDEBAR, (_, serverId) => {
+    window.postMessage({type: SWITCH_SERVER_SIDEBAR, message: {serverId}}, window.location.origin);
 });
 
 /**

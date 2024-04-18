@@ -66,8 +66,8 @@ const ServersSidebarRenderer = () => {
         });
     };
 
-    const onButtonClick = (serverName: string) => {
-        window.desktop.serversSidebar.switchServer(serverName);
+    const onButtonClick = (serverName: string, serverId: string) => {
+        window.desktop.serversSidebar.switchServer(serverName, serverId);
     };
 
     const onDragEnd = (result: DropResult) => {

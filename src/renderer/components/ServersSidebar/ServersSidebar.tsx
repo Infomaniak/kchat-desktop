@@ -25,7 +25,7 @@ type Props = {
     expired?: Map<string, boolean>;
 
     onDragEnd: (_: DropResult) => void;
-    onButtonClick?: (_: string) => void;
+    onButtonClick?: (_name: string, _id: string) => void;
 
     isDropDisabled: boolean;
     theme?: Theme;
@@ -79,7 +79,7 @@ const ServersSidebar: FC<Props> = ({
                                         isAnyDragging={isAnyDragging}
                                         iconUrl={team ? imageURLForTeam(team) : null}
                                         initial={initialForTeam(team)}
-                                        onClick={() => onButtonClick?.(team.serverName)}
+                                        onClick={() => onButtonClick?.(team.serverName, team.id)}
                                         theme={theme}
                                         showButtonsIndex={showButtonsIndex}
                                         name={team.display_name}

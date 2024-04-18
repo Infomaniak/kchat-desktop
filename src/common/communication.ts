@@ -4,6 +4,7 @@
 export const GET_APP_INFO = 'get-app-info';
 
 export const SWITCH_SERVER = 'switch-server';
+export const SWITCH_SERVER_SIDEBAR = 'switch-server-sidebar';
 export const SWITCH_TAB = 'switch-tab';
 export const CLOSE_VIEW = 'close-view';
 export const OPEN_VIEW = 'open-view';

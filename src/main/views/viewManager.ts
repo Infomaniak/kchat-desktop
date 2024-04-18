@@ -195,11 +195,11 @@ export class ViewManager {
         }
     };
 
-    reload = (force = false) => {
+    reload = () => {
         const currentView = this.getCurrentView();
         if (currentView) {
             LoadingScreen.show();
-            currentView.reload(force);
+            currentView.reload();
         }
     }
 

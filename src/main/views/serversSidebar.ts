@@ -13,7 +13,7 @@ import {
     MAIN_WINDOW_CREATED,
     MAIN_WINDOW_RESIZED,
     PREFERRED_THEME,
-    SERVERS_UPDATE, SWITCH_SERVER, TEAMS_ORDER_PREFERENCE, TEAMS_ORDER_PREFERENCE_UPDATED, UPDATE_APPSTATE,
+    SERVERS_UPDATE, SWITCH_SERVER, SWITCH_SERVER_SIDEBAR, TEAMS_ORDER_PREFERENCE, TEAMS_ORDER_PREFERENCE_UPDATED, UPDATE_APPSTATE,
     UPDATE_SERVERS_SIDEBAR,
     UPDATE_TEAMS,
     USER_LOCALE,
@@ -73,6 +73,7 @@ export class ServerSidebar {
         ipcMain.on(TEAMS_ORDER_PREFERENCE, this.updateTeamsOrderPreference);
         ipcMain.on(TEAMS_ORDER_PREFERENCE_UPDATED, this.handleUpdateTeamsOrder);
         ipcMain.on(SWITCH_SERVER, this.handleSwitchServer);
+        ipcMain.on(SWITCH_SERVER_SIDEBAR, this.handleSwitchServerSidebar);
         ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
@@ -110,7 +111,6 @@ export class ServerSidebar {
                 log.info(process.env);
             });
 
-        // this.view.webContents.openDevTools({mode: 'detach'});
         this.setOrderedServers();
 
         this.modal = new ServerSidebarShortcutModalView();
@@ -195,7 +195,12 @@ export class ServerSidebar {
     }
 
     private handleSwitchServer = () => {
-        viewManager.getCurrentView()?.sendToRenderer(GET_SERVER_THEME);
+        // viewManager.getCurrentView()?.sendToRenderer(GET_SERVER_THEME);
+    }
+
+    private handleSwitchServerSidebar = (event: any, serverName: string, serverId: string) => {
+        viewManager.getCurrentView()?.sendToRenderer(SWITCH_SERVER_SIDEBAR, serverId);
+        ipcMain.emit(SWITCH_SERVER, event, serverName);
     }
 
     private updatePreferredTheme = (_: any, data: any) => {

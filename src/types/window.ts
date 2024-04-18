@@ -156,7 +156,7 @@ declare global {
             };
 
             serversSidebar: {
-                switchServer: (serverId: string) => void;
+                switchServer: (serverName: string, serverId: string) => void;
                 updateTeamsOrder: (teamsOrder: string[]) => void;
 
                 handleMouseInServerButton: (index: number, teamName: string) => void;
