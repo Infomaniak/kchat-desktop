@@ -24,7 +24,6 @@ module.exports = merge(base, {
         settings: './src/renderer/settings.tsx',
         call: './src/renderer/calls/call.ts',
         callDialing: './src/renderer/callDialing.tsx',
-        kmeetCall: './src/renderer/kmeetCall.tsx',
         dropdown: './src/renderer/dropdown.tsx',
         downloadsDropdownMenu: './src/renderer/downloadsDropdownMenu.tsx',
         downloadsDropdown: './src/renderer/downloadsDropdown.tsx',
@@ -139,12 +138,6 @@ module.exports = merge(base, {
             template: 'src/renderer/index.html',
             chunks: ['welcomeScreen'],
             filename: 'welcomeScreen.html',
-        }),
-        new HtmlWebpackPlugin({
-            title: 'Mattermost Kmeet Call',
-            template: 'src/renderer/call-dialing.html',
-            chunks: ['kmeetCall'],
-            filename: 'kmeetCall.html',
         }),
         new MiniCssExtractPlugin({
             filename: 'styles.[contenthash].css',

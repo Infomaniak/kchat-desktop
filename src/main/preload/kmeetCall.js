@@ -15,8 +15,6 @@ import {
 
 import JitsiMeetExternalAPI from 'common/utils/external_api';
 
-const whitelistedIpcChannels = ['protocol-data-msg', 'renderer-ready'];
-
 /**
  * Setup the renderer process.
  *

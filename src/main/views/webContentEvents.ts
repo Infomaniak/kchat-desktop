@@ -298,10 +298,6 @@ export class WebContentsEventManager {
                     popup.loadURL(details.url, {
                         userAgent: composeUserAgent(),
                     });
-
-                    // popup.loadURL(getLocalURLString('kmeetCall.html'), {
-                    //     userAgent: composeUserAgent(),
-                    // });
                 }
 
                 return {action: 'deny'};
