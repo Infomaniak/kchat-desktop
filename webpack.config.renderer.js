@@ -22,7 +22,7 @@ module.exports = merge(base, {
     entry: {
         index: './src/renderer/index.tsx',
         settings: './src/renderer/settings.tsx',
-        call: './src/renderer/call.tsx',
+        call: './src/renderer/calls/call.ts',
         callDialing: './src/renderer/callDialing.tsx',
         kmeetCall: './src/renderer/kmeetCall.tsx',
         dropdown: './src/renderer/dropdown.tsx',
@@ -58,7 +58,7 @@ module.exports = merge(base, {
         }),
         new HtmlWebpackPlugin({
             title: 'Call Window',
-            template: 'src/renderer/index.html',
+            template: 'src/renderer/calls/call.html',
             chunks: ['call'],
             filename: 'call.html',
         }),

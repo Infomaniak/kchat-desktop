@@ -4,17 +4,16 @@
 
 'use strict';
 
-import {ipcRenderer} from 'electron';
-
 import {
-    RemoteControl,
     setupScreenSharingRender,
     setupAlwaysOnTopRender,
-    initPopupsConfigurationRender,
+
+    // RemoteControl,
+    // initPopupsConfigurationRender,
     setupPowerMonitorRender,
 } from '@infomaniak/jitsi-meet-electron-sdk';
 
-import JitsiApi from '../../common/utils/external_api';
+import JitsiMeetExternalAPI from 'common/utils/external_api';
 
 const whitelistedIpcChannels = ['protocol-data-msg', 'renderer-ready'];
 
@@ -25,75 +24,33 @@ const whitelistedIpcChannels = ['protocol-data-msg', 'renderer-ready'];
  * @param {*} options - Options for what to enable.
  * @returns {void}
  */
-function setupRenderer(options = {}) {
-    console.log('options', options);
-    const api = new JitsiApi('kmeet.preprod.dev.infomaniak.ch', options);
+function setupRenderer(parentNode) {
+    const api = new JitsiMeetExternalAPI('kmeet.preprod.dev.infomaniak.ch', {
+        width: '100%',
+        height: '100%',
+        roomName: 'test',
+        parentNode,
+        sandbox: 'allow-scripts allow-same-origin allow-popups allow-forms',
+        userInfo: {
+            displayName: 'test',
+        },
+        configOverwrite: {
 
-    initPopupsConfigurationRender(api);
+            // defaultLanguage: this.props.locale,
 
-    const iframe = api.getIFrame();
+            prejoinPageEnabled: true,
+        },
+    });
+    console.log(api);
 
     setupScreenSharingRender(api);
-
-    new RemoteControl(iframe); // eslint-disable-line no-new
-
-    // Allow window to be on top if enabled in settings
-    setupAlwaysOnTopRender(api, null, {showOnPrejoin: true});
-
+    setupAlwaysOnTopRender(api);
     setupPowerMonitorRender(api);
+
+    return api;
 }
-
-// contextBridge.exposeInMainWorld('jitsiNodeAPI', {
-//     setupRenderer,
-//     ipc: {
-//         on: (channel, listener) => {
-//             if (!whitelistedIpcChannels.includes(channel)) {
-//                 return;
-//             }
-
-//             ipcRenderer.on(channel, listener);
-//         },
-//         send: (channel) => {
-//             if (!whitelistedIpcChannels.includes(channel)) {
-//                 return;
-//             }
-
-//             ipcRenderer.send(channel);
-//         },
-//         removeListener: (channel, listener) => {
-//             if (!whitelistedIpcChannels.includes(channel)) {
-//                 return;
-//             }
-
-//             ipcRenderer.removeListener(channel, listener);
-//         },
-//     },
-// });
 
 window.jitsiNodeAPI = {
     setupRenderer,
-    ipc: {
-        on: (channel, listener) => {
-            if (!whitelistedIpcChannels.includes(channel)) {
-                return;
-            }
-
-            ipcRenderer.on(channel, listener);
-        },
-        send: (channel) => {
-            if (!whitelistedIpcChannels.includes(channel)) {
-                return;
-            }
-
-            ipcRenderer.send(channel);
-        },
-        removeListener: (channel, listener) => {
-            if (!whitelistedIpcChannels.includes(channel)) {
-                return;
-            }
-
-            ipcRenderer.removeListener(channel, listener);
-        },
-    },
 };
 

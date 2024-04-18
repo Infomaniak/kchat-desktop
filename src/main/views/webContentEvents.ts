@@ -35,7 +35,7 @@ import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 import {protocols} from '../../../electron-builder.json';
 
 import allowProtocolDialog from '../allowProtocolDialog';
-import {composeUserAgent} from '../utils';
+import {composeUserAgent, getLocalURLString} from '../utils';
 import {createKmeetCallWindow} from 'main/windows/kmeetCallWindow';
 
 type CustomLogin = {
@@ -234,15 +234,21 @@ export class WebContentsEventManager {
                     });
                     popup = this.popupWindow.win;
                 } else {
-                    this.popupWindow = {
-                        win: isKmeet ? createKmeetCallWindow(MainWindow.get()!) : new BrowserWindow({
+                    let win;
+                    if (isKmeet) {
+                        win = createKmeetCallWindow(MainWindow.get()!);
+                    } else {
+                        win = new BrowserWindow({
                             backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
                             show: false,
                             center: true,
                             webPreferences: {
                                 spellcheck: (typeof spellcheck === 'undefined' ? true : spellcheck),
                             },
-                        }),
+                        });
+                    }
+                    this.popupWindow = {
+                        win,
                         serverURL,
                     };
                     this.customLogins[this.popupWindow.win.webContents.id] = {
@@ -275,7 +281,16 @@ export class WebContentsEventManager {
                     popup.show();
                 });
 
-                if (isManagedResource(serverURL, parsedURL)) {
+                if (isKmeet) {
+                    const localURL = getLocalURLString('call.html');
+                    popup.loadURL(localURL, {
+                        userAgent: composeUserAgent(),
+                    }).catch(
+                        (reason) => {
+                            log.error(`Call window failed to load: ${reason}`);
+                            log.info(process.env);
+                        });
+                } else if (isManagedResource(serverURL, parsedURL)) {
                     popup.loadURL(details.url);
                 } else {
                     // currently changing the userAgent for popup windows to allow plugins to go through google's oAuth

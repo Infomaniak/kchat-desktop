@@ -4,16 +4,17 @@
 
 'use strict';
 
-import { CALLS_JOINED_CALL, CALL_DECLINED, CALL_JOINED, GET_LANGUAGE_INFORMATION } from 'common/communication';
 import {ipcRenderer, contextBridge} from 'electron';
+
+import {CALLS_JOINED_CALL, CALL_DECLINED, CALL_JOINED, GET_LANGUAGE_INFORMATION} from 'common/communication';
 
 contextBridge.exposeInMainWorld('dialApi', {
     onInfo: (callback) => ipcRenderer.on('info-received', callback),
     callAccept: (callInfo) => ipcRenderer.send(CALL_JOINED, callInfo),
     callDeclined: (callInfo) => ipcRenderer.send(CALL_DECLINED, callInfo),
     callDefault: () => ipcRenderer.send(CALLS_JOINED_CALL),
-})
+});
 
 contextBridge.exposeInMainWorld('desktop', {
-    getLanguageInformation: () => ipcRenderer.invoke(GET_LANGUAGE_INFORMATION)
-})
+    getLanguageInformation: () => ipcRenderer.invoke(GET_LANGUAGE_INFORMATION),
+});

@@ -56,6 +56,7 @@ export function createKmeetCallWindow(mainWindow: BrowserWindow) {
             enableBlinkFeatures: 'WebAssemblyCSP',
             contextIsolation: false,
             nodeIntegration: false,
+            contextIsolation: false,
         },
     });
 
@@ -83,7 +84,7 @@ export function createKmeetCallWindow(mainWindow: BrowserWindow) {
     setupScreenSharingMain(kmeetCallWindow, app.getName(), 'com.infomaniak.chat');
 
     // eslint-disable-next-line no-new
-    new RemoteControlMain(kmeetCallWindow);
+    // new RemoteControlMain(kmeetCallWindow);
 
     return kmeetCallWindow;
 }
