@@ -338,11 +338,9 @@ export const IKWelcomeAllowedUrls = [
 ];
 
 export const KChatTokenWhitelist = [
-
     // Prod whitelist
     'https://*.infomaniak.com/api/v4/*',
     'https://*.infomaniak.com/broadcasting/auth',
-
     // Preprod whitelist
     'https://*.preprod.dev.infomaniak.ch/api/v4/*',
     'https://*.preprod.dev.infomaniak.ch/broadcasting/auth',

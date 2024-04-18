@@ -27,8 +27,6 @@ import ServerManager from 'common/servers/serverManager';
 import ServerViewState from 'app/serverViewState';
 import AppState from 'common/appState';
 
-import mainWindow from 'main/windows/mainWindow';
-
 import viewManager from './viewManager';
 import {ServerSidebarShortcutModalView} from './serversSidebarShortcutModalView';
 
@@ -171,12 +169,12 @@ export class ServerSidebar {
         this.updateSidebar();
 
         if (previousCount === 1 && newCount > 1) {
-            MainWindow.emit(MAIN_WINDOW_RESIZED, mainWindow.getBounds());
+            MainWindow.emit(MAIN_WINDOW_RESIZED, MainWindow.getBounds());
             this.show();
         }
 
         if (previousCount > 1 && newCount === 1) {
-            MainWindow.emit(MAIN_WINDOW_RESIZED, mainWindow.getBounds());
+            MainWindow.emit(MAIN_WINDOW_RESIZED, MainWindow.getBounds());
             this.hide();
         }
     }
