@@ -29,6 +29,7 @@ export const MINIMUM_WINDOW_HEIGHT = 240;
 export const MINIMUM_CALLS_WIDGET_WIDTH = 284;
 export const MINIMUM_CALLS_WIDGET_HEIGHT = 90;
 export const CALLS_PLUGIN_ID = 'com.mattermost.calls';
+export const KMEET_ORIGIN = 'kmeet.preprod.dev.infomaniak.ch';
 
 export const DOWNLOADS_DROPDOWN_HEIGHT = 360;
 export const DOWNLOADS_DROPDOWN_WIDTH = 280;

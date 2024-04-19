@@ -18,6 +18,8 @@ import MainWindow from 'main/windows/mainWindow';
 
 import Config from 'common/config';
 
+import {createKmeetCallWindow} from 'main/windows/kmeetCallWindow';
+
 import {handleAppBeforeQuit} from './app';
 
 const log = new Logger('App.Intercom');
@@ -166,4 +168,14 @@ export function handleToggleSecureInput(event: IpcMainEvent, secureInput: boolea
     // Enforce macOS to restrict processes from reading the keyboard input when in a password field
     log.debug('handleToggleSecureInput', secureInput);
     app.setSecureKeyboardEntryEnabled(secureInput);
+}
+
+export function handleOpenKmeetWindow(_: any, serverUrl: string, callInfo: object) {
+    const mainWindow = MainWindow.get();
+
+    if (!mainWindow) {
+        return;
+    }
+
+    createKmeetCallWindow(mainWindow, serverUrl, callInfo);
 }

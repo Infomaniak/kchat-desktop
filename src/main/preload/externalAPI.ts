@@ -74,7 +74,11 @@ const createListener: ExternalAPI['createListener'] = (channel: string, listener
     };
 };
 
-const desktopAPI: DesktopAPI = {
+type KchatDesktopApi = DesktopAPI & {
+    openKmeetCallWindow: (serverUrl: string, callInfo: object) => void;
+}
+
+const desktopAPI: KchatDesktopApi = {
 
     // Initialization
     isDev: () => ipcRenderer.invoke(GET_IS_DEV_MODE),
@@ -125,6 +129,8 @@ const desktopAPI: DesktopAPI = {
     onJoinCallRequest: (listener) => createListener(CALLS_JOIN_REQUEST, listener),
 
     openLinkFromCalls: (url) => ipcRenderer.send(CALLS_LINK_CLICK, url),
+
+    openKmeetCallWindow: (serverUrl, callInfo) => ipcRenderer.send('open-kmeet-window', serverUrl, callInfo),
 
     focusPopout: () => ipcRenderer.send(CALLS_POPOUT_FOCUS),
 

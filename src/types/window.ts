@@ -163,6 +163,10 @@ declare global {
         jitsiNodeAPI: {
             setupRenderer: (ref: any) => void;
             onLoadServerUrl: (listener: (serverUrl: string) => void) => void;
+            getCallInfo: () => {
+                user: object;
+                channelId: string;
+            };
         };
     }
 }

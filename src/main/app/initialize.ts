@@ -99,6 +99,7 @@ import {
     handlePingDomain,
     handleToggleSecureInput,
     handleGetTheme,
+    handleOpenKmeetWindow,
 } from './intercom';
 import {
     clearAppCache,
@@ -307,6 +308,7 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(DOUBLE_CLICK_ON_WINDOW, handleDoubleClick);
 
     ipcMain.on(TOGGLE_SECURE_INPUT, handleToggleSecureInput);
+    ipcMain.on('open-kmeet-window', handleOpenKmeetWindow);
 }
 
 function handleInitializeJitsi() {

@@ -3,7 +3,7 @@
 
 import url from 'url';
 
-import {app, BrowserWindow, shell} from 'electron';
+import {app, BrowserWindow, ipcMain, shell} from 'electron';
 
 import {
     initPopupsConfigurationMain,
@@ -15,7 +15,7 @@ import {
     // @ts-ignore
 } from '@infomaniak/jitsi-meet-electron-sdk';
 
-import {getLocalPreload} from '../utils';
+import {composeUserAgent, getLocalPreload, getLocalURLString} from '../utils';
 
 /**
  * Opens the given link in an external browser.
@@ -40,13 +40,13 @@ export function openExternalLink(link: string) {
     }
 }
 
-export function createKmeetCallWindow(mainWindow: BrowserWindow, serverUrl: string) {
+export function createKmeetCallWindow(mainWindow: BrowserWindow, serverUrl: string, callInfo: object) {
     const preload = getLocalPreload('call.js');
     const session = mainWindow.webContents.session;
 
     const kmeetCallWindow = new BrowserWindow({
         parent: mainWindow,
-        show: false,
+        show: true,
         center: true,
         webPreferences: {
             preload,
@@ -58,11 +58,22 @@ export function createKmeetCallWindow(mainWindow: BrowserWindow, serverUrl: stri
         },
     });
 
+    const localURL = getLocalURLString('call.html');
+    kmeetCallWindow.loadURL(localURL, {
+        userAgent: composeUserAgent(),
+    }).catch(
+        (reason) => {
+            // log.error(`Call window failed to load: ${reason}`);
+            // log.info(process.env);
+        });
+
     kmeetCallWindow.webContents.on('dom-ready', () => {
         kmeetCallWindow.webContents.send('load-server-url', serverUrl);
     });
 
     kmeetCallWindow.webContents.openDevTools({mode: 'detach'});
+
+    ipcMain.handle('get-call-info', () => callInfo);
 
     const windowOpenHandler = ({url, frameName}: {url: string; frameName: string}) => {
         const target = getPopupTarget(url, frameName);

@@ -16,6 +16,7 @@ import {
 import {ipcRenderer} from 'electron';
 
 import JitsiMeetExternalAPI from 'common/utils/external_api';
+import {KMEET_ORIGIN} from 'common/utils/constants';
 
 /**
  * Setup the renderer process.
@@ -24,15 +25,15 @@ import JitsiMeetExternalAPI from 'common/utils/external_api';
  * @param {*} options - Options for what to enable.
  * @returns {void}
  */
-function setupRenderer(parentNode) {
-    const api = new JitsiMeetExternalAPI('kmeet.preprod.dev.infomaniak.ch', {
+function setupRenderer(parentNode, callInfo) {
+    const api = new JitsiMeetExternalAPI(KMEET_ORIGIN, {
         width: '100%',
         height: '100%',
-        roomName: 'test',
+        roomName: callInfo?.channelID,
         parentNode,
         sandbox: 'allow-scripts allow-same-origin allow-popups allow-forms',
         userInfo: {
-            displayName: 'test',
+            displayName: callInfo?.user?.first_name,
         },
         configOverwrite: {
 
@@ -41,16 +42,18 @@ function setupRenderer(parentNode) {
             prejoinPageEnabled: true,
         },
     });
-    console.log(api);
 
     setupScreenSharingRender(api);
     setupAlwaysOnTopRender(api);
     setupPowerMonitorRender(api);
+
+    api.executeCommand('avatarUrl', callInfo.avatar);
 
     return api;
 }
 
 window.jitsiNodeAPI = {
     setupRenderer,
+    getCallInfo: () => ipcRenderer.invoke('get-call-info'),
     onLoadServerUrl: (listener) => ipcRenderer.on('load-server-url', (_, url) => listener(url)),
 };
