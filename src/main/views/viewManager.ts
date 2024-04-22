@@ -410,6 +410,7 @@ export class ViewManager {
         if (this.currentView === viewId) {
             this.showById(this.currentView);
             LoadingScreen.fade();
+            ServersSidebar.show();
         }
     };
 
@@ -419,6 +420,7 @@ export class ViewManager {
         LoadingScreen.fade();
         if (this.currentView === viewId) {
             this.getCurrentView()?.hide();
+            ServersSidebar.hide();
         }
     };
 
