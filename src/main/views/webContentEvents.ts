@@ -28,7 +28,6 @@ import {
 import {flushCookiesStore} from 'main/app/utils';
 import ContextMenu from 'main/contextMenu';
 
-import MainWindow from 'main/windows/mainWindow';
 import ViewManager from 'main/views/viewManager';
 import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 
@@ -36,7 +35,6 @@ import {protocols} from '../../../electron-builder.json';
 
 import allowProtocolDialog from '../allowProtocolDialog';
 import {composeUserAgent, getLocalURLString} from '../utils';
-import KmeetCallWindow from 'main/windows/kmeetCallWindow';
 
 type CustomLogin = {
     inProgress: boolean;
@@ -234,19 +232,15 @@ export class WebContentsEventManager {
                     });
                     popup = this.popupWindow.win;
                 } else {
-                    let win;
-                    if (isKmeet) {
-                        win = KmeetCallWindow.create(MainWindow.get()!, details.url, {});
-                    } else {
-                        win = new BrowserWindow({
-                            backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
-                            show: false,
-                            center: true,
-                            webPreferences: {
-                                spellcheck: (typeof spellcheck === 'undefined' ? true : spellcheck),
-                            },
-                        });
-                    }
+                    const win = new BrowserWindow({
+                        backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
+                        show: false,
+                        center: true,
+                        webPreferences: {
+                            spellcheck: (typeof spellcheck === 'undefined' ? true : spellcheck),
+                        },
+                    });
+
                     this.popupWindow = {
                         win,
                         serverURL,

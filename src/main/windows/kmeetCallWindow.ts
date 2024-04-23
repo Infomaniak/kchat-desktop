@@ -20,6 +20,10 @@ import electronBuilder from '../../../electron-builder.json';
 import {composeUserAgent, getLocalPreload, getLocalURLString} from '../utils';
 import {Logger} from 'common/log';
 
+import ServerViewState from 'app/serverViewState';
+
+import MainWindow from './mainWindow';
+
 const log = new Logger('KmeetCallWindow');
 
 /**
@@ -53,7 +57,15 @@ class KmeetCallWindow {
         ipcMain.handle('get-call-info', () => this.callInfo);
     }
 
-    create(mainWindow: BrowserWindow, serverUrl: string, callInfo: object): BrowserWindow {
+    create(callInfo: object) {
+        const mainWindow = MainWindow.get();
+        const currentServer = ServerViewState!.getCurrentServer();
+
+        if (!mainWindow || !currentServer) {
+            log.error('Main window does not exist');
+            return;
+        }
+
         if (this.callWindow) {
             this.destroy();
         }
@@ -87,7 +99,7 @@ class KmeetCallWindow {
             });
 
         this.callWindow.webContents.on('dom-ready', () => {
-            this.callWindow!.webContents.send('load-server-url', serverUrl);
+            this.callWindow!.webContents.send('load-server-url', `${currentServer.url.toString()}static/kmeet.js`);
         });
 
         this.callWindow.webContents.openDevTools({mode: 'detach'});
@@ -112,8 +124,6 @@ class KmeetCallWindow {
         setupAlwaysOnTopMain(this.callWindow, null, windowOpenHandler);
         setupPowerMonitorMain(this.callWindow);
         setupScreenSharingMain(this.callWindow, app.getName(), electronBuilder.appId);
-
-        return this.callWindow;
     }
 
     destroy() {

@@ -62,6 +62,7 @@ import {
     RELOAD_CURRENT_VIEW,
     GET_APP_THEME,
     THEME_CHANGED,
+    CALL_API_AVAILABLE,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -170,6 +171,7 @@ contextBridge.exposeInMainWorld('authManager', {
 contextBridge.exposeInMainWorld('callManager', {
     onCallJoined: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_JOINED, callback),
     onCallDeclined: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_DECLINED, callback),
+    onKmeetApiAvailable: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_API_AVAILABLE, callback),
 });
 
 // Specific info for the testing environment

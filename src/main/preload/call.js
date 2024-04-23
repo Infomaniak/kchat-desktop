@@ -17,6 +17,7 @@ import {ipcRenderer} from 'electron';
 
 import JitsiMeetExternalAPI from 'common/utils/external_api';
 import {KMEET_ORIGIN} from 'common/utils/constants';
+import {CALL_API_AVAILABLE} from 'common/communication';
 
 /**
  * Setup the renderer process.
@@ -47,6 +48,7 @@ function setupRenderer(parentNode, callInfo) {
     setupAlwaysOnTopRender(api);
     setupPowerMonitorRender(api);
 
+    ipcRenderer.send(CALL_API_AVAILABLE, api);
     api.executeCommand('avatarUrl', callInfo.avatar);
 
     return api;

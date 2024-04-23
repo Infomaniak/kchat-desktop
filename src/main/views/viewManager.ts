@@ -45,6 +45,7 @@ import {
     REQUEST_BROWSER_HISTORY_STATUS,
     LEGACY_OFF,
     UNREADS_AND_MENTIONS,
+    CALL_API_AVAILABLE,
 } from 'common/communication';
 import Config from 'common/config';
 import {Logger} from 'common/log';
@@ -61,6 +62,8 @@ import {getLocalURLString, getLocalPreload, getAdjustedWindowBoundaries, shouldH
 
 import TokenManager from 'main/tokenManager';
 import {createCallDialingWindow} from 'main/windows/callDialingWindow';
+
+import KmeetCallWindow from 'main/windows/kmeetCallWindow';
 
 import LoadingScreen from './loadingScreen';
 import modalManager from './modalManager';
@@ -111,6 +114,7 @@ export class ViewManager {
         ipcMain.on(CALL_JOINED, this.handleCallJoined);
         ipcMain.on(CALL_JOINED_BROWSER, this.handleCallJoinedBrowser);
         ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
+        ipcMain.on(CALL_API_AVAILABLE, this.handleCallApiAvailable);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(RESET_TEAMS, this.resetTeams);
         ipcMain.on(THEME_CHANGED, this.handleThemeChanged);
@@ -210,9 +214,10 @@ export class ViewManager {
     handleCallJoined = (_: IpcMainEvent, message: any) => {
         //TODO: kMeet integration V2 => open call in a new window.
         //remove shell.openExternal and uncomment code below.
-        shell.openExternal(message.url);
+        // shell.openExternal(message.url);
         this.sendToAllViews(CALL_JOINED, message);
         this.destroyCallWindow();
+        KmeetCallWindow.create(message);
 
         /*const withDevTools = true;
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
@@ -237,6 +242,11 @@ export class ViewManager {
     handleCallDeclined = (_: IpcMainEvent, message: unknown) => {
         this.sendToAllViews(CALL_DECLINED, message);
         this.destroyCallWindow();
+    }
+
+    handleCallApiAvailable = (_: IpcMainEvent, message: unknown) => {
+        console.log('CALL API IS AVAILABLE');
+        this.getCurrentView()?.sendToRenderer(CALL_API_AVAILABLE, message);
     }
 
     destroyCallWindow = () => {

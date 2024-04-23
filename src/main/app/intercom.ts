@@ -171,11 +171,5 @@ export function handleToggleSecureInput(event: IpcMainEvent, secureInput: boolea
 }
 
 export function handleOpenKmeetWindow(_: any, serverUrl: string, callInfo: object) {
-    const mainWindow = MainWindow.get();
-
-    if (!mainWindow) {
-        return;
-    }
-
-    KmeetCallWindow.create(mainWindow, serverUrl, callInfo);
+    KmeetCallWindow.create(callInfo);
 }

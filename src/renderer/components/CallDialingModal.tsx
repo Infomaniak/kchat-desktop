@@ -3,16 +3,17 @@
 
 /* eslint-disable max-lines */
 
-import { Button } from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 import React from 'react';
 
-import { playSoundLoop } from 'renderer/notificationSounds';
+import {FormattedMessage, IntlShape, injectIntl} from 'react-intl';
+
+import {playSoundLoop} from 'renderer/notificationSounds';
 
 import Avatars from './Avatars/Avatars';
-import { FormattedMessage, IntlShape, injectIntl } from 'react-intl';
 
 type Props = Record<string, never> & {
-    intl: IntlShape
+    intl: IntlShape;
 }
 
 type State = {
@@ -47,10 +48,11 @@ class DialingModal extends React.PureComponent<Props, State> {
     componentDidMount() {
         window.dialApi.onInfo((_, msg) => {
             // this.setState({callInfo: msg, trad: localizeMessage('Call.dialing', 'is Calling')});
-            this.setState({ callInfo: msg, trad: this.props.intl.formatMessage({
-                id: 'renderer.modals.call.calling',
-                defaultMessage: 'Is calling'
-            }) });
+            this.setState({callInfo: msg,
+                trad: this.props.intl.formatMessage({
+                    id: 'renderer.modals.call.calling',
+                    defaultMessage: 'Is calling',
+                })});
         });
         playSoundLoop('Ring');
         setTimeout(() => {
@@ -59,13 +61,13 @@ class DialingModal extends React.PureComponent<Props, State> {
     }
 
     onHandleDecline() {
-        const { callInfo } = this.state;
+        const {callInfo} = this.state;
         window.dialApi.callDeclined(callInfo);
         window.close();
     }
 
     onHandleAccept() {
-        const { callInfo } = this.state;
+        const {callInfo} = this.state;
         window.dialApi.callAccept(callInfo);
         window.close();
     }
@@ -81,7 +83,7 @@ class DialingModal extends React.PureComponent<Props, State> {
     };
 
     render() {
-        const { callInfo } = this.state;
+        const {callInfo} = this.state;
 
         if (!callInfo) {
             return null;
@@ -111,12 +113,12 @@ class DialingModal extends React.PureComponent<Props, State> {
                         size='sm'
                         onClick={this.onHandleDecline}
                         variant='danger'
-                        style={{ fontSize: 14 }}
+                        style={{fontSize: 14}}
                     >
                         <span>
                             <FormattedMessage
-                                id="renderer.modals.call.decline"
-                                defaultMessage="Decline"
+                                id='renderer.modals.call.decline'
+                                defaultMessage='Decline'
                             />
                         </span>
                     </Button>
@@ -125,12 +127,12 @@ class DialingModal extends React.PureComponent<Props, State> {
                         size='sm'
                         onClick={this.onHandleAccept}
                         variant='primary'
-                        style={{ fontSize: 14 }}
+                        style={{fontSize: 14}}
                     >
                         <span>
                             <FormattedMessage
-                                id="renderer.modals.call.accept"
-                                defaultMessage="Accept"
+                                id='renderer.modals.call.accept'
+                                defaultMessage='Accept'
                             />
                         </span>
                     </Button>
@@ -140,4 +142,4 @@ class DialingModal extends React.PureComponent<Props, State> {
     }
 }
 
-export default injectIntl(DialingModal)
+export default injectIntl(DialingModal);
