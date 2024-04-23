@@ -16,6 +16,9 @@ import {
 } from '@infomaniak/jitsi-meet-electron-sdk';
 
 import {composeUserAgent, getLocalPreload, getLocalURLString} from '../utils';
+import {Logger} from 'common/log';
+
+const log = new Logger('KmeetCallWindow');
 
 /**
  * Opens the given link in an external browser.
@@ -40,61 +43,77 @@ export function openExternalLink(link: string) {
     }
 }
 
-export function createKmeetCallWindow(mainWindow: BrowserWindow, serverUrl: string, callInfo: object) {
-    const preload = getLocalPreload('call.js');
-    const session = mainWindow.webContents.session;
+class KmeetCallWindow {
+    private callWindow?: BrowserWindow
+    private callInfo?: object
 
-    const kmeetCallWindow = new BrowserWindow({
-        parent: mainWindow,
-        show: true,
-        center: true,
-        webPreferences: {
-            preload,
-            session,
-            sandbox: false,
-            enableBlinkFeatures: 'WebAssemblyCSP',
-            nodeIntegration: false,
-            contextIsolation: false,
-        },
-    });
+    constructor() {
+        ipcMain.handle('get-call-info', () => this.callInfo);
+    }
 
-    const localURL = getLocalURLString('call.html');
-    kmeetCallWindow.loadURL(localURL, {
-        userAgent: composeUserAgent(),
-    }).catch(
-        (reason) => {
-            // log.error(`Call window failed to load: ${reason}`);
-            // log.info(process.env);
+    create(mainWindow: BrowserWindow, serverUrl: string, callInfo: object): BrowserWindow {
+        if (this.callWindow) {
+            return this.callWindow;
+        }
+
+        const preload = getLocalPreload('call.js');
+        const session = mainWindow.webContents.session;
+
+        this.callWindow = new BrowserWindow({
+            parent: mainWindow,
+            show: true,
+            center: true,
+            webPreferences: {
+                preload,
+                session,
+                sandbox: false,
+                enableBlinkFeatures: 'WebAssemblyCSP',
+                nodeIntegration: false,
+                contextIsolation: false,
+            },
         });
 
-    kmeetCallWindow.webContents.on('dom-ready', () => {
-        kmeetCallWindow.webContents.send('load-server-url', serverUrl);
-    });
+        this.callInfo = callInfo;
 
-    kmeetCallWindow.webContents.openDevTools({mode: 'detach'});
+        const localURL = getLocalURLString('call.html');
+        this.callWindow.loadURL(localURL, {
+            userAgent: composeUserAgent(),
+        }).catch(
+            (reason) => {
+                log.error(`Call window failed to load: ${reason}`);
+                log.info(process.env);
+            });
 
-    ipcMain.handle('get-call-info', () => callInfo);
+        this.callWindow.webContents.on('dom-ready', () => {
+            this.callWindow!.webContents.send('load-server-url', serverUrl);
+        });
 
-    const windowOpenHandler = ({url, frameName}: {url: string; frameName: string}) => {
-        const target = getPopupTarget(url, frameName);
+        this.callWindow.webContents.openDevTools({mode: 'detach'});
 
-        if (!target || target === 'browser') {
-            openExternalLink(url);
+        const windowOpenHandler = ({url, frameName}: {url: string; frameName: string}) => {
+            const target = getPopupTarget(url, frameName);
+
+            if (!target || target === 'browser') {
+                openExternalLink(url);
+
+                return {action: 'deny'};
+            }
+
+            if (target === 'electron') {
+                return {action: 'allow'};
+            }
 
             return {action: 'deny'};
-        }
+        };
 
-        if (target === 'electron') {
-            return {action: 'allow'};
-        }
+        initPopupsConfigurationMain(this.callWindow);
+        setupAlwaysOnTopMain(this.callWindow, null, windowOpenHandler);
+        setupPowerMonitorMain(this.callWindow);
+        setupScreenSharingMain(this.callWindow, app.getName(), 'com.infomaniak.chat');
 
-        return {action: 'deny'};
-    };
-
-    initPopupsConfigurationMain(kmeetCallWindow);
-    setupAlwaysOnTopMain(kmeetCallWindow, null, windowOpenHandler);
-    setupPowerMonitorMain(kmeetCallWindow);
-    setupScreenSharingMain(kmeetCallWindow, app.getName(), 'com.infomaniak.chat');
-
-    return kmeetCallWindow;
+        return this.callWindow;
+    }
 }
+
+const kmeetCallWindow = new KmeetCallWindow();
+export default kmeetCallWindow;

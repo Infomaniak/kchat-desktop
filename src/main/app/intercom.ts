@@ -18,7 +18,7 @@ import MainWindow from 'main/windows/mainWindow';
 
 import Config from 'common/config';
 
-import {createKmeetCallWindow} from 'main/windows/kmeetCallWindow';
+import KmeetCallWindow from 'main/windows/kmeetCallWindow';
 
 import {handleAppBeforeQuit} from './app';
 
@@ -177,5 +177,5 @@ export function handleOpenKmeetWindow(_: any, serverUrl: string, callInfo: objec
         return;
     }
 
-    createKmeetCallWindow(mainWindow, serverUrl, callInfo);
+    KmeetCallWindow.create(mainWindow, serverUrl, callInfo);
 }
