@@ -245,7 +245,6 @@ export class ViewManager {
     }
 
     handleCallApiAvailable = (_: IpcMainEvent, message: unknown) => {
-        console.log('CALL API IS AVAILABLE');
         this.getCurrentView()?.sendToRenderer(CALL_API_AVAILABLE, message);
     }
 

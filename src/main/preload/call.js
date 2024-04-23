@@ -17,6 +17,7 @@ import {ipcRenderer} from 'electron';
 
 import JitsiMeetExternalAPI from 'common/utils/external_api';
 import {KMEET_ORIGIN} from 'common/utils/constants';
+import {CALL_ENDED} from 'common/communication';
 
 /**
  * Setup the renderer process.
@@ -26,6 +27,7 @@ import {KMEET_ORIGIN} from 'common/utils/constants';
  * @returns {void}
  */
 function setupRenderer(parentNode, callInfo) {
+    console.log('CALL INFO', callInfo);
     const api = new JitsiMeetExternalAPI(KMEET_ORIGIN, {
         width: '100%',
         height: '100%',
@@ -48,6 +50,8 @@ function setupRenderer(parentNode, callInfo) {
     setupPowerMonitorRender(api);
 
     api.executeCommand('avatarUrl', callInfo.avatar);
+
+    api.addListener('videoConferenceLeft', () => ipcRenderer.send(CALL_ENDED, callInfo));
 
     return api;
 }

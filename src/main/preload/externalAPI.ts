@@ -62,7 +62,8 @@ import {
     RELOAD_CURRENT_VIEW,
     GET_APP_THEME,
     THEME_CHANGED,
-    CALL_API_AVAILABLE,
+    CALL_ENDED,
+    CALL_OPEN_WINDOW,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -76,7 +77,7 @@ const createListener: ExternalAPI['createListener'] = (channel: string, listener
 };
 
 type KchatDesktopApi = DesktopAPI & {
-    openKmeetCallWindow: (serverUrl: string, callInfo: object) => void;
+    openKmeetCallWindow: (callInfo: object) => void;
 }
 
 const desktopAPI: KchatDesktopApi = {
@@ -131,7 +132,7 @@ const desktopAPI: KchatDesktopApi = {
 
     openLinkFromCalls: (url) => ipcRenderer.send(CALLS_LINK_CLICK, url),
 
-    openKmeetCallWindow: (serverUrl, callInfo) => ipcRenderer.send('open-kmeet-window', serverUrl, callInfo),
+    openKmeetCallWindow: (callInfo) => ipcRenderer.send(CALL_OPEN_WINDOW, callInfo),
 
     focusPopout: () => ipcRenderer.send(CALLS_POPOUT_FOCUS),
 
@@ -171,7 +172,7 @@ contextBridge.exposeInMainWorld('authManager', {
 contextBridge.exposeInMainWorld('callManager', {
     onCallJoined: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_JOINED, callback),
     onCallDeclined: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_DECLINED, callback),
-    onKmeetApiAvailable: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_API_AVAILABLE, callback),
+    onCallEnded: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_ENDED, callback),
 });
 
 // Specific info for the testing environment

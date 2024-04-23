@@ -170,6 +170,6 @@ export function handleToggleSecureInput(event: IpcMainEvent, secureInput: boolea
     app.setSecureKeyboardEntryEnabled(secureInput);
 }
 
-export function handleOpenKmeetWindow(_: any, serverUrl: string, callInfo: object) {
+export function handleOpenKmeetWindow(_: any, callInfo: object) {
     KmeetCallWindow.create(callInfo);
 }

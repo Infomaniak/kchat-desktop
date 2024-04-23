@@ -39,6 +39,7 @@ import {
     SERVERS_UPDATE,
     GET_APP_THEME,
     GET_APP_INFO,
+    CALL_OPEN_WINDOW,
 } from 'common/communication';
 import Config from 'common/config';
 import {Logger} from 'common/log';
@@ -308,7 +309,7 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(DOUBLE_CLICK_ON_WINDOW, handleDoubleClick);
 
     ipcMain.on(TOGGLE_SECURE_INPUT, handleToggleSecureInput);
-    ipcMain.on('open-kmeet-window', handleOpenKmeetWindow);
+    ipcMain.on(CALL_OPEN_WINDOW, handleOpenKmeetWindow);
 }
 
 function handleInitializeJitsi() {

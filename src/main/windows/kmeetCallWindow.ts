@@ -22,6 +22,9 @@ import {Logger} from 'common/log';
 
 import ServerViewState from 'app/serverViewState';
 
+import ViewManager from 'main/views/viewManager';
+import {CALL_ENDED} from 'common/communication';
+
 import MainWindow from './mainWindow';
 
 const log = new Logger('KmeetCallWindow');
@@ -55,6 +58,7 @@ class KmeetCallWindow {
 
     constructor() {
         ipcMain.handle('get-call-info', () => this.callInfo);
+        ipcMain.on(CALL_ENDED, this.handleCallEnded);
     }
 
     create(callInfo: object) {
@@ -137,6 +141,11 @@ class KmeetCallWindow {
 
         this.callInfo = {};
         this.callWindow = undefined;
+    }
+
+    private handleCallEnded = (_: any, message: any) => {
+        this.destroy();
+        ViewManager.sendToAllViews(CALL_ENDED, message);
     }
 }
 
