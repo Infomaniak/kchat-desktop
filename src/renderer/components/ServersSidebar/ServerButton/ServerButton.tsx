@@ -81,7 +81,7 @@ const ServerButton: FC<Props> = ({
                     onMouseEnter={() => window.desktop.serversSidebar.handleMouseInServerButton(orderedIndex + 1, name)}
                     onMouseOut={() => window.desktop.serversSidebar.handleMouseOutServerButton()}
                 >
-                    {!isActive && badgeDiv}
+                    {badgeDiv}
                     <span className='ServerButton__content'>
                         {!iconUrl && <span className='ServerButton__initial'>{initial}</span>}
                         {iconUrl && (

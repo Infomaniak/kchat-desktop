@@ -16,7 +16,7 @@ export const MAX_SERVER_RETRIES = 3;
 export const MAX_LOADING_SCREEN_SECONDS = 4 * SECOND;
 
 // SERVERS SIDEBAR
-export const SERVERS_SIDEBAR_WIDTH = 70;
+export const SERVERS_SIDEBAR_WIDTH = 65;
 
 export const TAB_BAR_HEIGHT = 40;
 export const TAB_BAR_PADDING = 4;

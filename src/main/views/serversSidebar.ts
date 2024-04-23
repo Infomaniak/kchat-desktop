@@ -185,6 +185,7 @@ export class ServerSidebar {
     }
 
     private handleUpdateTeamsOrder = (_: any, order: string[]) => {
+        this.teamsOrderPreference = order;
         viewManager.sendToAllViews(TEAMS_ORDER_PREFERENCE_UPDATED, order);
     }
 
@@ -195,7 +196,7 @@ export class ServerSidebar {
     }
 
     private handleSwitchServer = () => {
-        // viewManager.getCurrentView()?.sendToRenderer(GET_SERVER_THEME);
+        viewManager.getCurrentView()?.sendToRenderer(GET_SERVER_THEME);
     }
 
     private handleSwitchServerSidebar = (event: any, serverName: string, serverId: string) => {
