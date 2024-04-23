@@ -15,6 +15,8 @@ import {
     // @ts-ignore
 } from '@infomaniak/jitsi-meet-electron-sdk';
 
+import electronBuilder from '../../../electron-builder.json';
+
 import {composeUserAgent, getLocalPreload, getLocalURLString} from '../utils';
 import {Logger} from 'common/log';
 
@@ -53,7 +55,7 @@ class KmeetCallWindow {
 
     create(mainWindow: BrowserWindow, serverUrl: string, callInfo: object): BrowserWindow {
         if (this.callWindow) {
-            return this.callWindow;
+            this.destroy();
         }
 
         const preload = getLocalPreload('call.js');
@@ -109,9 +111,22 @@ class KmeetCallWindow {
         initPopupsConfigurationMain(this.callWindow);
         setupAlwaysOnTopMain(this.callWindow, null, windowOpenHandler);
         setupPowerMonitorMain(this.callWindow);
-        setupScreenSharingMain(this.callWindow, app.getName(), 'com.infomaniak.chat');
+        setupScreenSharingMain(this.callWindow, app.getName(), electronBuilder.appId);
 
         return this.callWindow;
+    }
+
+    destroy() {
+        try {
+            if (this.callWindow?.closable) {
+                this.callWindow?.destroy();
+            }
+        } catch (error) {
+            log.debug('Kmeet window could not be destroyed', error);
+        }
+
+        this.callInfo = {};
+        this.callWindow = undefined;
     }
 }
 
