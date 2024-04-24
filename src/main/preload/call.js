@@ -38,8 +38,7 @@ function setupRenderer(parentNode, callInfo) {
             displayName: callInfo?.user?.first_name,
         },
         configOverwrite: {
-
-            // defaultLanguage: this.props.locale,
+            defaultLanguage: callInfo?.locale || 'en',
             startWithVideoMuted: true,
             prejoinPageEnabled: false,
         },
