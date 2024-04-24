@@ -106,8 +106,6 @@ class KmeetCallWindow {
             this.callWindow!.webContents.send('load-server-url', `${currentServer.url.toString()}static/kmeet.js`);
         });
 
-        this.callWindow.webContents.openDevTools({mode: 'detach'});
-
         const windowOpenHandler = ({url, frameName}: {url: string; frameName: string}) => {
             const target = getPopupTarget(url, frameName);
 
