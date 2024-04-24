@@ -40,8 +40,7 @@ function setupRenderer(parentNode, callInfo) {
         configOverwrite: {
 
             // defaultLanguage: this.props.locale,
-
-            prejoinPageEnabled: true,
+            prejoinPageEnabled: false,
         },
     });
 
