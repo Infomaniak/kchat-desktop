@@ -34,7 +34,7 @@ import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 import {protocols} from '../../../electron-builder.json';
 
 import allowProtocolDialog from '../allowProtocolDialog';
-import {composeUserAgent, getLocalURLString} from '../utils';
+import {composeUserAgent, getLocalPreload} from '../utils';
 
 type CustomLogin = {
     inProgress: boolean;
@@ -208,7 +208,8 @@ export class WebContentsEventManager {
                 return {action: 'deny'};
             }
 
-            const isKmeet = isKmeetUrl(serverURL, parsedURL);
+            // const isKmeet = isKmeetUrl(serverURL, parsedURL);
+            const isKmeet = true;
 
             if (isTeamUrl(serverURL, parsedURL, true) && !isKmeet) {
                 ViewManager.handleDeepLink(parsedURL);
@@ -236,6 +237,10 @@ export class WebContentsEventManager {
                         backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
                         show: false,
                         center: true,
+                        ...(isKmeet && {
+                            width: 267,
+                            height: 267,
+                        }),
                         webPreferences: {
                             preload: isKmeet ? getLocalPreload('externalAPI.js') : undefined,
                             spellcheck: (typeof spellcheck === 'undefined' ? true : spellcheck),
