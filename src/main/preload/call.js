@@ -40,6 +40,7 @@ function setupRenderer(parentNode, callInfo) {
         configOverwrite: {
 
             // defaultLanguage: this.props.locale,
+            startWithVideoMuted: true,
             prejoinPageEnabled: false,
         },
     });
