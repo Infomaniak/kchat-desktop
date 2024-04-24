@@ -1,6 +1,9 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
 import url from 'url';
 
 import {app, BrowserWindow, ipcMain, shell} from 'electron';
@@ -23,7 +26,9 @@ import {Logger} from 'common/log';
 import ServerViewState from 'app/serverViewState';
 
 import ViewManager from 'main/views/viewManager';
-import {CALL_ENDED} from 'common/communication';
+import {CALL_ENDED, CALL_RING_CLOSE_WINDOW} from 'common/communication';
+
+import WebContentsEventManager from 'main/views/webContentEvents';
 
 import MainWindow from './mainWindow';
 
@@ -59,6 +64,7 @@ class KmeetCallWindow {
     constructor() {
         ipcMain.handle('get-call-info', () => this.callInfo);
         ipcMain.on(CALL_ENDED, this.handleCallEnded);
+        ipcMain.on(CALL_RING_CLOSE_WINDOW, this.handleCloseRingWindow);
     }
 
     create(callInfo: object) {
@@ -72,6 +78,10 @@ class KmeetCallWindow {
 
         if (this.callWindow) {
             this.destroy();
+        }
+
+        if (WebContentsEventManager.popupWindow?.win) {
+            this.closeRingWindow();
         }
 
         const preload = getLocalPreload('call.js');
@@ -144,6 +154,15 @@ class KmeetCallWindow {
     private handleCallEnded = (_: any, message: any) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_ENDED, message);
+    }
+
+    private closeRingWindow = () => {
+        console.log('CLOSE RING WINDOW');
+        WebContentsEventManager.popupWindow?.win.destroy();
+    }
+
+    private handleCloseRingWindow = () => {
+        this.closeRingWindow();
     }
 }
 

@@ -237,6 +237,7 @@ export class WebContentsEventManager {
                         show: false,
                         center: true,
                         webPreferences: {
+                            preload: isKmeet ? getLocalPreload('externalAPI.js') : undefined,
                             spellcheck: (typeof spellcheck === 'undefined' ? true : spellcheck),
                         },
                     });
@@ -275,16 +276,7 @@ export class WebContentsEventManager {
                     popup.show();
                 });
 
-                if (isKmeet) {
-                    const localURL = getLocalURLString('call.html');
-                    popup.loadURL(localURL, {
-                        userAgent: composeUserAgent(),
-                    }).catch(
-                        (reason) => {
-                            log.error(`Call window failed to load: ${reason}`);
-                            log.info(process.env);
-                        });
-                } else if (isManagedResource(serverURL, parsedURL)) {
+                if (isManagedResource(serverURL, parsedURL)) {
                     popup.loadURL(details.url);
                 } else {
                     // currently changing the userAgent for popup windows to allow plugins to go through google's oAuth
