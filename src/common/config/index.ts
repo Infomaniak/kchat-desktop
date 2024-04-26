@@ -250,6 +250,10 @@ export class Config extends EventEmitter {
         return this.combinedData?.appLanguage;
     }
 
+    get theme() {
+        return this.combinedData?.theme;
+    }
+
     /**
      * Gets the servers from registry into the config object and reload
      *

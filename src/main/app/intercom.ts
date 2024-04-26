@@ -14,6 +14,7 @@ import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
 import type {UniqueServer} from 'types/config';
+import Config from 'common/config';
 
 import {handleAppBeforeQuit} from './app';
 
@@ -24,6 +25,10 @@ export function handleAppVersion() {
         name: app.getName(),
         version: app.getVersion(),
     };
+}
+
+export function handleGetTheme() {
+    return Config.theme;
 }
 
 export function handleQuit(e: IpcMainEvent, reason: string, stack: string) {
@@ -83,7 +88,7 @@ export function handleMainWindowIsShown() {
             handleShowOnboardingScreens(showWelcomeScreen(), showNewServerModal(), false);
         });
     }
-    }
+}
 
 export function handleWelcomeScreenModal() {
     log.debug('handleWelcomeScreenModal');
