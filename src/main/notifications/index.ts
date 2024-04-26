@@ -29,13 +29,14 @@ class NotificationManager {
 
     public async displayMention(title: string, body: string, channelId: string, teamId: string, url: string, silent: boolean, webcontents: Electron.WebContents, soundName: string) {
         log.debug('displayMention', {title, body, channelId, teamId, url, silent, soundName});
+        const dnd = await getDoNotDisturb();
 
         if (!Notification.isSupported()) {
             log.error('notification not supported');
             return {result: 'error', reason: 'notification_api', data: 'notification not supported'};
         }
 
-        if (await getDoNotDisturb()) {
+        if (dnd) {
             return {result: 'not_sent', reason: 'os_dnd'};
         }
 
@@ -97,7 +98,7 @@ class NotificationManager {
                     this.mentionsPerChannel.set(mentionKey, mention);
                 }
                 const notificationSound = mention.getNotificationSound();
-                if (notificationSound) {
+                if (notificationSound && !dnd) {
                     MainWindow.sendToRenderer(PLAY_SOUND, notificationSound);
                 }
                 flashFrame(true);
