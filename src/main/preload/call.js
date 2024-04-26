@@ -42,6 +42,7 @@ function setupRenderer(parentNode, callInfo) {
             startWithVideoMuted: true,
             prejoinPageEnabled: false,
         },
+        jwt: callInfo.jwt,
     });
 
     setupScreenSharingRender(api);

@@ -238,10 +238,11 @@ export class WebContentsEventManager {
                         parent: mainWindow.get(),
                         backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
                         show: false,
-                        center: true,
+                        center: !isKmeet,
                         ...(isKmeet && {
                             width: 267,
                             height: 267,
+                            alwaysOnTop: true,
                         }),
                         webPreferences: {
                             preload: isKmeet ? getLocalPreload('externalAPI.js') : undefined,
