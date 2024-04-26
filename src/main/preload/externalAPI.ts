@@ -65,6 +65,7 @@ import {
     CALL_ENDED,
     CALL_OPEN_WINDOW,
     CALL_RING_CLOSE_WINDOW,
+    CALL_RING_WINDOW_IS_OPEN,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -80,6 +81,7 @@ const createListener: ExternalAPI['createListener'] = (channel: string, listener
 type KchatDesktopApi = DesktopAPI & {
     openKmeetCallWindow: (callInfo: object) => void;
     closeRingCallWindow: () => void;
+    isRingCallWindowOpen: () => void;
 }
 
 const desktopAPI: KchatDesktopApi = {
@@ -136,6 +138,7 @@ const desktopAPI: KchatDesktopApi = {
 
     openKmeetCallWindow: (callInfo) => ipcRenderer.send(CALL_OPEN_WINDOW, callInfo),
     closeRingCallWindow: () => ipcRenderer.send(CALL_RING_CLOSE_WINDOW),
+    isRingCallWindowOpen: () => ipcRenderer.invoke(CALL_RING_WINDOW_IS_OPEN),
 
     focusPopout: () => ipcRenderer.send(CALLS_POPOUT_FOCUS),
 

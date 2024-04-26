@@ -35,6 +35,7 @@ import {protocols} from '../../../electron-builder.json';
 
 import allowProtocolDialog from '../allowProtocolDialog';
 import {composeUserAgent, getLocalPreload} from '../utils';
+import mainWindow from 'main/windows/mainWindow';
 
 type CustomLogin = {
     inProgress: boolean;
@@ -234,6 +235,7 @@ export class WebContentsEventManager {
                     popup = this.popupWindow.win;
                 } else {
                     const win = new BrowserWindow({
+                        parent: mainWindow.get(),
                         backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
                         show: false,
                         center: true,
@@ -246,6 +248,8 @@ export class WebContentsEventManager {
                             spellcheck: (typeof spellcheck === 'undefined' ? true : spellcheck),
                         },
                     });
+
+                    win.webContents.openDevTools({mode: 'detach'});
 
                     this.popupWindow = {
                         win,

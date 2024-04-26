@@ -26,7 +26,7 @@ import {Logger} from 'common/log';
 import ServerViewState from 'app/serverViewState';
 
 import ViewManager from 'main/views/viewManager';
-import {CALL_ENDED, CALL_RING_CLOSE_WINDOW} from 'common/communication';
+import {CALL_ENDED, CALL_RING_CLOSE_WINDOW, CALL_RING_WINDOW_IS_OPEN} from 'common/communication';
 
 import WebContentsEventManager from 'main/views/webContentEvents';
 
@@ -65,6 +65,7 @@ class KmeetCallWindow {
         ipcMain.handle('get-call-info', () => this.callInfo);
         ipcMain.on(CALL_ENDED, this.handleCallEnded);
         ipcMain.on(CALL_RING_CLOSE_WINDOW, this.handleCloseRingWindow);
+        ipcMain.handle(CALL_RING_WINDOW_IS_OPEN, this.handleIsCallWindowOpen);
     }
 
     create(callInfo: object) {
@@ -157,12 +158,15 @@ class KmeetCallWindow {
     }
 
     private closeRingWindow = () => {
-        console.log('CLOSE RING WINDOW');
         WebContentsEventManager.popupWindow?.win.destroy();
     }
 
     private handleCloseRingWindow = () => {
         this.closeRingWindow();
+    }
+
+    private handleIsCallWindowOpen = () => {
+        return WebContentsEventManager.popupWindow?.win.isClosable();
     }
 }
 
