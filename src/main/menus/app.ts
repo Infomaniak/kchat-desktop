@@ -7,6 +7,7 @@ import type {MenuItemConstructorOptions, MenuItem, WebContents} from 'electron';
 import {app, Menu, session, shell, clipboard} from 'electron';
 
 import type {Config} from 'common/config';
+import ServerManager from 'common/servers/serverManager';
 import {t} from 'common/utils/util';
 import type {UpdateManager} from 'main/autoUpdater';
 import Diagnostics from 'main/diagnostics';
@@ -14,16 +15,17 @@ import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
 import TokenManager from 'main/tokenManager';
 import {getLogsPath} from 'main/utils';
+import {getLocalPreload, getLocalURLString} from 'main/utils';
+import ModalManager from 'main/views/modalManager';
 import ViewManager from 'main/views/viewManager';
-import SettingsWindow from 'main/windows/settingsWindow';
+import MainWindow from 'main/windows/mainWindow';
 
+// import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 // import log from 'electron-log';
 // import ServerViewState from 'app/serverViewState';
 // import {OPEN_SERVERS_DROPDOWN, SHOW_NEW_SERVER_MODAL} from 'common/communication';
-// import ServerManager from 'common/servers/serverManager';
 // import {getViewDisplayName} from 'common/views/View';
 // import type {ViewType} from 'common/views/View';
-// import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 
 export function createTemplate(config: Config, updateManager: UpdateManager) {
     const separatorItem: MenuItemConstructorOptions = {
@@ -51,7 +53,18 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         label: settingsLabel,
         accelerator: 'CmdOrCtrl+,',
         click() {
-            SettingsWindow.show();
+            const mainWindow = MainWindow.get();
+            if (!mainWindow) {
+                return;
+            }
+
+            ModalManager.addModal(
+                'settingsModal',
+                getLocalURLString('settings.html'),
+                getLocalPreload('internalAPI.js'),
+                null,
+                mainWindow,
+            );
         },
     });
 

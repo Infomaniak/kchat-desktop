@@ -12,7 +12,6 @@ import ConfigureServer from '../../components/ConfigureServer';
 import WelcomeScreen from '../../components/WelcomeScreen';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import ConfigureServer from 'renderer/components/ConfigureServer';
 
 const MOBILE_SCREEN_WIDTH = 1200;
 
