@@ -3,16 +3,16 @@
 
 /* eslint-disable max-lines */
 
-import {Button} from 'react-bootstrap';
 import React from 'react';
 
 import {FormattedMessage, IntlShape, injectIntl} from 'react-intl';
 
-import {CallInfo} from 'types/callsIk';
+import {CallInfo, UserProfile} from 'types/callsIk';
 
 import {playSoundLoop} from 'renderer/notificationSounds';
 
 import Avatars from './Avatars/Avatars';
+import {CallAccept, CallHangUp} from './icons';
 
 type Props = Record<string, never> & {
     intl: IntlShape;
@@ -22,9 +22,7 @@ type State = {
     callInfo?: CallInfo;
     trad: string;
 }
-export type UserProfile = {
-    nickname: string;
-};
+
 class DialingModal extends React.PureComponent<Props, State> {
     // callInfo: any;
     constructor(props: Props) {
@@ -37,18 +35,22 @@ class DialingModal extends React.PureComponent<Props, State> {
 
         this.onHandleAccept = this.onHandleAccept.bind(this);
         this.onHandleDecline = this.onHandleDecline.bind(this);
+        this.onHandleCancel = this.onHandleCancel.bind(this);
     }
 
     componentDidMount() {
         window.dialApi.onInfo((_, msg) => {
-            // this.setState({callInfo: msg, trad: localizeMessage('Call.dialing', 'is Calling')});
+            const isCurrentUserCaller = msg.caller.id === msg.currentUser.id;
+
             this.setState({callInfo: msg,
                 trad: this.props.intl.formatMessage({
-                    id: 'renderer.modals.call.calling',
-                    defaultMessage: 'Is calling',
+                    id: isCurrentUserCaller ? 'renderer.modals.call.waiting' : 'renderer.modals.call.calling',
+                    defaultMessage: isCurrentUserCaller ? 'Waiting...' : 'Is calling',
                 })});
         });
+
         playSoundLoop('Ring');
+
         setTimeout(() => {
             const {callInfo} = this.state;
             window.dialApi.callDeclined(callInfo);
@@ -63,6 +65,12 @@ class DialingModal extends React.PureComponent<Props, State> {
     onHandleDecline() {
         const {callInfo} = this.state;
         window.dialApi.callDeclined(callInfo);
+        window.close();
+    }
+
+    onHandleCancel() {
+        const {callInfo} = this.state;
+        window.dialApi.callCanceled(callInfo);
         window.close();
     }
 
@@ -88,6 +96,9 @@ class DialingModal extends React.PureComponent<Props, State> {
         if (!callInfo) {
             return null;
         }
+
+        const isCurrentUserCaller = callInfo.caller.id === callInfo.currentUser.id;
+
         return (
             <div className='container'>
 
@@ -108,34 +119,49 @@ class DialingModal extends React.PureComponent<Props, State> {
                     </div>
                 </div>
                 <div className='actions'>
-                    <Button
-                        className='decline'
-                        size='sm'
-                        onClick={this.onHandleDecline}
-                        variant='danger'
-                        style={{fontSize: 14}}
-                    >
-                        <span>
-                            <FormattedMessage
-                                id='renderer.modals.call.decline'
-                                defaultMessage='Decline'
-                            />
-                        </span>
-                    </Button>
-                    <Button
-                        className='accept'
-                        size='sm'
-                        onClick={this.onHandleAccept}
-                        variant='primary'
-                        style={{fontSize: 14}}
-                    >
-                        <span>
-                            <FormattedMessage
-                                id='renderer.modals.call.accept'
-                                defaultMessage='Accept'
-                            />
-                        </span>
-                    </Button>
+                    {isCurrentUserCaller && (
+                        <button
+                            className='cancel'
+                            onClick={this.onHandleCancel}
+                            style={{fontSize: 14}}
+                        >
+                            <CallHangUp/>
+                            <span>
+                                <FormattedMessage
+                                    id='renderer.modals.call.cancel'
+                                    defaultMessage='Cancel'
+                                />
+                            </span>
+                        </button>
+                    )}
+                    {!isCurrentUserCaller && <>
+                        <button
+                            className='decline'
+                            onClick={this.onHandleDecline}
+                            style={{fontSize: 14}}
+                        >
+                            <CallHangUp/>
+                            <span>
+                                <FormattedMessage
+                                    id='renderer.modals.call.decline'
+                                    defaultMessage='Decline'
+                                />
+                            </span>
+                        </button>
+                        <button
+                            className='accept'
+                            onClick={this.onHandleAccept}
+                            style={{fontSize: 14}}
+                        >
+                            <CallAccept/>
+                            <span>
+                                <FormattedMessage
+                                    id='renderer.modals.call.accept'
+                                    defaultMessage='Accept'
+                                />
+                            </span>
+                        </button>
+                    </>}
                 </div>
             </div>
         );

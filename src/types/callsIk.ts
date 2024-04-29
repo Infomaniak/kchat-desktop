@@ -1,6 +1,6 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-type UserProfile = {
+export type UserProfile = {
     nickname: string;
     [key: string]: any;
 };
@@ -8,6 +8,7 @@ type UserProfile = {
 export type CallInfo = {
     users: UserProfile[];
     caller: UserProfile;
+    currentUser: UserProfile;
     channelId: string;
     url: string;
     avatar: string;

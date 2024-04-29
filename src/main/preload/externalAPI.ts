@@ -68,6 +68,7 @@ import {
     CALL_OPEN_WINDOW,
     CALL_RING_CLOSE_WINDOW,
     CALL_RING_WINDOW_IS_OPEN,
+    CALL_CANCEL,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -182,6 +183,7 @@ contextBridge.exposeInMainWorld('callManager', {
     onCallJoined: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_JOINED, callback),
     onCallDeclined: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_DECLINED, callback),
     onCallEnded: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_ENDED, callback),
+    onCallCancel: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_CANCEL, callback),
 });
 
 // Specific info for the testing environment

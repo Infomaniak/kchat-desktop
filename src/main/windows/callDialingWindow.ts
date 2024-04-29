@@ -7,7 +7,7 @@ import log from 'electron-log';
 import {CallInfo} from 'types/callsIk';
 
 import {getLocalPreload, getLocalURLString} from '../utils';
-import {CALL_DECLINED, CALL_DIAL_UPDATED, CALL_JOINED} from 'common/communication';
+import {CALL_CANCEL, CALL_DECLINED, CALL_DIAL_UPDATED, CALL_JOINED} from 'common/communication';
 
 import ViewManager from 'main/views/viewManager';
 
@@ -19,6 +19,7 @@ class CallDialingWindow {
     constructor() {
         ipcMain.on(CALL_JOINED, this.handleCallAccepted);
         ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
+        ipcMain.on(CALL_CANCEL, this.handleCallCancel);
         ipcMain.on(CALL_DIAL_UPDATED, this.handleCallInfoUpdated);
     }
 
@@ -94,6 +95,11 @@ class CallDialingWindow {
     private handleCallAccepted = (_: any, callInfo: CallInfo) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_JOINED, callInfo);
+    }
+
+    private handleCallCancel = (_: any, callInfo: CallInfo) => {
+        this.destroy();
+        ViewManager.sendToAllViews(CALL_CANCEL, callInfo);
     }
 }
 

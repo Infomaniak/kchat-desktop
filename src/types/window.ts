@@ -157,6 +157,7 @@ declare global {
         dialApi: {
             onInfo: (callback: (...args: any[]) => unknown) => void;
             callDeclined: (callInfo?: CallInfo) => void;
+            callCanceled: (callInfo?: CallInfo) => void;
             callAccept: (callInfo?: CallInfo) => void;
             callDefault: () => void;
         };

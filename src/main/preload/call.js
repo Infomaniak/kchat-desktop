@@ -27,7 +27,6 @@ import {CALL_ENDED} from 'common/communication';
  * @returns {void}
  */
 function setupRenderer(parentNode, callInfo) {
-    console.log('CALL INFO', callInfo);
     const api = new JitsiMeetExternalAPI(KMEET_ORIGIN, {
         width: '100%',
         height: '100%',
