@@ -105,7 +105,6 @@ class DialingModal extends React.PureComponent<Props, State> {
                     <Avatars
                         users={callInfo.users}
                         size='lg'
-                        totalUsers={callInfo.users.length}
                     />
 
                 </div>

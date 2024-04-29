@@ -65,5 +65,9 @@
     "main.app.utils.migrateMacAppStore.button.selectAndImport": "Seleziona cartella e importa",
     "main.app.utils.migrateMacAppStore.button.dontImport": "Non importare",
     "main.app.initialize.downloadBox.allFiles": "Tutti i file",
-    "main.app.app.handleAppCertificateError.certError.button.moreDetails": "Più dettagli"
+    "main.app.app.handleAppCertificateError.certError.button.moreDetails": "Più dettagli",
+    "renderer.modals.call.accept": "Accetta",
+    "renderer.modals.call.decline": "Declina",
+    "renderer.modals.call.cancel": "Riattaccare",
+    "renderer.modals.call.calling": "ti sta chiamando",
 }

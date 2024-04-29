@@ -166,6 +166,7 @@
     "renderer.modals.certificate.certificateModal.certInfoButton": "Información del certificado",
     "renderer.modals.call.accept": "Aceptar",
     "renderer.modals.call.decline": "Rechazar",
+    "renderer.modals.call.cancel": "Colgar",
     "renderer.modals.call.calling": "te llama",
     "renderer.dropdown.servers": "Servidores",
     "renderer.dropdown.addAServer": "Añadir un servidor",
