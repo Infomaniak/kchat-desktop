@@ -250,7 +250,7 @@ export class WebContentsEventManager {
                         },
                     });
 
-                    win.webContents.openDevTools({mode: 'detach'});
+                    // win.webContents.openDevTools({mode: 'detach'});
 
                     this.popupWindow = {
                         win,

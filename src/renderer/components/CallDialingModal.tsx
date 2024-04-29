@@ -8,6 +8,8 @@ import React from 'react';
 
 import {FormattedMessage, IntlShape, injectIntl} from 'react-intl';
 
+import {CallInfo} from 'types/callsIk';
+
 import {playSoundLoop} from 'renderer/notificationSounds';
 
 import Avatars from './Avatars/Avatars';
@@ -17,15 +19,7 @@ type Props = Record<string, never> & {
 }
 
 type State = {
-    callInfo?: {
-        users: UserProfile[];
-        channelID: string;
-        url: string;
-        avatar: string;
-        id: string;
-        nicknames: string;
-        toneTimeOut: number;
-    };
+    callInfo?: CallInfo;
     trad: string;
 }
 export type UserProfile = {
@@ -56,8 +50,14 @@ class DialingModal extends React.PureComponent<Props, State> {
         });
         playSoundLoop('Ring');
         setTimeout(() => {
-            window.dialApi.callDefault();
+            const {callInfo} = this.state;
+            window.dialApi.callDeclined(callInfo);
         }, 30000);
+    }
+
+    componentWillUnmount(): void {
+        const {callInfo} = this.state;
+        window.dialApi.callDeclined(callInfo);
     }
 
     onHandleDecline() {

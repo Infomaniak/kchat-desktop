@@ -61,7 +61,7 @@ import MainWindow from 'main/windows/mainWindow';
 import {getLocalURLString, getLocalPreload, getAdjustedWindowBoundaries, shouldHaveBackBar} from '../utils';
 
 import TokenManager from 'main/tokenManager';
-import {createCallDialingWindow} from 'main/windows/callDialingWindow';
+import callDialingWindow from 'main/windows/callDialingWindow';
 
 import KmeetCallWindow from 'main/windows/kmeetCallWindow';
 
@@ -111,9 +111,11 @@ export class ViewManager {
         ipcMain.on(TOKEN_REFRESHED, this.handleTokenRefreshed);
         ipcMain.handle(RESET_TOKEN, this.handleResetToken);
         ipcMain.handle(RESET_AUTH, this.handleRevokeToken);
-        ipcMain.on(CALL_JOINED, this.handleCallJoined);
+
+        // ipcMain.on(CALL_JOINED, this.handleCallJoined);
         ipcMain.on(CALL_JOINED_BROWSER, this.handleCallJoinedBrowser);
-        ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
+
+        // ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
         ipcMain.on(CALL_API_AVAILABLE, this.handleCallApiAvailable);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(RESET_TEAMS, this.resetTeams);
@@ -231,12 +233,7 @@ export class ViewManager {
     }
 
     handleCallDialing = (_: IpcMainEvent, message: any) => {
-        const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
-        if (this.callWindow) {
-            return;
-        }
-        this.callWindow = createCallDialingWindow(MainWindow.get()!, withDevTools, message.calling);
-        this.callWindow?.on('close', () => this.destroyCallWindow());
+        callDialingWindow.create(message);
     }
 
     handleCallDeclined = (_: IpcMainEvent, message: unknown) => {
@@ -249,8 +246,7 @@ export class ViewManager {
     }
 
     destroyCallWindow = () => {
-        this.callWindow?.destroy();
-        this.callWindow = undefined;
+        callDialingWindow.destroy();
     }
 
     handleTokenRefreshed = (event: IpcMainEvent, message: any) => {

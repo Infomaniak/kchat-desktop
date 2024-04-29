@@ -28,9 +28,8 @@ import ServerViewState from 'app/serverViewState';
 import ViewManager from 'main/views/viewManager';
 import {CALL_ENDED, CALL_RING_CLOSE_WINDOW, CALL_RING_WINDOW_IS_OPEN} from 'common/communication';
 
-import WebContentsEventManager from 'main/views/webContentEvents';
-
 import MainWindow from './mainWindow';
+import CallDialingWindow from './callDialingWindow';
 
 const log = new Logger('KmeetCallWindow');
 
@@ -81,7 +80,7 @@ class KmeetCallWindow {
             this.destroy();
         }
 
-        if (WebContentsEventManager.popupWindow?.win) {
+        if (CallDialingWindow.isClosable()) {
             this.closeRingWindow();
         }
 
@@ -104,6 +103,7 @@ class KmeetCallWindow {
 
         this.callInfo = callInfo;
 
+        this.callWindow.setTitle('Kmeet');
         const localURL = getLocalURLString('call.html');
         this.callWindow.loadURL(localURL, {
             userAgent: composeUserAgent(),
@@ -158,7 +158,7 @@ class KmeetCallWindow {
     }
 
     private closeRingWindow = () => {
-        WebContentsEventManager.popupWindow?.win.destroy();
+        CallDialingWindow.destroy();
     }
 
     private handleCloseRingWindow = () => {
@@ -166,7 +166,7 @@ class KmeetCallWindow {
     }
 
     private handleIsCallWindowOpen = () => {
-        return WebContentsEventManager.popupWindow?.win.isClosable();
+        return CallDialingWindow.isClosable();
     }
 }
 

@@ -9,6 +9,8 @@ import {ExternalAPI} from 'types/externalAPI';
 
 import {DesktopAPI} from '@mattermost/desktop-api';
 
+import {CallInfo} from 'types/callsIk';
+
 import {
     NOTIFY_MENTION,
     IS_UNREAD,
@@ -117,6 +119,7 @@ const desktopAPI: KchatDesktopApi = {
     // Calls
     joinCall: (opts) => ipcRenderer.invoke(CALLS_JOIN_CALL, opts),
     leaveCall: () => ipcRenderer.send(CALLS_LEAVE_CALL),
+    openCallDialing: (callInfo: CallInfo) => ipcRenderer.send(CALL_RINGING, callInfo),
 
     callsWidgetConnected: (callID, sessionID) => ipcRenderer.send(CALLS_JOINED_CALL, callID, sessionID),
     resizeCallsWidget: (width, height) => ipcRenderer.send(CALLS_WIDGET_RESIZE, width, height),

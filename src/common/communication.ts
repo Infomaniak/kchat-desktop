@@ -119,6 +119,9 @@ export const CALL_DECLINED = 'call-declined';
 export const CALL_API_AVAILABLE = 'call-api-available';
 export const CALL_COMMAND = 'call-command';
 export const CALL_CLOSED = 'call-closed';
+export const CALL_RINGING = 'call-ringing';
+export const CALL_ACCEPTED = 'call-accepted';
+export const CALL_DIAL_UPDATED = 'call-dial-updated';
 export const CONNECT_CALL = 'connect-call';
 
 export const WINDOW_WILL_UNLOADED = 'window-will-unloaded';
@@ -129,7 +132,6 @@ export const RELOAD_CURRENT_VIEW = 'reload-current-view';
 
 export const PING_DOMAIN = 'ping-domain';
 export const PING_DOMAIN_RESPONSE = 'ping-domain-response';
-export const CALL_RINGING = 'call-ringing';
 
 export const GET_LANGUAGE_INFORMATION = 'get-language-information';
 export const GET_AVAILABLE_LANGUAGES = 'get-available-languages';
