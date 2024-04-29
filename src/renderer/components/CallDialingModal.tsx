@@ -101,7 +101,6 @@ class DialingModal extends React.PureComponent<Props, State> {
 
         return (
             <div className='container'>
-
                 <div className='content-body'>
                     <Avatars
                         users={callInfo.users}
