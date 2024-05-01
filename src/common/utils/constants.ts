@@ -5,6 +5,8 @@
 export const PRODUCTION = 'production';
 export const DEVELOPMENT = 'development';
 
+export const DEFAULT_TEAM_NAME = '.';
+
 export const SECOND = 1000;
 export const RELOAD_INTERVAL = 5 * SECOND;
 export const MODAL_TRANSITION_TIMEOUT = 400;
@@ -12,6 +14,9 @@ export const MODAL_TRANSITION_TIMEOUT = 400;
 export const MAX_SERVER_RETRIES = 3;
 
 export const MAX_LOADING_SCREEN_SECONDS = 4 * SECOND;
+
+// SERVERS SIDEBAR
+export const SERVERS_SIDEBAR_WIDTH = 65;
 
 export const TAB_BAR_HEIGHT = 40;
 export const TAB_BAR_PADDING = 4;
@@ -36,6 +41,11 @@ export const DOWNLOADS_DROPDOWN_PADDING = 24;
 export const DOWNLOADS_DROPDOWN_MENU_HEIGHT = 160;
 export const DOWNLOADS_DROPDOWN_MENU_WIDTH = 154;
 export const DOWNLOADS_DROPDOWN_MENU_PADDING = 12;
+
+// ServersSidebarModal
+export const SERVERS_SIDEBAR_PADDING_TOP = 5;
+export const SERVERS_SIDEBAR_DEFAULT_MARGIN = 10;
+export const SERVERS_SIDEBAR_BUTTON_HEIGHT = 40;
 
 // In  order to display the box-shadow & radius on the left + right, use this WIDTH in the browserView for downloadsDropdown
 export const DOWNLOADS_DROPDOWN_FULL_WIDTH = DOWNLOADS_DROPDOWN_PADDING + DOWNLOADS_DROPDOWN_WIDTH + TAB_BAR_PADDING;

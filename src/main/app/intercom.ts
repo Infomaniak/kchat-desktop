@@ -5,6 +5,7 @@ import type {IpcMainEvent, IpcMainInvokeEvent} from 'electron';
 import {app, Menu} from 'electron';
 
 import ServerViewState from 'app/serverViewState';
+import Config from 'common/config';
 import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {ping} from 'common/utils/requests';
@@ -14,7 +15,6 @@ import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
 import type {UniqueServer} from 'types/config';
-import Config from 'common/config';
 
 import {handleAppBeforeQuit} from './app';
 
@@ -164,4 +164,19 @@ export function handleToggleSecureInput(event: IpcMainEvent, secureInput: boolea
     // Enforce macOS to restrict processes from reading the keyboard input when in a password field
     log.debug('handleToggleSecureInput', secureInput);
     app.setSecureKeyboardEntryEnabled(secureInput);
+}
+
+export function handleShowSettingsModal() {
+    const mainWindow = MainWindow.get();
+    if (!mainWindow) {
+        return;
+    }
+
+    ModalManager.addModal(
+        'settingsModal',
+        getLocalURLString('settings.html'),
+        getLocalPreload('internalAPI.js'),
+        null,
+        mainWindow,
+    );
 }

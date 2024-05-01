@@ -6,16 +6,15 @@ const path = require('path');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const {merge} = require('webpack-merge');
-
 const {ProvidePlugin} = require('webpack');
+const {merge} = require('webpack-merge');
 
 const base = require('./webpack.config.base');
 
 module.exports = merge(base, {
     entry: {
         index: './src/renderer/index.tsx',
-        settings: './src/renderer/settings.tsx',
+        settings: './src/renderer/modals/settings/settings.tsx',
         call: './src/renderer/call.tsx',
         callDialing: './src/renderer/callDialing.tsx',
         dropdown: './src/renderer/dropdown.tsx',
@@ -30,6 +29,8 @@ module.exports = merge(base, {
         certificateModal: './src/renderer/modals/certificate/certificate.tsx',
         loadingScreen: './src/renderer/modals/loadingScreen/index.tsx',
         welcomeScreen: './src/renderer/modals/welcomeScreen/welcomeScreen.tsx',
+        serversSidebar: './src/renderer/serversSidebar.tsx',
+        serversSidebarShortcutModal: './src/renderer/modals/serversSidebarShortcut/serversSidebarShortcut.tsx',
     },
     output: {
         path: path.resolve(__dirname, 'dist/renderer'),
@@ -131,6 +132,18 @@ module.exports = merge(base, {
             template: 'src/renderer/index.html',
             chunks: ['loadingScreen'],
             filename: 'loadingScreen.html',
+        }),
+        new HtmlWebpackPlugin({
+            title: 'kChat Desktop Servers Sidebar',
+            template: 'src/renderer/servers-sidebar.html',
+            chunks: ['serversSidebar'],
+            filename: 'serversSidebar.html',
+        }),
+        new HtmlWebpackPlugin({
+            title: 'kChat Desktop Servers Sidebar',
+            template: 'src/renderer/index.html',
+            chunks: ['serversSidebarShortcutModalView'],
+            filename: 'serversSidebarShortcutModal.html',
         }),
         new HtmlWebpackPlugin({
             title: 'Mattermost Desktop Settings',

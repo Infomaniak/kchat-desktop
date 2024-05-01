@@ -3,10 +3,12 @@
 
 import type {ipcRenderer, Rectangle} from 'electron/renderer';
 
-import type {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer} from './config';
+import type {CallInfo} from './callsIk';
+import type {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer, ConfigServer} from './config';
 import type {DownloadedItem, DownloadedItems, DownloadsMenuOpenEventPayload} from './downloads';
 import type {URLValidationResult} from './server';
 import type {SaveQueueItem} from './settings';
+import type {Theme} from './theme';
 
 import type {Language} from '../../i18n/i18n';
 
@@ -152,12 +154,39 @@ declare global {
                     unreads?: Map<string, boolean>,
                 ) => void) => void;
             };
+
+            serversSidebar: {
+                switchServer: (serverName: string, serverId: string) => void;
+                updateTeamsOrder: (teamsOrder: string[]) => void;
+
+                handleMouseInServerButton: (index: number, teamName: string) => void;
+                handleMouseOutServerButton: () => void;
+
+                onUpdateSidebar: (listener: (
+                    servers: UniqueServer[],
+                    teams: ConfigServer[],
+                    activeServer?: string,
+                    expired?: Map<string, boolean>,
+                    mentions?: Map<string, number>,
+                    unreads?: Map<string, boolean>,
+                    windowBounds?: Rectangle,
+                    preferredTheme?: Theme,
+                    teamsOrderPreference?: string[],
+                    isReadyToSwitchServer?: boolean,
+                    userLocale?: string
+                ) => void) => void;
+
+                onUpdateModal: (listener: (
+                    currentTeam?: {index: number; name: string},
+                    isMac?: boolean
+                ) => void) => void;
+            };
         };
         dialApi: {
             onInfo: (callback: (...args: any[]) => unknown) => void;
             callDeclined: (callInfo?: CallInfo) => void;
             callAccept: (callInfo?: CallInfo) => void;
             callDefault: () => void;
-        }
+        };
     }
 }

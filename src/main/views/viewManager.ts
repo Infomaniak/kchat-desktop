@@ -56,14 +56,14 @@ import type {MattermostView} from 'common/views/View';
 import {TAB_MESSAGING} from 'common/views/View';
 import {flushCookiesStore} from 'main/app/utils';
 import {localizeMessage} from 'main/i18nManager';
-import MainWindow from 'main/windows/mainWindow';
-
 import TokenManager from 'main/tokenManager';
 import {createCallDialingWindow} from 'main/windows/callDialingWindow';
+import MainWindow from 'main/windows/mainWindow';
 
 import LoadingScreen from './loadingScreen';
 import {MattermostBrowserView} from './MattermostBrowserView';
 import modalManager from './modalManager';
+import ServersSidebar from './serversSidebar';
 
 import {getLocalURLString, getLocalPreload, getAdjustedWindowBoundaries, shouldHaveBackBar} from '../utils';
 
@@ -166,6 +166,10 @@ export class ViewManager {
                 newView.show();
                 if (newView.needsLoadingScreen()) {
                     LoadingScreen.show();
+
+                    if (!TokenManager.hasToken()) {
+                        ServersSidebar.hide();
+                    }
                 }
             }
             hidePrevious?.();
@@ -201,12 +205,12 @@ export class ViewManager {
 
     resetTeams = () => {
         ServerManager.reloadFromConfig();
-    }
+    };
 
     handleThemeChanged = (_view: any, _viewId: any, data: object) => {
         Config.set('theme', data);
         viewManager.sendToAllViews(THEME_CHANGED, data);
-    }
+    };
 
     handleCallJoined = (_: IpcMainEvent, message: any) => {
         //TODO: kMeet integration V2 => open call in a new window.
@@ -219,12 +223,12 @@ export class ViewManager {
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
         this.callWindow.loadURL(message.url);
         windowManager.sendToMattermostViews(CALL_JOINED, message);*/
-    }
+    };
 
     handleCallJoinedBrowser = (_: IpcMainEvent, message: any) => {
         this.sendToAllViews(CALL_JOINED, message);
         this.destroyCallWindow();
-    }
+    };
 
     handleCallDialing = (_: IpcMainEvent, message: any) => {
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
@@ -233,32 +237,32 @@ export class ViewManager {
         }
         this.callWindow = createCallDialingWindow(MainWindow.get()!, withDevTools, message.calling);
         this.callWindow?.on('close', () => this.destroyCallWindow());
-    }
+    };
 
     handleCallDeclined = (_: IpcMainEvent, message: unknown) => {
         this.sendToAllViews(CALL_DECLINED, message);
         this.destroyCallWindow();
-    }
+    };
 
     destroyCallWindow = () => {
         this.callWindow?.destroy();
         this.callWindow = undefined;
-    }
+    };
 
     handleTokenRefreshed = (event: IpcMainEvent, message: any) => {
         if (message.token) {
             TokenManager.handleStoreToken(event, message);
         }
-    }
+    };
 
     handleResetToken = () => {
         TokenManager.reset();
-    }
+    };
 
     handleTokenRequest = () => {
         const token = TokenManager.getToken();
         return token;
-    }
+    };
 
     handleRevokeToken = async () => {
         const token = TokenManager.getToken();
@@ -406,6 +410,7 @@ export class ViewManager {
         if (this.currentView === viewId) {
             this.showById(this.currentView);
             LoadingScreen.fade();
+            ServersSidebar.show();
         }
     };
 
@@ -415,6 +420,7 @@ export class ViewManager {
         LoadingScreen.fade();
         if (this.currentView === viewId) {
             this.getCurrentView()?.hide();
+            ServersSidebar.hide();
         }
     };
 
@@ -637,6 +643,7 @@ export class ViewManager {
         if (view) {
             view.setInitialized();
             if (this.getCurrentView() === view) {
+                ServersSidebar.show();
                 LoadingScreen.fade();
             }
         }
@@ -701,7 +708,7 @@ export class ViewManager {
 
         const currentView = this.getCurrentView();
         if (currentView && currentView.currentURL) {
-            const adjustedBounds = getAdjustedWindowBoundaries(newBounds.width, newBounds.height, shouldHaveBackBar(currentView.view.url, currentView.currentURL));
+            const adjustedBounds = getAdjustedWindowBoundaries(newBounds.width, newBounds.height, shouldHaveBackBar(currentView.view.url, currentView.currentURL), ServersSidebar.shouldDisplaySidebar);
             currentView.setBounds(adjustedBounds);
         }
     };

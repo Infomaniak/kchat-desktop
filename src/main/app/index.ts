@@ -9,6 +9,7 @@ import {initialize} from './initialize';
 import('main/views/serverDropdownView');
 import('main/views/downloadsDropdownMenuView');
 import('main/views/downloadsDropdownView');
+import('main/views/serversSidebar');
 
 // attempt to initialize the application
 try {

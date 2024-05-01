@@ -27,6 +27,7 @@ import type {MattermostView} from 'common/views/View';
 import {getServerAPI} from 'main/server/serverAPI';
 import MainWindow from 'main/windows/mainWindow';
 
+import ServersSidebar from './serversSidebar';
 import WebContentsEventManager from './webContentEvents';
 
 import ContextMenu from '../contextMenu';
@@ -223,7 +224,7 @@ export class MattermostBrowserView extends EventEmitter {
         this.isVisible = true;
         mainWindow.addBrowserView(this.browserView);
         mainWindow.setTopBrowserView(this.browserView);
-        this.setBounds(getWindowBoundaries(mainWindow, shouldHaveBackBar(this.view.url || '', this.currentURL)));
+        this.setBounds(getWindowBoundaries(mainWindow, shouldHaveBackBar(this.view.url || '', this.currentURL), ServersSidebar.shouldDisplaySidebar));
         if (this.status === Status.READY) {
             this.focus();
         }
@@ -350,6 +351,10 @@ export class MattermostBrowserView extends EventEmitter {
         } else {
             this.log.warn('trying to focus the browserview, but it doesn\'t yet have webcontents.');
         }
+    };
+
+    registerWebContentEvent = (event: any, callback: CallableFunction) => {
+        this.browserView.webContents.on(event, callback);
     };
 
     /**
@@ -483,8 +488,9 @@ export class MattermostBrowserView extends EventEmitter {
             this.removeLoading = setTimeout(this.setInitialized, MAX_LOADING_SCREEN_SECONDS, true);
             this.emit(LOAD_SUCCESS, this.id, loadURL);
             const mainWindow = MainWindow.get();
+
             if (mainWindow && this.currentURL) {
-                this.setBounds(getWindowBoundaries(mainWindow, shouldHaveBackBar(this.view.url || '', this.currentURL)));
+                this.setBounds(getWindowBoundaries(mainWindow, shouldHaveBackBar(this.view.url || '', this.currentURL), ServersSidebar.shouldDisplaySidebar));
             }
         };
     };
@@ -506,11 +512,11 @@ export class MattermostBrowserView extends EventEmitter {
         }
 
         if (shouldHaveBackBar(this.view.url || '', parsedURL)) {
-            this.setBounds(getWindowBoundaries(mainWindow, true));
+            this.setBounds(getWindowBoundaries(mainWindow, true, ServersSidebar.shouldDisplaySidebar));
             MainWindow.sendToRenderer(TOGGLE_BACK_BUTTON, true);
             this.log.debug('show back button');
         } else {
-            this.setBounds(getWindowBoundaries(mainWindow));
+            this.setBounds(getWindowBoundaries(mainWindow, false, ServersSidebar.shouldDisplaySidebar));
             MainWindow.sendToRenderer(TOGGLE_BACK_BUTTON, false);
             this.log.debug('hide back button');
         }

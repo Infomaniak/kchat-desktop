@@ -70,6 +70,14 @@ export class ServerViewState {
         }
     };
 
+    hasCurrentServer = () => {
+        if (this.currentServerId) {
+            return Boolean(ServerManager.getServer(this.currentServerId));
+        }
+
+        return false;
+    }
+
     getCurrentServer = () => {
         log.silly('getCurrentServer');
 

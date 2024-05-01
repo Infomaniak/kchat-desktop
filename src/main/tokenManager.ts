@@ -100,6 +100,10 @@ export class TokenManager {
         return this.data;
     }
 
+    hasToken = () => {
+        return Boolean(this.data.token);
+    }
+
     // Store token from api response and write to disk.
     handleStoreToken = (_: IpcMainEvent, message: Token) => {
         this.data = {

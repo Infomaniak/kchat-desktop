@@ -11,7 +11,7 @@ const exec = promisify(execOriginal);
 import type {BrowserWindow} from 'electron';
 import {app} from 'electron';
 
-import {BACK_BAR_HEIGHT, customLoginRegexPaths, PRODUCTION, TAB_BAR_HEIGHT} from 'common/utils/constants';
+import {BACK_BAR_HEIGHT, customLoginRegexPaths, PRODUCTION, SERVERS_SIDEBAR_WIDTH, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import {isAdminUrl, isPluginUrl, isTeamUrl, isUrlType, parseURL} from 'common/utils/url';
 import Utils from 'common/utils/util';
 
@@ -33,16 +33,16 @@ export function shouldBeHiddenOnStartup(parsedArgv: Args) {
     return false;
 }
 
-export function getWindowBoundaries(win: BrowserWindow, hasBackBar = false) {
+export function getWindowBoundaries(win: BrowserWindow, hasBackBar = false, hasServersSidebar = true) {
     const {width, height} = win.getContentBounds();
-    return getAdjustedWindowBoundaries(width, height, hasBackBar);
+    return getAdjustedWindowBoundaries(width, height, hasBackBar, hasServersSidebar);
 }
 
-export function getAdjustedWindowBoundaries(width: number, height: number, hasBackBar = false) {
+export function getAdjustedWindowBoundaries(width: number, height: number, hasBackBar = false, hasServersSidebar = true) {
     return {
-        x: 0,
+        x: hasServersSidebar ? SERVERS_SIDEBAR_WIDTH : 0,
         y: TAB_BAR_HEIGHT + (hasBackBar ? BACK_BAR_HEIGHT : 0),
-        width,
+        width: width - (hasServersSidebar ? SERVERS_SIDEBAR_WIDTH : 0),
         height: height - TAB_BAR_HEIGHT - (hasBackBar ? BACK_BAR_HEIGHT : 0),
     };
 }

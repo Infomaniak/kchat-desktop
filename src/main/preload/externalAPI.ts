@@ -57,8 +57,14 @@ import {
     RESET_AUTH,
     SWITCH_SERVER,
     RELOAD_CURRENT_VIEW,
+    PREFERRED_THEME,
+    TEAMS_ORDER_PREFERENCE,
+    TEAMS_ORDER_PREFERENCE_UPDATED,
+    USER_LOCALE,
+    GET_SERVER_THEME,
     GET_APP_THEME,
     THEME_CHANGED,
+    SWITCH_SERVER_SIDEBAR,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -396,6 +402,7 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
                 url: item.url,
                 order: idx,
                 tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+                teamInfo: item,
             });
 
             return acc;
@@ -408,8 +415,17 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
         }
         break;
     }
+    case USER_LOCALE:
+        ipcRenderer.send(USER_LOCALE, data.data);
+        break;
     case SWITCH_SERVER:
         ipcRenderer.send(SWITCH_SERVER, data.data);
+        break;
+    case TEAMS_ORDER_PREFERENCE:
+        ipcRenderer.send(TEAMS_ORDER_PREFERENCE, data.data);
+        break;
+    case PREFERRED_THEME:
+        ipcRenderer.send(PREFERRED_THEME, data.data);
         break;
     case CALLS_WIDGET_SHARE_SCREEN: {
         ipcRenderer.send(CALLS_WIDGET_SHARE_SCREEN, message.sourceID, message.withAudio);
@@ -624,6 +640,18 @@ ipcRenderer.on(USER_ACTIVITY_UPDATE, (event, userIsActive, isSystemEvent) => {
     if (window.location.origin !== 'null') {
         window.postMessage({type: USER_ACTIVITY_UPDATE, message: {userIsActive, manual: isSystemEvent}}, window.location.origin);
     }
+});
+
+ipcRenderer.on(TEAMS_ORDER_PREFERENCE_UPDATED, (_, teamsOrder) => {
+    window.postMessage({type: TEAMS_ORDER_PREFERENCE_UPDATED, message: {teamsOrder}}, window.location.origin);
+});
+
+ipcRenderer.on(GET_SERVER_THEME, () => {
+    window.postMessage({type: GET_SERVER_THEME, message: {}}, window.location.origin);
+});
+
+ipcRenderer.on(SWITCH_SERVER_SIDEBAR, (_, serverId) => {
+    window.postMessage({type: SWITCH_SERVER_SIDEBAR, message: {serverId}}, window.location.origin);
 });
 
 /**

@@ -7,6 +7,9 @@ import {DARK_MODE_CHANGE, LOADING_SCREEN_ANIMATION_FINISHED, MAIN_WINDOW_RESIZED
 import {Logger} from 'common/log';
 import {getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
+import { SERVERS_SIDEBAR_WIDTH } from 'common/utils/constants';
+
+import ServersSidebar from './serversSidebar';
 
 enum LoadingScreenState {
     VISIBLE = 1,
@@ -75,6 +78,15 @@ export class LoadingScreen {
         }
     };
 
+    hide = () => {
+        if (this.view && this.state === LoadingScreenState.VISIBLE) {
+            this.state = LoadingScreenState.FADING;
+            this.view.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, false);
+            const mainWindow = MainWindow.get();
+            mainWindow?.removeBrowserView(this.view!);
+        }
+    }
+
     private create = () => {
         const preload = getLocalPreload('internalAPI.js');
         this.view = new BrowserView({webPreferences: {
@@ -108,7 +120,8 @@ export class LoadingScreen {
             if (!mainWindow) {
                 return;
             }
-            this.view.setBounds(getWindowBoundaries(mainWindow));
+            const windowBoundaries = getWindowBoundaries(mainWindow, false, ServersSidebar.shouldDisplaySidebar)
+            this.view.setBounds({ ...windowBoundaries, width: windowBoundaries.width + SERVERS_SIDEBAR_WIDTH, x: windowBoundaries.x - SERVERS_SIDEBAR_WIDTH });
         }
     };
 }
