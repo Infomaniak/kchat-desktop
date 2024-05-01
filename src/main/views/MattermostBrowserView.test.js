@@ -8,11 +8,11 @@ import {LOAD_FAILED, TOGGLE_BACK_BUTTON, UPDATE_TARGET_URL} from 'common/communi
 import {MattermostServer} from 'common/servers/MattermostServer';
 import MessagingView from 'common/views/MessagingView';
 
-import MainWindow from '../windows/mainWindow';
+import {MattermostBrowserView} from './MattermostBrowserView';
+
 import ContextMenu from '../contextMenu';
 import Utils from '../utils';
-
-import {MattermostBrowserView} from './MattermostBrowserView';
+import MainWindow from '../windows/mainWindow';
 
 jest.mock('electron', () => ({
     app: {
@@ -364,21 +364,21 @@ describe('main/views/MattermostBrowserView', () => {
 
         it('should remove browser view from window', () => {
             const mattermostView = new MattermostBrowserView(view, {}, {});
-            mattermostView.browserView.webContents.destroy = jest.fn();
+            mattermostView.browserView.webContents.close = jest.fn();
             mattermostView.destroy();
             expect(window.removeBrowserView).toBeCalledWith(mattermostView.browserView);
         });
 
         it('should clear mentions', () => {
             const mattermostView = new MattermostBrowserView(view, {}, {});
-            mattermostView.browserView.webContents.destroy = jest.fn();
+            mattermostView.browserView.webContents.close = jest.fn();
             mattermostView.destroy();
             expect(AppState.clear).toBeCalledWith(mattermostView.view.id);
         });
 
         it('should clear outstanding timeouts', () => {
             const mattermostView = new MattermostBrowserView(view, {}, {});
-            mattermostView.browserView.webContents.destroy = jest.fn();
+            mattermostView.browserView.webContents.close = jest.fn();
             const spy = jest.spyOn(global, 'clearTimeout');
             mattermostView.retryLoad = 999;
             mattermostView.removeLoading = 1000;

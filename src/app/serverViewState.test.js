@@ -5,12 +5,11 @@ import {MattermostServer} from 'common/servers/MattermostServer';
 import ServerManager from 'common/servers/serverManager';
 import {URLValidationStatus} from 'common/utils/constants';
 import {getDefaultViewsForConfigServer} from 'common/views/View';
-
 import {ServerInfo} from 'main/server/serverInfo';
-import ModalManager from 'main/views/modalManager';
 import {getLocalURLString, getLocalPreload} from 'main/utils';
-import MainWindow from 'main/windows/mainWindow';
+import ModalManager from 'main/views/modalManager';
 import ViewManager from 'main/views/viewManager';
+import MainWindow from 'main/windows/mainWindow';
 
 import {ServerViewState} from './serverViewState';
 
@@ -416,6 +415,26 @@ describe('app/serverViewState', () => {
             const result = await serverViewState.handleServerURLValidation({}, 'http://server.com');
             expect(result.status).toBe(URLValidationStatus.Insecure);
             expect(result.validatedURL).toBe('http://server.com/');
+        });
+
+        it('should be able to recognize localhost with a port and add the appropriate prefix', async () => {
+            ServerInfo.mockImplementation(({url}) => ({
+                fetchConfigData: jest.fn().mockImplementation(() => {
+                    if (url.startsWith('https:')) {
+                        return undefined;
+                    }
+
+                    return {
+                        serverVersion: '7.8.0',
+                        siteName: 'Mattermost',
+                        siteURL: url,
+                    };
+                }),
+            }));
+
+            const result = await serverViewState.handleServerURLValidation({}, 'localhost:8065');
+            expect(result.status).toBe(URLValidationStatus.Insecure);
+            expect(result.validatedURL).toBe('http://localhost:8065/');
         });
 
         it('should show a warning when the ping request times out', async () => {

@@ -1,23 +1,21 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import { app, ipcMain, nativeTheme } from 'electron';
+import {app, ipcMain, nativeTheme} from 'electron';
 
-import { CombinedConfig, ConfigServer, Config as ConfigType } from 'types/config';
-
-import { DARK_MODE_CHANGE, EMIT_CONFIGURATION, RELOAD_CONFIGURATION } from 'common/communication';
+import {DARK_MODE_CHANGE, EMIT_CONFIGURATION, RELOAD_CONFIGURATION} from 'common/communication';
 import Config from 'common/config';
-import { Logger, setLoggingLevel } from 'common/log';
-
+import {Logger, setLoggingLevel} from 'common/log';
 import AutoLauncher from 'main/AutoLauncher';
-import { setUnreadBadgeSetting } from 'main/badge';
+import {setUnreadBadgeSetting} from 'main/badge';
 import Tray from 'main/tray/tray';
 import LoadingScreen from 'main/views/loadingScreen';
 import MainWindow from 'main/windows/mainWindow';
-import SettingsWindow from 'main/windows/settingsWindow';
 
-import { handleMainWindowIsShown } from './intercom';
-import { handleUpdateMenuEvent, updateSpellCheckerLocales } from './utils';
+import type {CombinedConfig, Config as ConfigType} from 'types/config';
+
+import {handleMainWindowIsShown} from './intercom';
+import {handleUpdateMenuEvent, updateSpellCheckerLocales} from './utils';
 
 const log = new Logger('App.Config');
 
@@ -42,7 +40,7 @@ export function handleGetLocalConfiguration() {
     };
 }
 
-export function updateConfiguration(event: Electron.IpcMainEvent, properties: Array<{ key: keyof ConfigType; data: ConfigType[keyof ConfigType] }> = []) {
+export function updateConfiguration(event: Electron.IpcMainEvent, properties: Array<{key: keyof ConfigType; data: ConfigType[keyof ConfigType]}> = []) {
     log.debug('updateConfiguration', properties);
 
     if (properties.length) {
@@ -74,7 +72,7 @@ export function handleConfigUpdate(newConfig: CombinedConfig) {
 
     if (app.isReady()) {
         MainWindow.sendToRenderer(RELOAD_CONFIGURATION);
-        SettingsWindow.sendToRenderer(RELOAD_CONFIGURATION);
+        ipcMain.emit(EMIT_CONFIGURATION, true, Config.data);
     }
 
     setUnreadBadgeSetting(newConfig && newConfig.showUnreadBadge);
@@ -114,7 +112,6 @@ export function handleDarkModeChange(darkMode: boolean) {
 
     Tray.refreshImages(Config.trayIconTheme);
     MainWindow.sendToRenderer(DARK_MODE_CHANGE, darkMode);
-    SettingsWindow.sendToRenderer(DARK_MODE_CHANGE, darkMode);
     LoadingScreen.setDarkMode(darkMode);
 
     ipcMain.emit(EMIT_CONFIGURATION, true, Config.data);

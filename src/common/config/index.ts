@@ -7,6 +7,11 @@ import path from 'path';
 
 import {EventEmitter} from 'events';
 
+import {Logger} from 'common/log';
+import Utils, {copy} from 'common/utils/util';
+import * as Validator from 'common/Validator';
+import {getDefaultViewsForConfigServer} from 'common/views/View';
+
 import type {
     AnyConfig,
     BuildConfig,
@@ -15,11 +20,6 @@ import type {
     Config as ConfigType,
     RegistryConfig as RegistryConfigType,
 } from 'types/config';
-
-import {Logger} from 'common/log';
-import Utils, {copy} from 'common/utils/util';
-import * as Validator from 'common/Validator';
-import {getDefaultViewsForConfigServer} from 'common/views/View';
 
 import buildConfig from './buildConfig';
 import defaultPreferences, {getDefaultDownloadLocation} from './defaultPreferences';

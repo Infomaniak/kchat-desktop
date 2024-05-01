@@ -1,10 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import { IpcMainEvent, IpcMainInvokeEvent, ipcMain } from 'electron';
-
-import { UniqueServer, Server } from 'types/config';
-import { URLValidationResult } from 'types/server';
+import type {IpcMainEvent, IpcMainInvokeEvent} from 'electron';
+import {ipcMain} from 'electron';
 
 import {
     CLOSE_VIEW,
@@ -22,18 +20,20 @@ import {
     UPDATE_TAB_ORDER,
     VALIDATE_SERVER_URL,
 } from 'common/communication';
-import { Logger } from 'common/log';
-import ServerManager from 'common/servers/serverManager';
-import { MattermostServer } from 'common/servers/MattermostServer';
-import { isValidURI, isValidURL, parseURL } from 'common/utils/url';
-import { URLValidationStatus } from 'common/utils/constants';
 import Config from 'common/config';
-
-import ViewManager from 'main/views/viewManager';
+import {Logger} from 'common/log';
+import {MattermostServer} from 'common/servers/MattermostServer';
+import ServerManager from 'common/servers/serverManager';
+import {URLValidationStatus} from 'common/utils/constants';
+import {isValidURI, isValidURL, parseURL} from 'common/utils/url';
+import {ServerInfo} from 'main/server/serverInfo';
+import {getLocalPreload, getLocalURLString} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
+import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
-import { getLocalPreload, getLocalURLString } from 'main/utils';
-import { ServerInfo } from 'main/server/serverInfo';
+
+import type {UniqueServer, Server} from 'types/config';
+import type {URLValidationResult} from 'types/server';
 
 const log = new Logger('App', 'ServerViewState');
 
@@ -68,6 +68,14 @@ export class ServerViewState {
                 this.currentServerId = orderedServers[0].id;
             }
         }
+    };
+
+    hasCurrentServer = () => {
+        if (this.currentServerId) {
+            return Boolean(ServerManager.getServer(this.currentServerId));
+        }
+
+        return false;
     }
 
     getCurrentServer = () => {
@@ -81,7 +89,7 @@ export class ServerViewState {
             throw new Error('Current server does not exist');
         }
         return server;
-    }
+    };
 
     getServerByName = (name: string) => ServerManager.getAllServers().find(server => server.name === name);
 
@@ -111,7 +119,7 @@ export class ServerViewState {
             ViewManager.showById(nextView.id);
         }
         ipcMain.emit(UPDATE_SHORTCUT_MENU);
-    }
+    };
 
     selectNextView = () => {
         this.selectView((order) => order + 1);
@@ -124,7 +132,7 @@ export class ServerViewState {
     updateCurrentView = (serverId: string, viewId: string) => {
         this.currentServerId = serverId;
         ServerManager.updateLastActive(viewId);
-    }
+    };
 
     /**
      * Server Modals
@@ -242,7 +250,7 @@ export class ServerViewState {
         if (!isValidURL(url)) {
             // If it already includes the protocol, tell them it's invalid
             if (isValidURI(url)) {
-                httpUrl = url.replace(/^(.+):/, 'https:');
+                httpUrl = url.replace(/^((.+):\/\/)?/, 'https://');
             } else {
                 // Otherwise add HTTPS for them
                 httpUrl = `https://${url}`;
@@ -269,11 +277,13 @@ export class ServerViewState {
 
         // Try and get remote info from the most secure URL, otherwise use the insecure one
         let remoteURL = secureURL;
+        const insecureURL = parseURL(secureURL.toString().replace(/^https:/, 'http:'));
         let remoteInfo = await this.testRemoteServer(secureURL);
-        if (!remoteInfo) {
-            if (secureURL.toString() !== parsedURL.toString()) {
-                remoteURL = parsedURL;
-                remoteInfo = await this.testRemoteServer(parsedURL);
+        if (!remoteInfo && insecureURL) {
+            // Try to fall back to HTTP
+            remoteInfo = await this.testRemoteServer(insecureURL);
+            if (remoteInfo) {
+                remoteURL = insecureURL;
             }
         }
 
@@ -283,9 +293,11 @@ export class ServerViewState {
             return { status: URLValidationStatus.NotMattermost, validatedURL: parsedURL.toString() };
         }
 
+        const remoteServerName = remoteInfo.siteName === 'Mattermost' ? remoteURL.host.split('.')[0] : remoteInfo.siteName;
+
         // If we were only able to connect via HTTP, warn the user that the connection is not secure
         if (remoteURL.protocol === 'http:') {
-            return { status: URLValidationStatus.Insecure, serverVersion: remoteInfo.serverVersion, validatedURL: remoteURL.toString() };
+            return {status: URLValidationStatus.Insecure, serverVersion: remoteInfo.serverVersion, serverName: remoteServerName, validatedURL: remoteURL.toString()};
         }
 
         // If the URL doesn't match the Site URL, set the URL to the correct one
@@ -301,15 +313,15 @@ export class ServerViewState {
                 // If we can't reach the remote Site URL, there's probably a configuration issue
                 const remoteSiteURLInfo = await this.testRemoteServer(parsedSiteURL);
                 if (!remoteSiteURLInfo) {
-                    return { status: URLValidationStatus.URLNotMatched, serverVersion: remoteInfo.serverVersion, serverName: remoteInfo.siteName, validatedURL: remoteURL.toString() };
+                    return {status: URLValidationStatus.URLNotMatched, serverVersion: remoteInfo.serverVersion, serverName: remoteServerName, validatedURL: remoteURL.toString()};
                 }
             }
 
             // Otherwise fix it for them and return
-            return { status: URLValidationStatus.URLUpdated, serverVersion: remoteInfo.serverVersion, serverName: remoteInfo.siteName, validatedURL: remoteInfo.siteURL };
+            return {status: URLValidationStatus.URLUpdated, serverVersion: remoteInfo.serverVersion, serverName: remoteServerName, validatedURL: remoteInfo.siteURL};
         }
 
-        return {status: URLValidationStatus.OK, serverVersion: remoteInfo.serverVersion, serverName: remoteInfo.siteName, validatedURL: remoteURL.toString()};
+        return {status: URLValidationStatus.OK, serverVersion: remoteInfo.serverVersion, serverName: remoteServerName, validatedURL: remoteURL.toString()};
     };
 
     private handleCloseView = (event: IpcMainEvent, viewId: string) => {

@@ -4,20 +4,14 @@
 'use strict';
 
 import {getDoNotDisturb as getDarwinDoNotDisturb} from 'macos-notification-state';
-import {localizeMessage} from 'main/i18nManager';
-import ServerManager from 'common/servers/serverManager';
+
 import ServerViewState from 'app/serverViewState';
+import ServerManager from 'common/servers/serverManager';
+import {localizeMessage} from 'main/i18nManager';
 
 // import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 
 import {createTemplate} from './app';
-
-jest.mock('fs-extra', () => ({
-    readFileSync: jest.fn(),
-    writeFileSync: jest.fn(),
-    existsSync: jest.fn(),
-    copySync: jest.fn(),
-}));
 
 jest.mock('electron-extension-installer', () => {
     return () => ({

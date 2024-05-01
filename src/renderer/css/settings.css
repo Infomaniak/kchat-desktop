@@ -42,6 +42,24 @@ body {
     width: 50%;
 }
 
-.SettingsPage__spellCheckerLocalesDropdown__placeholder span {
-    color: #212529;
+#settingsModal .modal-content  {
+    padding: 16px;
+    max-height: calc(100vh - 50px);
+}
+
+#settingsModal .modal-body  {
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--dark) rgba(255, 255, 255, 0);
+}
+
+#settingsModal .modal-header  {
+    align-items: center;
+}
+
+@media (min-width: 862px) {
+    #settingsModal {
+        max-width: 786px;
+    }
 }

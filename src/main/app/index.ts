@@ -9,10 +9,7 @@ import {initialize} from './initialize';
 import('main/views/serverDropdownView');
 import('main/views/downloadsDropdownMenuView');
 import('main/views/downloadsDropdownView');
-
-if (process.env.NODE_ENV !== 'production' && module.hot) {
-    module.hot.accept();
-}
+import('main/views/serversSidebar');
 
 // attempt to initialize the application
 try {

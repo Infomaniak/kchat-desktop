@@ -2,26 +2,19 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// This file uses CommonJS.
-/* eslint-disable import/no-commonjs */
-'use strict';
-
 const path = require('path');
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const {ProvidePlugin} = require('webpack');
 const {merge} = require('webpack-merge');
 
-const {ProvidePlugin} = require('webpack');
-
 const base = require('./webpack.config.base');
-
-const WEBSERVER_PORT = process.env.WEBSERVER_PORT ?? 9065;
 
 module.exports = merge(base, {
     entry: {
         index: './src/renderer/index.tsx',
-        settings: './src/renderer/settings.tsx',
+        settings: './src/renderer/modals/settings/settings.tsx',
         call: './src/renderer/call.tsx',
         callDialing: './src/renderer/callDialing.tsx',
         dropdown: './src/renderer/dropdown.tsx',
@@ -36,11 +29,18 @@ module.exports = merge(base, {
         certificateModal: './src/renderer/modals/certificate/certificate.tsx',
         loadingScreen: './src/renderer/modals/loadingScreen/index.tsx',
         welcomeScreen: './src/renderer/modals/welcomeScreen/welcomeScreen.tsx',
+        serversSidebar: './src/renderer/serversSidebar.tsx',
+        serversSidebarShortcutModal: './src/renderer/modals/serversSidebarShortcut/serversSidebarShortcut.tsx',
     },
     output: {
         path: path.resolve(__dirname, 'dist/renderer'),
         filename: '[name]_bundle.js',
         assetModuleFilename: '[name].[ext]',
+    },
+    optimization: {
+        splitChunks: {
+            chunks: 'all',
+        },
     },
     plugins: [
         new HtmlWebpackPlugin({
@@ -134,6 +134,18 @@ module.exports = merge(base, {
             filename: 'loadingScreen.html',
         }),
         new HtmlWebpackPlugin({
+            title: 'kChat Desktop Servers Sidebar',
+            template: 'src/renderer/servers-sidebar.html',
+            chunks: ['serversSidebar'],
+            filename: 'serversSidebar.html',
+        }),
+        new HtmlWebpackPlugin({
+            title: 'kChat Desktop Servers Sidebar',
+            template: 'src/renderer/index.html',
+            chunks: ['serversSidebarShortcutModalView'],
+            filename: 'serversSidebarShortcutModal.html',
+        }),
+        new HtmlWebpackPlugin({
             title: 'Mattermost Desktop Settings',
             template: 'src/renderer/index.html',
             chunks: ['welcomeScreen'],
@@ -147,18 +159,10 @@ module.exports = merge(base, {
         new ProvidePlugin({
             Buffer: ['buffer', 'Buffer'],
         }),
-        new ProvidePlugin({
-            process: 'process/browser',
-        }),
     ],
     module: {
         noParse: /external_api\\.js/,
         rules: [{
-            test: /\.(js|jsx|ts|tsx)?$/,
-            use: {
-                loader: 'babel-loader',
-            },
-        }, {
             test: /\.css$/,
             exclude: /\.lazy\.css$/,
             use: [
@@ -198,10 +202,5 @@ module.exports = merge(base, {
         __filename: false,
         __dirname: false,
     },
-    target: 'electron-renderer',
-    devServer: {
-        port: WEBSERVER_PORT,
-    },
+    target: 'web',
 });
-
-/* eslint-enable import/no-commonjs */

@@ -2,14 +2,14 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-module.exports = (api) => { // eslint-disable-line import/no-commonjs
+module.exports = (api) => {
     api.cache.forever();
     return {
         presets: [
             ['@babel/preset-env', {
                 targets: {
-                    browsers: ['Electron >= 2.0'],
-                    node: '8.9',
+                    browsers: ['Electron >= 29.0'],
+                    node: '20.9',
                 },
             }],
             '@babel/preset-react',
@@ -18,6 +18,10 @@ module.exports = (api) => { // eslint-disable-line import/no-commonjs
                 isTSX: true,
             }],
         ],
-        plugins: ['@babel/plugin-proposal-object-rest-spread', '@babel/plugin-proposal-class-properties'],
+        plugins: [
+            '@babel/plugin-transform-object-rest-spread',
+            '@babel/plugin-transform-class-properties',
+            '@babel/plugin-transform-private-methods',
+        ],
     };
 };

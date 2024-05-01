@@ -1,10 +1,13 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserWindow, session, shell, WebContents, Event} from 'electron';
+import path from 'path';
+
+import type {WebContents, Event} from 'electron';
+import {BrowserWindow, shell} from 'electron';
 
 import Config from 'common/config';
-import {Logger} from 'common/log';
+import {Logger, getLevel} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {
     isAdminUrl,
@@ -23,21 +26,25 @@ import {
     isValidURI,
     parseURL,
 } from 'common/utils/url';
-
 import {flushCookiesStore} from 'main/app/utils';
 import ContextMenu from 'main/contextMenu';
-
-import MainWindow from 'main/windows/mainWindow';
 import ViewManager from 'main/views/viewManager';
 import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
+import MainWindow from 'main/windows/mainWindow';
 
 import {protocols} from '../../../electron-builder.json';
-
 import allowProtocolDialog from '../allowProtocolDialog';
 import {composeUserAgent} from '../utils';
 
 type CustomLogin = {
     inProgress: boolean;
+}
+
+enum ConsoleMessageLevel {
+    Verbose,
+    Info,
+    Warning,
+    Error
 }
 
 const log = new Logger('WebContentsEventManager');
@@ -64,14 +71,14 @@ export class WebContentsEventManager {
         }
 
         return ServerManager.getViewLog(view.id, 'WebContentsEventManager');
-    }
+    };
 
     private isTrustedPopupWindow = (webContentsId: number) => {
         if (!this.popupWindow) {
             return false;
         }
         return webContentsId === this.popupWindow.win.webContents.id;
-    }
+    };
 
     private getServerURLFromWebContentsId = (webContentsId: number) => {
         if (this.popupWindow && webContentsId === this.popupWindow.win.webContents.id) {
@@ -83,7 +90,7 @@ export class WebContentsEventManager {
         }
 
         return ViewManager.getViewByWebContentsId(webContentsId)?.view.server.url;
-    }
+    };
 
     private generateWillNavigate = (webContentsId: number) => {
         return (event: Event, url: string) => {
@@ -109,7 +116,7 @@ export class WebContentsEventManager {
                 return;
             }
             if (this.customLogins[webContentsId]?.inProgress) {
-                flushCookiesStore(session.defaultSession);
+                flushCookiesStore();
                 return;
             }
 
@@ -296,6 +303,27 @@ export class WebContentsEventManager {
         };
     };
 
+    private generateHandleConsoleMessage = (webContentsId: number) => (_: Event, level: number, message: string, line: number, sourceId: string) => {
+        const wcLog = this.log(webContentsId).withPrefix('renderer');
+        let logFn = wcLog.debug;
+        switch (level) {
+        case ConsoleMessageLevel.Error:
+            logFn = wcLog.error;
+            break;
+        case ConsoleMessageLevel.Warning:
+            logFn = wcLog.warn;
+            break;
+        }
+
+        // Only include line entries if we're debugging
+        const entries = [message];
+        if (['debug', 'silly'].includes(getLevel())) {
+            entries.push(`(${path.basename(sourceId)}:${line})`);
+        }
+
+        logFn(...entries);
+    };
+
     removeWebContentsListeners = (id: number) => {
         if (this.listeners[id]) {
             this.listeners[id]();
@@ -331,12 +359,16 @@ export class WebContentsEventManager {
         const newWindow = this.generateNewWindowListener(contents.id, spellcheck);
         contents.setWindowOpenHandler(newWindow);
 
+        const consoleMessage = this.generateHandleConsoleMessage(contents.id);
+        contents.on('console-message', consoleMessage);
+
         addListeners?.(contents);
 
         const removeWebContentsListeners = () => {
             try {
                 contents.removeListener('will-navigate', willNavigate);
                 contents.removeListener('did-start-navigation', didStartNavigation);
+                contents.removeListener('console-message', consoleMessage);
                 removeListeners?.(contents);
             } catch (e) {
                 this.log(contents.id).error(`Error while trying to detach listeners, this might be ok if the process crashed: ${e}`);

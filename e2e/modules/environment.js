@@ -3,19 +3,18 @@
 // See LICENSE.txt for license information.
 'use strict';
 
+const {execSync} = require('child_process');
 const fs = require('fs');
-
 const path = require('path');
 
-const ps = require('ps-node');
-
-const {_electron: electron} = require('playwright');
 const chai = require('chai');
 const {ipcRenderer} = require('electron');
-
-const {SHOW_SETTINGS_WINDOW} = require('../../src/common/communication');
+const {_electron: electron} = require('playwright');
+const ps = require('ps-node');
 
 const {asyncSleep, mkDirAsync, rmDirAsync, unlinkAsync} = require('./utils');
+
+const {SHOW_SETTINGS_WINDOW} = require('../../src/common/communication');
 chai.should();
 
 const sourceRootDir = path.join(__dirname, '../..');
@@ -182,6 +181,7 @@ module.exports = {
             }
         }
     },
+
     cleanDataDirAsync() {
         return rmDirAsync(userDataDir);
     },
@@ -191,6 +191,21 @@ module.exports = {
             fs.mkdirSync(userDataDir);
         }
     },
+
+    clipboard(textToCopy) {
+        switch (process.platform) {
+        case 'linux':
+            execSync(`echo "${textToCopy}" | xsel --clipboard`);
+            break;
+        case 'win32':
+            execSync(`echo ${textToCopy} | clip`);
+            break;
+        case 'darwin':
+            execSync(`pbcopy <<< ${textToCopy}`);
+            break;
+        }
+    },
+
     async createTestUserDataDirAsync() {
         await mkDirAsync(userDataDir);
     },
@@ -308,7 +323,6 @@ module.exports = {
 
     // execute the test only when `condition` is true
     shouldTest(it, condition) {
-    // eslint-disable-next-line no-only-tests/no-only-tests
         return condition ? it : it.skip;
     },
     isOneOf(platforms) {

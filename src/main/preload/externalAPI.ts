@@ -1,13 +1,10 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IpcRendererEvent, contextBridge, ipcRenderer, webFrame} from 'electron';
+import type {IpcRendererEvent} from 'electron';
+import {contextBridge, ipcRenderer, webFrame} from 'electron';
 
-// import log from 'electron-log';
-
-import {ExternalAPI} from 'types/externalAPI';
-
-import {DesktopAPI} from '@mattermost/desktop-api';
+import type {DesktopAPI} from '@mattermost/desktop-api';
 
 import {
     NOTIFY_MENTION,
@@ -60,10 +57,18 @@ import {
     RESET_AUTH,
     SWITCH_SERVER,
     RELOAD_CURRENT_VIEW,
+    PREFERRED_THEME,
+    TEAMS_ORDER_PREFERENCE,
+    TEAMS_ORDER_PREFERENCE_UPDATED,
+    USER_LOCALE,
+    GET_SERVER_THEME,
     GET_APP_THEME,
     THEME_CHANGED,
+    SWITCH_SERVER_SIDEBAR,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
+
+import type {ExternalAPI} from 'types/externalAPI';
 
 const createListener: ExternalAPI['createListener'] = (channel: string, listener: (...args: never[]) => void) => {
     const listenerWithEvent = (_: IpcRendererEvent, ...args: unknown[]) =>
@@ -92,9 +97,12 @@ const desktopAPI: DesktopAPI = {
     setSessionExpired: (isExpired) => ipcRenderer.send(SESSION_EXPIRED, isExpired),
     onUserActivityUpdate: (listener) => createListener(USER_ACTIVITY_UPDATE, listener),
 
+    onLogin: () => ipcRenderer.send(APP_LOGGED_IN),
+    onLogout: () => ipcRenderer.send(APP_LOGGED_OUT),
+
     // Unreads/mentions/notifications
     sendNotification: (title, body, channelId, teamId, url, silent, soundName) =>
-        ipcRenderer.send(NOTIFY_MENTION, title, body, channelId, teamId, url, silent, soundName),
+        ipcRenderer.invoke(NOTIFY_MENTION, title, body, channelId, teamId, url, silent, soundName),
     onNotificationClicked: (listener) => createListener(NOTIFICATION_CLICKED, listener),
     setUnreadsAndMentions: (isUnread, mentionCount) => ipcRenderer.send(UNREADS_AND_MENTIONS, isUnread, mentionCount),
 
@@ -233,11 +241,11 @@ setInterval(() => {
 
 const onLoad = () => {
     if (document.getElementById('root') === null) {
-        console.log('The guest is not assumed as mattermost-webapp');
+        console.warn('The guest is not assumed as mattermost-webapp');
         return;
     }
     watchReactAppUntilInitialized(() => {
-        console.log('Legacy preload initialized');
+        console.warn('Legacy preload initialized');
         ipcRenderer.send(REACT_APP_INITIALIZED);
         ipcRenderer.invoke(REQUEST_BROWSER_HISTORY_STATUS).then(sendHistoryButtonReturn);
     });
@@ -346,7 +354,7 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
     case 'dispatch-notification': {
         const {title, body, channel, teamId, url, silent, data: messageData} = message;
         channels.set(channel.id, channel);
-        ipcRenderer.send(NOTIFY_MENTION, title, body, channel.id, teamId, url, silent, messageData.soundName);
+        ipcRenderer.invoke(NOTIFY_MENTION, title, body, channel.id, teamId, url, silent, messageData.soundName);
         break;
     }
     case BROWSER_HISTORY_PUSH: {
@@ -394,6 +402,7 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
                 url: item.url,
                 order: idx,
                 tabs: [{name: 'TAB_MESSAGING', order: 0, isOpen: true}],
+                teamInfo: item,
             });
 
             return acc;
@@ -406,8 +415,17 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
         }
         break;
     }
+    case USER_LOCALE:
+        ipcRenderer.send(USER_LOCALE, data.data);
+        break;
     case SWITCH_SERVER:
         ipcRenderer.send(SWITCH_SERVER, data.data);
+        break;
+    case TEAMS_ORDER_PREFERENCE:
+        ipcRenderer.send(TEAMS_ORDER_PREFERENCE, data.data);
+        break;
+    case PREFERRED_THEME:
+        ipcRenderer.send(PREFERRED_THEME, data.data);
         break;
     case CALLS_WIDGET_SHARE_SCREEN: {
         ipcRenderer.send(CALLS_WIDGET_SHARE_SCREEN, message.sourceID, message.withAudio);
@@ -622,6 +640,18 @@ ipcRenderer.on(USER_ACTIVITY_UPDATE, (event, userIsActive, isSystemEvent) => {
     if (window.location.origin !== 'null') {
         window.postMessage({type: USER_ACTIVITY_UPDATE, message: {userIsActive, manual: isSystemEvent}}, window.location.origin);
     }
+});
+
+ipcRenderer.on(TEAMS_ORDER_PREFERENCE_UPDATED, (_, teamsOrder) => {
+    window.postMessage({type: TEAMS_ORDER_PREFERENCE_UPDATED, message: {teamsOrder}}, window.location.origin);
+});
+
+ipcRenderer.on(GET_SERVER_THEME, () => {
+    window.postMessage({type: GET_SERVER_THEME, message: {}}, window.location.origin);
+});
+
+ipcRenderer.on(SWITCH_SERVER_SIDEBAR, (_, serverId) => {
+    window.postMessage({type: SWITCH_SERVER_SIDEBAR, message: {serverId}}, window.location.origin);
 });
 
 /**

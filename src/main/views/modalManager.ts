@@ -1,10 +1,9 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserWindow, ipcMain} from 'electron';
-import {IpcMainEvent, IpcMainInvokeEvent} from 'electron/main';
-
-import {CombinedConfig} from 'types/config';
+import type {BrowserWindow} from 'electron';
+import {ipcMain} from 'electron';
+import type {IpcMainEvent, IpcMainInvokeEvent} from 'electron/main';
 
 import {
     RETRIEVE_MODAL_INFO,
@@ -16,13 +15,15 @@ import {
     DARK_MODE_CHANGE,
     GET_MODAL_UNCLOSEABLE,
     MAIN_WINDOW_RESIZED,
+    RELOAD_CONFIGURATION,
 } from 'common/communication';
 import {Logger} from 'common/log';
-
 import {getAdjustedWindowBoundaries} from 'main/utils';
-import MainWindow from 'main/windows/mainWindow';
-import WebContentsEventManager from 'main/views/webContentEvents';
 import ViewManager from 'main/views/viewManager';
+import WebContentsEventManager from 'main/views/webContentEvents';
+import MainWindow from 'main/windows/mainWindow';
+
+import type {CombinedConfig} from 'types/config';
 
 import {ModalView} from './modalView';
 
@@ -62,7 +63,7 @@ export class ModalManager {
             return modalPromise;
         }
         return this.modalPromises.get(key) as Promise<T2>;
-    }
+    };
 
     findModalByCaller = (event: IpcMainInvokeEvent) => {
         if (this.modalQueue.length) {
@@ -72,7 +73,7 @@ export class ModalManager {
             return requestModal;
         }
         return null;
-    }
+    };
 
     handleInfoRequest = (event: IpcMainInvokeEvent) => {
         log.debug('handleInfoRequest');
@@ -82,7 +83,7 @@ export class ModalManager {
             return requestModal.handleInfoRequest();
         }
         return null;
-    }
+    };
 
     showModal = () => {
         const withDevTools = process.env.MM_DEBUG_MODALS || false;
@@ -96,7 +97,7 @@ export class ModalManager {
                 modal.hide();
             }
         });
-    }
+    };
 
     handleModalFinished = (mode: 'resolve' | 'reject', event: IpcMainEvent, data: unknown) => {
         log.debug('handleModalFinished', {mode, data});
@@ -117,7 +118,7 @@ export class ModalManager {
             MainWindow.sendToRenderer(MODAL_CLOSE);
             ViewManager.focusCurrentView();
         }
-    }
+    };
 
     handleModalResult = (event: IpcMainEvent, data: unknown) => this.handleModalFinished('resolve', event, data);
 
@@ -125,11 +126,11 @@ export class ModalManager {
 
     filterActive = () => {
         this.modalQueue = this.modalQueue.filter((modal) => modal.isActive());
-    }
+    };
 
     isModalDisplayed = () => {
         return this.modalQueue.some((modal) => modal.isActive());
-    }
+    };
 
     handleResizeModal = (bounds: Electron.Rectangle) => {
         log.debug('handleResizeModal', {bounds, modalQueueLength: this.modalQueue.length});
@@ -138,13 +139,13 @@ export class ModalManager {
             const currentModal = this.modalQueue[0];
             currentModal.view.setBounds(getAdjustedWindowBoundaries(bounds.width, bounds.height));
         }
-    }
+    };
 
     focusCurrentModal = () => {
         if (this.isModalDisplayed()) {
             this.modalQueue[0].view.webContents.focus();
         }
-    }
+    };
 
     handleEmitConfiguration = (event: IpcMainEvent, config: CombinedConfig) => {
         if (this.modalQueue.length) {
@@ -152,14 +153,15 @@ export class ModalManager {
         }
 
         this.modalQueue.forEach((modal) => {
+            modal.view.webContents.send(RELOAD_CONFIGURATION);
             modal.view.webContents.send(DARK_MODE_CHANGE, config.darkMode);
         });
-    }
+    };
 
     handleGetModalUncloseable = (event: IpcMainInvokeEvent) => {
         const modalView = this.modalQueue.find((modal) => modal.view.webContents.id === event.sender.id);
         return modalView?.uncloseable;
-    }
+    };
 }
 
 const modalManager = new ModalManager();
