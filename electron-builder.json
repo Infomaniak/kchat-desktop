@@ -109,7 +109,7 @@
       }
     ],
     "hardenedRuntime": true,
-    "gatekeeperAssess": true,
+    "gatekeeperAssess": false,
     "entitlements": "./resources/mac/entitlements.mac.plist",
     "entitlementsInherit": "./resources/mac/entitlements.mac.inherit.plist",
     "extendInfo": {
