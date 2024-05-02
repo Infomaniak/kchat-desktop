@@ -142,7 +142,7 @@ module.exports = merge(base, {
         new HtmlWebpackPlugin({
             title: 'kChat Desktop Servers Sidebar',
             template: 'src/renderer/index.html',
-            chunks: ['serversSidebarShortcutModalView'],
+            chunks: ['serversSidebarShortcutModal'],
             filename: 'serversSidebarShortcutModal.html',
         }),
         new HtmlWebpackPlugin({

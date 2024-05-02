@@ -3,10 +3,8 @@
 
 import {BrowserView, ipcMain} from 'electron';
 
-import {ConfigServer, UniqueServer} from 'types/config';
-
-import {Theme} from 'types/theme';
-
+import ServerViewState from 'app/serverViewState';
+import AppState from 'common/appState';
 import {
     EMIT_CONFIGURATION,
     GET_SERVER_THEME,
@@ -18,17 +16,17 @@ import {
     UPDATE_TEAMS,
     USER_LOCALE,
 } from 'common/communication';
-
 import {Logger} from 'common/log';
+import ServerManager from 'common/servers/serverManager';
+import {DEFAULT_TEAM_NAME, SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
 import {composeUserAgent, getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
-import {DEFAULT_TEAM_NAME, SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
-import ServerManager from 'common/servers/serverManager';
-import ServerViewState from 'app/serverViewState';
-import AppState from 'common/appState';
 
+import type {ConfigServer, UniqueServer} from 'types/config';
+import type {Theme} from 'types/theme';
+
+import ServerSidebarShortcutModalView from './serversSidebarShortcutModalView';
 import viewManager from './viewManager';
-import {ServerSidebarShortcutModalView} from './serversSidebarShortcutModalView';
 
 const log = new Logger('ServersSidebar');
 
@@ -36,11 +34,11 @@ export class ServerSidebar {
     private view?: BrowserView;
     private servers: UniqueServer[];
     private teams: ConfigServer[];
-    private preferredTheme: Theme
-    private userLocale: string
-    private teamsOrderPreference: string[]
-    private isReadyToSwitchServer: boolean
-    private shouldDisplay: boolean
+    private preferredTheme: Theme;
+    private userLocale: string;
+    private teamsOrderPreference: string[];
+    private isReadyToSwitchServer: boolean;
+    private shouldDisplay: boolean;
 
     private unreads: Map<string, boolean>;
     private mentions: Map<string, number>;
@@ -48,7 +46,7 @@ export class ServerSidebar {
 
     private windowBounds?: Electron.Rectangle;
 
-    private modal: ServerSidebarShortcutModalView
+    private modal;
 
     constructor() {
         this.servers = [];
@@ -113,8 +111,8 @@ export class ServerSidebar {
 
         this.setOrderedServers();
 
-        this.modal = new ServerSidebarShortcutModalView();
-    }
+        this.modal = ServerSidebarShortcutModalView.init(mainWindow);
+    };
 
     hide = () => {
         const mainWindow = MainWindow.get();
@@ -125,7 +123,7 @@ export class ServerSidebar {
         }
 
         mainWindow.removeBrowserView(this.view!);
-    }
+    };
 
     show = () => {
         const mainWindow = MainWindow.get();
@@ -140,11 +138,11 @@ export class ServerSidebar {
         if (this.shouldDisplay) {
             mainWindow.addBrowserView(this.view!);
         }
-    }
+    };
 
     private countActiveTeams = () => {
         return this.teams.filter((t) => t.teamInfo.delete_at === 0).length;
-    }
+    };
 
     private setBounds = () => {
         if (this.view) {
@@ -157,7 +155,7 @@ export class ServerSidebar {
             const windowBoundaries = getWindowBoundaries(mainWindow, false, true);
             this.view.setBounds({...windowBoundaries, x: 0, width: SERVERS_SIDEBAR_WIDTH});
         }
-    }
+    };
 
     private updateTeams = (_: any, teams: ConfigServer[]) => {
         const newTeams = teams.filter((t) => t.name !== DEFAULT_TEAM_NAME);
@@ -177,32 +175,32 @@ export class ServerSidebar {
             MainWindow.emit(MAIN_WINDOW_RESIZED, MainWindow.getBounds());
             this.hide();
         }
-    }
+    };
 
     private updateTeamsOrderPreference = (_: any, preference: string) => {
         this.teamsOrderPreference = preference ? preference.split(',') : this.teams.map((t) => t.teamInfo?.id);
         this.updateSidebar();
-    }
+    };
 
     private handleUpdateTeamsOrder = (_: any, order: string[]) => {
         this.teamsOrderPreference = order;
         viewManager.sendToAllViews(TEAMS_ORDER_PREFERENCE_UPDATED, order);
-    }
+    };
 
     private updateServers = () => {
         this.setOrderedServers();
         this.updateSidebar();
         this.registerKeyboardEvents();
-    }
+    };
 
     private handleSwitchServer = () => {
         viewManager.getCurrentView()?.sendToRenderer(GET_SERVER_THEME);
-    }
+    };
 
     private handleSwitchServerSidebar = (event: any, serverName: string, serverId: string) => {
         viewManager.getCurrentView()?.sendToRenderer(SWITCH_SERVER_SIDEBAR, serverId);
         ipcMain.emit(SWITCH_SERVER, event, serverName);
-    }
+    };
 
     private updatePreferredTheme = (_: any, data: any) => {
         const theme = data.theme;
@@ -212,11 +210,11 @@ export class ServerSidebar {
             this.preferredTheme = theme;
             this.updateSidebar();
         }
-    }
+    };
 
     private updateUserLocale = (_: any, locale: string) => {
         this.userLocale = locale;
-    }
+    };
 
     private updateSidebar = () => {
         log.silly('update sidebar');
@@ -235,12 +233,12 @@ export class ServerSidebar {
             this.isReadyToSwitchServer,
             this.userLocale,
         );
-    }
+    };
 
     private updateWindowBounds = () => {
         this.setBounds();
         this.updateSidebar();
-    }
+    };
 
     private updateMentions = (expired: Map<string, boolean>, mentions: Map<string, number>, unreads: Map<string, boolean>) => {
         log.silly('updateMentions', {expired, mentions, unreads});
@@ -249,7 +247,7 @@ export class ServerSidebar {
         this.mentions = this.reduceNotifications(this.mentions, mentions, (base, value) => (base ?? 0) + (value ?? 0));
         this.expired = this.reduceNotifications(this.expired, expired, (base, value) => base || value || false);
         this.updateSidebar();
-    }
+    };
 
     private reduceNotifications = <T>(inputMap: Map<string, T>, items: Map<string, T>, modifier: (base?: T, value?: T) => T) => {
         inputMap.clear();
@@ -261,16 +259,16 @@ export class ServerSidebar {
             map.set(view.server.id, modifier(map.get(view.server.id), items.get(key)));
             return map;
         }, inputMap);
-    }
+    };
 
     private setOrderedServers = () => {
         this.servers = ServerManager.getOrderedServers().map((server) => server.toUniqueServer());
-    }
+    };
 
     private setIsReadyToSwitchServer = (value: boolean) => {
         this.isReadyToSwitchServer = value;
         this.updateSidebar();
-    }
+    };
 
     private registerKeyboardEvents = () => {
         viewManager.getCurrentView()?.registerWebContentEvent('before-input-event', (_: any, event: Electron.Event<any>) => {
@@ -294,7 +292,7 @@ export class ServerSidebar {
                 ServerViewState.switchServer(server.id);
             }
         });
-    }
+    };
 }
 
 const serversSidebar = new ServerSidebar();
