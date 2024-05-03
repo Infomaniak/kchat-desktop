@@ -121,8 +121,8 @@
     "notarize": {
       "teamId": "864VDCS2QY"
     },
-    "bundleShortVersion": "3.0.0",
-    "bundleVersion": "10"
+    "bundleShortVersion": "3.2.0",
+    "bundleVersion": "11"
   },
   "mas": {
     "hardenedRuntime": false,
