@@ -51,6 +51,16 @@ jobs:
 
     build-mac:
         runs-on: macos-12
+        env:
+          MAC_PROFILE: ${{ secrets.MAC_PROVISION_PROFILE }}
+          APPLE_ID: ${{ secrets.APPLEID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLEIDPASS }}
+          APPLE_TEAM_ID: ${{ secrets.APPLETEAMID }}
+          CSC_FOR_PULL_REQUEST: true
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_RELEASE: ${{ github.ref_name }}
         needs:
             - create-release
         steps:
@@ -69,20 +79,13 @@ jobs:
                   brew install yq rename
                   sudo -H pip install setuptools
                   npm ci
+            - name: release/copy-provisioning-profile
+              run: echo $MAC_PROFILE | base64 -D > ./mac.provisionprofile
             - name: release/update-version
               uses: ./.github/actions/version
             # - name: release/test
             #   uses: ./.github/actions/test
             - name: release/build
-              env:
-                  APPLEID: ${{ secrets.APPLEID }}
-                  APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
-                  APPLETEAMID: ${{ secrets.APPLETEAMID }}
-                  CSC_FOR_PULL_REQUEST: true
-                  CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-                  CSC_LINK: ${{ secrets.CSC_LINK }}
-                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-                  SENTRY_RELEASE: ${{ github.ref_name }}
               run: |
                   npm run package:mac
                   mkdir -p ./artifacts
