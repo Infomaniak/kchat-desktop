@@ -529,7 +529,7 @@ class MainPage extends React.PureComponent<Props, State> {
                             })}
                         />
                     </button>
-                  { process.env.NODE_ENV === 'dev' && activeServer && (
+                    { process.env.NODE_ENV === 'dev' && activeServer && (
                         <ServerDropdownButton
                             isDisabled={this.state.modalOpen}
                             activeServerName={activeServer.name}

@@ -41,10 +41,7 @@ export class ServerViewState {
     private currentServerId?: string;
 
     constructor() {
-        ipcMain.on(SWITCH_SERVER, (_, serverName) => {
-            const serverFound = this.getServerByName(serverName);
-            serverFound && this.switchServer(serverFound.id)
-        });
+        ipcMain.on(SWITCH_SERVER, (event, serverId) => this.switchServer(serverId));
         ipcMain.on(SHOW_NEW_SERVER_MODAL, this.showNewServerModal);
         ipcMain.on(SHOW_EDIT_SERVER_MODAL, this.showEditServerModal);
         ipcMain.on(SHOW_REMOVE_SERVER_MODAL, this.showRemoveServerModal);
@@ -54,7 +51,8 @@ export class ServerViewState {
 
         ipcMain.on(CLOSE_VIEW, this.handleCloseView);
         ipcMain.on(OPEN_VIEW, this.handleOpenView);
-        ipcMain.handle(GET_LAST_ACTIVE, this.handleGetLastActive);
+
+        // ipcMain.handle(GET_LAST_ACTIVE, this.handleGetLastActive);
         ipcMain.handle(GET_ORDERED_TABS_FOR_SERVER, this.handleGetOrderedViewsForServer);
         ipcMain.on(UPDATE_TAB_ORDER, this.updateTabOrder);
     }
@@ -76,7 +74,7 @@ export class ServerViewState {
         }
 
         return false;
-    }
+    };
 
     getCurrentServer = () => {
         log.silly('getCurrentServer');
@@ -91,18 +89,12 @@ export class ServerViewState {
         return server;
     };
 
-    getServerByName = (name: string) => ServerManager.getAllServers().find(server => server.name === name);
-
     switchServer = (serverId: string, waitForViewToExist = false) => {
-        const serverFound = ServerManager.getAllServers().find(server => server.id === serverId);
-
-        if (!serverFound) return;
-
         ServerManager.getServerLog(serverId, 'WindowManager').debug('switchServer');
         MainWindow.show();
         const server = ServerManager.getServer(serverId);
         if (!server) {
-            ServerManager.getServerLog(serverId, 'WindowManager').error('Cannot find server in config', serverId);
+            ServerManager.getServerLog(serverId, 'WindowManager').error('Cannot find server in config');
             return;
         }
         ipcMain.emit(TOGGLE_SECURE_INPUT, null, false);
@@ -243,7 +235,7 @@ export class ServerViewState {
 
         // If the URL is missing or null, reject
         if (!url) {
-            return { status: URLValidationStatus.Missing };
+            return {status: URLValidationStatus.Missing};
         }
 
         let httpUrl = url;
@@ -260,7 +252,7 @@ export class ServerViewState {
         // Make sure the final URL is valid
         const parsedURL = parseURL(httpUrl);
         if (!parsedURL) {
-            return { status: URLValidationStatus.Invalid };
+            return {status: URLValidationStatus.Invalid};
         }
 
         // Try and add HTTPS to see if we can get a more secure URL
@@ -272,7 +264,7 @@ export class ServerViewState {
         // Tell the user if they already have a server for this URL
         const existingServer = ServerManager.lookupViewByURL(secureURL, true);
         if (existingServer && existingServer.server.id !== currentId) {
-            return { status: URLValidationStatus.URLExists, existingServerName: existingServer.server.name, validatedURL: existingServer.server.url.toString() };
+            return {status: URLValidationStatus.URLExists, existingServerName: existingServer.server.name, validatedURL: existingServer.server.url.toString()};
         }
 
         // Try and get remote info from the most secure URL, otherwise use the insecure one
@@ -290,7 +282,7 @@ export class ServerViewState {
         // If we can't get the remote info, warn the user that this might not be the right URL
         // If the original URL was invalid, don't replace that as they probably have a typo somewhere
         if (!remoteInfo) {
-            return { status: URLValidationStatus.NotMattermost, validatedURL: parsedURL.toString() };
+            return {status: URLValidationStatus.NotMattermost, validatedURL: parsedURL.toString()};
         }
 
         const remoteServerName = remoteInfo.siteName === 'Mattermost' ? remoteURL.host.split('.')[0] : remoteInfo.siteName;
@@ -307,7 +299,7 @@ export class ServerViewState {
                 // Check the Site URL as well to see if it's already pre-configured
                 const existingServer = ServerManager.lookupViewByURL(parsedSiteURL, true);
                 if (existingServer && existingServer.server.id !== currentId) {
-                    return { status: URLValidationStatus.URLExists, existingServerName: existingServer.server.name, validatedURL: existingServer.server.url.toString() };
+                    return {status: URLValidationStatus.URLExists, existingServerName: existingServer.server.name, validatedURL: existingServer.server.url.toString()};
                 }
 
                 // If we can't reach the remote Site URL, there's probably a configuration issue
@@ -325,7 +317,7 @@ export class ServerViewState {
     };
 
     private handleCloseView = (event: IpcMainEvent, viewId: string) => {
-        log.debug('handleCloseView', { viewId });
+        log.debug('handleCloseView', {viewId});
 
         const view = ServerManager.getView(viewId);
         if (!view) {
@@ -337,7 +329,7 @@ export class ServerViewState {
     };
 
     private handleOpenView = (event: IpcMainEvent, viewId: string) => {
-        log.debug('handleOpenView', { viewId });
+        log.debug('handleOpenView', {viewId});
 
         ServerManager.setViewIsOpen(viewId, true);
         ViewManager.showById(viewId);
@@ -350,7 +342,7 @@ export class ServerViewState {
     private handleGetLastActive = () => {
         const server = this.getCurrentServer();
         const view = ServerManager.getLastActiveTabForServer(server.id);
-        return { server: server.id, view: view.id };
+        return {server: server.id, view: view.id};
     };
 
     private updateServerOrder = (event: IpcMainEvent, serverOrder: string[]) => ServerManager.updateServerOrder(serverOrder);
@@ -363,7 +355,7 @@ export class ServerViewState {
      */
 
     private testRemoteServer = async (parsedURL: URL) => {
-        const server = new MattermostServer({ name: 'temp', url: parsedURL.toString() }, false);
+        const server = new MattermostServer({name: 'temp', url: parsedURL.toString()}, false);
         const serverInfo = new ServerInfo(server);
         try {
             const remoteInfo = await serverInfo.fetchConfigData();
@@ -379,7 +371,7 @@ export class ServerViewState {
             return;
         }
 
-        const currentServerViews = ServerManager.getOrderedTabsForServer(currentView.view.server.id).map((view, index) => ({ view, index }));
+        const currentServerViews = ServerManager.getOrderedTabsForServer(currentView.view.server.id).map((view, index) => ({view, index}));
         const filteredViews = currentServerViews?.filter((view) => view.view.isOpen);
         const currentServerView = currentServerViews?.find((view) => view.view.type === currentView.view.type);
         if (!currentServerViews || !currentServerView || !filteredViews) {

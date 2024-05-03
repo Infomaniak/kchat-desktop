@@ -87,8 +87,9 @@ export class ServerDropdownView {
 
         this.setOrderedServers();
         this.windowBounds = MainWindow.getBounds();
-        this.updateDropdown();
-        MainWindow.get()?.addBrowserView(this.view);
+
+        // this.updateDropdown();
+        // MainWindow.get()?.addBrowserView(this.view);
     };
 
     private updateDropdown = () => {
