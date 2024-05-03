@@ -140,6 +140,7 @@
     "renderer.modals.call.decline": "Ablehnen",
     "renderer.modals.call.cancel": "Auflegen",
     "renderer.modals.call.calling": "ruft Sie an",
+    "renderer.modals.call.waiting": "Warten...",
     "renderer.dropdown.servers": "Server",
     "renderer.dropdown.addAServer": "Server hinzufügen",
     "renderer.components.serverDropdownButton.noServersConfigured": "Keine Server konfiguriert",

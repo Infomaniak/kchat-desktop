@@ -168,6 +168,7 @@
     "renderer.modals.call.decline": "Rechazar",
     "renderer.modals.call.cancel": "Colgar",
     "renderer.modals.call.calling": "te llama",
+    "renderer.modals.call.waiting": "Esperando...",
     "renderer.dropdown.servers": "Servidores",
     "renderer.dropdown.addAServer": "Añadir un servidor",
     "renderer.components.welcomeScreen.slides.welcome.title": "Bienvenido",

@@ -65,23 +65,28 @@ class DialingModal extends React.PureComponent<Props, State> {
     onHandleDecline() {
         const {callInfo} = this.state;
         window.dialApi.callDeclined(callInfo);
-        window.close();
     }
 
     onHandleCancel() {
         const {callInfo} = this.state;
         window.dialApi.callCanceled(callInfo);
-        window.close();
     }
 
     onHandleAccept() {
         const {callInfo} = this.state;
         window.dialApi.callAccept(callInfo);
-        window.close();
+    }
+
+    users() {
+        return this.state.callInfo?.users.filter((u) => u.id !== this.state.callInfo?.currentUser.id) || [];
+    }
+
+    checkIsCurrentUserCaller() {
+        return this.state.callInfo?.caller.id === this.state.callInfo?.currentUser.id;
     }
 
     getUsersNicknames = (users: UserProfile[]): string => {
-        const nicknames = users.map((user) => user.nickname);
+        const nicknames = this.users().map((user) => user.nickname);
 
         if (users.length > 2) {
             return [...nicknames.slice(0, 2), '...'].join(', ');
@@ -92,21 +97,21 @@ class DialingModal extends React.PureComponent<Props, State> {
 
     render() {
         const {callInfo} = this.state;
-
+        console.log('callInfo', callInfo);
         if (!callInfo) {
             return null;
         }
 
-        const isCurrentUserCaller = callInfo.caller.id === callInfo.currentUser.id;
+        const isCurrentUserCaller = this.checkIsCurrentUserCaller();
+        const avatars = this.users();
 
         return (
             <div className='container'>
                 <div className='content-body'>
                     <Avatars
-                        users={callInfo.users}
-                        size='lg'
+                        users={avatars}
+                        size='md'
                     />
-
                 </div>
                 <div className='content-calling'>
                     <div className='content-calling-user'>

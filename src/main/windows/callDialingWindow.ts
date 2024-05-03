@@ -34,8 +34,8 @@ class CallDialingWindow {
         const localURL = getLocalURLString('callDialing.html');
 
         const callDialWindow = new BrowserWindow({
-            width: 267,
-            height: 267,
+            width: 280,
+            height: 230,
             titleBarStyle: 'hiddenInset',
             hasShadow: true,
             minimizable: false,

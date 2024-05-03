@@ -1,7 +1,6 @@
 .container {
-    padding: 16px;
     overflow: hidden;
-    padding-top: 32px;
+    padding: 12px 24px 24px 24px;
 }
 
 div.actions {
