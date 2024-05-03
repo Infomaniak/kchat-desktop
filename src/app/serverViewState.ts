@@ -41,7 +41,12 @@ export class ServerViewState {
     private currentServerId?: string;
 
     constructor() {
-        ipcMain.on(SWITCH_SERVER, (event, serverId) => this.switchServer(serverId));
+        ipcMain.on(SWITCH_SERVER, (_, serverName) => {
+            const serverFound = this.getServerByName(serverName);
+            if (serverFound) {
+                this.switchServer(serverFound.id);
+            }
+        });
         ipcMain.on(SHOW_NEW_SERVER_MODAL, this.showNewServerModal);
         ipcMain.on(SHOW_EDIT_SERVER_MODAL, this.showEditServerModal);
         ipcMain.on(SHOW_REMOVE_SERVER_MODAL, this.showRemoveServerModal);
@@ -88,6 +93,8 @@ export class ServerViewState {
         }
         return server;
     };
+
+    getServerByName = (name: string) => ServerManager.getAllServers().find((server) => server.name === name);
 
     switchServer = (serverId: string, waitForViewToExist = false) => {
         ServerManager.getServerLog(serverId, 'WindowManager').debug('switchServer');
