@@ -3,10 +3,6 @@
 
 import EventEmitter from 'events';
 
-import type {Server, ConfigServer, ConfigView} from 'types/config';
-
-import type {RemoteInfo} from 'types/server';
-
 import {
     SERVERS_URL_MODIFIED,
     SERVERS_UPDATE,
@@ -20,6 +16,9 @@ import MessagingView from 'common/views/MessagingView';
 import PlaybooksView from 'common/views/PlaybooksView';
 import type {MattermostView} from 'common/views/View';
 import {TAB_FOCALBOARD, TAB_MESSAGING, TAB_PLAYBOOKS, getDefaultViews} from 'common/views/View';
+
+import type {Server, ConfigServer, ConfigView, ServerTeam} from 'types/config';
+import type {RemoteInfo} from 'types/server';
 
 const log = new Logger('ServerManager');
 
@@ -343,6 +342,7 @@ export class ServerManager extends EventEmitter {
             url: `${server.url}`,
             order: this.serverOrder.indexOf(server.id),
             lastActiveTab: this.getLastActiveView(server.id),
+            teamInfo: server.teamInfo ?? {} as ServerTeam,
             tabs: this.viewOrder.get(server.id)?.reduce((views, viewId, index) => {
                 const view = this.views.get(viewId);
                 if (!view) {

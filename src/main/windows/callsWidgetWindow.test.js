@@ -1,12 +1,9 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-/* eslint-disable max-lines */
-
 import {BrowserWindow, desktopCapturer, systemPreferences, ipcMain} from 'electron';
 
 import ServerViewState from 'app/serverViewState';
-
 import {CALLS_WIDGET_SHARE_SCREEN, BROWSER_HISTORY_PUSH, UPDATE_SHORTCUT_MENU} from 'common/communication';
 import {
     MINIMUM_CALLS_WIDGET_WIDTH,
@@ -14,14 +11,13 @@ import {
     CALLS_PLUGIN_ID,
 } from 'common/utils/constants';
 import urlUtils from 'common/utils/url';
-
-import MainWindow from 'main/windows/mainWindow';
-import ViewManager from 'main/views/viewManager';
 import {
     resetScreensharePermissionsMacOS,
     openScreensharePermissionsSettingsMacOS,
 } from 'main/utils';
+import ViewManager from 'main/views/viewManager';
 import WebContentsEventManager from 'main/views/webContentEvents';
+import MainWindow from 'main/windows/mainWindow';
 
 import {CallsWidgetWindow} from './callsWidgetWindow';
 
@@ -833,7 +829,7 @@ describe('main/windows/callsWidgetWindow', () => {
             expect(ViewManager.handleDeepLink).toHaveBeenCalledWith(new URL(url));
         });
     });
-  
+
     describe('isOpen', () => {
         const callsWidgetWindow = new CallsWidgetWindow();
 

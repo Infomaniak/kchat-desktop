@@ -93,6 +93,12 @@ import {
     GET_APP_INFO,
     RESET_AUTH,
     UPDATE_TEAMS,
+    UPDATE_SERVERS_SIDEBAR,
+    TEAMS_ORDER_PREFERENCE_UPDATED,
+    TEAM_MOUSE_IN,
+    TEAM_MOUSE_OUT,
+    UPDATE_SIDEBAR_MODAL,
+    SWITCH_SERVER_SIDEBAR,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -241,6 +247,48 @@ contextBridge.exposeInMainWorld('desktop', {
             mentions,
             unreads,
             windowBounds,
+        )),
+    },
+
+    serversSidebar: {
+        switchServer: (serverName, serverId) => ipcRenderer.send(SWITCH_SERVER_SIDEBAR, serverName, serverId),
+        updateTeamsOrder: (teamsOrder) => ipcRenderer.send(TEAMS_ORDER_PREFERENCE_UPDATED, teamsOrder),
+
+        handleMouseInServerButton: (index, teamName) => ipcRenderer.send(TEAM_MOUSE_IN, index, teamName),
+        handleMouseOutServerButton: () => ipcRenderer.send(TEAM_MOUSE_OUT),
+
+        onUpdateSidebar: (listener) => ipcRenderer.on(UPDATE_SERVERS_SIDEBAR, (_,
+            servers,
+            teams,
+            activeServer,
+            expired,
+            mentions,
+            unreads,
+            windowBounds,
+            preferredTheme,
+            teamsOrderPreference,
+            isReadyToSwitchServer,
+            userLocale,
+        ) => listener(
+            servers,
+            teams,
+            activeServer,
+            expired,
+            mentions,
+            unreads,
+            windowBounds,
+            preferredTheme,
+            teamsOrderPreference,
+            isReadyToSwitchServer,
+            userLocale,
+        )),
+
+        onUpdateModal: (listener) => ipcRenderer.on(UPDATE_SIDEBAR_MODAL, (_,
+            currentTeam,
+            isMac,
+        ) => listener(
+            currentTeam,
+            isMac,
         )),
     },
 

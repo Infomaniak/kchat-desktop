@@ -4,6 +4,7 @@
 export const GET_APP_INFO = 'get-app-info';
 
 export const SWITCH_SERVER = 'switch-server';
+export const SWITCH_SERVER_SIDEBAR = 'switch-server-sidebar';
 export const SWITCH_TAB = 'switch-tab';
 export const CLOSE_VIEW = 'close-view';
 export const OPEN_VIEW = 'open-view';
@@ -223,3 +224,14 @@ export const NOTIFICATION_CLICKED = 'notification-clicked';
 
 // Legacy code remove signal
 export const LEGACY_OFF = 'legacy-off';
+
+export const UPDATE_SERVERS_SIDEBAR = 'update-servers-sidebar';
+export const UPDATE_SIDEBAR_MODAL = 'update-sidebar-modal';
+export const PREFERRED_THEME = 'preferred-theme';
+export const TEAMS_ORDER_PREFERENCE = 'teams-order-preference';
+export const TEAMS_ORDER_PREFERENCE_UPDATED = 'teams-order-updated';
+export const GET_SERVER_THEME = 'get-server-theme';
+export const TEAM_MOUSE_IN = 'team-mouse-in';
+export const TEAM_MOUSE_OUT = 'team-mouse-out';
+export const USER_LOCALE = 'user-locale';
+export const UPDATE_SERVERS_SIDEBAR_MODAL_SHORTCUT = 'update-servers-sidebar-modal-shortcut';

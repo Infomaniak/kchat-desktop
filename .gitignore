@@ -26,6 +26,11 @@ fastlane/report.xml
 *.provisionprofile
 
 .env
+
+# Sentry
 sentry.properties
-# Sentry Auth Token
 .env.sentry-build-plugin
+
+*.tsbuildinfo
+
+.eslintcache

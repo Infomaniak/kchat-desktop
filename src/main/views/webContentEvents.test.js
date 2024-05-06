@@ -5,12 +5,13 @@
 
 import {shell, BrowserWindow} from 'electron';
 
+import {getLevel} from 'common/log';
 import ContextMenu from 'main/contextMenu';
 import ViewManager from 'main/views/viewManager';
 
-import allowProtocolDialog from '../allowProtocolDialog';
-
 import {WebContentsEventManager} from './webContentEvents';
+
+import allowProtocolDialog from '../allowProtocolDialog';
 
 jest.mock('electron', () => ({
     app: {
@@ -62,15 +63,13 @@ describe('main/views/webContentsEvents', () => {
 
     describe('willNavigate', () => {
         const webContentsEventManager = new WebContentsEventManager();
+        webContentsEventManager.getServerURLFromWebContentsId = () => new URL('http://server-1.com');
         const willNavigate = webContentsEventManager.generateWillNavigate(1);
-
-        beforeEach(() => {
-            webContentsEventManager.getServerURLFromWebContentsId = jest.fn().mockImplementation(() => new URL('http://server-1.com'));
-        });
+        const popupWindowSpy = jest.spyOn(webContentsEventManager, 'isTrustedPopupWindow');
 
         afterEach(() => {
-            jest.resetAllMocks();
-            jest.restoreAllMocks();
+            event.preventDefault.mockClear();
+            popupWindowSpy.mockReset();
             webContentsEventManager.customLogins = {};
             webContentsEventManager.popupWindow = undefined;
         });
@@ -86,8 +85,7 @@ describe('main/views/webContentsEvents', () => {
         });
 
         it('should allow navigation when isTrustedPopup', () => {
-            const spy = jest.spyOn(webContentsEventManager, 'isTrustedPopupWindow');
-            spy.mockReturnValue(true);
+            popupWindowSpy.mockReturnValue(true);
             willNavigate(event, 'http://externalurl.com/popup/subpath');
             expect(event.preventDefault).not.toBeCalled();
         });
@@ -133,7 +131,7 @@ describe('main/views/webContentsEvents', () => {
         });
 
         afterEach(() => {
-            jest.resetAllMocks();
+            jest.clearAllMocks();
             webContentsEventManager.customLogins = {};
         });
 
@@ -173,7 +171,7 @@ describe('main/views/webContentsEvents', () => {
 
         afterEach(() => {
             webContentsEventManager.popupWindow = undefined;
-            jest.resetAllMocks();
+            jest.clearAllMocks();
         });
         it('should deny on bad URL', () => {
             expect(newWindow({url: 'a-bad<url'})).toStrictEqual({action: 'deny'});
@@ -241,6 +239,46 @@ describe('main/views/webContentsEvents', () => {
         it('should open external URIs in browser', () => {
             expect(newWindow({url: 'https://google.com'})).toStrictEqual({action: 'deny'});
             expect(shell.openExternal).toBeCalledWith('https://google.com');
+        });
+    });
+
+    describe('consoleMessage', () => {
+        const webContentsEventManager = new WebContentsEventManager();
+        const logObject = {
+            error: jest.fn(),
+            warn: jest.fn(),
+            debug: jest.fn(),
+            withPrefix: jest.fn().mockReturnThis(),
+        };
+        webContentsEventManager.log = jest.fn().mockReturnValue(logObject);
+        const consoleMessage = webContentsEventManager.generateHandleConsoleMessage();
+
+        afterEach(() => {
+            getLevel.mockReset();
+        });
+
+        it('should respect logging levels', () => {
+            consoleMessage({}, 0, 'test0', 0, '');
+            expect(logObject.debug).toHaveBeenCalledWith('test0');
+
+            consoleMessage({}, 1, 'test1', 0, '');
+            expect(logObject.debug).toHaveBeenCalledWith('test1');
+
+            consoleMessage({}, 2, 'test2', 0, '');
+            expect(logObject.warn).toHaveBeenCalledWith('test2');
+
+            consoleMessage({}, 3, 'test3', 0, '');
+            expect(logObject.error).toHaveBeenCalledWith('test3');
+        });
+
+        it('should only add line numbers for debug and silly', () => {
+            getLevel.mockReturnValue('debug');
+            consoleMessage({}, 0, 'test1', 42, 'meaning_of_life.js');
+            expect(logObject.debug).toHaveBeenCalledWith('test1', '(meaning_of_life.js:42)');
+
+            getLevel.mockReturnValue('warn');
+            consoleMessage({}, 0, 'test2', 42, 'meaning_of_life.js');
+            expect(logObject.warn).not.toHaveBeenCalledWith('test2', '(meaning_of_life.js:42)');
         });
     });
 });

@@ -1,13 +1,12 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserView, dialog, ipcMain, IpcMainEvent, IpcMainInvokeEvent, shell, BrowserWindow, session} from 'electron';
+import type {IpcMainEvent, IpcMainInvokeEvent} from 'electron';
+import {BrowserView, dialog, ipcMain, session, shell} from 'electron';
 import isDev from 'electron-is-dev';
 
 import ServerViewState from 'app/serverViewState';
-
 import AppState from 'common/appState';
-import {SECOND, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import {
     UPDATE_TARGET_URL,
     LOAD_SUCCESS,
@@ -49,25 +48,27 @@ import {
 } from 'common/communication';
 import Config from 'common/config';
 import {Logger} from 'common/log';
-import Utils from 'common/utils/util';
-import {MattermostServer} from 'common/servers/MattermostServer';
+import type {MattermostServer} from 'common/servers/MattermostServer';
 import ServerManager from 'common/servers/serverManager';
-import {MattermostView, TAB_MESSAGING} from 'common/views/View';
+import {SECOND, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import {getFormattedPathName, parseURL} from 'common/utils/url';
-
+import Utils from 'common/utils/util';
+import type {MattermostView} from 'common/views/View';
+import {TAB_MESSAGING} from 'common/views/View';
+import {flushCookiesStore} from 'main/app/utils';
 import {localizeMessage} from 'main/i18nManager';
-import MainWindow from 'main/windows/mainWindow';
-
-import {getLocalURLString, getLocalPreload, getAdjustedWindowBoundaries, shouldHaveBackBar} from '../utils';
-
 import TokenManager from 'main/tokenManager';
 import callDialingWindow from 'main/windows/callDialingWindow';
 
 import KmeetCallWindow from 'main/windows/kmeetCallWindow';
+import MainWindow from 'main/windows/mainWindow';
 
 import LoadingScreen from './loadingScreen';
-import modalManager from './modalManager';
 import {MattermostBrowserView} from './MattermostBrowserView';
+import modalManager from './modalManager';
+import ServersSidebar from './serversSidebar';
+
+import {getLocalURLString, getLocalPreload, getAdjustedWindowBoundaries, shouldHaveBackBar} from '../utils';
 
 const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
@@ -171,6 +172,10 @@ export class ViewManager {
                 newView.show();
                 if (newView.needsLoadingScreen()) {
                     LoadingScreen.show();
+
+                    if (!TokenManager.hasToken()) {
+                        ServersSidebar.hide();
+                    }
                 }
             }
             hidePrevious?.();
@@ -202,16 +207,16 @@ export class ViewManager {
             LoadingScreen.show();
             currentView.reload();
         }
-    }
+    };
 
     resetTeams = () => {
         ServerManager.reloadFromConfig();
-    }
+    };
 
     handleThemeChanged = (_view: any, _viewId: any, data: object) => {
         Config.set('theme', data);
         viewManager.sendToAllViews(THEME_CHANGED, data);
-    }
+    };
 
     handleCallJoined = (_: IpcMainEvent, message: any) => {
         //TODO: kMeet integration V2 => open call in a new window.
@@ -225,12 +230,12 @@ export class ViewManager {
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
         this.callWindow.loadURL(message.url);
         windowManager.sendToMattermostViews(CALL_JOINED, message);*/
-    }
+    };
 
     handleCallJoinedBrowser = (_: IpcMainEvent, message: any) => {
         this.sendToAllViews(CALL_JOINED, message);
         this.destroyCallWindow();
-    }
+    };
 
     handleCallDialing = (_: IpcMainEvent, message: any) => {
         callDialingWindow.create(message);
@@ -239,7 +244,7 @@ export class ViewManager {
     handleCallDeclined = (_: IpcMainEvent, message: unknown) => {
         this.sendToAllViews(CALL_DECLINED, message);
         this.destroyCallWindow();
-    }
+    };
 
     handleCallApiAvailable = (_: IpcMainEvent, message: unknown) => {
         this.getCurrentView()?.sendToRenderer(CALL_API_AVAILABLE, message);
@@ -253,16 +258,16 @@ export class ViewManager {
         if (message.token) {
             TokenManager.handleStoreToken(event, message);
         }
-    }
+    };
 
     handleResetToken = () => {
         TokenManager.reset();
-    }
+    };
 
     handleTokenRequest = () => {
         const token = TokenManager.getToken();
         return token;
-    }
+    };
 
     handleRevokeToken = async () => {
         const token = TokenManager.getToken();
@@ -410,6 +415,7 @@ export class ViewManager {
         if (this.currentView === viewId) {
             this.showById(this.currentView);
             LoadingScreen.fade();
+            ServersSidebar.show();
         }
     };
 
@@ -419,6 +425,7 @@ export class ViewManager {
         LoadingScreen.fade();
         if (this.currentView === viewId) {
             this.getCurrentView()?.hide();
+            ServersSidebar.hide();
         }
     };
 
@@ -459,11 +466,7 @@ export class ViewManager {
                     log.error('Failed to remove URL view', e);
                 }
 
-                // workaround to eliminate zombie processes
-                // https://github.com/mattermost/desktop/pull/1519
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                urlView.webContents.destroy();
+                urlView.webContents.close();
             };
 
             const adjustWidth = (event: IpcMainEvent, width: number) => {
@@ -580,11 +583,24 @@ export class ViewManager {
     };
 
     private handleAppLoggedIn = (event: IpcMainEvent) => {
-        this.getViewByWebContentsId(event.sender.id)?.onLogin(true);
+        log.debug('handleAppLoggedIn', event.sender.id);
+        const view = this.getViewByWebContentsId(event.sender.id);
+        if (!view) {
+            return;
+        }
+        view.onLogin(true);
+        flushCookiesStore();
     };
 
     private handleAppLoggedOut = (event: IpcMainEvent) => {
-        this.getViewByWebContentsId(event.sender.id)?.onLogin(false);
+        log.debug('handleAppLoggedOut', event.sender.id);
+        const view = this.getViewByWebContentsId(event.sender.id);
+        if (!view) {
+            return;
+        }
+        view.onLogin(false);
+        AppState.clear(view.id);
+        flushCookiesStore();
     };
 
     private handleBrowserHistoryPush = (e: IpcMainEvent, pathName: string) => {
@@ -632,6 +648,7 @@ export class ViewManager {
         if (view) {
             view.setInitialized();
             if (this.getCurrentView() === view) {
+                ServersSidebar.show();
                 LoadingScreen.fade();
             }
         }
@@ -696,7 +713,7 @@ export class ViewManager {
 
         const currentView = this.getCurrentView();
         if (currentView && currentView.currentURL) {
-            const adjustedBounds = getAdjustedWindowBoundaries(newBounds.width, newBounds.height, shouldHaveBackBar(currentView.view.url, currentView.currentURL));
+            const adjustedBounds = getAdjustedWindowBoundaries(newBounds.width, newBounds.height, shouldHaveBackBar(currentView.view.url, currentView.currentURL), ServersSidebar.shouldDisplaySidebar);
             currentView.setBounds(adjustedBounds);
         }
     };

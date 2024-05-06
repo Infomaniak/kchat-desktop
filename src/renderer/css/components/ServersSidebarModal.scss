@@ -1,0 +1,41 @@
+@import url("../fonts.css");
+@import url("../_css_variables.scss");
+
+body {
+    font-family: "Open Sans", sans-serif;
+}
+
+.ShortcutTooltip {
+    width: fit-content;
+    padding: 5px;
+    margin: 0;
+    background-color: #000;
+    border-radius: 5px;
+    display: none;
+
+    &.isOpen {
+        display: block;
+    }
+
+    &__name {
+        font-size: 12px;
+        color: #FFF;
+    }
+
+    &__shortcut {
+        font-size: 12px;
+        color: #FFF;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+    }
+
+    &__item {
+        display: inline-block;
+        background-color: rgba(255, 255, 255, 0.08);
+        color: rgba(255, 255, 255, 0.72);
+        padding: 3px;
+    }
+}

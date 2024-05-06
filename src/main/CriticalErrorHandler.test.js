@@ -3,7 +3,6 @@
 'use strict';
 
 import {spawn} from 'child_process';
-
 import path from 'path';
 
 import {app, dialog} from 'electron';
@@ -42,10 +41,16 @@ jest.mock('main/i18nManager', () => ({
 
 describe('main/CriticalErrorHandler', () => {
     const criticalErrorHandler = new CriticalErrorHandler();
+    const env = process.env;
 
     describe('processUncaughtExceptionHandler', () => {
         beforeEach(() => {
             app.isReady.mockImplementation(() => true);
+            process.env = {...env, NODE_ENV: 'jest'};
+        });
+
+        afterAll(() => {
+            process.env = env;
         });
 
         it('should throw error if app is not ready', () => {
