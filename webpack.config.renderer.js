@@ -198,9 +198,9 @@ module.exports = merge(base, {
             type: 'asset/resource',
         }],
     },
-    externals: {
-        '@infomaniak/jitsi-meet-electron-sdk': 'require("@infomaniak/jitsi-meet-electron-sdk")',
-    },
+    externals: [{
+        '@infomaniak/jitsi-meet-electron-sdk': 'require(\'@infomaniak/jitsi-meet-electron-sdk\')',
+    }],
     node: {
         __filename: false,
         __dirname: false,

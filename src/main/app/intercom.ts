@@ -16,9 +16,9 @@ import MainWindow from 'main/windows/mainWindow';
 
 import type {UniqueServer} from 'types/config';
 
-import KmeetCallWindow from 'main/windows/kmeetCallWindow';
-
 import {handleAppBeforeQuit} from './app';
+
+import KmeetCallWindow from '../windows/kmeetCallWindow';
 
 const log = new Logger('App.Intercom');
 

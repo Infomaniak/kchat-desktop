@@ -12,12 +12,11 @@ import {
     // initPopupsConfigurationRender,
     setupPowerMonitorRender,
 } from '@infomaniak/jitsi-meet-electron-sdk';
-
 import {ipcRenderer} from 'electron';
 
-import JitsiMeetExternalAPI from 'common/utils/external_api';
-import {KMEET_ORIGIN} from 'common/utils/constants';
 import {CALL_ENDED} from 'common/communication';
+import {KMEET_ORIGIN} from 'common/utils/constants';
+import JitsiMeetExternalAPI from 'common/utils/external_api';
 
 /**
  * Setup the renderer process.

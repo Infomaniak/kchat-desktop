@@ -6,30 +6,24 @@
 
 import url from 'url';
 
-import {app, BrowserWindow, ipcMain, shell} from 'electron';
-
 import {
     initPopupsConfigurationMain,
     setupAlwaysOnTopMain,
     setupPowerMonitorMain,
     setupScreenSharingMain,
     getPopupTarget,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
 } from '@infomaniak/jitsi-meet-electron-sdk';
+import {app, BrowserWindow, ipcMain, shell} from 'electron';
+
+import CallDialingWindow from './callDialingWindow';
+import MainWindow from './mainWindow';
 
 import electronBuilder from '../../../electron-builder.json';
-
+import ServerViewState from '../../app/serverViewState';
+import {CALL_ENDED, CALL_RING_CLOSE_WINDOW, CALL_RING_WINDOW_IS_OPEN} from '../../common/communication';
+import {Logger} from '../../common/log';
 import {composeUserAgent, getLocalPreload, getLocalURLString} from '../utils';
-import {Logger} from 'common/log';
-
-import ServerViewState from 'app/serverViewState';
-
-import ViewManager from 'main/views/viewManager';
-import {CALL_ENDED, CALL_RING_CLOSE_WINDOW, CALL_RING_WINDOW_IS_OPEN} from 'common/communication';
-
-import MainWindow from './mainWindow';
-import CallDialingWindow from './callDialingWindow';
+import ViewManager from '../views/viewManager';
 
 const log = new Logger('KmeetCallWindow');
 
@@ -57,8 +51,8 @@ export function openExternalLink(link: string) {
 }
 
 class KmeetCallWindow {
-    private callWindow?: BrowserWindow
-    private callInfo?: object
+    private callWindow?: BrowserWindow;
+    private callInfo?: object;
 
     constructor() {
         ipcMain.handle('get-call-info', () => this.callInfo);
@@ -96,7 +90,7 @@ class KmeetCallWindow {
                 session,
                 sandbox: false,
                 enableBlinkFeatures: 'WebAssemblyCSP',
-                nodeIntegration: false,
+                nodeIntegration: true,
                 contextIsolation: false,
             },
         });
@@ -155,19 +149,19 @@ class KmeetCallWindow {
     private handleCallEnded = (_: any, message: any) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_ENDED, message);
-    }
+    };
 
     private closeRingWindow = () => {
         CallDialingWindow.destroy();
-    }
+    };
 
     private handleCloseRingWindow = () => {
         this.closeRingWindow();
-    }
+    };
 
     private handleIsCallWindowOpen = () => {
         return CallDialingWindow.isClosable();
-    }
+    };
 }
 
 const kmeetCallWindow = new KmeetCallWindow();

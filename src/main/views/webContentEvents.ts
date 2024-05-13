@@ -32,11 +32,11 @@ import ContextMenu from 'main/contextMenu';
 import ViewManager from 'main/views/viewManager';
 import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 import MainWindow from 'main/windows/mainWindow';
+import mainWindow from 'main/windows/mainWindow';
 
 import {protocols} from '../../../electron-builder.json';
 import allowProtocolDialog from '../allowProtocolDialog';
 import {composeUserAgent, getLocalPreload} from '../utils';
-import mainWindow from 'main/windows/mainWindow';
 
 type CustomLogin = {
     inProgress: boolean;
@@ -217,8 +217,9 @@ export class WebContentsEventManager {
                 return {action: 'deny'};
             }
 
-            // const isKmeet = isKmeetUrl(serverURL, parsedURL);
-            const isKmeet = true;
+            const isKmeet = isKmeetUrl(serverURL, parsedURL);
+
+            // const isKmeet = true;
 
             if (isTeamUrl(serverURL, parsedURL, true) && !isKmeet) {
                 ViewManager.handleDeepLink(parsedURL);

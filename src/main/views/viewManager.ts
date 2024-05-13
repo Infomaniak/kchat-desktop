@@ -59,7 +59,6 @@ import {flushCookiesStore} from 'main/app/utils';
 import {localizeMessage} from 'main/i18nManager';
 import TokenManager from 'main/tokenManager';
 import callDialingWindow from 'main/windows/callDialingWindow';
-
 import KmeetCallWindow from 'main/windows/kmeetCallWindow';
 import MainWindow from 'main/windows/mainWindow';
 
@@ -239,7 +238,7 @@ export class ViewManager {
 
     handleCallDialing = (_: IpcMainEvent, message: any) => {
         callDialingWindow.create(message);
-    }
+    };
 
     handleCallDeclined = (_: IpcMainEvent, message: unknown) => {
         this.sendToAllViews(CALL_DECLINED, message);
@@ -248,11 +247,11 @@ export class ViewManager {
 
     handleCallApiAvailable = (_: IpcMainEvent, message: unknown) => {
         this.getCurrentView()?.sendToRenderer(CALL_API_AVAILABLE, message);
-    }
+    };
 
     destroyCallWindow = () => {
         callDialingWindow.destroy();
-    }
+    };
 
     handleTokenRefreshed = (event: IpcMainEvent, message: any) => {
         if (message.token) {

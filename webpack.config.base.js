@@ -8,7 +8,6 @@ const path = require('path');
 const {
     sentryWebpackPlugin,
 } = require('@sentry/webpack-plugin');
-
 const webpack = require('webpack');
 
 const VERSION = childProcess.execSync('git rev-parse --short HEAD', {cwd: __dirname}).toString();

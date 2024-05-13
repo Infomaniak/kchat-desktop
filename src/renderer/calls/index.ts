@@ -4,6 +4,7 @@
 /* eslint-disable import/no-commonjs */
 
 import path from 'path';
+
 import {EventEmitter} from 'events';
 
 class CallRenderer extends EventEmitter {

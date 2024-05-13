@@ -10,9 +10,14 @@ module.exports = merge(base, {
     entry: {
         internalAPI: './src/main/preload/internalAPI.js',
         externalAPI: './src/main/preload/externalAPI.ts',
+        call: './src/main/preload/call.js',
+        callDial: './src/main/preload/callDial.js',
     },
     externalsPresets: {
         electronPreload: true,
+    },
+    externals: {
+        '@infomaniak/jitsi-meet-electron-sdk': 'require("@infomaniak/jitsi-meet-electron-sdk")',
     },
     node: {
         __filename: true,

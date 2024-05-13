@@ -17,7 +17,6 @@
     "main": "index.js"
   },
   "files": [
-    "!node_modules/**/*",
     "node_modules/bindings/**/*",
     "node_modules/file-uri-to-path/**/*",
     "node_modules/macos-notification-state/**/*",
@@ -57,7 +56,9 @@
   },
   "asarUnpack": [
     "./node_modules/macos-notification-state/build/Release/**/*.node",
-    "./node_modules/windows-focus-assist/build/Release/**/*.node"
+    "./node_modules/windows-focus-assist/build/Release/**/*.node",
+    "./node_modules/@infomaniak/jitsi-meet-electron-sdk/prebuilds/**/*.node",
+    "./node_modules/@jitsi/robotjs/prebuilds/**/*.node"
   ],
   "linux": {
     "category": "Network;InstantMessaging",
