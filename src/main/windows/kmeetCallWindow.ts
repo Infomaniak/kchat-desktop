@@ -62,8 +62,11 @@ class KmeetCallWindow {
     }
 
     create(callInfo: object) {
+        console.log(callInfo.subject);
         const mainWindow = MainWindow.get();
         const currentServer = ServerViewState!.getCurrentServer();
+
+        log.info('callInfo', callInfo);
 
         if (!mainWindow || !currentServer) {
             log.error('Main window does not exist');
@@ -82,7 +85,9 @@ class KmeetCallWindow {
         const session = mainWindow.webContents.session;
 
         this.callWindow = new BrowserWindow({
-            parent: mainWindow,
+
+            // parent: mainWindow,
+            title: callInfo.subject,
             show: true,
             center: true,
             webPreferences: {
