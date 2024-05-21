@@ -25,6 +25,70 @@ import {Logger} from '../../common/log';
 import {composeUserAgent, getLocalPreload, getLocalURLString} from '../utils';
 import ViewManager from '../views/viewManager';
 
+type CallInfoNotifyProps = {
+    push: string;
+    email: string;
+    channel: string;
+    desktop: string;
+    comments: string;
+    first_name: string;
+    push_status: string;
+    mention_keys: string;
+    push_threads: string;
+    desktop_sound: string;
+    email_threads: string;
+    desktop_threads: string;
+    desktop_notification_sound: string;
+};
+
+type CallInfoTimezone = {
+    automaticTimezone: string;
+    manualTimezone: string;
+    useAutomaticTimezone: string;
+};
+
+type CallInfoProps = {
+    show_last_active: string;
+    customStatus: string;
+};
+
+type CallInfoUser = {
+    id: string;
+    user_id: number;
+    team_id: string;
+    create_at: number;
+    update_at: number;
+    delete_at: number;
+    last_picture_update: number;
+    username: string;
+    email: string;
+    nickname: string;
+    is_bot: boolean;
+    first_name: string;
+    last_name: string;
+    roles: string;
+    auth_data: string;
+    auth_service: string;
+    position: string;
+    allow_marketing: boolean;
+    notify_props: CallInfoNotifyProps;
+    last_password_update: number;
+    locale: string;
+    props: CallInfoProps;
+    timezone: CallInfoTimezone;
+    disable_welcome_email: boolean;
+};
+
+export interface CallInfo {
+    avatar: string;
+    user: CallInfoUser;
+    channelID: string;
+    conferenceId: string;
+    name: string;
+    locale: string;
+    jwt: string;
+}
+
 const log = new Logger('KmeetCallWindow');
 
 /**
@@ -52,7 +116,7 @@ export function openExternalLink(link: string) {
 
 class KmeetCallWindow {
     private callWindow?: BrowserWindow;
-    private callInfo?: object;
+    private callInfo?: CallInfo;
 
     constructor() {
         ipcMain.handle('get-call-info', () => this.callInfo);
@@ -62,8 +126,7 @@ class KmeetCallWindow {
         ipcMain.handle(CALL_RING_WINDOW_IS_OPEN, this.handleIsCallWindowOpen);
     }
 
-    create(callInfo: object) {
-        console.log(callInfo.subject);
+    create(callInfo: CallInfo) {
         const mainWindow = MainWindow.get();
         const currentServer = ServerViewState!.getCurrentServer();
 
@@ -88,7 +151,7 @@ class KmeetCallWindow {
         this.callWindow = new BrowserWindow({
 
             // parent: mainWindow,
-            title: callInfo.subject,
+            title: callInfo.name,
             show: true,
             center: true,
             webPreferences: {
@@ -103,7 +166,6 @@ class KmeetCallWindow {
 
         this.callInfo = callInfo;
 
-        this.callWindow.setTitle('Kmeet');
         const localURL = getLocalURLString('call.html');
         this.callWindow.loadURL(localURL, {
             userAgent: composeUserAgent(),

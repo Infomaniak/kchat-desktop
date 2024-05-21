@@ -1,6 +1,7 @@
 /* eslint-disable header/header */
 
 declare module '@infomaniak/jitsi-meet-electron-sdk' {
+    import type {BrowserWindow} from 'electron';
     import type {_JitsiMeetExternalAPI} from 'jitsi-meet';
 
     export class RemoteControl {
@@ -20,13 +21,13 @@ declare module '@infomaniak/jitsi-meet-electron-sdk' {
     }
 
     export function setupScreenSharingRender(api: _JitsiMeetExternalAPI): void;
-    export function setupScreenSharingMain(api: _JitsiMeetExternalAPI): void;
+    export function setupScreenSharingMain(window: BrowserWindow, appName: string, appId: string): void;
     export function cleanupAlwaysOnTopMain(api: _JitsiMeetExternalAPI): void;
     export function setupAlwaysOnTopRender(api: _JitsiMeetExternalAPI): void;
-    export function setupAlwaysOnTopMain(api: _JitsiMeetExternalAPI): void;
-    export function cleanupPowerMonitorMain(api: _JitsiMeetExternalAPI): void;
+    export function setupAlwaysOnTopMain(window: BrowserWindow, _?: unknown, windowOpenHandler: ({url, frameName}: {url: string; frameName: string}) => void): void;
+    export function cleanupPowerMonitorMain(window: BrowserWindow): void;
     export function setupPowerMonitorRender(api: _JitsiMeetExternalAPI): void;
-    export function setupPowerMonitorMain(api: _JitsiMeetExternalAPI): void;
+    export function setupPowerMonitorMain(window: BrowserWindow): void;
 
     export interface PopupsConfigRegistry {
 
