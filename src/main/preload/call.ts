@@ -19,7 +19,6 @@ import type {
     JitsiMeetExternalAPI as _JitsiMeetExternalAPI,
     ExternalAPIOptions as _ExternalAPIOptions,
     Config as _Config,
-    InterfaceConfig as _InterfaceConfig,
 } from 'jitsi-meet';
 
 import {CALL_ENDED, CALL_READY_TO_CLOSE} from 'common/communication';
@@ -53,16 +52,8 @@ type CallInfo = {
     avatar: string;
 }
 
-interface InterfaceConfig extends _InterfaceConfig {
-
-    // XXX: It is unclear whether this is a typo of TOOLBAR_BUTTONS or if its just really undocumented,
-    // either way it is missing in types, yet we try and use it
-    MAIN_TOOLBAR_BUTTONS?: string[];
-}
-
 interface ExternalAPIOptions extends _ExternalAPIOptions {
     configOverwrite?: Config;
-    interfaceConfigOverwrite?: InterfaceConfig;
 
     // Jitsi's types are missing these fields
     lang?: string;
@@ -95,6 +86,7 @@ function setupRenderer(parentNode: Element, callInfo: CallInfo) {
             prejoinPageEnabled: false,
             localSubject: callInfo.name,
             disableInviteFunctions: true,
+            disableAGC: true,
         },
         jwt: callInfo.jwt,
     };
@@ -123,8 +115,7 @@ const onErrorOccurred = ({error}: Parameters<ExternalAPIEventCallbacks['errorOcc
     if (error.isFatal) {
         console.log(error);
 
-        // We got disconnected. Since Jitsi Meet might send us back to the
-        // prejoin screen, we're forced to act as if we hung up entirely.
+        ipcRenderer.send(CALL_READY_TO_CLOSE);
     }
 };
 

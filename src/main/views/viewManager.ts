@@ -73,7 +73,7 @@ const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
 const URL_VIEW_HEIGHT = 20;
 export class ViewManager {
-    private closedViews: Map<string, { srv: MattermostServer; view: MattermostView }>;
+    private closedViews: Map<string, {srv: MattermostServer; view: MattermostView}>;
     private views: Map<string, MattermostBrowserView>;
     private currentView?: string;
     private callWindow?: BrowserWindow | null;

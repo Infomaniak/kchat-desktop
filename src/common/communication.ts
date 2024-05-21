@@ -116,6 +116,7 @@ export const UPDATE_URL_VIEW_WIDTH = 'update-url-view-width';
 export const CALL_JOINED_BROWSER = 'call-joined-browser';
 export const CALL_JOINED = 'call-joined';
 export const CALL_ENDED = 'call-ended';
+export const CALL_READY_TO_CLOSE = 'call-ready-to-close';
 export const CALL_DECLINED = 'call-declined';
 export const CALL_API_AVAILABLE = 'call-api-available';
 export const CALL_COMMAND = 'call-command';
