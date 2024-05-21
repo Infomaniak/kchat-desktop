@@ -69,12 +69,6 @@ interface ExternalAPIOptions extends _ExternalAPIOptions {
     sandbox?: string;
 }
 
-declare module '@infomaniak/jitsi-meet-electron-sdk' {
-    interface Context {
-        setupScreenSharingRender: (api: _JitsiMeetExternalAPI) => void;
-    }
-}
-
 let api: _JitsiMeetExternalAPI | undefined;
 
 /**
