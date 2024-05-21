@@ -141,6 +141,7 @@
         "@sentry/webpack-plugin": "2.16.1",
         "@types/auto-launch": "5.0.5",
         "@types/jest": "29.4.1",
+        "@types/jitsi-meet": "^2.0.5",
         "@types/react": "17.0.43",
         "@types/react-beautiful-dnd": "13.1.8",
         "@types/react-dom": "17.0.14",

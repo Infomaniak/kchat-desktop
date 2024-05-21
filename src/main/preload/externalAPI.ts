@@ -6,8 +6,6 @@ import {contextBridge, ipcRenderer, webFrame} from 'electron';
 
 import type {DesktopAPI} from '@mattermost/desktop-api';
 
-import {CallInfo} from 'types/callsIk';
-
 import {
     NOTIFY_MENTION,
     IS_UNREAD,
@@ -75,6 +73,7 @@ import {
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
+import type {CallInfo} from 'types/callsIk';
 import type {ExternalAPI} from 'types/externalAPI';
 
 const createListener: ExternalAPI['createListener'] = (channel: string, listener: (...args: never[]) => void) => {

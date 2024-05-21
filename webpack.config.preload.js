@@ -10,7 +10,7 @@ module.exports = merge(base, {
     entry: {
         internalAPI: './src/main/preload/internalAPI.js',
         externalAPI: './src/main/preload/externalAPI.ts',
-        call: './src/main/preload/call.js',
+        call: './src/main/preload/call.ts',
         callDial: './src/main/preload/callDial.js',
     },
     externalsPresets: {

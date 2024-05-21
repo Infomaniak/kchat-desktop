@@ -20,7 +20,7 @@ import MainWindow from './mainWindow';
 
 import electronBuilder from '../../../electron-builder.json';
 import ServerViewState from '../../app/serverViewState';
-import {CALL_ENDED, CALL_RING_CLOSE_WINDOW, CALL_RING_WINDOW_IS_OPEN} from '../../common/communication';
+import {CALL_ENDED, CALL_READY_TO_CLOSE, CALL_RING_CLOSE_WINDOW, CALL_RING_WINDOW_IS_OPEN} from '../../common/communication';
 import {Logger} from '../../common/log';
 import {composeUserAgent, getLocalPreload, getLocalURLString} from '../utils';
 import ViewManager from '../views/viewManager';
@@ -57,6 +57,7 @@ class KmeetCallWindow {
     constructor() {
         ipcMain.handle('get-call-info', () => this.callInfo);
         ipcMain.on(CALL_ENDED, this.handleCallEnded);
+        ipcMain.on(CALL_READY_TO_CLOSE, this.handleCallEnded);
         ipcMain.on(CALL_RING_CLOSE_WINDOW, this.handleCloseRingWindow);
         ipcMain.handle(CALL_RING_WINDOW_IS_OPEN, this.handleIsCallWindowOpen);
     }
