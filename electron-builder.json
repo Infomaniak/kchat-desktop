@@ -164,7 +164,7 @@
     "artifactName": "${name}-setup-${version}-${arch}.${ext}"
   },
   "win": {
-    "certificateSubjectName": "INFOMANIAK NETWORK SA",
+    "certificateSubjectName": "Infomaniak Network SA",
     "target": [
       "nsis",
       "zip"
