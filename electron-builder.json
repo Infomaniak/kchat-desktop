@@ -177,7 +177,7 @@
         ]
       }
     ],
-    "publisherName": "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH"
+    "publisherName": "CN=\"Infomaniak Network SA\", O=\"Infomaniak Network SA\", S=Genève, C=CH"
   },
   "nsis": {
     "artifactName": "${name}-setup-${version}-win.${ext}",
