@@ -7,8 +7,7 @@
 import {
     setupScreenSharingRender,
     setupAlwaysOnTopRender,
-
-    // RemoteControl,
+    RemoteDraw,
     initPopupsConfigurationRender,
     setupPowerMonitorRender,
 } from '@infomaniak/jitsi-meet-electron-sdk';
@@ -24,6 +23,11 @@ import type {
 import {CALL_ENDED, CALL_READY_TO_CLOSE} from 'common/communication';
 import {KMEET_ORIGIN} from 'common/utils/constants';
 import JitsiMeetExternalAPI from 'common/utils/external_api';
+
+const whitelistedIpcChannels = [
+    'protocol-data-msg',
+    'renderer-ready',
+];
 
 interface Config extends _Config {
 
@@ -98,6 +102,8 @@ function setupRenderer(parentNode: Element, callInfo: CallInfo) {
     setupAlwaysOnTopRender(api);
     setupPowerMonitorRender(api);
 
+    new RemoteDraw(api); // eslint-disable-line no-new
+
     api.executeCommand('avatarUrl', callInfo.avatar);
 
     api.on('videoConferenceLeft', () => ipcRenderer.send(CALL_ENDED, callInfo));
@@ -123,4 +129,27 @@ window.jitsiNodeAPI = {
     setupRenderer,
     getCallInfo: () => ipcRenderer.invoke('get-call-info'),
     onLoadServerUrl: (listener) => ipcRenderer.on('load-server-url', (_, url) => listener(url)),
+    ipc: {
+        on: (channel, listener) => {
+            if (!whitelistedIpcChannels.includes(channel)) {
+                return;
+            }
+
+            return ipcRenderer.on(channel, listener);
+        },
+        send: (channel) => {
+            if (!whitelistedIpcChannels.includes(channel)) {
+                return;
+            }
+
+            return ipcRenderer.send(channel);
+        },
+        removeListener: (channel, listener) => {
+            if (!whitelistedIpcChannels.includes(channel)) {
+                return;
+            }
+
+            return ipcRenderer.removeListener(channel, listener);
+        },
+    },
 };

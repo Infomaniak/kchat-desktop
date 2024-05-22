@@ -17,7 +17,7 @@ declare module '@infomaniak/jitsi-meet-electron-sdk' {
     }
 
     export class RemoteDrawMain {
-        constructor(api: _JitsiMeetExternalAPI);
+        constructor(window: BrowserWindow);
     }
 
     export function setupScreenSharingRender(api: _JitsiMeetExternalAPI): void;

@@ -12,6 +12,7 @@ import {
     setupPowerMonitorMain,
     setupScreenSharingMain,
     getPopupTarget,
+    RemoteDrawMain,
 } from '@infomaniak/jitsi-meet-electron-sdk';
 import {app, BrowserWindow, ipcMain, shell} from 'electron';
 
@@ -199,6 +200,7 @@ class KmeetCallWindow {
         setupAlwaysOnTopMain(this.callWindow, null, windowOpenHandler);
         setupPowerMonitorMain(this.callWindow);
         setupScreenSharingMain(this.callWindow, app.getName(), electronBuilder.appId);
+        new RemoteDrawMain(this.callWindow); // eslint-disable-line no-new
     }
 
     destroy() {
