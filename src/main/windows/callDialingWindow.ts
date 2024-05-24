@@ -4,14 +4,14 @@
 import {BrowserWindow, ipcMain} from 'electron';
 import log from 'electron-log';
 
-import {CallInfo} from 'types/callsIk';
-
-import {getLocalPreload, getLocalURLString} from '../utils';
 import {CALL_CANCEL, CALL_DECLINED, CALL_DIAL_UPDATED, CALL_JOINED} from 'common/communication';
-
 import ViewManager from 'main/views/viewManager';
 
+import type {CallInfo} from 'types/callsIk';
+
 import MainWindow from './mainWindow';
+
+import {getLocalPreload, getLocalURLString} from '../utils';
 
 class CallDialingWindow {
     private window?: BrowserWindow;
@@ -23,7 +23,7 @@ class CallDialingWindow {
         ipcMain.on(CALL_DIAL_UPDATED, this.handleCallInfoUpdated);
     }
 
-    create(callInfo: object) {
+    create(callInfo: CallInfo) {
         if (this.window) {
             return this.window;
         }
@@ -61,6 +61,9 @@ class CallDialingWindow {
 
         callDialWindow.webContents.once('dom-ready', () => callDialWindow?.show());
         callDialWindow.webContents.on('did-finish-load', () => callDialWindow.webContents.send('info-received', callInfo));
+        callDialWindow.on('close', (e) => {
+            this.handleCallDeclined(e, callInfo);
+        });
 
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
 

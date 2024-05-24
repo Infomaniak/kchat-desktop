@@ -4,12 +4,12 @@
 /* eslint-disable max-lines */
 
 import React from 'react';
-
-import {FormattedMessage, IntlShape, injectIntl} from 'react-intl';
-
-import {CallInfo, UserProfile} from 'types/callsIk';
+import type {IntlShape} from 'react-intl';
+import {FormattedMessage, injectIntl} from 'react-intl';
 
 import {playSoundLoop} from 'renderer/notificationSounds';
+
+import type {CallInfo, UserProfile} from 'types/callsIk';
 
 import Avatars from './Avatars/Avatars';
 import {CallAccept, CallHangUp} from './icons';
@@ -55,11 +55,6 @@ class DialingModal extends React.PureComponent<Props, State> {
             const {callInfo} = this.state;
             window.dialApi.callDeclined(callInfo);
         }, 30000);
-    }
-
-    componentWillUnmount(): void {
-        const {callInfo} = this.state;
-        window.dialApi.callDeclined(callInfo);
     }
 
     onHandleDecline() {
