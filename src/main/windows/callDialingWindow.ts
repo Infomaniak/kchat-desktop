@@ -14,7 +14,7 @@ import ViewManager from 'main/views/viewManager';
 import MainWindow from './mainWindow';
 
 class CallDialingWindow {
-    private window?: BrowserWindow
+    private window?: BrowserWindow;
 
     constructor() {
         ipcMain.on(CALL_JOINED, this.handleCallAccepted);
@@ -85,22 +85,22 @@ class CallDialingWindow {
 
     private handleCallInfoUpdated = (_: any, callInfo: CallInfo) => {
         ViewManager.sendToAllViews(CALL_DIAL_UPDATED, callInfo);
-    }
+    };
 
     private handleCallDeclined = (_: any, callInfo: CallInfo) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_DECLINED, callInfo);
-    }
+    };
 
     private handleCallAccepted = (_: any, callInfo: CallInfo) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_JOINED, callInfo);
-    }
+    };
 
     private handleCallCancel = (_: any, callInfo: CallInfo) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_CANCEL, callInfo);
-    }
+    };
 }
 
 const callDialingWindow = new CallDialingWindow();

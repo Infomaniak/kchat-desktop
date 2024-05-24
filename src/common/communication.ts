@@ -122,6 +122,7 @@ export const CALL_API_AVAILABLE = 'call-api-available';
 export const CALL_COMMAND = 'call-command';
 export const CALL_CLOSED = 'call-closed';
 export const CALL_RINGING = 'call-ringing';
+export const CALL_RINGING_CANCEL = 'call-ringing-cancel';
 export const CALL_ACCEPTED = 'call-accepted';
 export const CALL_DIAL_UPDATED = 'call-dial-updated';
 export const CALL_CANCEL = 'call-cancel';

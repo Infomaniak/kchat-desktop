@@ -70,10 +70,11 @@ import {
     CALL_RING_WINDOW_IS_OPEN,
     CALL_CANCEL,
     SWITCH_SERVER_SIDEBAR,
+    CALL_JOINED_BROWSER,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
+import type {CallInfo} from 'main/windows/kmeetCallWindow';
 
-import type {CallInfo} from 'types/callsIk';
 import type {ExternalAPI} from 'types/externalAPI';
 
 const createListener: ExternalAPI['createListener'] = (channel: string, listener: (...args: never[]) => void) => {
@@ -152,6 +153,7 @@ const desktopAPI: KchatDesktopApi = {
     isRingCallWindowOpen: () => ipcRenderer.invoke(CALL_RING_WINDOW_IS_OPEN),
 
     focusPopout: () => ipcRenderer.send(CALLS_POPOUT_FOCUS),
+    closeDial: () => ipcRenderer.send(CALL_JOINED_BROWSER),
 
     // Utility
     unregister: (channel) => ipcRenderer.removeAllListeners(channel),
