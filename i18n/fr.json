@@ -19,7 +19,7 @@
     "renderer.modals.call.accept": "Répondre",
     "renderer.modals.call.decline": "Décliner",
     "renderer.modals.call.cancel": "Raccrocher",
-    "renderer.modals.call.calling": "vous appelle",
+    "renderer.modals.call.calling": "Appel entrant...",
     "renderer.modals.call.waiting": "En attente...",
     "renderer.dropdown.servers": "Serveurs",
     "renderer.dropdown.addAServer": "Ajouter un serveur",

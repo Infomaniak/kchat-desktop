@@ -310,7 +310,7 @@
   "renderer.modals.call.accept": "Accept",
   "renderer.modals.call.decline": "Decline",
   "renderer.modals.call.cancel": "Hang Up",
-  "renderer.modals.call.calling": "is Calling",
+  "renderer.modals.call.calling": "Incoming call...",
   "renderer.modals.call.waiting": "Waiting...",
   "renderer.time.hours": "hours",
   "renderer.time.mins": "mins",

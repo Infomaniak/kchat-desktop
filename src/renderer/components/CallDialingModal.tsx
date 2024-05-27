@@ -45,7 +45,7 @@ class DialingModal extends React.PureComponent<Props, State> {
             this.setState({callInfo: msg,
                 trad: this.props.intl.formatMessage({
                     id: isCurrentUserCaller ? 'renderer.modals.call.waiting' : 'renderer.modals.call.calling',
-                    defaultMessage: isCurrentUserCaller ? 'Waiting...' : 'Is calling',
+                    defaultMessage: isCurrentUserCaller ? 'Waiting...' : 'Incoming call',
                 })});
         });
 
