@@ -3,8 +3,8 @@
 
 import path from 'path';
 
-import {dialog, ipcMain, app, nativeImage, shell, BrowserWindow} from 'electron';
-import type {ProgressInfo, UpdateInfo, UpdateFileInfo} from 'electron-updater';
+import {dialog, ipcMain, app, nativeImage} from 'electron';
+import type {ProgressInfo, UpdateInfo} from 'electron-updater';
 import {autoUpdater, CancellationToken} from 'electron-updater';
 
 import {
@@ -23,8 +23,6 @@ import {Logger} from 'common/log';
 import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
 import NotificationManager from 'main/notifications';
-
-import tray from './tray/tray';
 
 const NEXT_NOTIFY = 86400000; // 24 hours
 const NEXT_CHECK = 3600000; // 1 hour
@@ -60,32 +58,19 @@ export class UpdateManager {
     versionAvailable?: string;
     versionDownloaded?: string;
     downloadedInfo?: UpdateInfo;
-    macosLink?: UpdateFileInfo;
 
     constructor() {
         this.cancellationToken = new CancellationToken();
 
-        // clear any pending update when the app starts to prevent any cached updates getting stuck.
-        // before this was only triggering when a new update was available on restart,
-        // and downloadsManager was handling clearing updates on startup, however the check there
-        // doesn't seem to catch all cases.
-        downloadsManager.removeUpdateBeforeRestart();
-
         autoUpdater.on('error', (err: Error) => {
-            log.error(`[kChat] There was an error while trying to update: ${err}`);
+            log.error('There was an error while trying to update', err);
         });
 
         autoUpdater.on('update-available', (info: UpdateInfo) => {
             autoUpdater.removeListener('update-not-available', this.displayNoUpgrade);
             this.versionAvailable = info.version;
-            if (process.platform === 'darwin') {
-                const arch = process.arch;
-                const archFilter = arch === 'arm64' ? '-arm64.' : '-x64.';
-
-                this.macosLink = info.files?.find((file) => file.url.includes('.dmg') && file.url.includes(archFilter));
-            }
             ipcMain.emit(UPDATE_SHORTCUT_MENU);
-            log.info(`[kChat] available version ${info.version}`);
+            log.info('New version available:', info.version);
             this.notify();
         });
 
@@ -93,7 +78,7 @@ export class UpdateManager {
             this.versionDownloaded = info.version;
             this.downloadedInfo = info;
             ipcMain.emit(UPDATE_SHORTCUT_MENU);
-            log.info(`[kChat] downloaded version ${info.version}`);
+            log.info('Downloaded version', info.version);
             this.notifyDownloaded();
         });
 
@@ -102,7 +87,7 @@ export class UpdateManager {
         });
 
         ipcMain.on(CANCEL_UPGRADE, () => {
-            log.info('[kChat] User Canceled upgrade');
+            log.info('User Canceled upgrade');
         });
 
         ipcMain.on(CHECK_FOR_UPDATES, () => {
@@ -135,33 +120,10 @@ export class UpdateManager {
         NotificationManager.displayRestartToUpgrade(this.versionDownloaded || 'unknown', this.handleUpdate);
     };
 
-    handleDownloadManual = (): void => {
-        if (this.macosLink?.url) {
-            // remove notification.
-            if (this.lastNotification) {
-                clearTimeout(this.lastNotification);
-                this.lastNotification = undefined;
-            }
-
-            // remove queued update so it doesn't repop when user restarts manually.
-            downloadsManager.removeUpdateBeforeRestart();
-
-            // requeue check in an hour in case user doesn't end up updating after downloading.
-            if (this.lastCheck) {
-                clearTimeout(this.lastCheck);
-                this.lastCheck = setTimeout(() => this.checkForUpdates(false), NEXT_CHECK);
-            }
-
-            // download update manually through browser.
-            shell.openExternal(`https://download.storage5.infomaniak.com/kchat/${this.macosLink.url}`);
-        }
-    };
-
     handleDownload = (): void => {
         if (this.lastCheck) {
             clearTimeout(this.lastCheck);
         }
-
         autoUpdater.downloadUpdate(this.cancellationToken);
     };
 
@@ -175,9 +137,7 @@ export class UpdateManager {
     };
 
     handleOnQuit = (): void => {
-        log.info(`Handle app will quit with version downloaded => ${this.versionDownloaded}`);
         if (this.versionDownloaded) {
-            log.info('this version downloaded');
             autoUpdater.quitAndInstall(true, false);
         }
     };
@@ -224,7 +184,7 @@ export class UpdateManager {
         if (this.lastCheck) {
             clearTimeout(this.lastCheck);
         }
-        if ((!this.lastNotification || manually) && !this.versionDownloaded) {
+        if (!this.lastNotification || manually) {
             if (manually) {
                 autoUpdater.once('update-not-available', this.displayNoUpgrade);
             }
@@ -234,7 +194,7 @@ export class UpdateManager {
                 }
             }).catch((reason) => {
                 ipcMain.emit(NO_UPDATE_AVAILABLE);
-                log.error(`[kChat] Failed to check for updates: ${reason}`);
+                log.error('Failed to check for updates:', reason);
             });
             this.lastCheck = setTimeout(() => this.checkForUpdates(false), NEXT_CHECK);
         }
