@@ -3,7 +3,7 @@
 
 import path from 'path';
 
-import {dialog, ipcMain, app, nativeImage} from 'electron';
+import {dialog, ipcMain, app, nativeImage, BrowserWindow} from 'electron';
 import type {ProgressInfo, UpdateInfo} from 'electron-updater';
 import {autoUpdater, CancellationToken} from 'electron-updater';
 
@@ -161,7 +161,7 @@ export class UpdateManager {
             }
             autoUpdater.quitAndInstall(false);
         });
-    }
+    };
 
     displayNoUpgrade = (): void => {
         const version = app.getVersion();
