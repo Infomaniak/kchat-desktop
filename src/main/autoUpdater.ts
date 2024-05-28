@@ -60,6 +60,7 @@ export class UpdateManager {
     versionAvailable?: string;
     versionDownloaded?: string;
     downloadedInfo?: UpdateInfo;
+    startedDownload: boolean = false;
 
     constructor() {
         this.cancellationToken = new CancellationToken();
@@ -119,6 +120,7 @@ export class UpdateManager {
 
     notifyDownloaded = (): void => {
         ipcMain.emit(UPDATE_DOWNLOADED, null, this.downloadedInfo);
+        this.startedDownload = false;
         NotificationManager.displayRestartToUpgrade(this.versionDownloaded || 'unknown', this.handleUpdate);
     };
 
@@ -126,7 +128,10 @@ export class UpdateManager {
         if (this.lastCheck) {
             clearTimeout(this.lastCheck);
         }
-        autoUpdater.downloadUpdate(this.cancellationToken);
+        if (!this.startedDownload) {
+            autoUpdater.downloadUpdate(this.cancellationToken);
+            this.startedDownload = true;
+        }
     };
 
     handleCancelDownload = (): void => {
