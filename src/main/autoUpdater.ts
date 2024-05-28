@@ -24,6 +24,8 @@ import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
 import NotificationManager from 'main/notifications';
 
+import tray from './tray/tray';
+
 const NEXT_NOTIFY = 86400000; // 24 hours
 const NEXT_CHECK = 3600000; // 1 hour
 
