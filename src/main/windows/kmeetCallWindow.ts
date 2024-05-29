@@ -208,7 +208,7 @@ class KmeetCallWindow {
     destroy() {
         try {
             if (this.callWindow?.closable) {
-                this.callWindow?.destroy();
+                this.callWindow?.close();
             }
         } catch (error) {
             log.debug('Kmeet window could not be destroyed', error);

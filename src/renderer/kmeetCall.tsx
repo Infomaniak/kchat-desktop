@@ -32,10 +32,6 @@ const Component = () => {
             },
         };
 
-        // const api = new JitsiApi('kmeet.preprod.dev.infomaniak.ch', options) as JitsiMeetExternalAPI;
-
-        // console.log('api', api);
-
         window.jitsiNodeAPI!.setupRenderer(options);
     });
 
