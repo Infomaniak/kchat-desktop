@@ -1,6 +1,9 @@
 .container {
     overflow: hidden;
-    padding: 12px 24px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
 }
 
 div.actions {
@@ -46,7 +49,7 @@ div.avatars {
     justify-content: center;
     align-items: center;
     display: flex;
-    padding-top: 30px;
+    padding-top: 40px;
     margin-left: 6px;
 }
 
