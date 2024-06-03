@@ -127,31 +127,13 @@ class KmeetCallWindow {
         ipcMain.handle(CALL_RING_WINDOW_IS_OPEN, this.handleIsCallWindowOpen);
     }
 
-    create(callInfo: CallInfo) {
+    buildWindow(callInfo: CallInfo) {
         const mainWindow = MainWindow.get();
         const currentServer = ServerViewState!.getCurrentServer();
-
-        log.info('callInfo', callInfo);
-
-        if (!mainWindow || !currentServer) {
-            log.error('Main window does not exist');
-            return;
-        }
-
-        if (this.callWindow) {
-            this.destroy();
-        }
-
-        if (CallDialingWindow.isClosable()) {
-            this.closeRingWindow();
-        }
-
         const preload = getLocalPreload('call.js');
         const session = mainWindow.webContents.session;
 
         this.callWindow = new BrowserWindow({
-
-            // parent: mainWindow,
             title: callInfo.name,
             show: true,
             center: true,
@@ -203,6 +185,34 @@ class KmeetCallWindow {
         setupPowerMonitorMain(this.callWindow);
         setupScreenSharingMain(this.callWindow, app.getName(), electronBuilder.appId);
         new RemoteDrawMain(this.callWindow); // eslint-disable-line no-new
+    }
+
+    create(callInfo: CallInfo) {
+        const mainWindow = MainWindow.get();
+        const currentServer = ServerViewState!.getCurrentServer();
+
+        // log.info('callInfo', callInfo);
+
+        if (!mainWindow || !currentServer) {
+            log.error('Main window does not exist');
+            return;
+        }
+
+        if (this.callWindow) {
+            this.callWindow?.on('closed', () => {
+                this.buildWindow(callInfo);
+            });
+
+            this.destroy();
+
+            return;
+        }
+
+        if (CallDialingWindow.isClosable()) {
+            this.closeRingWindow();
+        }
+
+        this.buildWindow(callInfo);
     }
 
     destroy() {
