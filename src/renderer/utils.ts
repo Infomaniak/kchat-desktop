@@ -39,6 +39,8 @@ const getDownloadingFileStatus = (item: DownloadedItem) => {
         return 'Downloaded';
     case 'deleted':
         return 'Deleted';
+    case 'no folder':
+        return 'Folder Removed';
     default:
         return 'Cancelled';
     }
