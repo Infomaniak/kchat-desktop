@@ -190,7 +190,6 @@ export class ServerSidebar {
     private updateServers = () => {
         this.setOrderedServers();
         this.updateSidebar();
-        this.registerKeyboardEvents();
     };
 
     private handleSwitchServer = () => {
