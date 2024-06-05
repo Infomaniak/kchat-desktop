@@ -111,7 +111,7 @@ export class PermissionsManager extends JsonFileManager<Permissions> {
         const isExternalFullscreen = permission === 'fullscreen' && parsedURL.origin !== serverURL?.origin;
 
         // is the requesting url trusted?
-        if (!(isTrustedURL(parsedURL, serverURL) || (permission === 'media' && (parsedURL.origin === serverURL?.origin || parsedURL.host === 'kmeet.preprod.dev.infomaniak.ch')) || isExternalFullscreen)) {
+        if (!(isTrustedURL(parsedURL, serverURL) || (permission === 'media' && (parsedURL.origin === serverURL?.origin || parsedURL.host === 'kmeet.infomaniak.com')) || isExternalFullscreen)) {
             return false;
         }
 
