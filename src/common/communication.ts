@@ -115,9 +115,17 @@ export const UPDATE_URL_VIEW_WIDTH = 'update-url-view-width';
 
 export const CALL_JOINED_BROWSER = 'call-joined-browser';
 export const CALL_JOINED = 'call-joined';
+export const CALL_ENDED = 'call-ended';
+export const CALL_READY_TO_CLOSE = 'call-ready-to-close';
 export const CALL_DECLINED = 'call-declined';
+export const CALL_API_AVAILABLE = 'call-api-available';
 export const CALL_COMMAND = 'call-command';
 export const CALL_CLOSED = 'call-closed';
+export const CALL_RINGING = 'call-ringing';
+export const CALL_RINGING_CANCEL = 'call-ringing-cancel';
+export const CALL_ACCEPTED = 'call-accepted';
+export const CALL_DIAL_UPDATED = 'call-dial-updated';
+export const CALL_CANCEL = 'call-cancel';
 export const CONNECT_CALL = 'connect-call';
 
 export const WINDOW_WILL_UNLOADED = 'window-will-unloaded';
@@ -128,7 +136,6 @@ export const RELOAD_CURRENT_VIEW = 'reload-current-view';
 
 export const PING_DOMAIN = 'ping-domain';
 export const PING_DOMAIN_RESPONSE = 'ping-domain-response';
-export const CALL_RINGING = 'call-ringing';
 
 export const GET_LANGUAGE_INFORMATION = 'get-language-information';
 export const GET_AVAILABLE_LANGUAGES = 'get-available-languages';
@@ -155,6 +162,9 @@ export const CALL_DIALING = 'call-dialing';
 export const CALLS_JOIN_CALL = 'calls-join-call';
 export const CALLS_LEAVE_CALL = 'calls-leave-call';
 export const CALLS_WIDGET_RESIZE = 'calls-widget-resize';
+export const CALL_OPEN_WINDOW = 'open-kmeet-window';
+export const CALL_RING_CLOSE_WINDOW = 'call-ring-close-window';
+export const CALL_RING_WINDOW_IS_OPEN = 'call-ring-close-window-is-open';
 export const CALLS_WIDGET_SHARE_SCREEN = 'calls-widget-share-screen';
 export const CALLS_WIDGET_CHANNEL_LINK_CLICK = 'calls-widget-channel-link-click';
 export const CALLS_LINK_CLICK = 'calls-link-click';

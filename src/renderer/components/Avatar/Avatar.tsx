@@ -75,8 +75,8 @@ const Avatar = (props: PAvatar): JSX.Element => {
                     className={'StyledAvatarImage'}
                     src={image}
                     style={childStyle}
-                />
-                 : (
+                /> :
+                (
                     <div
                         style={{
                             backgroundColor: AVATAR_FALLBACK_COLORS[Math.floor(Math.random() * 8)],

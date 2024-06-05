@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import path from 'path';
+import URL from 'url';
 
-import {app, ipcMain, nativeTheme, session} from 'electron';
-import isDev from 'electron-is-dev';
-import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-extension-installer';
 import {init} from '@sentry/electron/main';
-
-import {ConfigServer} from 'types/config';
+import {app, ipcMain, nativeTheme, session} from 'electron';
+import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-extension-installer';
+import isDev from 'electron-is-dev';
 
 import {
     FOCUS_BROWSERVIEW,
@@ -38,13 +37,14 @@ import {
     SERVERS_UPDATE,
     GET_APP_THEME,
     GET_APP_INFO,
+    CALL_OPEN_WINDOW,
 } from 'common/communication';
 import Config from 'common/config';
+import buildConfig from 'common/config/buildConfig';
+import {IKOrigin} from 'common/config/ikConfig';
 import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {IKDriveAllowedUrls, IKLoginAllowedUrls, IKWelcomeAllowedUrls, KChatTokenWhitelist} from 'common/utils/constants';
-import buildConfig from 'common/config/buildConfig';
-import {IKOrigin, devServerUrl, isLocalEnv} from 'common/config/ikConfig';
 import AllowProtocolDialog from 'main/allowProtocolDialog';
 import AppVersionManager from 'main/AppVersionManager';
 import AuthManager from 'main/authManager';
@@ -58,12 +58,14 @@ import downloadsManager from 'main/downloadsManager';
 import i18nManager from 'main/i18nManager';
 import parseArgs from 'main/ParseArgs';
 import PermissionsManager from 'main/permissionsManager';
+import TokenManager from 'main/tokenManager';
 import Tray from 'main/tray/tray';
 import TrustedOriginsStore from 'main/trustedOrigins';
 import UserActivityMonitor from 'main/UserActivityMonitor';
-import TokenManager from 'main/tokenManager';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
+
+import type {ConfigServer} from 'types/config';
 
 import {
     handleAppBeforeQuit,
@@ -91,6 +93,7 @@ import {
     handlePingDomain,
     handleToggleSecureInput,
     handleGetTheme,
+    handleOpenKmeetWindow,
 } from './intercom';
 import {
     clearAppCache,
@@ -231,9 +234,9 @@ function initializeBeforeAppReady() {
         return;
     }
 
-    if (process.env.NODE_ENV !== 'test') {
-        app.enableSandbox();
-    }
+    // if (process.env.NODE_ENV !== 'test') {
+    // app.enableSandbox();
+    // }
     TrustedOriginsStore.load();
 
     // prevent using a different working directory, which happens on windows running after installation.
@@ -277,6 +280,7 @@ function initializeBeforeAppReady() {
 }
 
 function initializeInterCommunicationEventListeners() {
+    ipcMain.on('initialize-jitsi', handleInitializeJitsi);
     ipcMain.handle(NOTIFY_MENTION, handleMentionNotification);
     ipcMain.handle(GET_APP_THEME, handleGetTheme);
     ipcMain.handle(GET_APP_INFO, handleAppVersion);
@@ -306,6 +310,11 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(DOUBLE_CLICK_ON_WINDOW, handleDoubleClick);
 
     ipcMain.on(TOGGLE_SECURE_INPUT, handleToggleSecureInput);
+    ipcMain.on(CALL_OPEN_WINDOW, handleOpenKmeetWindow);
+}
+
+function handleInitializeJitsi() {
+
 }
 
 function updateTeamsHandler(_: any, servers: ConfigServer[]) {
@@ -325,9 +334,6 @@ function updateTeamsHandler(_: any, servers: ConfigServer[]) {
     if (defaultServer?.url && firstServer.url === defaultServer.url) {
         initIKserver();
     } else {
-        if (isLocalEnv && devServerUrl) {
-            servers[0].url = devServerUrl;
-        }
         initReceivedServer(servers);
     }
 }

@@ -64,9 +64,16 @@ import {
     GET_SERVER_THEME,
     GET_APP_THEME,
     THEME_CHANGED,
+    CALL_ENDED,
+    CALL_OPEN_WINDOW,
+    CALL_RING_CLOSE_WINDOW,
+    CALL_RING_WINDOW_IS_OPEN,
+    CALL_CANCEL,
     SWITCH_SERVER_SIDEBAR,
+    CALL_JOINED_BROWSER,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
+import type {CallInfo} from 'main/windows/kmeetCallWindow';
 
 import type {ExternalAPI} from 'types/externalAPI';
 
@@ -79,7 +86,13 @@ const createListener: ExternalAPI['createListener'] = (channel: string, listener
     };
 };
 
-const desktopAPI: DesktopAPI = {
+type KchatDesktopApi = DesktopAPI & {
+    openKmeetCallWindow: (callInfo: object) => void;
+    closeRingCallWindow: () => void;
+    isRingCallWindowOpen: () => void;
+}
+
+const desktopAPI: KchatDesktopApi = {
 
     // Initialization
     isDev: () => ipcRenderer.invoke(GET_IS_DEV_MODE),
@@ -115,6 +128,7 @@ const desktopAPI: DesktopAPI = {
     // Calls
     joinCall: (opts) => ipcRenderer.invoke(CALLS_JOIN_CALL, opts),
     leaveCall: () => ipcRenderer.send(CALLS_LEAVE_CALL),
+    openCallDialing: (callInfo: CallInfo) => ipcRenderer.send(CALL_RINGING, callInfo),
 
     callsWidgetConnected: (callID, sessionID) => ipcRenderer.send(CALLS_JOINED_CALL, callID, sessionID),
     resizeCallsWidget: (width, height) => ipcRenderer.send(CALLS_WIDGET_RESIZE, width, height),
@@ -134,7 +148,12 @@ const desktopAPI: DesktopAPI = {
 
     openLinkFromCalls: (url) => ipcRenderer.send(CALLS_LINK_CLICK, url),
 
+    openKmeetCallWindow: (callInfo) => ipcRenderer.send(CALL_OPEN_WINDOW, callInfo),
+    closeRingCallWindow: () => ipcRenderer.send(CALL_RING_CLOSE_WINDOW),
+    isRingCallWindowOpen: () => ipcRenderer.invoke(CALL_RING_WINDOW_IS_OPEN),
+
     focusPopout: () => ipcRenderer.send(CALLS_POPOUT_FOCUS),
+    closeDial: () => ipcRenderer.send(CALL_JOINED_BROWSER),
 
     // Utility
     unregister: (channel) => ipcRenderer.removeAllListeners(channel),
@@ -172,6 +191,8 @@ contextBridge.exposeInMainWorld('authManager', {
 contextBridge.exposeInMainWorld('callManager', {
     onCallJoined: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_JOINED, callback),
     onCallDeclined: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_DECLINED, callback),
+    onCallEnded: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_ENDED, callback),
+    onCallCancel: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_CANCEL, callback),
 });
 
 // Specific info for the testing environment

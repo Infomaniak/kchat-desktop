@@ -15,6 +15,7 @@ module.exports = merge(base, {
         'macos-notification-state': 'require("macos-notification-state")',
         'windows-focus-assist': 'require("windows-focus-assist")',
         '@sentry/electron': 'require("@sentry/electron")',
+        '@infomaniak/jitsi-meet-electron-sdk': 'require("@infomaniak/jitsi-meet-electron-sdk")',
     },
     externalsPresets: {
         electronMain: true,

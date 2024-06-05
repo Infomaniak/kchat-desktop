@@ -18,6 +18,8 @@ import type {UniqueServer} from 'types/config';
 
 import {handleAppBeforeQuit} from './app';
 
+import KmeetCallWindow from '../windows/kmeetCallWindow';
+
 const log = new Logger('App.Intercom');
 
 export function handleAppVersion() {
@@ -164,6 +166,10 @@ export function handleToggleSecureInput(event: IpcMainEvent, secureInput: boolea
     // Enforce macOS to restrict processes from reading the keyboard input when in a password field
     log.debug('handleToggleSecureInput', secureInput);
     app.setSecureKeyboardEntryEnabled(secureInput);
+}
+
+export function handleOpenKmeetWindow(_: any, callInfo: object) {
+    KmeetCallWindow.create(callInfo);
 }
 
 export function handleShowSettingsModal() {

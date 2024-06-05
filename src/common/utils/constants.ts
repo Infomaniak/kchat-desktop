@@ -34,6 +34,7 @@ export const MINIMUM_WINDOW_HEIGHT = 240;
 export const MINIMUM_CALLS_WIDGET_WIDTH = 284;
 export const MINIMUM_CALLS_WIDGET_HEIGHT = 90;
 export const CALLS_PLUGIN_ID = 'com.mattermost.calls';
+export const KMEET_ORIGIN = 'kmeet.infomaniak.com';
 
 export const DOWNLOADS_DROPDOWN_HEIGHT = 360;
 export const DOWNLOADS_DROPDOWN_WIDTH = 280;
@@ -338,9 +339,11 @@ export const IKWelcomeAllowedUrls = [
 ];
 
 export const KChatTokenWhitelist = [
+
     // Prod whitelist
     'https://*.infomaniak.com/api/v4/*',
     'https://*.infomaniak.com/broadcasting/auth',
+
     // Preprod whitelist
     'https://*.preprod.dev.infomaniak.ch/api/v4/*',
     'https://*.preprod.dev.infomaniak.ch/broadcasting/auth',

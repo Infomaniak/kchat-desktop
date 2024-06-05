@@ -15,7 +15,7 @@ module.exports = merge(base, {
     entry: {
         index: './src/renderer/index.tsx',
         settings: './src/renderer/modals/settings/settings.tsx',
-        call: './src/renderer/call.tsx',
+        call: './src/renderer/calls/call.ts',
         callDialing: './src/renderer/callDialing.tsx',
         dropdown: './src/renderer/dropdown.tsx',
         downloadsDropdownMenu: './src/renderer/downloadsDropdownMenu.tsx',
@@ -57,7 +57,7 @@ module.exports = merge(base, {
         }),
         new HtmlWebpackPlugin({
             title: 'Call Window',
-            template: 'src/renderer/index.html',
+            template: 'src/renderer/calls/call.html',
             chunks: ['call'],
             filename: 'call.html',
         }),
@@ -198,6 +198,9 @@ module.exports = merge(base, {
             type: 'asset/resource',
         }],
     },
+    externals: [{
+        '@infomaniak/jitsi-meet-electron-sdk': 'require(\'@infomaniak/jitsi-meet-electron-sdk\')',
+    }],
     node: {
         __filename: false,
         __dirname: false,

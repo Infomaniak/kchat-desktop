@@ -17,6 +17,7 @@ import {
     isHelpUrl,
     isImageProxyUrl,
     isInternalURL,
+    isKmeetUrl,
     isLoginUrl,
     isManagedResource,
     isPluginUrl,
@@ -31,10 +32,11 @@ import ContextMenu from 'main/contextMenu';
 import ViewManager from 'main/views/viewManager';
 import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 import MainWindow from 'main/windows/mainWindow';
+import mainWindow from 'main/windows/mainWindow';
 
 import {protocols} from '../../../electron-builder.json';
 import allowProtocolDialog from '../allowProtocolDialog';
-import {composeUserAgent} from '../utils';
+import {composeUserAgent, getLocalPreload} from '../utils';
 
 type CustomLogin = {
     inProgress: boolean;
@@ -215,7 +217,11 @@ export class WebContentsEventManager {
                 return {action: 'deny'};
             }
 
-            if (isTeamUrl(serverURL, parsedURL, true)) {
+            const isKmeet = isKmeetUrl(serverURL, parsedURL);
+
+            // const isKmeet = true;
+
+            if (isTeamUrl(serverURL, parsedURL, true) && !isKmeet) {
                 ViewManager.handleDeepLink(parsedURL);
                 return {action: 'deny'};
             }
@@ -229,7 +235,7 @@ export class WebContentsEventManager {
             }
 
             // TODO: move popups to its own and have more than one.
-            if (isPluginUrl(serverURL, parsedURL) || isManagedResource(serverURL, parsedURL)) {
+            if (isPluginUrl(serverURL, parsedURL) || isKmeet || isManagedResource(serverURL, parsedURL)) {
                 let popup: BrowserWindow;
                 if (this.popupWindow) {
                     this.popupWindow.win.once('ready-to-show', () => {
@@ -237,16 +243,26 @@ export class WebContentsEventManager {
                     });
                     popup = this.popupWindow.win;
                 } else {
-                    this.popupWindow = {
-                        win: new BrowserWindow({
-                            backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
-                            parent: MainWindow.get(),
-                            show: false,
-                            center: true,
-                            webPreferences: {
-                                spellcheck: (typeof spellcheck === 'undefined' ? true : spellcheck),
-                            },
+                    const win = new BrowserWindow({
+                        parent: mainWindow.get(),
+                        backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
+                        show: false,
+                        center: !isKmeet,
+                        ...(isKmeet && {
+                            width: 267,
+                            height: 267,
+                            alwaysOnTop: true,
                         }),
+                        webPreferences: {
+                            preload: isKmeet ? getLocalPreload('externalAPI.js') : undefined,
+                            spellcheck: (typeof spellcheck === 'undefined' ? true : spellcheck),
+                        },
+                    });
+
+                    // win.webContents.openDevTools({mode: 'detach'});
+
+                    this.popupWindow = {
+                        win,
                         serverURL,
                     };
                     this.customLogins[this.popupWindow.win.webContents.id] = {
@@ -271,12 +287,13 @@ export class WebContentsEventManager {
                     popup.once('closed', () => {
                         this.popupWindow = undefined;
                     });
-
                     const contextMenu = new ContextMenu({}, popup);
                     contextMenu.reload();
                 }
 
-                popup.once('ready-to-show', () => popup.show());
+                popup.once('ready-to-show', () => {
+                    popup.show();
+                });
 
                 if (isManagedResource(serverURL, parsedURL)) {
                     popup.loadURL(details.url);

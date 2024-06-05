@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import 'bootstrap/dist/css/bootstrap.min.css';
+
 // import 'renderer/css/index.css';
 // import 'renderer/css/settings.css';
 import 'renderer/css/call-dialing.css';
@@ -15,7 +16,7 @@ import IntlProvider from './intl_provider';
 const start = async () => {
     ReactDOM.render(
         <IntlProvider>
-            <CallDialingModal />
+            <CallDialingModal/>
         </IntlProvider>,
         document.getElementById('app'),
     );

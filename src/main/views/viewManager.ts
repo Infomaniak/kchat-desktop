@@ -44,6 +44,7 @@ import {
     REQUEST_BROWSER_HISTORY_STATUS,
     LEGACY_OFF,
     UNREADS_AND_MENTIONS,
+    CALL_API_AVAILABLE,
 } from 'common/communication';
 import Config from 'common/config';
 import {Logger} from 'common/log';
@@ -57,7 +58,8 @@ import {TAB_MESSAGING} from 'common/views/View';
 import {flushCookiesStore} from 'main/app/utils';
 import {localizeMessage} from 'main/i18nManager';
 import TokenManager from 'main/tokenManager';
-import {createCallDialingWindow} from 'main/windows/callDialingWindow';
+import callDialingWindow from 'main/windows/callDialingWindow';
+import KmeetCallWindow from 'main/windows/kmeetCallWindow';
 import MainWindow from 'main/windows/mainWindow';
 
 import LoadingScreen from './loadingScreen';
@@ -71,7 +73,7 @@ const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
 const URL_VIEW_HEIGHT = 20;
 export class ViewManager {
-    private closedViews: Map<string, { srv: MattermostServer; view: MattermostView }>;
+    private closedViews: Map<string, {srv: MattermostServer; view: MattermostView}>;
     private views: Map<string, MattermostBrowserView>;
     private currentView?: string;
     private callWindow?: BrowserWindow | null;
@@ -109,9 +111,12 @@ export class ViewManager {
         ipcMain.on(TOKEN_REFRESHED, this.handleTokenRefreshed);
         ipcMain.handle(RESET_TOKEN, this.handleResetToken);
         ipcMain.handle(RESET_AUTH, this.handleRevokeToken);
-        ipcMain.on(CALL_JOINED, this.handleCallJoined);
+
+        // ipcMain.on(CALL_JOINED, this.handleCallJoined);
         ipcMain.on(CALL_JOINED_BROWSER, this.handleCallJoinedBrowser);
-        ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
+
+        // ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
+        ipcMain.on(CALL_API_AVAILABLE, this.handleCallApiAvailable);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(RESET_TEAMS, this.resetTeams);
         ipcMain.on(THEME_CHANGED, this.handleThemeChanged);
@@ -215,9 +220,10 @@ export class ViewManager {
     handleCallJoined = (_: IpcMainEvent, message: any) => {
         //TODO: kMeet integration V2 => open call in a new window.
         //remove shell.openExternal and uncomment code below.
-        shell.openExternal(message.url);
+        // shell.openExternal(message.url);
         this.sendToAllViews(CALL_JOINED, message);
         this.destroyCallWindow();
+        KmeetCallWindow.create(message);
 
         /*const withDevTools = true;
         this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
@@ -231,12 +237,7 @@ export class ViewManager {
     };
 
     handleCallDialing = (_: IpcMainEvent, message: any) => {
-        const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
-        if (this.callWindow) {
-            return;
-        }
-        this.callWindow = createCallDialingWindow(MainWindow.get()!, withDevTools, message.calling);
-        this.callWindow?.on('close', () => this.destroyCallWindow());
+        callDialingWindow.create(message);
     };
 
     handleCallDeclined = (_: IpcMainEvent, message: unknown) => {
@@ -244,9 +245,12 @@ export class ViewManager {
         this.destroyCallWindow();
     };
 
+    handleCallApiAvailable = (_: IpcMainEvent, message: unknown) => {
+        this.getCurrentView()?.sendToRenderer(CALL_API_AVAILABLE, message);
+    };
+
     destroyCallWindow = () => {
-        this.callWindow?.destroy();
-        this.callWindow = undefined;
+        callDialingWindow.destroy();
     };
 
     handleTokenRefreshed = (event: IpcMainEvent, message: any) => {

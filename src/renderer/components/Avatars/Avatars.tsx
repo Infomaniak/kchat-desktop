@@ -1,6 +1,6 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, { memo } from 'react';
+import React, {memo} from 'react';
 
 import Avatar from '../Avatar/Avatar';
 
@@ -18,22 +18,19 @@ function countMeta<T>(
     const overflowUnnamedCount = Math.max(total - displayItems.length - overflowItems.length, 0);
     const nonDisplayCount = overflowItems.length + overflowUnnamedCount;
 
-    return [displayItems, overflowItems, { overflowUnnamedCount, nonDisplayCount }];
+    return [displayItems, overflowItems, {overflowUnnamedCount, nonDisplayCount}];
 }
 
 type Props = {
     users: { [user_id: string]: any };
-    totalUsers?: number;
-    breakAt?: number;
     size?: 'md' | 'xxs' | 'xs' | 'sm' | 'lg' | 'xl' | 'xxl';
-    fetchMissingUsers?: boolean;
 };
 
 function Avatars({
     size,
     users,
 }: Props) {
-    const [displayUserIds, , { nonDisplayCount }] = countMeta(Object.keys(users), Object.keys(users).length);
+    const [displayUserIds, , {nonDisplayCount}] = countMeta(Object.keys(users), Object.keys(users).length);
     return (
         <div
             className='avatars'
@@ -43,7 +40,8 @@ function Avatars({
                     key={id}
                     name={users[id].nickname}
                     size={size}
-                    image={users[id].avatar} />
+                    image={users[id].avatar}
+                />
             ))}
             {Boolean(nonDisplayCount) && (
                 <Avatar

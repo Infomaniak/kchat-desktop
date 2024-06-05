@@ -85,9 +85,10 @@ export class PermissionsManager extends JsonFileManager<Permissions> {
 
         // allow if the request is coming from the local renderer process instead of the remote one
         const mainWindow = MainWindow.get();
-        if (mainWindow && webContentsId === mainWindow.webContents.id) {
-            return true;
-        }
+
+        // if (mainWindow && webContentsId === mainWindow.webContents.id) {
+        //     return true;
+        // }
 
         const parsedURL = parseURL(requestingURL);
         if (!parsedURL) {
@@ -101,16 +102,16 @@ export class PermissionsManager extends JsonFileManager<Permissions> {
             serverURL = ViewManager.getViewByWebContentsId(webContentsId)?.view.server.url;
         }
 
-        if (!serverURL) {
-            return false;
-        }
+        // if (!serverURL) {
+        //     return false;
+        // }
 
         // Exception for embedded videos such as YouTube
         // We still want to ask permission to do this though
-        const isExternalFullscreen = permission === 'fullscreen' && parsedURL.origin !== serverURL.origin;
+        const isExternalFullscreen = permission === 'fullscreen' && parsedURL.origin !== serverURL?.origin;
 
         // is the requesting url trusted?
-        if (!(isTrustedURL(parsedURL, serverURL) || (permission === 'media' && parsedURL.origin === serverURL.origin) || isExternalFullscreen)) {
+        if (!(isTrustedURL(parsedURL, serverURL) || (permission === 'media' && (parsedURL.origin === serverURL?.origin || parsedURL.host === 'kmeet.infomaniak.com')) || isExternalFullscreen)) {
             return false;
         }
 

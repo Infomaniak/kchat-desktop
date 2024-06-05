@@ -60,7 +60,6 @@ export class ServerSidebarShortcutModalView {
                 log.info(process.env);
             });
 
-        log.info('zizi');
         mainWindow.addBrowserView(this.view!);
     };
 

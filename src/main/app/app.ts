@@ -18,14 +18,15 @@ import {getDeeplinkingURL, openDeepLink, resizeScreen} from './utils';
 
 export const certificateErrorCallbacks = new Map();
 
-// Jitsi
-// We need this because of https://github.com/electron/electron/issues/18214
-// app.commandLine.appendSwitch('disable-site-isolation-trials');
+app.commandLine.appendSwitch('disable-site-isolation-trials');
+app.commandLine.appendSwitch('disable-features', 'DesktopCaptureMacV2,IOSurfaceCapturer');
+app.commandLine.appendSwitch('force-fieldtrials', 'WebRTC-Audio-Red-For-Opus/Enabled/');
 
-// Jitsi
-// This allows BrowserWindow.setContentProtection(true) to work on macOS.
-// https://github.com/electron/electron/issues/19880
-// app.commandLine.appendSwitch('disable-features', 'IOSurfaceCapturer');
+// Wayland: Enable optional PipeWire support.
+if (!app.commandLine.hasSwitch('enable-features')) {
+    app.commandLine.appendSwitch('enable-features', 'WebRTCPipeWireCapturer');
+}
+
 const log = new Logger('App.App');
 
 //

@@ -3,14 +3,14 @@
 
 import type {ipcRenderer, Rectangle} from 'electron/renderer';
 
-import type {CallInfo} from './callsIk';
 import type {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer, ConfigServer} from './config';
 import type {DownloadedItem, DownloadedItems, DownloadsMenuOpenEventPayload} from './downloads';
 import type {URLValidationResult} from './server';
 import type {SaveQueueItem} from './settings';
 import type {Theme} from './theme';
-
+import type {CallInfo} from './callsIk';
 import type {Language} from '../../i18n/i18n';
+
 
 declare global {
     interface Window {
@@ -185,8 +185,17 @@ declare global {
         dialApi: {
             onInfo: (callback: (...args: any[]) => unknown) => void;
             callDeclined: (callInfo?: CallInfo) => void;
+            callCanceled: (callInfo?: CallInfo) => void;
             callAccept: (callInfo?: CallInfo) => void;
             callDefault: () => void;
+        };
+        jitsiNodeAPI: {
+            setupRenderer: (ref: any) => void;
+            onLoadServerUrl: (listener: (serverUrl: string) => void) => void;
+            getCallInfo: () => {
+                user: object;
+                channelId: string;
+            };
         };
     }
 }
