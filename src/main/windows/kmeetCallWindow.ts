@@ -159,10 +159,9 @@ class KmeetCallWindow {
             });
 
         this.callWindow.webContents.on('dom-ready', () => {
+            this.callWindow!.moveTop();
             this.callWindow!.webContents.send('load-server-url', `${currentServer.url.toString()}static/kmeet.js`);
         });
-
-        this.callWindow.moveTop();
 
         const windowOpenHandler = ({url, frameName}: {url: string; frameName: string}) => {
             const target = getPopupTarget(url, frameName);
