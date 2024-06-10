@@ -689,7 +689,13 @@ function Run-Test {
 }
 
 function Write-AWSCredentials {
-    $awsCredentialsPath = "$env:USERPROFILE\.aws\credentials"
+    $awsDirectoryPath = "$env:USERPROFILE\.aws"
+    $awsCredentialsPath = "$awsDirectoryPath\credentials"
+
+    # Ensure the .aws directory exists
+    if (-not (Test-Path $awsDirectoryPath)) {
+        New-Item -ItemType Directory -Path $awsDirectoryPath -Force
+    }
 
     $content = @"
 [default]
