@@ -672,6 +672,7 @@ function Remove-Cert {
 function Run-Build {
     Check-Deps -Verbose -Throwable
     Prepare-Path
+    Write-AWSCredentials
     Get-Cert
     Run-BuildId
     Run-BuildElectron
@@ -685,6 +686,18 @@ function Run-Test {
     Check-Deps -Verbose -Throwable
     Prepare-Path
     npm test
+}
+
+function Write-AWSCredentials {
+    $awsCredentialsPath = "$env:USERPROFILE\.aws\credentials"
+
+    $content = @"
+[default]
+aws_access_key_id = $env:AWS_ACCESS_KEY_ID
+aws_secret_access_key = $env:AWS_SECRET_ACCESS_KEY
+"@
+
+    $content | Out-File -FilePath $awsCredentialsPath -Encoding ascii
 }
 #EndRegion
 
