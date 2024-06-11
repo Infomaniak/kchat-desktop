@@ -704,6 +704,13 @@ aws_secret_access_key = $env:AWS_SECRET_ACCESS_KEY
 "@
 
     $content | Out-File -FilePath $awsCredentialsPath -Encoding ascii
+
+    # Log to verify credentials file creation
+    if (Test-Path $awsCredentialsPath) {
+        Write-Host "AWS credentials file created successfully at $awsCredentialsPath"
+    } else {
+        Write-Host "Failed to create AWS credentials file at $awsCredentialsPath"
+    }
 }
 #EndRegion
 
