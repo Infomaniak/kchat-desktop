@@ -672,7 +672,7 @@ function Remove-Cert {
 function Run-Build {
     Check-Deps -Verbose -Throwable
     Prepare-Path
-    # Write-AWSCredentials
+    Write-AWSCredentials
     Get-Cert
     Run-BuildId
     Run-BuildElectron
