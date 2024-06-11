@@ -172,6 +172,17 @@ jobs:
               uses: ./.github/actions/version
             # - name: release/test
             #   uses: ./.github/actions/test
+            - name: Setup MinIO environment
+              env:
+                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                AWS_REGION: 'us-east-1'
+                MINIO_ENDPOINT_URL: ${{ secrets.MINIO_ENDPOINT_URL }}
+              run: |
+                msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi
+                aws configure set default.s3.endpoint_url $MINIO_ENDPOINT_URL
+                aws configure set default.s3.signature_version s3v4
+                aws configure set region $AWS_REGION
             - name: release/build
               shell: powershell
               env:
@@ -182,9 +193,6 @@ jobs:
                   CSC_LINK: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_LINK }}
                   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
                   SENTRY_RELEASE: ${{ github.ref_name }}
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_SHARED_CREDENTIALS_FILE: C:\Users\runneradmin\.aws\credentials
               run: |
                   ./scripts/Makefile.ps1 build
             - name: nightly/package
