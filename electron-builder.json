@@ -3,7 +3,7 @@
     "provider": "s3",
     "channel": "beta",
     "bucket": "kchat",
-    "endpoint": "https://leoupload.infomaniak.com",
+    "endpoint": "https://download.storage5.infomaniak.com",
     "path": "/"
   },
   "generateUpdatesFilesForAllChannels": true,
