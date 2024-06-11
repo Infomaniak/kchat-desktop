@@ -142,7 +142,7 @@ jobs:
     #               retention-days: 1
 
     build-msi-installer:
-        runs-on: [ self-hosted, Windows ]
+        runs-on: windows-2022
         needs:
             - create-release
         steps:
