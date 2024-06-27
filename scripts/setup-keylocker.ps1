@@ -6,6 +6,8 @@ try {
     'SM_API_KEY',
     'SM_CLIENT_CERT_FILE_B64',
     'SM_CLIENT_CERT_PASSWORD',
+    'SM_HOST',
+    'SM_CODE_SIGNING_CERT_SHA1_HASH'
   )
   foreach ($variable in $required) {
     if (!$(Test-Path "env:$variable")) {
