@@ -179,12 +179,12 @@ function Check-Deps {
         $missing += "wix"
     }
 
-    if ($verbose) { Print-Info "Checking signtool dependency..." }
-    if ([string]::IsNullOrEmpty($(Get-SignToolDir)) -or
-        ![System.IO.File]::Exists("$(Get-SignToolDir)\signtool.exe")) {
-        if ($verbose) { Print-Error "signtool dependency missing." }
-        $missing += "signtool"
-    }
+    # if ($verbose) { Print-Info "Checking signtool dependency..." }
+    # if ([string]::IsNullOrEmpty($(Get-SignToolDir)) -or
+    #     ![System.IO.File]::Exists("$(Get-SignToolDir)\signtool.exe")) {
+    #     if ($verbose) { Print-Error "signtool dependency missing." }
+    #     $missing += "signtool"
+    # }
     if ($verbose) { Print-Info "Checking jq dependency..." }
     if (!(Check-Command "jq")) {
         if ($verbose) { Print-Error "jq dependency missing." }
@@ -283,32 +283,32 @@ function Get-WixDir {
     return $wixDir
 }
 
-function Get-SignToolDir {
-    $progFile = (${env:ProgramFiles(x86)}, ${env:ProgramFiles} -ne $null)[0]
-    $signToolDir = Join-Path -Path "$progFile" -ChildPath "Windows Kits\10\bin\"
-    # Check if we are on 64 bits or not.
-    if ($env:PROCESSOR_ARCHITECTURE -ilike '*64*') {
-        $arch = "x64"
-    } else {
-        $arch = "x86"
-    }
-    [array]$signToolExes = (
-        Get-ChildItem -Path "$signToolDir" -Filter "signtool.exe" -Recurse -ErrorAction SilentlyContinue -Force | % {
-            if ($_.FullName -ilike '*x64*') {
-                return $_.FullName;
-            }
-        }
-    )
-    if ($signToolExes -eq $null -or
-        [string]::IsNullOrEmpty($signToolExes[0])) {
-        return $null
-    }
+# function Get-SignToolDir {
+#     $progFile = (${env:ProgramFiles(x86)}, ${env:ProgramFiles} -ne $null)[0]
+#     $signToolDir = Join-Path -Path "$progFile" -ChildPath "Windows Kits\10\bin\"
+#     # Check if we are on 64 bits or not.
+#     if ($env:PROCESSOR_ARCHITECTURE -ilike '*64*') {
+#         $arch = "x64"
+#     } else {
+#         $arch = "x86"
+#     }
+#     [array]$signToolExes = (
+#         Get-ChildItem -Path "$signToolDir" -Filter "signtool.exe" -Recurse -ErrorAction SilentlyContinue -Force | % {
+#             if ($_.FullName -ilike '*x64*') {
+#                 return $_.FullName;
+#             }
+#         }
+#     )
+#     if ($signToolExes -eq $null -or
+#         [string]::IsNullOrEmpty($signToolExes[0])) {
+#         return $null
+#     }
 
-    if (Test-Path $signToolExes[0]) {
-        return Split-Path $signToolExes[0]
-    }
-    return $null
-}
+#     if (Test-Path $signToolExes[0]) {
+#         return Split-Path $signToolExes[0]
+#     }
+#     return $null
+# }
 
 function Get-NpmDir {
     # npm is always installed as a nodejs dependency. 64 bits version available.
@@ -364,7 +364,7 @@ function Prepare-Path {
 
     # Prepend the PATH with signtool dir
     Print-Info "Checking if signtool dir is already in the PATH..."
-    $env:Path = "$(Get-SignToolDir)" + ";" + $env:Path
+    # $env:Path = "$(Get-SignToolDir)" + ";" + $env:Path
 }
 
 function Catch-Interruption {
@@ -536,35 +536,48 @@ function Run-BuildElectron {
 }
 
 function Run-BuildForceSignature {
-    # Only sign the executable and .dll if this is a release and not a pull request
-    # check.
-    if (Test-Path 'env:PFX') {
-        Print-Info "Signing"
-        foreach ($archPath in "release\win-unpacked", "release\win-ia32-unpacked") {
-            # Note: The C++ redistribuable files will be resigned again even if they have a
-            # correct signature from Microsoft. Windows doesn't seem to complain, but we
-            # don't know whether this is authorized by the Microsoft EULA.
-            Get-ChildItem -Path $archPath -recurse "*.dll" | ForEach-Object {
-                Print-Info "Signing $($_.Name) (waiting for 2 * 15 seconds)..."
-                # Waiting for at least 15 seconds is needed because these time
-                # servers usually have rate limits and signtool can fail with the
-                # following error message:
-                # "SignTool Error: The specified timestamp server either could not be reached or returned an invalid response.
-                # src.: https://web.archive.org/web/20190306223053/https://github.com/electron-userland/electron-builder/issues/2795#issuecomment-466831315
-                Start-Sleep -s 15
-                signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha1 /td sha1 "$($_.FullName)"
-                Start-Sleep -s 15
-                signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /as "$($_.FullName)"
-            }
+    # Only sign the executable and .dll if this is a release and not a pull request check.
+    # if ($env:SM_KEYPAIR_NAME -ne $null -and $env:SM_KEYPAIR_NAME -ne '') {
+    #     Print-Info "Signing"
+    #     foreach ($archPath in "release\win-unpacked", "release\win-ia32-unpacked") {
+    #         Get-ChildItem -Path $archPath -recurse "*.dll" | ForEach-Object {
+    #             Print-Info "Signing $($_.Name) (waiting for 2 * 15 seconds)..."
+    #             Start-Sleep -s 15
+    #             signtool.exe sign /kc "$env:SM_KEYPAIR_NAME" /kcsp "DigiCert Signing Manager KSP" /tr "http://timestamp.digicert.com" /fd sha1 /td sha1 "$($_.FullName)"
+    #             Start-Sleep -s 15
+    #             signtool.exe sign /kc "$env:SM_KEYPAIR_NAME" /kcsp "DigiCert Signing Manager KSP" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /as "$($_.FullName)"
+    #         }
 
-            Print-Info "Signing kchat.exe (waiting for 2 * 15 seconds)..."
-            Start-Sleep -s 15
-            signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha1 /td sha1 "$archPath\kchat.exe"
-            Start-Sleep -s 15
-            signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /as "$archPath\kchat.exe"
+    #         Print-Info "Signing app.exe (waiting for 2 * 15 seconds)..."
+    #         Start-Sleep -s 15
+    #         signtool.exe sign /kc "$env:SM_KEYPAIR_NAME" /kcsp "DigiCert Signing Manager KSP" /tr "http://timestamp.digicert.com" /fd sha1 /td sha1 "$archPath\app.exe"
+    #         Start-Sleep -s 15
+    #         signtool.exe sign /kc "$env:SM_KEYPAIR_NAME" /kcsp "DigiCert Signing Manager KSP" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /as "$archPath\app.exe"
+    #     }
+    # } else {
+    #     Print-Info "Key pair name not found, DLLs and executable won't be signed."
+    # }
+
+    # Set the path
+    # $env:Path = @(
+    #     [System.Environment]::GetEnvironmentVariable('Path', 'Machine'),
+    #     [System.Environment]::GetEnvironmentVariable('Path', 'User'),
+    #     $SignToolDir
+    # ) -join ';'
+
+    # Get the smctl.exe executable
+    foreach ($archPath in "release\win-unpacked", "release\win-ia32-unpacked") {
+        Get-ChildItem -Path $archPath -recurse "*.dll" | ForEach-Object {
+            Print-Info "Signing $($_.Name)"
+            $smctl = "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools/smctl.exe"
+
+            & "$smctl" sign --input="$($_.FullName)" --keypair-alias="Key1" --verbose
         }
-    } else {
-        Print-Info "Certificate file not found, DLLs and executable won't be signed."
+
+        Print-Info "Signing kchat.exe"
+        $smctl = "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools/smctl.exe"
+
+        & "$smctl" sign --input="$archPath\kchat.exe" --keypair-alias="Key1" --verbose
     }
 }
 
