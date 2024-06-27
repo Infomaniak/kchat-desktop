@@ -184,7 +184,11 @@ jobs:
                   SENTRY_RELEASE: ${{ github.ref_name }}
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  SM_API_KEY: ${{ secrets.SM_API_KEY }}
+                  SM_CLIENT_CERT_FILE_B64: ${{ secrets.SM_CLIENT_CERT_FILE_B64 }}
+                  SM_CLIENT_CERT_PASSWORD: ${{ secrets.SM_CLIENT_CERT_PASSWORD }}
               run: |
+                  ./scripts/setup-keylocker.ps1
                   ./scripts/Makefile.ps1 build
             - name: nightly/package
               run: |
