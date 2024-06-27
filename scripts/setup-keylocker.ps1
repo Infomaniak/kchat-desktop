@@ -22,7 +22,7 @@ try {
     Headers = @{
       'x-api-key' = $env:SM_API_KEY
     }
-    Uri     = 'https://one.digicert.com/signingmanager/api-ui/v1/releases/smtools-windows-x64.msi/download'
+    Uri     = 'https://clientauth.one.ch.digicert.com/signingmanager/api-ui/v1/releases/smtools-windows-x64.msi/download'
     OutFile = 'smtools.msi'
   }
   Invoke-WebRequest @params
