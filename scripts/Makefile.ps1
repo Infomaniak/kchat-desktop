@@ -571,13 +571,13 @@ function Run-BuildForceSignature {
             Print-Info "Signing $($_.Name)"
             $smctl = "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools/smctl.exe"
 
-            & "$smctl" sign --input="$($_.FullName)" --keypair-alias="Key1" --verbose
+            & "$smctl" sign --input="$($_.FullName)" --keypair-alias="${env:SM_KEYPAIR_ALIAS}" --verbose
         }
 
         Print-Info "Signing kchat.exe"
         $smctl = "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools/smctl.exe"
 
-        & "$smctl" sign --input="$archPath\kchat.exe" --keypair-alias="Key1" --verbose
+        & "$smctl" sign --input="$archPath\kchat.exe" --keypair-alias="${env:SM_KEYPAIR_ALIAS}" --verbose
     }
 }
 
