@@ -22,11 +22,11 @@ exports.default = async (config) => {
             'powershell',
             '-NoProfile',
             '-ExecutionPolicy Unrestricted',
-            `-Command \"$Input | ${signCommand}`,
+            `-Command "${signCommand}`,
             `-FilePath '${filePath}'`,
             `-KeyPairAlias '${keyPairAlias}'`,
             `-SmctlDir '${smctlDir}'`,
-            `-SignToolDir '${signToolDir}'\"`,
+            `-SignToolDir '${signToolDir}'"`,
         ];
         const signStdout = execSync(sign.join(' '), {shell: 'powershell.exe'}).toString();
         if (signStdout.match(/FAILED/)) {
@@ -47,11 +47,11 @@ exports.default = async (config) => {
             'powershell',
             '-NoProfile',
             '-ExecutionPolicy Unrestricted',
-            `-Command \"$Input | ${verifyCommand}`,
+            `-Command ${verifyCommand}`,
             `-FilePath '${filePath}'`,
             `-Fingerprint '${fingerprint}'`,
             `-SmctlDir '${smctlDir}'`,
-            `-SignToolDir '${signToolDir}'\"`,
+            `-SignToolDir '${signToolDir}'"`,
         ];
         const verifyStdout = execSync(verify.join(' ')).toString();
         if (verifyStdout.match(/FAILED/)) {
