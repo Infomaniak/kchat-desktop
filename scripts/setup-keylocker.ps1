@@ -22,7 +22,7 @@ try {
     Headers = @{
       'x-api-key' = $env:SM_API_KEY
     }
-    Uri     = 'https://clientauth.one.ch.digicert.com/signingmanager/api-ui/v1/releases/smtools-windows-x64.msi/download'
+    Uri     = $env:SM_TOOLS_URI
     OutFile = 'smtools.msi'
   }
   Invoke-WebRequest @params
@@ -30,12 +30,20 @@ try {
   # Install SM Tools
   Write-Host "[$whoami] Installing SM Tools..."
   msiexec.exe /i smtools.msi /quiet /qn | Wait-Process
+
+  Write-Host "[$whoami] Creating certificate file holder..."
   New-Item C:\Certificate.p12.b64
+
+  Write-Host "[$whoami] Setting certificate file content..."
   Set-Content -Path C:\Certificate.p12.b64 -Value $env:SM_CLIENT_CERT_FILE_B64
   certutil -decode Certificate.p12.b64 Certificate.p12
 
   Write-Host "[$whoami] Verifying SM Tools install..."
   & "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools\smctl.exe" healthcheck --all
+
+  # Sync certificate
+  Write-Host "[$whoami] Synchronizing certificate..."
+  & "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools\smctl.exe" windows certsync --keypair-alias="${env:SM_KEYPAIR_ALIAS}"
 } catch {
   throw $PSItem
 }
