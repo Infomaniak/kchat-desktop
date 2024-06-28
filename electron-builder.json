@@ -165,6 +165,7 @@
     "artifactName": "${name}-setup-${version}-${arch}.${ext}"
   },
   "win": {
+    "sign": "./scripts/winsign.js",
     "certificateSubjectName": "INFOMANIAK NETWORK SA",
     "target": [
       "nsis",
