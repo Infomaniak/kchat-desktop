@@ -38,7 +38,7 @@ try {
 
   Write-Host "[$whoami] Setting certificate file content..."
   Set-Content -Path C:\Certificate.p12.b64 -Value $env:SM_CLIENT_CERT_FILE_B64
-  certutil -decode Certificate.p12.b64 Certificate.p12
+  certutil -decode "${env:SM_CLIENT_CERT_FILE}.b64" $env:SM_CLIENT_CERT_FILE
 
   Write-Host "[$whoami] Verifying SM Tools install..."
   & "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools\smctl.exe" healthcheck --all
