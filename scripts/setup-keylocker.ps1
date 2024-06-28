@@ -4,6 +4,8 @@ try {
   # Verify that all required environment variables are set
   $required = @(
     'SM_API_KEY',
+    'SM_TOOLS_URI',
+    'SM_KEYPAIR_ALIAS',
     'SM_CLIENT_CERT_FILE_B64',
     'SM_CLIENT_CERT_PASSWORD',
     'SM_HOST',
