@@ -191,6 +191,7 @@ jobs:
                   SM_CODE_SIGNING_CERT_SHA1_HASH: ${{ secrets.SM_CODE_SIGNING_CERT_SHA1_HASH }}
                   SM_KEYPAIR_ALIAS: ${{ secrets.SM_KEYPAIR_ALIAS }}
                   SM_TOOLS_URI: ${{ secrets.SM_TOOLS_URI }}
+                  SM_CLIENT_CERT_FILE: ${{ secrets.SM_CLIENT_CERT_FILE }}
               run: |
                   ./scripts/setup-keylocker.ps1
                   ./scripts/Makefile.ps1 build
