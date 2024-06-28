@@ -172,22 +172,6 @@ jobs:
               uses: ./.github/actions/version
             # - name: release/test
             #   uses: ./.github/actions/test
-            - name: release/setup-keylocker
-              shell: powershell
-              env:
-                  SM_API_KEY: ${{ secrets.SM_API_KEY }}
-                  SM_CLIENT_CERT_FILE_B64: ${{ secrets.SM_CLIENT_CERT_FILE_B64 }}
-                  SM_CLIENT_CERT_PASSWORD: ${{ secrets.SM_CLIENT_CERT_PASSWORD }}
-                  SM_HOST: ${{ secrets.SM_HOST }}
-                  SM_CODE_SIGNING_CERT_SHA1_HASH: ${{ secrets.SM_CODE_SIGNING_CERT_SHA1_HASH }}
-                  SM_KEYPAIR_ALIAS: ${{ secrets.SM_KEYPAIR_ALIAS }}
-                  SM_TOOLS_URI: ${{ secrets.SM_TOOLS_URI }}
-              run: |
-                  ./scripts/setup-keylocker.ps1
-            - name: release/export-keylocker
-              run: |
-                echo 'export PATH=/c/Program\ Files/DigiCert/DigiCert\ One\ Signing\ Manager\ Tools:$PATH' >> $BASH_ENV
-                echo 'export PATH=/c/Program\ Files\ \(x86\)/Windows\ Kits/10/App\ Certification\ Kit:$PATH' >> $BASH_ENV
             - name: release/build
               shell: powershell
               env:
@@ -208,6 +192,7 @@ jobs:
                   SM_KEYPAIR_ALIAS: ${{ secrets.SM_KEYPAIR_ALIAS }}
                   SM_TOOLS_URI: ${{ secrets.SM_TOOLS_URI }}
               run: |
+                  ./scripts/setup-keylocker.ps1
                   ./scripts/Makefile.ps1 build
             - name: nightly/package
               run: |
