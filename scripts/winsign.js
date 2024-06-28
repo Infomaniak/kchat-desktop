@@ -19,7 +19,7 @@ exports.default = async (config) => {
         const signCommand = '.\\scripts\\sign.ps1';
         const keyPairAlias = `"${process.env.SM_KEYPAIR_ALIAS}"`;
         const sign = [
-            'pwsh',
+            'powershell',
             '-NoProfile',
             '-ExecutionPolicy Unrestricted',
             `-Command \"$Input | ${signCommand}`,
@@ -28,7 +28,7 @@ exports.default = async (config) => {
             `-SmctlDir '${smctlDir}'`,
             `-SignToolDir '${signToolDir}'\"`,
         ];
-        const signStdout = execSync(sign.join(' ')).toString();
+        const signStdout = execSync(sign.join(' '), {shell: 'powershell.exe'}).toString();
         if (signStdout.match(/FAILED/)) {
             console.error(
                 `Error detected in ${signCommand}: [${signStdout}]`,
@@ -44,7 +44,7 @@ exports.default = async (config) => {
         const verifyCommand = '.\\scripts\\verify.ps1';
         const fingerprint = `"${process.env.SM_CODE_SIGNING_CERT_SHA1_HASH}"`;
         const verify = [
-            'pwsh',
+            'powershell',
             '-NoProfile',
             '-ExecutionPolicy Unrestricted',
             `-Command \"$Input | ${verifyCommand}`,
