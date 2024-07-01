@@ -173,10 +173,12 @@ jobs:
             # - name: release/test
             #   uses: ./.github/actions/test
             - name: release/setup-cert
+              shell: powershell
               run: |
-                echo "${{ secrets.SM_CLIENT_CERT_FILE_B64 }}" | base64 --decode > /d/Certificate_pkcs12.p12
-                echo "SM_CLIENT_CERT_FILE=D:\\Certificate_pkcs12.p12" >> "$GITHUB_ENV"
-              shell: bash
+                New-Item $Profile.CurrentUserAllHosts -Force
+                $SM_CLIENT_CERT_FILE=(Join-Path -Path (Resolve-Path .\).Path -ChildPath "cert.p12")
+                Add-Content -Path $Profile.CurrentUserAllHosts -Value "`$env:SM_CLIENT_CERT_FILE = '$SM_CLIENT_CERT_FILE'"
+                [IO.File]::WriteAllBytes($SM_CLIENT_CERT_FILE, [Convert]::FromBase64String($env:SM_CLIENT_CERT_FILE_B64))
             - name: release/build
               shell: powershell
               env:
