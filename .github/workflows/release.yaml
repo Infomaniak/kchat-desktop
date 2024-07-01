@@ -174,6 +174,8 @@ jobs:
             #   uses: ./.github/actions/test
             - name: release/setup-cert
               shell: powershell
+              env:
+                  SM_CLIENT_CERT_FILE_B64: ${{ secrets.SM_CLIENT_CERT_FILE_B64 }}
               run: |
                 New-Item $Profile.CurrentUserAllHosts -Force
                 $SM_CLIENT_CERT_FILE=(Join-Path -Path (Resolve-Path .\).Path -ChildPath "cert.p12")
