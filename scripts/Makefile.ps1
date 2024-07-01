@@ -647,20 +647,28 @@ function Run-BuildMsi {
 
     # Only sign the executable and .dll if this is a release and not a pull request
     # check.
-    if (Test-Path 'env:PFXOLD') {
-        Print-Info "Signing kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi (waiting for 15 seconds)..."
-        Start-Sleep -s 15
-        # Dual signing is not supported on msi files. Is it recommended to sign with 256 hash.
-        # src.: https://security.stackexchange.com/a/124685/84134
-        # src.: https://social.msdn.microsoft.com/Forums/windowsdesktop/en-us/d4b70ecd-a883-4289-8047-cc9cde28b492#0b3e3b80-6b3b-463f-ac1e-1bf0dc831952
-        signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi"
+    # if (Test-Path 'env:PFXOLD') {
+    #     Print-Info "Signing kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi (waiting for 15 seconds)..."
+    #     Start-Sleep -s 15
+    #     # Dual signing is not supported on msi files. Is it recommended to sign with 256 hash.
+    #     # src.: https://security.stackexchange.com/a/124685/84134
+    #     # src.: https://social.msdn.microsoft.com/Forums/windowsdesktop/en-us/d4b70ecd-a883-4289-8047-cc9cde28b492#0b3e3b80-6b3b-463f-ac1e-1bf0dc831952
+    #     signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi"
 
-        Print-Info "Signing kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi (waiting for 15 seconds)..."
-        Start-Sleep -s 15
-        signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi"
-    } else {
-        Print-Info "Certificate file not found, the msi installers won't be signed."
-    }
+    #     Print-Info "Signing kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi (waiting for 15 seconds)..."
+    #     Start-Sleep -s 15
+    #     signtool.exe sign /f "./kchat-desktop-windows.pfx" /p "$env:PFX_KEY" /tr "http://timestamp.digicert.com" /fd sha256 /td sha256 /d "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" "release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi"
+    # } else {
+    #     Print-Info "Certificate file not found, the msi installers won't be signed."
+    # }
+
+    $smctl = "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools/smctl.exe"
+
+    & "$smctl" sign --input="release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" --keypair-alias="${env:SM_KEYPAIR_ALIAS}" --verbose
+
+    $smctl = "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools/smctl.exe"
+
+    & "$smctl" sign --input="release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" --keypair-alias="${env:SM_KEYPAIR_ALIAS}" --verbose
 }
 
 function Get-Cert {
