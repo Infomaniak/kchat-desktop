@@ -172,6 +172,11 @@ jobs:
               uses: ./.github/actions/version
             # - name: release/test
             #   uses: ./.github/actions/test
+            - name: release/setup-cert
+              run: |
+                echo "${{ secrets.SM_CLIENT_CERT_FILE_B64 }}" | base64 --decode > /d/Certificate_pkcs12.p12
+                echo "SM_CLIENT_CERT_FILE=D:\\Certificate_pkcs12.p12" >> "$GITHUB_ENV"
+              shell: bash
             - name: release/build
               shell: powershell
               env:
@@ -191,7 +196,6 @@ jobs:
                   SM_CODE_SIGNING_CERT_SHA1_HASH: ${{ secrets.SM_CODE_SIGNING_CERT_SHA1_HASH }}
                   SM_KEYPAIR_ALIAS: ${{ secrets.SM_KEYPAIR_ALIAS }}
                   SM_TOOLS_URI: ${{ secrets.SM_TOOLS_URI }}
-                  SM_CLIENT_CERT_FILE: ${{ secrets.SM_CLIENT_CERT_FILE }}
               run: |
                   ./scripts/setup-keylocker.ps1
                   ./scripts/Makefile.ps1 build

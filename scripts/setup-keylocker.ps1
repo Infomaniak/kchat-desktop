@@ -33,12 +33,13 @@ try {
   Write-Host "[$whoami] Installing SM Tools..."
   msiexec.exe /i smtools.msi /quiet /qn | Wait-Process
 
-  Write-Host "[$whoami] Creating certificate file holder..."
-  New-Item C:\Certificate.p12.b64
+  # Write-Host "[$whoami] Creating certificate file holder..."
+  # New-Item C:\Certificate.p12.b64
 
-  Write-Host "[$whoami] Setting certificate file content..."
-  Set-Content -Path C:\Certificate.p12.b64 -Value $env:SM_CLIENT_CERT_FILE_B64
-  certutil -decode "${env:SM_CLIENT_CERT_FILE}.b64" $env:SM_CLIENT_CERT_FILE
+  # Write-Host "[$whoami] Setting certificate file content..."
+  # Set-Content -Path "${env:SM_CLIENT_CERT_FILE}.b64" -Value $env:SM_CLIENT_CERT_FILE_B64
+  # Write-Host "[$whoami] Decoding certificate file content..."
+  # certutil -decode "${env:SM_CLIENT_CERT_FILE}.b64" $env:SM_CLIENT_CERT_FILE
 
   Write-Host "[$whoami] Verifying SM Tools install..."
   & "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools\smctl.exe" healthcheck --all
