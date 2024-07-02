@@ -662,13 +662,14 @@ function Run-BuildMsi {
     #     Print-Info "Certificate file not found, the msi installers won't be signed."
     # }
 
-    $smctl = "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools/smctl.exe"
+    # WORKING BUT NEEDS TO SIGN VIA ELECTRON BUILDER
+    # $smctl = "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools/smctl.exe"
 
-    & "$smctl" sign --input="release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" --keypair-alias="${env:SM_KEYPAIR_ALIAS}" --verbose
+    # & "$smctl" sign --input="release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x86.msi" --keypair-alias="${env:SM_KEYPAIR_ALIAS}" --verbose
 
-    $smctl = "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools/smctl.exe"
+    # $smctl = "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools/smctl.exe"
 
-    & "$smctl" sign --input="release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" --keypair-alias="${env:SM_KEYPAIR_ALIAS}" --verbose
+    # & "$smctl" sign --input="release\kchat-desktop-$($env:COM_MATTERMOST_MAKEFILE_BUILD_ID)-x64.msi" --keypair-alias="${env:SM_KEYPAIR_ALIAS}" --verbose
 }
 
 function Get-Cert {
@@ -697,7 +698,7 @@ function Run-Build {
     # Get-Cert
     Run-BuildId
     Run-BuildElectron
-    Run-BuildForceSignature
+    # Run-BuildForceSignature
     Run-BuildLicense
     Run-BuildMsi
     Remove-Cert
