@@ -11,7 +11,7 @@ exports.default = async (config) => {
     // }
 
     // Common
-    const filePath = `"${config.path.replace(/\\/g, '/')}"`;
+    const filePath = `${config.path}`;
     const smctlDir = 'C:\\Program Files\\DigiCert\\DigiCert One Signing Manager Tools'; //`"${process.env.SM_INSTALL_DIR}"`;
     const signToolDir = 'C:\\Program Files (x86)\\Windows Kits\\10\\App Certification Kit'; //`"${process.env.SIGNTOOL_DIR}"`;
 
