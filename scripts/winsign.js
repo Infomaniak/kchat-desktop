@@ -29,6 +29,7 @@ exports.default = async (config) => {
             `-SignToolDir '${signToolDir}'"`,
         ];
         const signStdout = execSync(sign.join(' '), {shell: 'powershell.exe'}).toString();
+        console.log(`${signStdout}`);
         if (signStdout.match(/FAILED/)) {
             console.error(
                 `Error detected in ${signCommand}: [${signStdout}]`,
