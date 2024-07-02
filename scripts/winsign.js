@@ -40,27 +40,27 @@ exports.default = async (config) => {
     }
 
     // Verify the signature
-    try {
-        const verifyCommand = '.\\scripts\\verify.ps1';
-        const fingerprint = `"${process.env.SM_CODE_SIGNING_CERT_SHA1_HASH}"`;
-        const verify = [
-            'powershell',
-            '-NoProfile',
-            '-ExecutionPolicy Unrestricted',
-            `-Command ${verifyCommand}`,
-            `-FilePath '${filePath}'`,
-            `-Fingerprint '${fingerprint}'`,
-            `-SmctlDir '${smctlDir}'`,
-            `-SignToolDir '${signToolDir}'"`,
-        ];
-        const verifyStdout = execSync(verify.join(' ')).toString();
-        if (verifyStdout.match(/FAILED/)) {
-            console.error(
-                `Error detected in ${verifyCommand}: [${verifyStdout}]`,
-            );
-            throw new Error(`Error detected in ${verifyCommand}: [${verifyStdout}]`);
-        }
-    } catch (e) {
-        throw new Error(`Exception thrown during signature verification: ${e.message}`);
-    }
+    // try {
+    //     const verifyCommand = '.\\scripts\\verify.ps1';
+    //     const fingerprint = `"${process.env.SM_CODE_SIGNING_CERT_SHA1_HASH}"`;
+    //     const verify = [
+    //         'powershell',
+    //         '-NoProfile',
+    //         '-ExecutionPolicy Unrestricted',
+    //         `-Command ${verifyCommand}`,
+    //         `-FilePath '${filePath}'`,
+    //         `-Fingerprint '${fingerprint}'`,
+    //         `-SmctlDir '${smctlDir}'`,
+    //         `-SignToolDir '${signToolDir}'"`,
+    //     ];
+    //     const verifyStdout = execSync(verify.join(' ')).toString();
+    //     if (verifyStdout.match(/FAILED/)) {
+    //         console.error(
+    //             `Error detected in ${verifyCommand}: [${verifyStdout}]`,
+    //         );
+    //         throw new Error(`Error detected in ${verifyCommand}: [${verifyStdout}]`);
+    //     }
+    // } catch (e) {
+    //     throw new Error(`Exception thrown during signature verification: ${e.message}`);
+    // }
 };

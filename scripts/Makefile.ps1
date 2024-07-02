@@ -672,7 +672,7 @@ function Run-BuildMsi {
 }
 
 function Get-Cert {
-    if (Test-Path 'env:PFX') {
+    if (Test-Path 'env:PFXOLD') {
         Print-Info "Getting windows certificate"
         [IO.File]::WriteAllBytes("./kchat-desktop-windows.pfx", [Convert]::FromBase64String($env:PFX))
         $password = "$env:PFX_KEY" | convertto-securestring -asplaintext -force
@@ -684,7 +684,7 @@ function Get-Cert {
 }
 
 function Remove-Cert {
-    if (Test-Path 'env:PFX') {
+    if (Test-Path 'env:PFXOLD') {
         Print-Info "Removing windows certificate"
         Remove-Item -path "./kchat-desktop-windows.pfx"
     }
