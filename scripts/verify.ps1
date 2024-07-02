@@ -27,4 +27,4 @@ $env:Path = @(
 # Get the smctl.exe executable
 $smctl = "$SmctlDir\smctl.exe"
 
-& "$smctl" sign verify --input="$FilePath"
+& "$smctl" sign verify --input="$FilePath" --fingerprint="$Fingerprint"

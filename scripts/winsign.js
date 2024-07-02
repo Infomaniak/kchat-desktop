@@ -17,7 +17,7 @@ exports.default = async (config) => {
 
     try {
         const signCommand = '.\\scripts\\sign.ps1';
-        const keyPairAlias = `"${process.env.SM_KEYPAIR_ALIAS}"`;
+        const keyPairAlias = `${process.env.SM_KEYPAIR_ALIAS}`;
         const sign = [
             'powershell',
             '-NoProfile',
@@ -42,7 +42,7 @@ exports.default = async (config) => {
     // Verify the signature
     try {
         const verifyCommand = '.\\scripts\\verify.ps1';
-        const fingerprint = `"${process.env.SM_CODE_SIGNING_CERT_SHA1_HASH}"`;
+        const fingerprint = `${process.env.SM_CODE_SIGNING_CERT_SHA1_HASH}`;
         const verify = [
             'powershell',
             '-NoProfile',
