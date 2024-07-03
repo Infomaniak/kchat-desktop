@@ -2,13 +2,13 @@
 const {execSync} = require('child_process');
 
 exports.default = async (config) => {
-    // if (!process.env.SM_INSTALL_DIR) {
-    //     throw new Error('Unable to sign files because the path to smctl.exe is not set in the environment.');
-    // }
+    if (!process.env.SM_INSTALL_DIR) {
+        throw new Error('Unable to sign files because the path to smctl.exe is not set in the environment.');
+    }
 
-    // if (!process.env.SIGNTOOL_DIR) {
-    //     throw new Error('Unable to sign files because the path to signtool.exe is not set in the environment.');
-    // }
+    if (!process.env.SIGNTOOL_DIR) {
+        throw new Error('Unable to sign files because the path to signtool.exe is not set in the environment.');
+    }
 
     // Common
     const filePath = `${config.path}`;

@@ -7,9 +7,6 @@ on:
             - "[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]+"
             - "[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+"
 
-env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 jobs:
     begin-notification:
         runs-on: ubuntu-latest
@@ -25,31 +22,6 @@ jobs:
                   '{"username":$username,"icon_url": $icon_url, "text": $text }' > /tmp/webhook-data.json
                   curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOFICATION FAILED! check logs as this will succeed intentionally"
 
-    create-release:
-        runs-on: ubuntu-latest
-        permissions: write-all
-        outputs:
-            output_url: ${{ steps.create_release.outputs.upload_url }}
-        steps:
-            - name: release/checkout-repo
-              uses: actions/checkout@v3
-            - name: Set Prerelease Flag
-              id: prerelease_check
-              run: |
-                if [[ "${{ github.ref }}" == *"-beta"* ]] || [[ "${{ github.ref }}" == *"-alpha"* ]]; then
-                  echo "PRERELEASE=true" >> $GITHUB_ENV
-                else
-                  echo "PRERELEASE=false" >> $GITHUB_ENV
-                fi
-            - name: Create Release
-              id: create_release
-              uses: actions/create-release@v1
-              with:
-                  tag_name: ${{ github.ref }}
-                  release_name: ${{ github.ref }}
-                  draft: false
-                  prerelease: ${{ env.PRERELEASE }}
-
     # build-mac:
     #     runs-on: macos-12
     #     env:
@@ -62,8 +34,6 @@ jobs:
     #       CSC_LINK: ${{ secrets.CSC_LINK }}
     #       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
     #       SENTRY_RELEASE: ${{ github.ref_name }}
-    #     needs:
-    #         - create-release
     #     steps:
     #         - name: release/checkout-repo
     #           uses: actions/checkout@v3
@@ -100,8 +70,6 @@ jobs:
 
     # build-linux:
     #     runs-on: ubuntu-latest
-    #     needs:
-    #         - create-release
     #     steps:
     #         - name: release/checkout-repo
     #           uses: actions/checkout@v3
@@ -132,19 +100,17 @@ jobs:
     #           run: |
     #               mkdir -p ./build/linux
     #               npm run package:linux
-    #               mkdir -p ./artifacts
-    #               find ./release -type f \( -name "*.rpm" -o -name "*.deb" -o -name "*.AppImage" \) -exec cp {} ./artifacts/ \;
+    #               bash -x ./scripts/cp_artifacts.sh release ./build/linux
     #         - name: release/upload-build
-    #           uses: actions/upload-artifact@v3
+    #           uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
     #           with:
-    #               name: artifacts
-    #               path: ./artifacts
-    #               retention-days: 1
+    #             name: build-${{ runner.os }}
+    #             path: ./build
+    #             compression-level: 0
+    #             retention-days: 14
 
     build-msi-installer:
         runs-on: windows-2022
-        needs:
-            - create-release
         steps:
             - name: release/checkout-repo
               uses: actions/checkout@v3
@@ -176,10 +142,10 @@ jobs:
               shell: powershell
               env:
                   MM_WIN_INSTALLERS: 1
-                  PFX_KEY: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX_KEY }}
-                  CSC_KEY_PASSWORD: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_KEY_PASSWORD }}
-                  PFX: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX }}
-                  CSC_LINK: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_LINK }}
+                  # PFX_KEY: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX_KEY }}
+                  # CSC_KEY_PASSWORD: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_KEY_PASSWORD }}
+                  # PFX: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX }}
+                  # CSC_LINK: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_LINK }}
                   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
                   SENTRY_RELEASE: ${{ github.ref_name }}
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -195,123 +161,51 @@ jobs:
               run: |
                   ./scripts/setup-keylocker.ps1
                   ./scripts/Makefile.ps1 build
-            - name: nightly/package
+            - name: release/package
               run: |
-                  mkdir -p ./artifacts
-                  bash -x ./scripts/cp_artifacts.sh release ./artifacts
+                mkdir -p ./build/win-release
+                bash -x ./scripts/cp_artifacts.sh release ./build/win-release
             - name: release/upload-build
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
               with:
-                  name: artifacts
-                  path: ./artifacts
-                  retention-days: 1
+                name: build-${{ runner.os }}
+                path: ./build
+                compression-level: 0
+                retention-days: 14
 
-    upload-to-github:
-        runs-on: ubuntu-latest
-        needs:
-            - create-release
-            # - build-mac
-            - build-msi-installer
-            # - build-linux
-        steps:
-            - name: release/download-builds
-              uses: actions/download-artifact@v3
-              with:
-                  name: artifacts
-                  path: ./artifacts
-            - name: upload artifact mac arm64
-              continue-on-error: true
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-mac-arm64.dmg"
-                  asset_name: "kchat-desktop-${{ github.ref_name }}-mac-arm64.dmg"
-                  asset_content_type: application/octet-stream
-            - name: upload artifact mac x64
-              continue-on-error: true
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-mac-x64.dmg"
-                  asset_name: "kchat-desktop-${{ github.ref_name }}-mac-x64.dmg"
-                  asset_content_type: application/octet-stream
-            - name: upload artifact win exe
-              continue-on-error: true
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-setup-${{ github.ref_name }}-win.exe"
-                  asset_name: "kchat-desktop-setup-${{ github.ref_name }}-win.exe"
-                  asset_content_type: application/octet-stream
-            - name: upload artifact win msi x64
-              continue-on-error: true
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-x64.msi"
-                  asset_name: "kchat-desktop-${{ github.ref_name }}-x64.msi"
-                  asset_content_type: application/octet-stream
-            - name: upload artifact win msi x86
-              continue-on-error: true
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-x86.msi"
-                  asset_name: "kchat-desktop-${{ github.ref_name }}-x86.msi"
-                  asset_content_type: application/octet-stream
-            - name: upload artifact linux x86_64 AppImage
-              continue-on-error: true
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-x86_64.AppImage"
-                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-x86_64.AppImage"
-                  asset_content_type: application/octet-stream
-            - name: upload artifact linux arm64 AppImage
-              continue-on-error: true
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-arm64.AppImage"
-                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-arm64.AppImage"
-                  asset_content_type: application/octet-stream
-            - name: upload artifact linux x86_64 rpm
-              continue-on-error: true
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-x86_64.rpm"
-                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-x86_64.rpm"
-                  asset_content_type: application/octet-stream
-            - name: upload artifact linux aarch64 rpm
-              continue-on-error: true
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop-${{ github.ref_name }}-linux-aarch64.rpm"
-                  asset_name: "kchat-desktop-${{ github.ref_name }}-linux-aarch64.rpm"
-                  asset_content_type: application/octet-stream
-            - name: upload artifact linux amd64 deb
-              continue-on-error: true
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop_${{ github.ref_name }}-1_amd64.deb"
-                  asset_name: "kchat-desktop_${{ github.ref_name }}-1_amd64.deb"
-                  asset_content_type: application/octet-stream
-            - name: upload artifact linux arm64 deb
-              continue-on-error: true
-              uses: actions/upload-release-asset@v1
-              with:
-                  upload_url: ${{ needs.create-release.outputs.output_url }}
-                  asset_path: "./artifacts/kchat-desktop_${{ github.ref_name }}-1_arm64.deb"
-                  asset_name: "kchat-desktop_${{ github.ref_name }}-1_arm64.deb"
-                  asset_content_type: application/octet-stream
+    github-release:
+      runs-on: ubuntu-22.04
+      # needs:
+      #   - upload-to-s3
+      steps:
+        - name: release/checkout-repo
+          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+        - name: release/download-builds
+          uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+          with:
+            path: build
+            pattern: build-*
+            merge-multiple: true
+
+        - name: release/setup-files-for-github-release
+          run: |
+            mkdir -p ./ghr-dist
+            find ./build/{macos-release,win-release,linux} -type f -exec cp --backup=numbered -t ./ghr-dist {} +
+
+        - name: release/publish-release
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          run: |
+            VERSION=$(jq -r .version package.json)
+            RELEASE_TITLE="v${VERSION} ($(date -u "+%Y-%m-%d"))"
+            [[ $VERSION =~ "-beta" ]] || [[ $VERSION =~ "-alpha" ]] && PRERELEASE="--prerelease"
+            gh release create --draft ${PRERELEASE} --verify-tag --target "${GITHUB_SHA}" --title "${RELEASE_TITLE}" "${GITHUB_REF_NAME}" ./ghr-dist/*
 
     end-notification:
         runs-on: ubuntu-latest
         needs:
-            - upload-to-github
+            - github-release
         steps:
             - name: release/checkout-repo
               uses: actions/checkout@v3
