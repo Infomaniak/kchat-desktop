@@ -14,8 +14,8 @@ if [[ ! -d "${SRC}" ]]; then
     exit 1
 fi
 
-rm -rf "${SRC}/*-unpacked"
-cp -rv "${SRC}/*" "${DEST}/${VERSION}/"
+rm -rf "${SRC}/"*-unpacked
+cp -rv "${SRC}"/* "${DEST}/${VERSION}/"
 # cp -v "${SRC}"/*.yml "${DEST}/"
 
 exit 0
