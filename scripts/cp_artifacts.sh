@@ -9,12 +9,12 @@ if [[ ! -d "${DEST}/${VERSION}" ]]; then
     mkdir -p "${DEST}/${VERSION}"
 fi
 
-if [[ ! -d "${SRC}/${VERSION}" ]]; then
+if [[ ! -d "${SRC}" ]]; then
     echo "Can't find source directory, exiting."
     exit 1
 fi
 
-cp -rv "${SRC}/${VERSION}" "${DEST}/"
-cp -v "${SRC}"/*.yml "${DEST}/"
+cp -rv "${SRC}" "${DEST}/"
+# cp -v "${SRC}"/*.yml "${DEST}/"
 
 exit 0
