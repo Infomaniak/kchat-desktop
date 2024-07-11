@@ -183,7 +183,7 @@
     "publisherName": "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH"
   },
   "nsis": {
-    "artifactName": "${name}-setup-${version}-win.${ext}",
+    "artifactName": "${version}/${name}-setup-${version}-win.${ext}",
     "packElevateHelper": false
   },
   "rpm": {
