@@ -4,7 +4,7 @@
 'use strict';
 
 import type {MenuItem, MenuItemConstructorOptions} from 'electron';
-import {Menu} from 'electron';
+import {Menu, app} from 'electron';
 
 import ServerViewState from 'app/serverViewState';
 import ServerManager from 'common/servers/serverManager';
@@ -14,6 +14,7 @@ import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
 export function createTemplate() {
+    const appName = app.name;
     const servers = ServerManager.getOrderedServers();
     const template = [
         ...servers.slice(0, 9).map((server) => {
@@ -45,6 +46,7 @@ export function createTemplate() {
             type: 'separator',
         }, {
             role: 'quit',
+            label: localizeMessage('main.menus.tray.quit', 'Quit', {appName}),
         },
     ];
     return template;
