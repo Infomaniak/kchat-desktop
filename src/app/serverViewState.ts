@@ -57,7 +57,7 @@ export class ServerViewState {
         ipcMain.on(CLOSE_VIEW, this.handleCloseView);
         ipcMain.on(OPEN_VIEW, this.handleOpenView);
 
-        // ipcMain.handle(GET_LAST_ACTIVE, this.handleGetLastActive);
+        ipcMain.handle(GET_LAST_ACTIVE, this.handleGetLastActive);
         ipcMain.handle(GET_ORDERED_TABS_FOR_SERVER, this.handleGetOrderedViewsForServer);
         ipcMain.on(UPDATE_TAB_ORDER, this.updateTabOrder);
     }
