@@ -22,7 +22,7 @@ import closeButton from '../../assets/titlebar/chrome-close.svg';
 import maximizeButton from '../../assets/titlebar/chrome-maximize.svg';
 import minimizeButton from '../../assets/titlebar/chrome-minimize.svg';
 import restoreButton from '../../assets/titlebar/chrome-restore.svg';
-import {playSound} from '../notificationSounds';
+import {playSound, playSoundLoop} from '../notificationSounds';
 
 import '../css/components/UpgradeButton.scss';
 
