@@ -5,9 +5,10 @@
 const childProcess = require('child_process');
 const path = require('path');
 
-const {
-    sentryWebpackPlugin,
-} = require('@sentry/webpack-plugin');
+// const {
+//     sentryWebpackPlugin,
+// } = require('@sentry/webpack-plugin');
+
 const webpack = require('webpack');
 
 const VERSION = childProcess.execSync('git rev-parse --short HEAD', {cwd: __dirname}).toString();
@@ -33,13 +34,15 @@ module.exports = {
     bail: true,
     plugins: [
         new webpack.DefinePlugin(codeDefinitions),
-        sentryWebpackPlugin({
-            disable: !isProduction,
-            authToken: process.env.SENTRY_AUTH_TOKEN,
-            org: 'sentry',
-            project: 'desktop',
-            url: 'https://sentry-kchat.infomaniak.com/',
-        })],
+
+        // sentryWebpackPlugin({
+        //     disable: !isProduction,
+        //     authToken: process.env.SENTRY_AUTH_TOKEN,
+        //     org: 'sentry',
+        //     project: 'desktop',
+        //     url: 'https://sentry-kchat.infomaniak.com/',
+        // }),
+    ],
     devtool: 'source-map',
     module: {
         rules: [{
