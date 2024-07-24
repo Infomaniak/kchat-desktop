@@ -9,6 +9,7 @@ import hello from 'static/sounds/hello.mp3';
 import ripple from 'static/sounds/ripple.mp3';
 import upstairs from 'static/sounds/upstairs.mp3';
 
+import outgoingRing from '../renderer/assets/sound/outgoing_ring.mp3';
 import ring from '../renderer/assets/sound/ring.mp3';
 
 const DEFAULT_WIN7 = 'Ding';
@@ -21,6 +22,7 @@ const notificationSounds = new Map([
     ['Ripple', ripple],
     ['Upstairs', upstairs],
     ['Ring', ring],
+    ['OutgoingRing', outgoingRing],
 ]);
 
 let canPlaySound = true;

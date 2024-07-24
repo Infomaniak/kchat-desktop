@@ -47,14 +47,14 @@ class DialingModal extends React.PureComponent<Props, State> {
                     id: isCurrentUserCaller ? 'renderer.modals.call.waiting' : 'renderer.modals.call.calling',
                     defaultMessage: isCurrentUserCaller ? 'Waiting...' : 'Incoming call',
                 })});
+
+            playSoundLoop(isCurrentUserCaller ? 'OutgoingRing' : 'Ring');
+
+            setTimeout(() => {
+                const {callInfo} = this.state;
+                window.dialApi.callDeclined(callInfo);
+            }, 30000);
         });
-
-        playSoundLoop('Ring');
-
-        setTimeout(() => {
-            const {callInfo} = this.state;
-            window.dialApi.callDeclined(callInfo);
-        }, 30000);
     }
 
     onHandleDecline() {
