@@ -60,6 +60,7 @@ const downloadsSchema = Joi.object<DownloadedItems>().pattern(
         receivedBytes: Joi.number().min(0),
         totalBytes: Joi.number().min(0),
         bookmark: Joi.string(),
+        thumbnailData: Joi.string(),
     });
 
 const configDataSchemaV0 = Joi.object<ConfigV0>({
@@ -185,7 +186,7 @@ export function validateArgs(data: Args) {
 }
 
 // validate bounds_info.json
-export function validateBoundsInfo(data: SavedWindowState) {
+export function validateBoundsInfo(data: SavedWindowState | null) {
     return validateAgainstSchema(data, boundsInfoSchema);
 }
 

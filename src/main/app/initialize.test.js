@@ -64,6 +64,9 @@ jest.mock('electron', () => ({
     },
     session: {
         defaultSession: {
+            webRequest: {
+                onHeadersReceived: jest.fn(),
+            },
             setSpellCheckerDictionaryDownloadURL: jest.fn(),
             setPermissionRequestHandler: jest.fn(),
             on: jest.fn(),
@@ -72,6 +75,10 @@ jest.mock('electron', () => ({
                 onBeforeSendHeaders: jest.fn(),
             },
         },
+    },
+    protocol: {
+        registerSchemesAsPrivileged: jest.fn(),
+        handle: jest.fn(),
     },
 }));
 
@@ -189,6 +196,7 @@ jest.mock('main/CriticalErrorHandler', () => ({
 }));
 jest.mock('main/notifications', () => ({
     displayDownloadCompleted: jest.fn(),
+    getDoNotDisturb: jest.fn(),
 }));
 jest.mock('main/ParseArgs', () => jest.fn());
 jest.mock('common/servers/serverManager', () => ({
@@ -211,9 +219,6 @@ jest.mock('main/windows/callsWidgetWindow', () => ({}));
 jest.mock('main/views/viewManager', () => ({
     getViewByWebContentsId: jest.fn(),
     handleDeepLink: jest.fn(),
-}));
-jest.mock('main/windows/settingsWindow', () => ({
-    show: jest.fn(),
 }));
 jest.mock('main/windows/mainWindow', () => ({
     get: jest.fn(),

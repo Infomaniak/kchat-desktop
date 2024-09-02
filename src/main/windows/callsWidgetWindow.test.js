@@ -4,13 +4,20 @@
 import {BrowserWindow, desktopCapturer, systemPreferences, ipcMain} from 'electron';
 
 import ServerViewState from 'app/serverViewState';
-import {CALLS_WIDGET_SHARE_SCREEN, BROWSER_HISTORY_PUSH, UPDATE_SHORTCUT_MENU} from 'common/communication';
+import {
+    CALLS_WIDGET_SHARE_SCREEN,
+    BROWSER_HISTORY_PUSH,
+    UPDATE_SHORTCUT_MENU,
+    CALLS_WIDGET_OPEN_THREAD,
+    CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL,
+} from 'common/communication';
 import {
     MINIMUM_CALLS_WIDGET_WIDTH,
     MINIMUM_CALLS_WIDGET_HEIGHT,
     CALLS_PLUGIN_ID,
 } from 'common/utils/constants';
 import urlUtils from 'common/utils/url';
+import PermissionsManager from 'main/permissionsManager';
 import {
     resetScreensharePermissionsMacOS,
     openScreensharePermissionsSettingsMacOS,
@@ -53,6 +60,9 @@ jest.mock('common/utils/url', () => ({
     getFormattedPathName: jest.fn(),
     parseURL: jest.fn(),
 }));
+jest.mock('main/permissionsManager', () => ({
+    doPermissionRequest: jest.fn(),
+}));
 jest.mock('main/windows/mainWindow', () => ({
     get: jest.fn(),
     focus: jest.fn(),
@@ -70,6 +80,17 @@ jest.mock('../utils', () => ({
     getLocalPreload: jest.fn(),
     composeUserAgent: jest.fn(),
 }));
+
+const mockContextMenuReload = jest.fn();
+const mockContextMenuDispose = jest.fn();
+jest.mock('../contextMenu', () => {
+    return jest.fn().mockImplementation(() => {
+        return {
+            reload: mockContextMenuReload,
+            dispose: mockContextMenuDispose,
+        };
+    });
+});
 
 describe('main/windows/callsWidgetWindow', () => {
     describe('onShow', () => {
@@ -382,8 +403,11 @@ describe('main/windows/callsWidgetWindow', () => {
                 },
                 id: 'webContentsId',
                 getURL: () => ('http://myurl.com'),
+                removeListener: jest.fn(),
             },
+            off: jest.fn(),
             loadURL: jest.fn(),
+            isDestroyed: jest.fn(() => false),
         };
 
         const callsWidgetWindow = new CallsWidgetWindow();
@@ -392,6 +416,7 @@ describe('main/windows/callsWidgetWindow', () => {
         expect(WebContentsEventManager.addWebContentsEventListeners).toHaveBeenCalledWith(popOut.webContents);
         expect(redirectListener).toBeDefined();
         expect(frameFinishedLoadListener).toBeDefined();
+        expect(mockContextMenuReload).toHaveBeenCalledTimes(1);
 
         const event = {preventDefault: jest.fn()};
         redirectListener(event);
@@ -402,6 +427,7 @@ describe('main/windows/callsWidgetWindow', () => {
 
         closedListener();
         expect(callsWidgetWindow.popOut).not.toBeDefined();
+        expect(mockContextMenuDispose).toHaveBeenCalled();
     });
 
     it('getViewURL', () => {
@@ -580,6 +606,11 @@ describe('main/windows/callsWidgetWindow', () => {
                 arr.push([`${item.name}_${view.name}`, {
                     sendToRenderer: jest.fn(),
                     webContentsId: index,
+                    view: {
+                        server: {
+                            url: new URL('http://server-1.com'),
+                        },
+                    },
                 }]);
             });
             return arr;
@@ -587,6 +618,7 @@ describe('main/windows/callsWidgetWindow', () => {
         const views = new Map(map);
 
         beforeEach(() => {
+            PermissionsManager.doPermissionRequest.mockReturnValue(Promise.resolve(true));
             ViewManager.getViewByWebContentsId.mockImplementation((id) => [...views.values()].find((view) => view.webContentsId === id));
             callsWidgetWindow.mainView = views.get('server-1_view-1');
         });
@@ -849,6 +881,65 @@ describe('main/windows/callsWidgetWindow', () => {
                 isDestroyed: jest.fn(() => true),
             };
             expect(callsWidgetWindow.isOpen()).toBe(false);
+        });
+    });
+
+    describe('handleCallsOpenThread', () => {
+        const view = {
+            view: {
+                server: {
+                    id: 'server-1',
+                },
+            },
+            sendToRenderer: jest.fn(),
+        };
+        const callsWidgetWindow = new CallsWidgetWindow();
+        callsWidgetWindow.mainView = view;
+        callsWidgetWindow.win = {webContents: {id: 1}};
+
+        const focus = jest.fn();
+
+        beforeEach(() => {
+            MainWindow.get.mockReturnValue({focus});
+            ViewManager.getView.mockReturnValue(view);
+            ViewManager.handleDeepLink = jest.fn();
+        });
+
+        it('should switch server, focus and send open thread event', () => {
+            const threadID = 'call-thread-id';
+            callsWidgetWindow.handleCallsOpenThread({sender: {id: 1}}, threadID);
+            expect(ServerViewState.switchServer).toHaveBeenCalledWith('server-1');
+            expect(focus).toHaveBeenCalled();
+            expect(view.sendToRenderer).toBeCalledWith(CALLS_WIDGET_OPEN_THREAD, threadID);
+        });
+    });
+
+    describe('handleCallsOpenStopRecordingModal', () => {
+        const view = {
+            view: {
+                server: {
+                    id: 'server-1',
+                },
+            },
+            sendToRenderer: jest.fn(),
+        };
+        const callsWidgetWindow = new CallsWidgetWindow();
+        callsWidgetWindow.mainView = view;
+        callsWidgetWindow.win = {webContents: {id: 1}};
+
+        const focus = jest.fn();
+
+        beforeEach(() => {
+            MainWindow.get.mockReturnValue({focus});
+            ViewManager.getView.mockReturnValue(view);
+        });
+
+        it('should switch server, focus and send open modal event', () => {
+            const channelID = 'call-channel-id';
+            callsWidgetWindow.handleCallsOpenStopRecordingModal({sender: {id: 1}}, channelID);
+            expect(ServerViewState.switchServer).toHaveBeenCalledWith('server-1');
+            expect(focus).toHaveBeenCalled();
+            expect(view.sendToRenderer).toBeCalledWith(CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL, channelID);
         });
     });
 });

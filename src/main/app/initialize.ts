@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import path from 'path';
-import URL from 'url';
+import {pathToFileURL} from 'url';
 
 import {init} from '@sentry/electron/main';
-import {app, ipcMain, nativeTheme, session} from 'electron';
+import {app, ipcMain, nativeTheme, net, protocol, session} from 'electron';
 import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-extension-installer';
 import isDev from 'electron-is-dev';
 
@@ -27,10 +27,6 @@ import {
     UPDATE_CONFIGURATION,
     UPDATE_PATHS,
     GET_DARK_MODE,
-    WINDOW_CLOSE,
-    WINDOW_MAXIMIZE,
-    WINDOW_MINIMIZE,
-    WINDOW_RESTORE,
     DOUBLE_CLICK_ON_WINDOW,
     TOGGLE_SECURE_INPUT,
     UPDATE_TEAMS,
@@ -38,6 +34,7 @@ import {
     GET_APP_THEME,
     GET_APP_INFO,
     CALL_OPEN_WINDOW,
+    SHOW_SETTINGS_WINDOW,
 } from 'common/communication';
 import Config from 'common/config';
 import buildConfig from 'common/config/buildConfig';
@@ -45,6 +42,7 @@ import {IKOrigin} from 'common/config/ikConfig';
 import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {IKDriveAllowedUrls, IKLoginAllowedUrls, IKWelcomeAllowedUrls, KChatTokenWhitelist} from 'common/utils/constants';
+import {parseURL} from 'common/utils/url';
 import AllowProtocolDialog from 'main/allowProtocolDialog';
 import AppVersionManager from 'main/AppVersionManager';
 import AuthManager from 'main/authManager';
@@ -56,6 +54,8 @@ import {configPath, updatePaths} from 'main/constants';
 import CriticalErrorHandler from 'main/CriticalErrorHandler';
 import downloadsManager from 'main/downloadsManager';
 import i18nManager from 'main/i18nManager';
+import NonceManager from 'main/nonceManager';
+import {getDoNotDisturb} from 'main/notifications';
 import parseArgs from 'main/ParseArgs';
 import PermissionsManager from 'main/permissionsManager';
 import TokenManager from 'main/tokenManager';
@@ -94,6 +94,7 @@ import {
     handleToggleSecureInput,
     handleGetTheme,
     handleOpenKmeetWindow,
+    handleShowSettingsModal,
 } from './intercom';
 import {
     clearAppCache,
@@ -107,12 +108,8 @@ import {
     flushCookiesStore,
 } from './utils';
 import {
-    handleClose,
     handleDoubleClick,
     handleGetDarkMode,
-    handleMaximize,
-    handleMinimize,
-    handleRestore,
 } from './windows';
 
 import {protocols} from '../../../electron-builder.json';
@@ -277,6 +274,10 @@ function initializeBeforeAppReady() {
         nativeTheme.on('updated', handleUpdateTheme);
         handleUpdateTheme();
     }
+
+    protocol.registerSchemesAsPrivileged([
+        {scheme: 'mattermost-desktop', privileges: {standard: true}},
+    ]);
 }
 
 function initializeInterCommunicationEventListeners() {
@@ -303,14 +304,14 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(UPDATE_CONFIGURATION, updateConfiguration);
     ipcMain.on(UPDATE_TEAMS, updateTeamsHandler);
     ipcMain.handle(GET_DARK_MODE, handleGetDarkMode);
-    ipcMain.on(WINDOW_CLOSE, handleClose);
-    ipcMain.on(WINDOW_MAXIMIZE, handleMaximize);
-    ipcMain.on(WINDOW_MINIMIZE, handleMinimize);
-    ipcMain.on(WINDOW_RESTORE, handleRestore);
     ipcMain.on(DOUBLE_CLICK_ON_WINDOW, handleDoubleClick);
 
     ipcMain.on(TOGGLE_SECURE_INPUT, handleToggleSecureInput);
     ipcMain.on(CALL_OPEN_WINDOW, handleOpenKmeetWindow);
+
+    if (process.env.NODE_ENV === 'test') {
+        ipcMain.on(SHOW_SETTINGS_WINDOW, handleShowSettingsModal);
+    }
 }
 
 function handleInitializeJitsi() {
@@ -355,6 +356,24 @@ function initReceivedServer(servers: ConfigServer[]) {
 }
 
 async function initializeAfterAppReady() {
+    protocol.handle('mattermost-desktop', (request: Request) => {
+        const url = parseURL(request.url);
+        if (!url) {
+            return new Response('bad', {status: 400});
+        }
+
+        // Including this snippet from the handler docs to check for path traversal
+        // https://www.electronjs.org/docs/latest/api/protocol#protocolhandlescheme-handler
+        const pathToServe = path.join(app.getAppPath(), 'renderer', url.pathname);
+        const relativePath = path.relative(app.getAppPath(), pathToServe);
+        const isSafe = relativePath && !relativePath.startsWith('..') && !path.isAbsolute(relativePath);
+        if (!isSafe) {
+            return new Response('bad', {status: 400});
+        }
+
+        return net.fetch(pathToFileURL(pathToServe).toString());
+    });
+
     ServerManager.reloadFromConfig();
     updateServerInfos(ServerManager.getAllServers());
     ServerManager.on(SERVERS_URL_MODIFIED, (serverIds?: string[]) => {
@@ -366,25 +385,38 @@ async function initializeAfterAppReady() {
     app.setAppUserModelId('Kchat.Desktop'); // Use explicit AppUserModelID
     const defaultSession = session.defaultSession;
     defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
-        (d, c) => {
-            if (d.url.includes('/token') && d.responseHeaders) {
-                if (!d.responseHeaders['access-control-allow-origin']) {
-                    d.responseHeaders['access-control-allow-origin'] = [IKOrigin];
+        (details, callback) => {
+            if (details.url.includes('/token') && details.responseHeaders) {
+                if (!details.responseHeaders['access-control-allow-origin']) {
+                    details.responseHeaders['access-control-allow-origin'] = [IKOrigin];
                 }
-                if (!d.responseHeaders['access-control-allow-credentials']) {
-                    d.responseHeaders['access-control-allow-credentials'] = ['true'];
+                if (!details.responseHeaders['access-control-allow-credentials']) {
+                    details.responseHeaders['access-control-allow-credentials'] = ['true'];
                 }
-                if (!d.responseHeaders['access-control-allow-headers']) {
-                    d.responseHeaders['access-control-allow-headers'] = ['X-Requested-With, Authorization', 'Webapp-Version'];
+                if (!details.responseHeaders['access-control-allow-headers']) {
+                    details.responseHeaders['access-control-allow-headers'] = ['X-Requested-With, Authorization', 'Webapp-Version'];
                 }
-                if (!d.responseHeaders['access-control-allow-methods']) {
-                    d.responseHeaders['access-control-allow-methods'] = ['GET, POST, OPTIONS, PUT, DELETE'];
+                if (!details.responseHeaders['access-control-allow-methods']) {
+                    details.responseHeaders['access-control-allow-methods'] = ['GET, POST, OPTIONS, PUT, DELETE'];
                 }
             }
 
-            c({
+            const url = parseURL(details.url);
+            if (url?.protocol === 'mattermost-desktop:' && url?.pathname.endsWith('html')) {
+                callback({
+                    responseHeaders: {
+                        ...details.responseHeaders,
+                        'Content-Security-Policy': [`default-src 'self'; style-src 'self' 'nonce-${NonceManager.create(details.url)}'; media-src data:; img-src 'self' data:`],
+                    },
+                });
+                return;
+            }
+
+            downloadsManager.webRequestOnHeadersReceivedHandler(details, callback);
+
+            callback({
                 cancel: false,
-                responseHeaders: d.responseHeaders,
+                responseHeaders: details.responseHeaders,
             });
         },
     );
@@ -484,6 +516,9 @@ async function initializeAfterAppReady() {
             }
         }
     }
+
+    // Call this to initiate a permissions check for DND state
+    getDoNotDisturb();
 
     // listen for status updates and pass on to renderer
     UserActivityMonitor.on('status', (status) => {

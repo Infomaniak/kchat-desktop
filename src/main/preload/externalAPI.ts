@@ -36,9 +36,13 @@ import {
     CALLS_WIDGET_CHANNEL_LINK_CLICK,
     CALLS_LINK_CLICK,
     CALLS_POPOUT_FOCUS,
+    CALLS_WIDGET_OPEN_THREAD,
+    CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL,
+    CALLS_WIDGET_OPEN_USER_SETTINGS,
     GET_DESKTOP_SOURCES,
     UNREADS_AND_MENTIONS,
     LEGACY_OFF,
+    TAB_LOGIN_CHANGED,
 
     // Infomaniak
     CALL_CLOSED,
@@ -110,8 +114,8 @@ const desktopAPI: KchatDesktopApi = {
     setSessionExpired: (isExpired) => ipcRenderer.send(SESSION_EXPIRED, isExpired),
     onUserActivityUpdate: (listener) => createListener(USER_ACTIVITY_UPDATE, listener),
 
-    onLogin: () => ipcRenderer.send(APP_LOGGED_IN),
-    onLogout: () => ipcRenderer.send(APP_LOGGED_OUT),
+    onLogin: () => ipcRenderer.send(TAB_LOGIN_CHANGED, true),
+    onLogout: () => ipcRenderer.send(TAB_LOGIN_CHANGED, false),
 
     // Unreads/mentions/notifications
     sendNotification: (title, body, channelId, teamId, url, silent, soundName) =>
@@ -154,6 +158,15 @@ const desktopAPI: KchatDesktopApi = {
 
     focusPopout: () => ipcRenderer.send(CALLS_POPOUT_FOCUS),
     closeDial: () => ipcRenderer.send(CALL_JOINED_BROWSER),
+
+    openThreadForCalls: (threadID) => ipcRenderer.send(CALLS_WIDGET_OPEN_THREAD, threadID),
+    onOpenThreadForCalls: (listener) => createListener(CALLS_WIDGET_OPEN_THREAD, listener),
+
+    openStopRecordingModal: (channelID) => ipcRenderer.send(CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL, channelID),
+    onOpenStopRecordingModal: (listener) => createListener(CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL, listener),
+
+    openCallsUserSettings: () => ipcRenderer.send(CALLS_WIDGET_OPEN_USER_SETTINGS),
+    onOpenCallsUserSettings: (listener) => createListener(CALLS_WIDGET_OPEN_USER_SETTINGS, listener),
 
     // Utility
     unregister: (channel) => ipcRenderer.removeAllListeners(channel),

@@ -45,6 +45,7 @@ import {
     LEGACY_OFF,
     UNREADS_AND_MENTIONS,
     CALL_API_AVAILABLE,
+    TAB_LOGIN_CHANGED,
 } from 'common/communication';
 import Config from 'common/config';
 import {Logger} from 'common/log';
@@ -60,6 +61,7 @@ import {localizeMessage} from 'main/i18nManager';
 import TokenManager from 'main/tokenManager';
 import callDialingWindow from 'main/windows/callDialingWindow';
 import KmeetCallWindow from 'main/windows/kmeetCallWindow';
+import PermissionsManager from 'main/permissionsManager';
 import MainWindow from 'main/windows/mainWindow';
 
 import LoadingScreen from './loadingScreen';
@@ -67,7 +69,7 @@ import {MattermostBrowserView} from './MattermostBrowserView';
 import modalManager from './modalManager';
 import ServersSidebar from './serversSidebar';
 
-import {getLocalURLString, getLocalPreload, getAdjustedWindowBoundaries, shouldHaveBackBar} from '../utils';
+import {getLocalPreload, getAdjustedWindowBoundaries, shouldHaveBackBar} from '../utils';
 
 const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
@@ -95,6 +97,7 @@ export class ViewManager {
         ipcMain.on(BROWSER_HISTORY_PUSH, this.handleBrowserHistoryPush);
         ipcMain.on(APP_LOGGED_IN, this.handleAppLoggedIn);
         ipcMain.on(APP_LOGGED_OUT, this.handleAppLoggedOut);
+        ipcMain.on(TAB_LOGIN_CHANGED, this.handleTabLoginChanged);
         ipcMain.on(RELOAD_CURRENT_VIEW, this.handleReloadCurrentView);
         ipcMain.on(UNREAD_RESULT, this.handleUnreadChanged);
         ipcMain.on(UNREADS_AND_MENTIONS, this.handleUnreadsAndMentionsChanged);
@@ -204,7 +207,7 @@ export class ViewManager {
         const currentView = this.getCurrentView();
         if (currentView) {
             LoadingScreen.show();
-            currentView.reload();
+            currentView.reload(currentView.currentURL);
         }
     };
 
@@ -377,8 +380,20 @@ export class ViewManager {
 
     private addView = (view: MattermostBrowserView): void => {
         this.views.set(view.id, view);
-        if (this.closedViews.has(view.id)) {
-            this.closedViews.delete(view.id);
+
+        // Force a permission check for notifications
+        if (view.view.type === TAB_MESSAGING) {
+            const notificationPermission = PermissionsManager.getForServer(view.view.server)?.notifications;
+            if (!notificationPermission || (!notificationPermission.allowed && notificationPermission.alwaysDeny !== true)) {
+                PermissionsManager.doPermissionRequest(
+                    view.webContentsId,
+                    'notifications',
+                    {
+                        requestingUrl: view.view.server.url.toString(),
+                        isMainFrame: false,
+                    },
+                );
+            }
         }
     };
 
@@ -451,8 +466,7 @@ export class ViewManager {
                     // @ts-ignore
                     transparent: true,
                 }});
-            const query = new Map([['url', urlString]]);
-            const localURL = getLocalURLString('urlView.html', query);
+            const localURL = `mattermost-desktop://renderer/urlView.html?url=${encodeURIComponent(urlString)}`;
             urlView.webContents.loadURL(localURL);
             MainWindow.get()?.addBrowserView(urlView);
             const boundaries = this.views.get(this.currentView || '')?.getBounds() ?? MainWindow.getBounds();
@@ -545,7 +559,7 @@ export class ViewManager {
         // commit views
         this.views = new Map();
         for (const x of views.values()) {
-            this.views.set(x.id, x);
+            this.addView(x);
         }
 
         // commit closed
@@ -605,6 +619,25 @@ export class ViewManager {
         flushCookiesStore();
     };
 
+    private handleTabLoginChanged = (event: IpcMainEvent, loggedIn: boolean) => {
+        log.debug('handleTabLoggedIn', event.sender.id);
+        const view = this.getViewByWebContentsId(event.sender.id);
+        if (!view) {
+            return;
+        }
+
+        // This method is only called when the specific view is logged in
+        // so we need to call the `onLogin` for all of the views for the same server
+        [...this.views.values()].
+            filter((v) => v.view.server.id === view.view.server.id).
+            forEach((v) => v.onLogin(loggedIn));
+
+        if (!loggedIn) {
+            AppState.clear(view.id);
+        }
+        flushCookiesStore();
+    };
+
     private handleBrowserHistoryPush = (e: IpcMainEvent, pathName: string) => {
         log.debug('handleBrowserHistoryPush', e.sender.id, pathName);
 
@@ -623,7 +656,7 @@ export class ViewManager {
             return;
         }
         let redirectedView = this.getView(redirectedviewId) || currentView;
-        if (redirectedView !== currentView && redirectedView?.view.server.id === ServerViewState.getCurrentServer().id && redirectedView?.isLoggedIn) {
+        if (redirectedView !== currentView && redirectedView?.view.server.id === ServerViewState.getCurrentServer().id && (redirectedView?.isLoggedIn || cleanedPathName === '/')) {
             log.info('redirecting to a new view', redirectedView?.id || currentView.id);
             this.showById(redirectedView?.id || currentView.id);
         } else {
@@ -731,6 +764,9 @@ export class ViewManager {
         const {srv, view} = this.closedViews.get(id)!;
         view.isOpen = true;
         this.loadView(srv, view, url);
+        if (this.closedViews.has(view.id)) {
+            this.closedViews.delete(view.id);
+        }
         this.showById(id);
         const browserView = this.views.get(id)!;
         browserView.isVisible = true;

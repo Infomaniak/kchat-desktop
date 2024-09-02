@@ -17,6 +17,9 @@ import {
     CALLS_WIDGET_CHANNEL_LINK_CLICK,
     CALLS_WIDGET_RESIZE,
     CALLS_WIDGET_SHARE_SCREEN,
+    CALLS_WIDGET_OPEN_THREAD,
+    CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL,
+    CALLS_WIDGET_OPEN_USER_SETTINGS,
     DESKTOP_SOURCES_MODAL_REQUEST,
     GET_DESKTOP_SOURCES,
     UPDATE_SHORTCUT_MENU,
@@ -25,6 +28,7 @@ import {Logger} from 'common/log';
 import {CALLS_PLUGIN_ID, MINIMUM_CALLS_WIDGET_HEIGHT, MINIMUM_CALLS_WIDGET_WIDTH} from 'common/utils/constants';
 import {getFormattedPathName, isCallsPopOutURL, parseURL} from 'common/utils/url';
 import Utils from 'common/utils/util';
+import PermissionsManager from 'main/permissionsManager';
 import {
     composeUserAgent,
     getLocalPreload,
@@ -40,6 +44,8 @@ import type {
     CallsJoinCallMessage,
     CallsWidgetWindowConfig,
 } from 'types/calls';
+
+import ContextMenu from '../contextMenu';
 
 const log = new Logger('CallsWidgetWindow');
 
@@ -70,6 +76,9 @@ export class CallsWidgetWindow {
         ipcMain.on(CALLS_ERROR, this.forwardToMainApp(CALLS_ERROR));
         ipcMain.on(CALLS_LINK_CLICK, this.handleCallsLinkClick);
         ipcMain.on(CALLS_JOIN_REQUEST, this.forwardToMainApp(CALLS_JOIN_REQUEST));
+        ipcMain.on(CALLS_WIDGET_OPEN_THREAD, this.handleCallsOpenThread);
+        ipcMain.on(CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL, this.handleCallsOpenStopRecordingModal);
+        ipcMain.on(CALLS_WIDGET_OPEN_USER_SETTINGS, this.forwardToMainApp(CALLS_WIDGET_OPEN_USER_SETTINGS));
 
         // deprecated in favour of CALLS_LINK_CLICK
         ipcMain.on(CALLS_WIDGET_CHANNEL_LINK_CLICK, this.handleCallsWidgetChannelLinkClick);
@@ -290,8 +299,12 @@ export class CallsWidgetWindow {
             event.preventDefault();
         });
 
+        const contextMenu = new ContextMenu({}, this.popOut);
+        contextMenu.reload();
+
         this.popOut.on('closed', () => {
             delete this.popOut;
+            contextMenu.dispose();
         });
 
         // Set the userAgent so that the widget's popout is considered a desktop window in the webapp code.
@@ -391,6 +404,11 @@ export class CallsWidgetWindow {
             } catch (err) {
                 log.error('failed to reset screen sharing permissions', err);
             }
+        }
+
+        if (!await PermissionsManager.doPermissionRequest(view.webContentsId, 'screenShare', {requestingUrl: view.view.server.url.toString(), isMainFrame: false})) {
+            log.warn('screen share permissions disallowed', view.webContentsId, view.view.server.url.toString());
+            return [];
         }
 
         const screenPermissionsErrArgs = ['screen-permissions', this.callID];
@@ -502,6 +520,14 @@ export class CallsWidgetWindow {
             MainWindow.get()?.focus();
             this.mainView?.sendToRenderer(channel, ...args);
         };
+    };
+
+    private handleCallsOpenThread = (event: IpcMainEvent, threadID: string) => {
+        this.forwardToMainApp(CALLS_WIDGET_OPEN_THREAD)(event, threadID);
+    };
+
+    private handleCallsOpenStopRecordingModal = (event: IpcMainEvent, channelID: string) => {
+        this.forwardToMainApp(CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL)(event, channelID);
     };
 
     private handleCallsLinkClick = (event: IpcMainEvent, url: string) => {

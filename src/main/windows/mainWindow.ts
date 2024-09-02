@@ -18,17 +18,18 @@ import {
     SERVERS_UPDATE,
     UPDATE_APPSTATE_FOR_VIEW_ID,
     UPDATE_MENTIONS,
-    MAXIMIZE_CHANGE,
     MAIN_WINDOW_CREATED,
     MAIN_WINDOW_RESIZED,
     MAIN_WINDOW_FOCUSED,
     VIEW_FINISHED_RESIZING,
     TOGGLE_SECURE_INPUT,
+    EMIT_CONFIGURATION,
+    EXIT_FULLSCREEN,
 } from 'common/communication';
 import Config from 'common/config';
 import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
-import {DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_WIDTH, SECOND} from 'common/utils/constants';
+import {DEFAULT_WINDOW_HEIGHT, DEFAULT_WINDOW_WIDTH, MINIMUM_WINDOW_HEIGHT, MINIMUM_WINDOW_WIDTH, SECOND, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import Utils from 'common/utils/util';
 import * as Validator from 'common/Validator';
 import {boundsInfoPath} from 'main/constants';
@@ -37,7 +38,7 @@ import {localizeMessage} from 'main/i18nManager';
 import type {SavedWindowState} from 'types/mainWindow';
 
 import ContextMenu from '../contextMenu';
-import {getLocalPreload, getLocalURLString, isInsideRectangle} from '../utils';
+import {getLocalPreload, isInsideRectangle} from '../utils';
 
 const log = new Logger('MainWindow');
 const ALT_MENU_KEYS = ['Alt+F', 'Alt+E', 'Alt+V', 'Alt+H', 'Alt+W', 'Alt+P'];
@@ -48,11 +49,10 @@ const ALT_MENU_KEYS = ['Alt+F', 'Alt+E', 'Alt+V', 'Alt+H', 'Alt+W', 'Alt+P'];
 export class MainWindow extends EventEmitter {
     private win?: BrowserWindow;
 
-    private savedWindowState?: SavedWindowState;
+    private savedWindowState?: Partial<SavedWindowState>;
     private ready: boolean;
     private isResizing: boolean;
     private lastEmittedBounds?: Electron.Rectangle;
-    private isMaximized: boolean;
 
     constructor() {
         super();
@@ -60,10 +60,11 @@ export class MainWindow extends EventEmitter {
         // Create the browser window.
         this.ready = false;
         this.isResizing = false;
-        this.isMaximized = false;
 
         ipcMain.handle(GET_FULL_SCREEN_STATUS, () => this.win?.isFullScreen());
         ipcMain.on(VIEW_FINISHED_RESIZING, this.handleViewFinishedResizing);
+        ipcMain.on(EMIT_CONFIGURATION, this.handleUpdateTitleBarOverlay);
+        ipcMain.on(EXIT_FULLSCREEN, this.handleExitFullScreen);
 
         ServerManager.on(SERVERS_UPDATE, this.handleUpdateConfig);
 
@@ -84,6 +85,7 @@ export class MainWindow extends EventEmitter {
             frame: !this.isFramelessWindow(),
             fullscreen: this.shouldStartFullScreen(),
             titleBarStyle: 'hidden' as const,
+            titleBarOverlay: this.getTitleBarOverlay(),
             trafficLightPosition: {x: 12, y: 12},
             backgroundColor: '#fff', // prevents blurry text: https://electronjs.org/docs/faq#the-font-looks-blurry-what-is-this-and-what-can-i-do
             webPreferences: {
@@ -92,6 +94,7 @@ export class MainWindow extends EventEmitter {
                 spellcheck: typeof Config.useSpellChecker === 'undefined' ? true : Config.useSpellChecker,
             },
         });
+        log.debug('main window options', windowOptions);
 
         if (process.platform === 'linux') {
             windowOptions.icon = path.join(path.resolve(app.getAppPath(), 'assets'), 'linux', 'app_icon.png');
@@ -128,9 +131,6 @@ export class MainWindow extends EventEmitter {
         this.win.on('focus', this.onFocus);
         this.win.on('blur', this.onBlur);
         this.win.on('unresponsive', this.onUnresponsive);
-        this.win.on('maximize', this.onMaximize);
-        this.win.on('unmaximize', this.onUnmaximize);
-        this.win.on('restore', this.onRestore);
         this.win.on('enter-full-screen', this.onEnterFullScreen);
         this.win.on('leave-full-screen', this.onLeaveFullScreen);
         this.win.on('will-resize', this.onWillResize);
@@ -140,7 +140,7 @@ export class MainWindow extends EventEmitter {
             // This is mostly a fix for Windows 11 snapping
             this.win.on('moved', this.onResized);
         }
-        if (process.platform === 'linux') {
+        if (process.platform !== 'darwin') {
             this.win.on('resize', this.onResize);
         }
         this.win.webContents.on('before-input-event', this.onBeforeInputEvent);
@@ -154,7 +154,7 @@ export class MainWindow extends EventEmitter {
         const contextMenu = new ContextMenu({}, this.win);
         contextMenu.reload();
 
-        const localURL = getLocalURLString('index.html');
+        const localURL = 'mattermost-desktop://renderer/index.html';
         this.win.loadURL(localURL).catch(
             (reason) => {
                 log.error('failed to load', reason);
@@ -248,25 +248,46 @@ export class MainWindow extends EventEmitter {
         return os.platform() === 'darwin' || (os.platform() === 'win32' && Utils.isVersionGreaterThanOrEqualTo(os.release(), '6.2'));
     };
 
-    private getSavedWindowState = () => {
-        let savedWindowState: any;
+    private getTitleBarOverlay = () => {
+        return {
+            color: Config.darkMode ? '#2e2e2e' : '#efefef',
+            symbolColor: Config.darkMode ? '#c1c1c1' : '#474747',
+            height: TAB_BAR_HEIGHT,
+        };
+    };
+
+    private getSavedWindowState = (): Partial<SavedWindowState> => {
         try {
-            savedWindowState = JSON.parse(fs.readFileSync(boundsInfoPath, 'utf-8'));
+            let savedWindowState: SavedWindowState | null = JSON.parse(fs.readFileSync(boundsInfoPath, 'utf-8'));
             savedWindowState = Validator.validateBoundsInfo(savedWindowState);
             if (!savedWindowState) {
                 throw new Error('Provided bounds info file does not validate, using defaults instead.');
             }
             const matchingScreen = screen.getDisplayMatching(savedWindowState);
-            if (!(matchingScreen && (isInsideRectangle(matchingScreen.bounds, savedWindowState) || savedWindowState.maximized))) {
+            log.debug('closest matching screen for main window', matchingScreen);
+            if (!(isInsideRectangle(matchingScreen.bounds, savedWindowState) || savedWindowState.maximized)) {
                 throw new Error('Provided bounds info are outside the bounds of your screen, using defaults instead.');
             }
+
+            // We check for the monitor's scale factor when we want to set these bounds
+            // But only if it's not the primary monitor, otherwise it works fine as is
+            // This is due to a long running Electron issue: https://github.com/electron/electron/issues/10862
+            // This only needs to be done on Windows, it causes strange behaviour on Mac otherwise
+            const scaleFactor = process.platform === 'win32' && matchingScreen.id !== screen.getPrimaryDisplay().id ? matchingScreen.scaleFactor : 1;
+            return {
+                ...savedWindowState,
+                width: Math.floor(savedWindowState.width / scaleFactor),
+                height: Math.floor(savedWindowState.height / scaleFactor),
+            };
         } catch (e) {
             log.error(e);
 
             // Follow Electron's defaults, except for window dimensions which targets 1024x768 screen resolution.
-            savedWindowState = {width: DEFAULT_WINDOW_WIDTH, height: DEFAULT_WINDOW_HEIGHT};
+            return {
+                width: DEFAULT_WINDOW_WIDTH,
+                height: DEFAULT_WINDOW_HEIGHT,
+            };
         }
-        return savedWindowState;
     };
 
     private saveWindowState = (file: string, window: BrowserWindow) => {
@@ -276,6 +297,7 @@ export class MainWindow extends EventEmitter {
             fullscreen: window.isFullScreen(),
         };
         try {
+            log.debug('saving window state', windowState);
             fs.writeFileSync(file, JSON.stringify(windowState));
         } catch (e) {
         // [Linux] error happens only when the window state is changed before the config dir is created.
@@ -443,24 +465,6 @@ export class MainWindow extends EventEmitter {
         }, 10);
     };
 
-    private onMaximize = () => {
-        this.isMaximized = true;
-        this.win?.webContents.send(MAXIMIZE_CHANGE, true);
-        this.emitBounds();
-    };
-
-    private onUnmaximize = () => {
-        this.isMaximized = false;
-        this.win?.webContents.send(MAXIMIZE_CHANGE, false);
-        this.emitBounds();
-    };
-
-    private onRestore = () => {
-        if (this.isMaximized && !this.win?.isMaximized()) {
-            this.win?.maximize();
-        }
-    };
-
     private onEnterFullScreen = () => {
         this.win?.webContents.send('enter-full-screen');
         this.emitBounds();
@@ -503,8 +507,8 @@ export class MainWindow extends EventEmitter {
     private onResize = () => {
         log.silly('onResize');
 
-        // Workaround for macOS to stop the window from sending too many resize calls to the BrowserViews
-        if (process.platform === 'darwin' && this.isResizing) {
+        // Workaround for Windows to stop the window from sending too many resize calls to the BrowserViews
+        if (process.platform === 'win32' && this.isResizing) {
             return;
         }
         this.emitBounds();
@@ -522,6 +526,12 @@ export class MainWindow extends EventEmitter {
         this.isResizing = false;
     };
 
+    private handleExitFullScreen = () => {
+        if (this.win?.isFullScreen()) {
+            this.win.setFullScreen(false);
+        }
+    };
+
     /**
      * Server Manager update handler
      */
@@ -535,6 +545,12 @@ export class MainWindow extends EventEmitter {
 
     private handleUpdateAppStateForViewId = (viewId: string, isExpired: boolean, newMentions: number, newUnreads: boolean) => {
         this.win?.webContents.send(UPDATE_MENTIONS, viewId, newMentions, newUnreads, isExpired);
+    };
+
+    private handleUpdateTitleBarOverlay = () => {
+        if (process.platform === 'linux') {
+            this.win?.setTitleBarOverlay?.(this.getTitleBarOverlay());
+        }
     };
 }
 

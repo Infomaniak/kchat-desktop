@@ -81,10 +81,8 @@ jest.mock('main/downloadsManager', () => ({
 }));
 jest.mock('main/views/viewManager', () => ({}));
 jest.mock('main/windows/mainWindow', () => ({
-    sendToRenderer: jest.fn(),
-    on: jest.fn(),
+    get: jest.fn(),
 }));
-jest.mock('main/windows/settingsWindow', () => ({}));
 jest.mock('common/views/View', () => ({
     getViewDisplayName: (name) => name,
 }));
@@ -92,9 +90,12 @@ jest.mock('main/AutoLauncher', () => ({
     enable: jest.fn(),
     disable: jest.fn(),
 }));
-// jest.mock('main/windows/callsWidgetWindow', () => ({
-//     isOpen: jest.fn(),
-// }));
+jest.mock('main/windows/callsWidgetWindow', () => ({
+    isOpen: jest.fn(),
+}));
+jest.mock('main/views/modalManager', () => ({
+    addModal: jest.fn(),
+}));
 
 describe('main/menus/app', () => {
     const config = {

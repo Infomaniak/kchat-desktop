@@ -7,24 +7,19 @@ import type {MenuItemConstructorOptions, MenuItem, WebContents} from 'electron';
 import {app, Menu, session, shell, clipboard} from 'electron';
 
 import type {Config} from 'common/config';
-import ServerManager from 'common/servers/serverManager';
 import {t} from 'common/utils/util';
 import type {UpdateManager} from 'main/autoUpdater';
 import Diagnostics from 'main/diagnostics';
 import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
 import TokenManager from 'main/tokenManager';
-import {getLogsPath, getLocalPreload, getLocalURLString} from 'main/utils';
+import {getLogsPath, getLocalPreload} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
 
+// import ServerManager from 'common/servers/serverManager';
 // import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
-// import log from 'electron-log';
-// import ServerViewState from 'app/serverViewState';
-// import {OPEN_SERVERS_DROPDOWN, SHOW_NEW_SERVER_MODAL} from 'common/communication';
-// import {getViewDisplayName} from 'common/views/View';
-// import type {ViewType} from 'common/views/View';
 
 export function createTemplate(config: Config, updateManager: UpdateManager) {
     const separatorItem: MenuItemConstructorOptions = {
@@ -59,7 +54,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
 
             ModalManager.addModal(
                 'settingsModal',
-                getLocalURLString('settings.html'),
+                'mattermost-desktop://renderer/settings.html',
                 getLocalPreload('internalAPI.js'),
                 null,
                 mainWindow,

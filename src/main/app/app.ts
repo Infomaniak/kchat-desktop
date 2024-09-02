@@ -60,7 +60,11 @@ export function handleAppBrowserWindowCreated(event: Event, newWindow: BrowserWi
     log.debug('handleAppBrowserWindowCreated');
 
     // Screen cannot be required before app is ready
-    resizeScreen(newWindow);
+    if (app.isReady()) {
+        resizeScreen(newWindow);
+    } else {
+        newWindow.once('restore', () => resizeScreen(newWindow));
+    }
 }
 
 export function handleAppWillFinishLaunching() {

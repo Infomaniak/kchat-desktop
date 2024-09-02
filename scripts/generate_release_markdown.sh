@@ -21,17 +21,13 @@ Release notes can be found here: https://docs.mattermost.com/install/desktop-app
 
 The download links can be found below.
 
-#### Windows - msi files (beta)
-$(print_link "${BASE_URL}/kchat-desktop-${VERSION}-x64.msi")
-$(print_link "${BASE_URL}/kchat-desktop-${VERSION}-x86.msi")
-
-#### Windows - setup exe files
-$(print_link "${BASE_URL}/kchat-desktop-setup-${VERSION}-win.exe")
+#### Windows - installer files
+$(print_link "${BASE_URL}/kchat-desktop-${VERSION}-win-x64.msi")
+$(print_link "${BASE_URL}/kchat-desktop-${VERSION}-win-arm64.msi") (beta)
 
 #### Windows - zip files
-$(print_link "${BASE_URL}/kchat-desktop-${VERSION}-win32.zip")
-$(print_link "${BASE_URL}/kchat-desktop-${VERSION}-win64.zip")
-$(print_link "${BASE_URL}/kchat-desktop-${VERSION}-arm64.zip") (beta)
+$(print_link "${BASE_URL}/kchat-desktop-${VERSION}-win-x64.zip")
+$(print_link "${BASE_URL}/kchat-desktop-${VERSION}-win-arm64.zip") (beta)
 
 #### Mac
 $(print_link "${BASE_URL}/kchat-desktop-${VERSION}-mac-universal.dmg")
