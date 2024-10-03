@@ -40,7 +40,7 @@ export function handleGetLocalConfiguration() {
     };
 }
 
-export function updateConfiguration(event: Electron.IpcMainEvent, properties: Array<{key: keyof ConfigType; data: ConfigType[keyof ConfigType]}> = []) {
+export function updateConfiguration(event: Electron.IpcMainEvent | null, properties: Array<{key: keyof ConfigType; data: ConfigType[keyof ConfigType]}> = []) {
     log.debug('updateConfiguration', properties);
 
     if (properties.length) {
