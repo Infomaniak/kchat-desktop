@@ -10,7 +10,6 @@ const exec = promisify(execOriginal);
 
 import type {BrowserWindow} from 'electron';
 import {app} from 'electron';
-import isDev from 'electron-is-dev';
 
 import {BACK_BAR_HEIGHT, customLoginRegexPaths, PRODUCTION, SERVERS_SIDEBAR_WIDTH, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import {isAdminUrl, isPluginUrl, isTeamUrl, isUrlType, parseURL} from 'common/utils/url';
@@ -107,7 +106,7 @@ export function composeUserAgent() {
     // eslint-disable-next-line no-undef
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const isMas = __IS_MAC_APP_STORE__ || isDev ? ` Mas/${app.getVersion()}` : '';
+    const isMas = __IS_MAC_APP_STORE__ ? ` Mas/${app.getVersion()}` : '';
 
     // filter out the Mattermost tag that gets added earlier on
     const filteredUserAgent = baseUserAgent.filter((ua) => !ua.startsWith('Mattermost'));

@@ -234,6 +234,10 @@ function initializeBeforeAppReady() {
         return;
     }
 
+    if (process.platform === 'darwin' && process.arch === 'x64') {
+        updateConfiguration(null, [{key: 'enableHardwareAcceleration', data: false}]);
+    }
+
     // if (process.env.NODE_ENV !== 'test') {
     // app.enableSandbox();
     // }
