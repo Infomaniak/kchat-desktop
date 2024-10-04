@@ -99,6 +99,7 @@ import {
     TEAM_MOUSE_OUT,
     UPDATE_SIDEBAR_MODAL,
     SWITCH_SERVER_SIDEBAR,
+    SCREEN_SHARE_PERMISSIONS,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -161,6 +162,7 @@ contextBridge.exposeInMainWorld('desktop', {
     getDownloadLocation: (downloadLocation) => ipcRenderer.invoke(GET_DOWNLOAD_LOCATION, downloadLocation),
     getLanguageInformation: () => ipcRenderer.invoke(GET_LANGUAGE_INFORMATION),
 
+    getScreenPermissions: () => ipcRenderer.invoke(SCREEN_SHARE_PERMISSIONS),
     onSynchronizeConfig: (listener) => ipcRenderer.on('synchronize-config', () => listener()),
     onReloadConfiguration: (listener) => ipcRenderer.on(RELOAD_CONFIGURATION, () => listener()),
     onDarkModeChange: (listener) => ipcRenderer.on(DARK_MODE_CHANGE, (_, darkMode) => listener(darkMode)),

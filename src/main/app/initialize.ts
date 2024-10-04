@@ -38,6 +38,7 @@ import {
     GET_APP_THEME,
     GET_APP_INFO,
     CALL_OPEN_WINDOW,
+    SCREEN_SHARE_PERMISSIONS,
 } from 'common/communication';
 import Config from 'common/config';
 import buildConfig from 'common/config/buildConfig';
@@ -94,6 +95,7 @@ import {
     handleToggleSecureInput,
     handleGetTheme,
     handleOpenKmeetWindow,
+    getScreenPermissions,
 } from './intercom';
 import {
     clearAppCache,
@@ -312,6 +314,7 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.on(WINDOW_MINIMIZE, handleMinimize);
     ipcMain.on(WINDOW_RESTORE, handleRestore);
     ipcMain.on(DOUBLE_CLICK_ON_WINDOW, handleDoubleClick);
+    ipcMain.on(SCREEN_SHARE_PERMISSIONS, getScreenPermissions);
 
     ipcMain.on(TOGGLE_SECURE_INPUT, handleToggleSecureInput);
     ipcMain.on(CALL_OPEN_WINDOW, handleOpenKmeetWindow);

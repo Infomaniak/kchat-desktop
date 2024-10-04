@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {IpcMainEvent, IpcMainInvokeEvent} from 'electron';
-import {app, Menu} from 'electron';
+import {app, Menu, systemPreferences} from 'electron';
 
 import ServerViewState from 'app/serverViewState';
 import Config from 'common/config';
@@ -170,6 +170,10 @@ export function handleToggleSecureInput(event: IpcMainEvent, secureInput: boolea
 
 export function handleOpenKmeetWindow(_: any, callInfo: object) {
     KmeetCallWindow.create(callInfo);
+}
+
+export function getScreenPermissions() {
+    return systemPreferences.getMediaAccessStatus('screen') === 'granted';
 }
 
 export function handleShowSettingsModal() {

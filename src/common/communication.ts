@@ -218,6 +218,7 @@ export const VALIDATE_SERVER_URL = 'validate-server-url';
 export const GET_IS_DEV_MODE = 'get-is-dev-mode';
 
 export const TOGGLE_SECURE_INPUT = 'toggle-secure-input';
+export const SCREEN_SHARE_PERMISSIONS = 'screen-share-permissions';
 
 export const REQUEST_BROWSER_HISTORY_STATUS = 'request-browser-history-status';
 export const BROWSER_HISTORY_STATUS_UPDATED = 'browser-history-status-updated';
