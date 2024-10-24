@@ -14,7 +14,7 @@ import {
     getPopupTarget,
     RemoteDrawMain,
 } from '@infomaniak/jitsi-meet-electron-sdk';
-import {app, BrowserWindow, ipcMain, shell} from 'electron';
+import {app, BrowserWindow, ipcMain, shell, systemPreferences} from 'electron';
 
 import CallDialingWindow from './callDialingWindow';
 import MainWindow from './mainWindow';
@@ -121,6 +121,7 @@ class KmeetCallWindow {
 
     constructor() {
         ipcMain.handle('get-call-info', () => this.callInfo);
+        ipcMain.handle('screen-share-permissions', () => systemPreferences.getMediaAccessStatus('screen') === 'granted');
         ipcMain.on(CALL_ENDED, this.handleCallEnded);
         ipcMain.on(CALL_READY_TO_CLOSE, this.handleCallEnded);
         ipcMain.on(CALL_RING_CLOSE_WINDOW, this.handleCloseRingWindow);
