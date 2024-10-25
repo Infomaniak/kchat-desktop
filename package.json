@@ -192,7 +192,7 @@
     },
     "dependencies": {
         "@infomaniak/compass-icons": "0.13.0",
-        "@infomaniak/jitsi-meet-electron-sdk": "^6.0.10-nightly.16",
+        "@infomaniak/jitsi-meet-electron-sdk": "^6.0.10-nightly.18",
         "@sentry/electron": "^4.22.0",
         "auto-launch": "5.0.6",
         "bootstrap": "4.6.1",

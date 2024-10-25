@@ -125,10 +125,6 @@ const onErrorOccurred = ({error}: Parameters<ExternalAPIEventCallbacks['errorOcc
     }
 };
 
-window.desktopAPI = {
-    getScreenPermissions: () => ipcRenderer.invoke('screen-share-permissions'),
-};
-
 window.jitsiNodeAPI = {
     setupRenderer,
     getCallInfo: () => ipcRenderer.invoke('get-call-info'),

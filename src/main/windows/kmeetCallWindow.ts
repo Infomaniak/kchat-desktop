@@ -121,7 +121,10 @@ class KmeetCallWindow {
 
     constructor() {
         ipcMain.handle('get-call-info', () => this.callInfo);
-        ipcMain.handle('screen-share-permissions', () => systemPreferences.getMediaAccessStatus('screen') === 'granted');
+        ipcMain.handle('screen-share-permissions', () => {
+            log.debug('getMediaAccessStatus screen', systemPreferences.getMediaAccessStatus('screen'));
+            return systemPreferences.getMediaAccessStatus('screen');
+        });
         ipcMain.on(CALL_ENDED, this.handleCallEnded);
         ipcMain.on(CALL_READY_TO_CLOSE, this.handleCallEnded);
         ipcMain.on(CALL_RING_CLOSE_WINDOW, this.handleCloseRingWindow);
