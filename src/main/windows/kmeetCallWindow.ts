@@ -125,6 +125,9 @@ class KmeetCallWindow {
             log.debug('getMediaAccessStatus screen', systemPreferences.getMediaAccessStatus('screen'));
             return systemPreferences.getMediaAccessStatus('screen');
         });
+        ipcMain.handle('open-screen-permission-settings', () => {
+            return shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture');
+        });
         ipcMain.on(CALL_ENDED, this.handleCallEnded);
         ipcMain.on(CALL_READY_TO_CLOSE, this.handleCallEnded);
         ipcMain.on(CALL_RING_CLOSE_WINDOW, this.handleCloseRingWindow);
