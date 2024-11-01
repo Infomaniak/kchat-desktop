@@ -230,6 +230,7 @@ class KmeetCallWindow {
         setupPowerMonitorMain(this.callWindow);
         setupScreenSharingMain(this.callWindow, app.getName(), electronBuilder.appId);
         new RemoteDrawMain(this.callWindow); // eslint-disable-line no-new
+        this.callWindow?.webContents.openDevTools({mode: 'detach'});
     }
 
     create(callInfo: CallInfo) {
@@ -240,6 +241,12 @@ class KmeetCallWindow {
 
         if (!mainWindow || !currentServer) {
             log.error('Main window does not exist');
+            return;
+        }
+
+        if (this.callWindow && !this.callWindow.isDestroyed()) {
+            log.info('Call window is already open, focusing on the existing window.');
+            this.callWindow.focus();
             return;
         }
 
