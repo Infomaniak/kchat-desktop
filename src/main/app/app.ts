@@ -27,6 +27,8 @@ if (!app.commandLine.hasSwitch('enable-features')) {
     app.commandLine.appendSwitch('enable-features', 'WebRTCPipeWireCapturer');
 }
 
+app.commandLine.appendSwitch('enable-features', `${app.commandLine.getSwitchValue('enable-features')},PlatformHEVCDecoderSupport`);
+
 const log = new Logger('App.App');
 
 //
