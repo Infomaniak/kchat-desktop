@@ -271,6 +271,7 @@ contextBridge.exposeInMainWorld('desktop', {
             teamsOrderPreference,
             isReadyToSwitchServer,
             userLocale,
+            modalOverlayEnabled,
         ) => listener(
             servers,
             teams,
@@ -283,6 +284,7 @@ contextBridge.exposeInMainWorld('desktop', {
             teamsOrderPreference,
             isReadyToSwitchServer,
             userLocale,
+            modalOverlayEnabled,
         )),
 
         onUpdateModal: (listener) => ipcRenderer.on(UPDATE_SIDEBAR_MODAL, (_,

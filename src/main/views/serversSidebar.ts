@@ -10,8 +10,15 @@ import {
     GET_SERVER_THEME,
     MAIN_WINDOW_CREATED,
     MAIN_WINDOW_RESIZED,
+    MODAL_CLOSE,
+    MODAL_OPEN,
     PREFERRED_THEME,
-    SERVERS_UPDATE, SWITCH_SERVER, SWITCH_SERVER_SIDEBAR, TEAMS_ORDER_PREFERENCE, TEAMS_ORDER_PREFERENCE_UPDATED, UPDATE_APPSTATE,
+    SERVERS_UPDATE,
+    SWITCH_SERVER,
+    SWITCH_SERVER_SIDEBAR,
+    TEAMS_ORDER_PREFERENCE,
+    TEAMS_ORDER_PREFERENCE_UPDATED,
+    UPDATE_APPSTATE,
     UPDATE_SERVERS_SIDEBAR,
     UPDATE_TEAMS,
     USER_LOCALE,
@@ -39,6 +46,7 @@ export class ServerSidebar {
     private teamsOrderPreference: string[];
     private isReadyToSwitchServer: boolean;
     private shouldDisplay: boolean;
+    private modalOverlayEnabled: boolean;
 
     private unreads: Map<string, boolean>;
     private mentions: Map<string, number>;
@@ -56,6 +64,7 @@ export class ServerSidebar {
         this.userLocale = '';
         this.isReadyToSwitchServer = false;
         this.shouldDisplay = false;
+        this.modalOverlayEnabled = false;
 
         this.unreads = new Map();
         this.mentions = new Map();
@@ -73,6 +82,8 @@ export class ServerSidebar {
         ipcMain.on(SWITCH_SERVER, this.handleSwitchServer);
         ipcMain.on(SWITCH_SERVER_SIDEBAR, this.handleSwitchServerSidebar);
         ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
+        ipcMain.on(MODAL_OPEN, this.handleModalOpen);
+        ipcMain.on(MODAL_CLOSE, this.handleModalClose);
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
     }
@@ -231,7 +242,18 @@ export class ServerSidebar {
             this.teamsOrderPreference,
             this.isReadyToSwitchServer,
             this.userLocale,
+            this.modalOverlayEnabled,
         );
+    };
+
+    private handleModalOpen = () => {
+        this.modalOverlayEnabled = true;
+        this.updateSidebar();
+    };
+
+    private handleModalClose = () => {
+        this.modalOverlayEnabled = false;
+        this.updateSidebar();
     };
 
     private updateWindowBounds = () => {
