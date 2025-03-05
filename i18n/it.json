@@ -15,6 +15,7 @@
     "renderer.components.welcomeScreen.slides.welcome.message": "Se non avete kChat, scopritelo con kSuite.",
     "renderer.components.welcomeScreen.button.login": "Effettuare nuovamente il login",
     "main.menus.app.view.updateTeams": "Aggiornamento delle organizzazioni",
+    "main.menus.app.view.devToolsSidebar": "Herramientas de desarrollo para la barra lateral",
     "common.tabs.TAB_FOCALBOARD": "Board",
     "common.permissions.canBasicAuth": "Autenticazione WEB",
     "renderer.modals.certificate.certificateModal.noCertsAvailable": "Nessun certificato disponibile",

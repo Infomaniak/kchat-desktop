@@ -114,6 +114,10 @@ export class ServerSidebar {
         this.modal = ServerSidebarShortcutModalView.init(mainWindow);
     };
 
+    openSidebarDevtools = () => {
+        this.view?.webContents.openDevTools({mode: 'detach'});
+    };
+
     hide = () => {
         const mainWindow = MainWindow.get();
 
