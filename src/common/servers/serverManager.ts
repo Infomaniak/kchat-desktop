@@ -221,9 +221,37 @@ export class ServerManager extends EventEmitter {
         this.persistServers();
     };
 
+    manageServersReceivedHandler = (receivedServers?: ConfigServer[]) => {
+        if (!receivedServers) {
+            return;
+        }
+
+        const existingServers = this.getAllServers();
+
+        // Add new servers to ServerManager list if they don't already exist
+        receivedServers.forEach((incomingServer) => {
+            if (this.serverNameExist(incomingServer)) {
+                return;
+            }
+            this.addServer(incomingServer);
+        });
+
+        // Remove servers that are no longer in the received list
+        existingServers.forEach((localServer) => {
+            const serverExists = receivedServers.some((incomingServer) => {
+                return incomingServer.url === localServer.url.origin;
+            });
+
+            if (!serverExists) {
+                this.removeServer(localServer.id);
+            }
+        });
+        this.persistServers();
+    };
+
     removePredefinedServersHandler = (predefined: boolean) => {
-        const predifinedServers = this.getAllServers().filter((server) => server.isPredefined === predefined);
-        predifinedServers && predifinedServers.forEach(({id}: MattermostServer) => this.removeServer(id));
+        const predefinedServers = this.getAllServers().filter((server) => server.isPredefined === predefined);
+        predefinedServers && predefinedServers.forEach(({id}: MattermostServer) => this.removeServer(id));
         this.persistServers();
     };
 
