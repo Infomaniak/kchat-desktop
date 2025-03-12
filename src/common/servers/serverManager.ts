@@ -243,6 +243,7 @@ export class ServerManager extends EventEmitter {
             });
 
             if (!serverExists) {
+                // Comment this line if you want to target your local environment by modifying a server URL in config.json
                 this.removeServer(localServer.id);
             }
         });
