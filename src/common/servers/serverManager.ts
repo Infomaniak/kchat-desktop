@@ -251,7 +251,7 @@ export class ServerManager extends EventEmitter {
 
     removePredefinedServersHandler = (predefined: boolean) => {
         const predefinedServers = this.getAllServers().filter((server) => server.isPredefined === predefined);
-        predefinedServers && predefinedServers.forEach(({id}: MattermostServer) => this.removeServer(id));
+        predefinedServers?.forEach(({id}: MattermostServer) => this.removeServer(id));
         this.persistServers();
     };
 
