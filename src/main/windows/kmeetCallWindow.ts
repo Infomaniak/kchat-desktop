@@ -230,7 +230,6 @@ class KmeetCallWindow {
         setupPowerMonitorMain(this.callWindow);
         setupScreenSharingMain(this.callWindow, app.getName(), electronBuilder.appId);
         new RemoteDrawMain(this.callWindow); // eslint-disable-line no-new
-        this.callWindow?.webContents.openDevTools({mode: 'detach'});
     }
 
     create(callInfo: CallInfo) {
