@@ -13,8 +13,9 @@ export class MattermostServer {
     url!: URL;
     isPredefined: boolean;
     teamInfo?: ServerTeam;
+    initialLoadURL?: URL;
 
-    constructor(server: Server, isPredefined: boolean) {
+    constructor(server: Server, isPredefined: boolean, initialLoadURL?: URL) {
         this.id = uuid();
 
         this.name = server.name;
@@ -22,6 +23,7 @@ export class MattermostServer {
         this.updateURL(server.url);
 
         this.isPredefined = isPredefined;
+        this.initialLoadURL = initialLoadURL;
     }
 
     updateURL = (url: string) => {

@@ -23,7 +23,7 @@ export type DesktopAPI = {
     onLogin: () => void;
     onLogout: () => void;
     sendNotification: (title: string, body: string, channelId: string, teamId: string, url: string, silent: boolean, soundName: string) => Promise<{
-        result: string;
+        status: string;
         reason?: string;
         data?: string;
     }>;
@@ -59,5 +59,15 @@ export type DesktopAPI = {
     onJoinCallRequest: (listener: (callID: string) => void) => () => void;
     openLinkFromCalls: (url: string) => void;
     focusPopout: () => void;
+    openThreadForCalls: (threadID: string) => void;
+    onOpenThreadForCalls: (listener: (threadID: string) => void) => () => void;
+    openStopRecordingModal: (channelID: string) => void;
+    onOpenStopRecordingModal: (listener: (channelID: string) => void) => () => void;
+    openCallsUserSettings: () => void;
+    onOpenCallsUserSettings: (listener: () => void) => () => void;
+    onSendMetrics: (listener: (metricsMap: Map<string, {
+        cpu?: number;
+        memory?: number;
+    }>) => void) => () => void;
     unregister: (channel: string) => void;
 };

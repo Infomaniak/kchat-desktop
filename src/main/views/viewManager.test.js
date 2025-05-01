@@ -1,23 +1,22 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {dialog} from 'electron';
-
 import ServerViewState from 'app/serverViewState';
 import {BROWSER_HISTORY_PUSH, LOAD_SUCCESS, SET_ACTIVE_VIEW} from 'common/communication';
 import ServerManager from 'common/servers/serverManager';
 import urlUtils from 'common/utils/url';
 import {TAB_MESSAGING} from 'common/views/View';
+import PermissionsManager from 'main/permissionsManager';
 import MainWindow from 'main/windows/mainWindow';
 
 import LoadingScreen from './loadingScreen';
-import {MattermostBrowserView} from './MattermostBrowserView';
+import {MattermostWebContentsView} from './MattermostWebContentsView';
 import {ViewManager} from './viewManager';
 
 jest.mock('electron', () => ({
     app: {
         getAppPath: () => '/path/to/app',
-        getPath: jest.fn(),
+        getPath: jest.fn(() => '/valid/downloads/path'),
     },
     dialog: {
         showErrorBox: jest.fn(),
@@ -32,6 +31,7 @@ jest.mock('app/serverViewState', () => ({
     getCurrentServer: jest.fn(),
     updateCurrentView: jest.fn(),
     init: jest.fn(),
+    showNewServerModal: jest.fn(),
 }));
 jest.mock('common/views/View', () => ({
     getViewName: jest.fn((a, b) => `${a}-${b}`),
@@ -61,8 +61,17 @@ jest.mock('main/app/utils', () => ({
     flushCookiesStore: jest.fn(),
 }));
 
+jest.mock('main/app/intercom', () => ({
+    handleWelcomeScreenModal: jest.fn(),
+}));
+
 jest.mock('main/i18nManager', () => ({
     localizeMessage: jest.fn(),
+}));
+
+jest.mock('main/permissionsManager', () => ({
+    getForServer: jest.fn(),
+    doPermissionRequest: jest.fn(),
 }));
 
 jest.mock('main/server/serverInfo', () => ({
@@ -75,6 +84,9 @@ jest.mock('main/views/loadingScreen', () => ({
 jest.mock('main/windows/mainWindow', () => ({
     get: jest.fn(),
     on: jest.fn(),
+}));
+jest.mock('main/performanceMonitor', () => ({
+    registerView: jest.fn(),
 }));
 jest.mock('common/servers/serverManager', () => ({
     getOrderedTabsForServer: jest.fn(),
@@ -103,12 +115,13 @@ jest.mock('common/servers/serverManager', () => ({
     }),
 }));
 
-jest.mock('./MattermostBrowserView', () => ({
-    MattermostBrowserView: jest.fn(),
+jest.mock('./MattermostWebContentsView', () => ({
+    MattermostWebContentsView: jest.fn(),
 }));
 
-jest.mock('./modalManager', () => ({
+jest.mock('main/views/modalManager', () => ({
     showModal: jest.fn(),
+    removeModal: jest.fn(),
     isModalDisplayed: jest.fn(),
 }));
 jest.mock('./webContentEvents', () => ({}));
@@ -124,12 +137,14 @@ describe('main/views/viewManager', () => {
         beforeEach(() => {
             viewManager.showById = jest.fn();
             MainWindow.get.mockReturnValue({});
-            MattermostBrowserView.mockImplementation((view) => ({
+            MattermostWebContentsView.mockImplementation((view) => ({
                 on: jest.fn(),
                 load: loadFn,
                 once: onceFn,
                 destroy: destroyFn,
                 id: view.id,
+                view,
+                webContentsId: 1,
             }));
         });
 
@@ -144,18 +159,66 @@ describe('main/views/viewManager', () => {
             expect(viewManager.closedViews.has('view1')).toBe(true);
         });
 
-        it('should remove from remove from closedViews when the view is open', () => {
-            viewManager.closedViews.set('view1', {});
-            expect(viewManager.closedViews.has('view1')).toBe(true);
-            viewManager.loadView({id: 'server1'}, {id: 'view1', isOpen: true});
-            expect(viewManager.closedViews.has('view1')).toBe(false);
-        });
-
         it('should add view to views map and add listeners', () => {
             viewManager.loadView({id: 'server1'}, {id: 'view1', isOpen: true}, 'http://server-1.com/subpath');
             expect(viewManager.views.has('view1')).toBe(true);
             expect(onceFn).toHaveBeenCalledWith(LOAD_SUCCESS, viewManager.activateView);
             expect(loadFn).toHaveBeenCalledWith('http://server-1.com/subpath');
+        });
+
+        it('should force a permission check for new views', () => {
+            viewManager.loadView({id: 'server1'}, {id: 'view1', isOpen: true, type: TAB_MESSAGING, server: {url: new URL('http://server-1.com')}}, 'http://server-1.com/subpath');
+            expect(PermissionsManager.doPermissionRequest).toBeCalledWith(
+                1,
+                'notifications',
+                {
+                    requestingUrl: 'http://server-1.com/',
+                    isMainFrame: false,
+                },
+            );
+        });
+    });
+
+    describe('openClosedView', () => {
+        const viewManager = new ViewManager();
+
+        beforeEach(() => {
+            viewManager.showById = jest.fn();
+            MainWindow.get.mockReturnValue({});
+            MattermostWebContentsView.mockImplementation((view) => ({
+                on: jest.fn(),
+                load: jest.fn(),
+                once: jest.fn(),
+                destroy: jest.fn(),
+                id: view.id,
+                view,
+            }));
+        });
+
+        it('should remove from closedViews when the view is open', () => {
+            viewManager.closedViews.set('view1', {srv: {id: 'server1'}, view: {id: 'view1'}});
+            expect(viewManager.closedViews.has('view1')).toBe(true);
+            viewManager.openClosedView('view1');
+            expect(viewManager.closedViews.has('view1')).toBe(false);
+        });
+    });
+
+    describe('reload', () => {
+        const viewManager = new ViewManager();
+        const currentView = {
+            currentURL: new URL('http://server-1.com/team/channel'),
+            reload: jest.fn(),
+        };
+        viewManager.views.set('view1', currentView);
+        viewManager.currentView = 'view1';
+
+        afterEach(() => {
+            jest.resetAllMocks();
+        });
+
+        it('should reload using the current URL', () => {
+            viewManager.reload();
+            expect(currentView.reload).toBeCalledWith(new URL('http://server-1.com/team/channel'));
         });
     });
 
@@ -176,7 +239,7 @@ describe('main/views/viewManager', () => {
             const onceFn = jest.fn();
             const loadFn = jest.fn();
             const destroyFn = jest.fn();
-            MattermostBrowserView.mockImplementation((view) => ({
+            MattermostWebContentsView.mockImplementation((view) => ({
                 on: jest.fn(),
                 load: loadFn,
                 once: onceFn,
@@ -196,7 +259,7 @@ describe('main/views/viewManager', () => {
 
         it('should recycle existing views', () => {
             const makeSpy = jest.spyOn(viewManager, 'makeView');
-            const view = new MattermostBrowserView({
+            const view = new MattermostWebContentsView({
                 id: 'view1',
                 server: {
                     id: 'server1',
@@ -262,6 +325,7 @@ describe('main/views/viewManager', () => {
                     isOpen: true,
                     url: new URL('http://server1.com/view'),
                 },
+                undefined,
             );
             makeSpy.mockRestore();
         });
@@ -633,11 +697,12 @@ describe('main/views/viewManager', () => {
             expect(view.load).not.toHaveBeenCalled();
         });
 
-        it('should throw dialog when cannot find the view', () => {
+        it('should open new server modal when using a server that does not exist', () => {
+            ServerManager.hasServers.mockReturnValue(true);
             const view = {...baseView};
-            viewManager.handleDeepLink('mattermost://server-1.com/deep/link?thing=yes');
+            viewManager.handleDeepLink('mattermost://server-2.com/deep/link?thing=yes');
             expect(view.load).not.toHaveBeenCalled();
-            expect(dialog.showErrorBox).toHaveBeenCalled();
+            expect(ServerViewState.showNewServerModal).toHaveBeenCalled();
         });
 
         it('should reopen closed view if called upon', () => {

@@ -4,9 +4,9 @@ import type {AuthenticationResponseDetails, AuthInfo, WebContents, Event} from '
 
 import {Logger} from 'common/log';
 import {BASIC_AUTH_PERMISSION} from 'common/permissions';
-import {isCustomLoginURL, isTrustedURL, parseURL} from 'common/utils/url';
+import {isTrustedURL, parseURL} from 'common/utils/url';
 import TrustedOriginsStore from 'main/trustedOrigins';
-import {getLocalURLString, getLocalPreload} from 'main/utils';
+import {getLocalPreload} from 'main/utils';
 import modalManager from 'main/views/modalManager';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
@@ -16,8 +16,8 @@ import type {PermissionType} from 'types/trustedOrigin';
 
 const log = new Logger('AuthManager');
 const preload = getLocalPreload('internalAPI.js');
-const loginModalHtml = getLocalURLString('loginModal.html');
-const permissionModalHtml = getLocalURLString('permissionModal.html');
+const loginModalHtml = 'mattermost-desktop://renderer/loginModal.html';
+const permissionModalHtml = 'mattermost-desktop://renderer/permissionModal.html';
 
 type LoginModalResult = {
     username: string;
@@ -45,7 +45,7 @@ export class AuthManager {
         }
 
         this.loginCallbackMap.set(request.url, callback); // if callback is undefined set it to null instead so we know we have set it up with no value
-        if (isTrustedURL(parsedURL, serverURL) || isCustomLoginURL(parsedURL, serverURL) || TrustedOriginsStore.checkPermission(parsedURL, BASIC_AUTH_PERMISSION)) {
+        if (isTrustedURL(parsedURL, serverURL) || TrustedOriginsStore.checkPermission(parsedURL, BASIC_AUTH_PERMISSION)) {
             this.popLoginModal(request, authInfo);
         } else {
             this.popPermissionModal(request, authInfo, BASIC_AUTH_PERMISSION);

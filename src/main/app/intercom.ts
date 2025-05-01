@@ -9,6 +9,7 @@ import Config from 'common/config';
 import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {ping} from 'common/utils/requests';
+import {parseURL} from 'common/utils/url';
 import NotificationManager from 'main/notifications';
 import {getLocalPreload, getLocalURLString} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
@@ -92,10 +93,10 @@ export function handleMainWindowIsShown() {
     }
 }
 
-export function handleWelcomeScreenModal() {
+export function handleWelcomeScreenModal(prefillURL?: string) {
     log.debug('handleWelcomeScreenModal');
 
-    const html = getLocalURLString('welcomeScreen.html');
+    const html = 'mattermost-desktop://renderer/welcomeScreen.html';
 
     const preload = getLocalPreload('internalAPI.js');
 
@@ -103,10 +104,17 @@ export function handleWelcomeScreenModal() {
     if (!mainWindow) {
         return;
     }
-    const modalPromise = ModalManager.addModal<null, UniqueServer>('welcomeScreen', html, preload, null, mainWindow, !ServerManager.hasServers());
+    const modalPromise = ModalManager.addModal<{prefillURL?: string}, UniqueServer>('welcomeScreen', html, preload, {prefillURL}, mainWindow, !ServerManager.hasServers());
     if (modalPromise) {
         modalPromise.then((data) => {
-            const newServer = ServerManager.addServer(data);
+            let initialLoadURL;
+            if (prefillURL) {
+                const parsedServerURL = parseURL(data.url);
+                if (parsedServerURL) {
+                    initialLoadURL = parseURL(`${parsedServerURL.origin}${prefillURL.substring(prefillURL.indexOf('/'))}`);
+                }
+            }
+            const newServer = ServerManager.addServer(data, initialLoadURL);
             ServerViewState.switchServer(newServer.id, true);
         }).catch((e) => {
             // e is undefined for user cancellation
@@ -120,7 +128,7 @@ export function handleWelcomeScreenModal() {
 }
 
 export function handleMentionNotification(event: IpcMainInvokeEvent, title: string, body: string, channelId: string, teamId: string, url: string, silent: boolean, soundName: string) {
-    log.debug('handleMentionNotification', {title, body, channelId, teamId, url, silent, soundName});
+    log.debug('handleMentionNotification', {channelId, teamId, url, silent, soundName});
     return NotificationManager.displayMention(title, body, channelId, teamId, url, silent, event.sender, soundName);
 }
 

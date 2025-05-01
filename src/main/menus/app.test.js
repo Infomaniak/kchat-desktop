@@ -70,21 +70,21 @@ jest.mock('common/servers/serverManager', () => ({
     hasServers: jest.fn(),
     getOrderedServers: jest.fn(),
     getOrderedTabsForServer: jest.fn(),
+    getRemoteInfo: jest.fn(),
 }));
 jest.mock('app/serverViewState', () => ({
     switchServer: jest.fn(),
     getCurrentServer: jest.fn(),
 }));
+jest.mock('main/app/utils', () => ({}));
 jest.mock('main/diagnostics', () => ({}));
 jest.mock('main/downloadsManager', () => ({
     hasDownloads: jest.fn(),
 }));
 jest.mock('main/views/viewManager', () => ({}));
 jest.mock('main/windows/mainWindow', () => ({
-    sendToRenderer: jest.fn(),
-    on: jest.fn(),
+    get: jest.fn(),
 }));
-jest.mock('main/windows/settingsWindow', () => ({}));
 jest.mock('common/views/View', () => ({
     getViewDisplayName: (name) => name,
 }));
@@ -92,9 +92,13 @@ jest.mock('main/AutoLauncher', () => ({
     enable: jest.fn(),
     disable: jest.fn(),
 }));
+
 // jest.mock('main/windows/callsWidgetWindow', () => ({
 //     isOpen: jest.fn(),
 // }));
+jest.mock('main/views/modalManager', () => ({
+    addModal: jest.fn(),
+}));
 
 describe('main/menus/app', () => {
     const config = {
@@ -291,6 +295,7 @@ describe('main/menus/app', () => {
             }
             return id;
         });
+        ServerManager.hasServers.mockReturnValue(true);
         ServerViewState.getCurrentServer.mockImplementation(() => ({id: servers[0].id}));
 
         const modifiedViews = [...Array(15).keys()].map((key) => ({
@@ -346,6 +351,7 @@ describe('main/menus/app', () => {
 
     it('should show menu item if widget window is open', () => {
         // CallsWidgetWindow.isOpen = jest.fn(() => true);
+        // CallsWidgetWindow.isPopoutOpen = jest.fn(() => false);
         const menu = createTemplate(config);
 
         const appMenu = menu.find((item) => item.label === 'main.menus.app.view');
@@ -355,6 +361,21 @@ describe('main/menus/app', () => {
         expect(devToolsSubMenu).not.toBe(undefined);
 
         const menuItem = devToolsSubMenu.submenu.find((item) => item.label === 'main.menus.app.view.devToolsCurrentCallWidget');
+        expect(menuItem).not.toBe(undefined);
+    });
+
+    it('should show additional menu item if widget popout is open', () => {
+        // CallsWidgetWindow.isOpen = jest.fn(() => true);
+        // CallsWidgetWindow.isPopoutOpen = jest.fn(() => true);
+        const menu = createTemplate(config);
+
+        const appMenu = menu.find((item) => item.label === 'main.menus.app.view');
+        expect(appMenu).not.toBe(undefined);
+
+        const devToolsSubMenu = appMenu.submenu.find((item) => item.label === 'main.menus.app.view.devToolsSubMenu');
+        expect(devToolsSubMenu).not.toBe(undefined);
+
+        const menuItem = devToolsSubMenu.submenu.find((item) => item.label === 'main.menus.app.view.devToolsCurrentCallWidgetPopout');
         expect(menuItem).not.toBe(undefined);
     });
 });

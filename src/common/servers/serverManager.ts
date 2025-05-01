@@ -158,8 +158,8 @@ export class ServerManager extends EventEmitter {
 
     serverNameExist = (server: Server) => this.getAllServers().some(({name}: MattermostServer) => name === server.name);
 
-    addServer = (server: Server) => {
-        const newServer = new MattermostServer(server, false);
+    addServer = (server: Server, initialLoadURL?: URL) => {
+        const newServer = new MattermostServer(server, false, initialLoadURL);
 
         if (this.servers.has(newServer.id)) {
             throw new Error('ID Collision detected. Cannot add server.');
@@ -223,7 +223,7 @@ export class ServerManager extends EventEmitter {
 
     removePredefinedServersHandler = (predefined: boolean) => {
         const predifinedServers = this.getAllServers().filter((server) => server.isPredefined === predefined);
-        predifinedServers && predifinedServers.forEach(({id}: MattermostServer) => this.removeServer(id));
+        predifinedServers.forEach(({id}: MattermostServer) => this.removeServer(id));
         this.persistServers();
     };
 

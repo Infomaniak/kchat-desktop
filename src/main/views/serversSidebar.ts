@@ -25,7 +25,6 @@ import MainWindow from 'main/windows/mainWindow';
 import type {ConfigServer, UniqueServer} from 'types/config';
 import type {Theme} from 'types/theme';
 
-import ServerSidebarShortcutModalView from './serversSidebarShortcutModalView';
 import viewManager from './viewManager';
 
 const log = new Logger('ServersSidebar');
@@ -45,8 +44,6 @@ export class ServerSidebar {
     private expired: Map<string, boolean>;
 
     private windowBounds?: Electron.Rectangle;
-
-    private modal;
 
     constructor() {
         this.servers = [];
@@ -110,8 +107,6 @@ export class ServerSidebar {
             });
 
         this.setOrderedServers();
-
-        this.modal = ServerSidebarShortcutModalView.init(mainWindow);
     };
 
     hide = () => {
@@ -152,7 +147,7 @@ export class ServerSidebar {
                 return;
             }
 
-            const windowBoundaries = getWindowBoundaries(mainWindow, false, true);
+            const windowBoundaries = getWindowBoundaries(mainWindow, true);
             this.view.setBounds({...windowBoundaries, x: 0, width: SERVERS_SIDEBAR_WIDTH});
         }
     };
@@ -262,35 +257,6 @@ export class ServerSidebar {
 
     private setOrderedServers = () => {
         this.servers = ServerManager.getOrderedServers().map((server) => server.toUniqueServer());
-    };
-
-    private setIsReadyToSwitchServer = (value: boolean) => {
-        this.isReadyToSwitchServer = value;
-        this.updateSidebar();
-    };
-
-    private registerKeyboardEvents = () => {
-        viewManager.getCurrentView()?.registerWebContentEvent('before-input-event', (_: any, event: Electron.Event<any>) => {
-            this.setIsReadyToSwitchServer(false);
-
-            if (event.alt && event.meta) {
-                this.setIsReadyToSwitchServer(true);
-            }
-
-            const code = String(event.code);
-            if (event.alt && event.meta && code.startsWith('Digit')) {
-                const codeIndex = Number(code.split('Digit').pop());
-                const teamId = this.teamsOrderPreference?.[codeIndex - 1];
-                const team = this.teams.find((t) => t.teamInfo?.id === teamId);
-                const server = this.servers.find((s) => s.name === team?.name);
-
-                if (!server?.id) {
-                    return;
-                }
-
-                ServerViewState.switchServer(server.id);
-            }
-        });
     };
 }
 

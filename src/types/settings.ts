@@ -8,3 +8,10 @@ export type SaveQueueItem = {
     key: keyof CombinedConfig;
     data: CombinedConfig[keyof CombinedConfig];
 };
+
+export type DeveloperSettings = {
+    browserOnly?: boolean;
+    disableNotificationStorage?: boolean;
+    disableUserActivityMonitor?: boolean;
+    disableContextMenu?: boolean;
+};
