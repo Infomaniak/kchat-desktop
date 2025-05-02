@@ -78,7 +78,7 @@ export class ServerDropdownView {
         this.view = new WebContentsView({webPreferences: {preload: getLocalPreload('internalAPI.js')}});
         this.view.setBackgroundColor('#00000000');
         performanceMonitor.registerView('ServerDropdownView', this.view.webContents);
-        this.view.webContents.loadURL('mattermost-desktop://renderer/dropdown.html');
+        this.view.webContents.loadURL('kchat-desktop://renderer/dropdown.html');
 
         this.setOrderedServers();
         this.windowBounds = MainWindow.getBounds();

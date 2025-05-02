@@ -13,7 +13,7 @@ import MainWindow from './windows/mainWindow';
 
 const log = new Logger('CertificateManager');
 const preload = getLocalPreload('internalAPI.js');
-const html = 'mattermost-desktop://renderer/certificateModal.html';
+const html = 'kchat-desktop://renderer/certificateModal.html';
 
 type CertificateModalResult = {
     cert: Certificate;

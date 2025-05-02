@@ -15,7 +15,7 @@ import Diagnostics from 'main/diagnostics';
 import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
 import TokenManager from 'main/tokenManager';
-import {getLocalPreload, getLocalURLString, getLogsPath} from 'main/utils';
+import {getLocalPreload, getLogsPath} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
@@ -60,7 +60,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
 
             ModalManager.addModal(
                 'settingsModal',
-                getLocalURLString('settings.html'),
+                'kchat-desktop://renderer/settings.html',
                 getLocalPreload('internalAPI.js'),
                 null,
                 mainWindow,

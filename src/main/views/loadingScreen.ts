@@ -87,7 +87,7 @@ export class LoadingScreen {
             }},
         );
         performanceMonitor.registerView('LoadingScreen', this.view.webContents);
-        this.view.webContents.loadURL('mattermost-desktop://renderer/loadingScreen.html');
+        this.view.webContents.loadURL('kchat-desktop://renderer/loadingScreen.html');
     };
 
     private handleAnimationFinished = () => {

@@ -19,7 +19,7 @@ import {
 import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {DEFAULT_TEAM_NAME, SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
-import {composeUserAgent, getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
+import {getLocalPreload, getWindowBoundaries} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
 
 import type {ConfigServer, UniqueServer} from 'types/config';
@@ -100,7 +100,7 @@ export class ServerSidebar {
 
         this.setBounds();
 
-        this.view.webContents.loadURL(getLocalURLString('serversSidebar.html'), {userAgent: composeUserAgent()}).
+        this.view.webContents.loadURL('kchat-desktop://renderer/serversSidebar.html').
             catch((reason) => {
                 log.error(`Servers sidebar window failed to load: ${reason}`);
                 log.info(process.env);

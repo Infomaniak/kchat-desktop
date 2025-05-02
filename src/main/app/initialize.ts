@@ -57,6 +57,7 @@ import CriticalErrorHandler from 'main/CriticalErrorHandler';
 import DeveloperMode from 'main/developerMode';
 import downloadsManager from 'main/downloadsManager';
 import i18nManager from 'main/i18nManager';
+import NonceManager from 'main/nonceManager';
 import {getDoNotDisturb} from 'main/notifications';
 import parseArgs from 'main/ParseArgs';
 import PerformanceMonitor from 'main/performanceMonitor';
@@ -284,7 +285,7 @@ function initializeBeforeAppReady() {
     }
 
     protocol.registerSchemesAsPrivileged([
-        {scheme: 'mattermost-desktop', privileges: {standard: true}},
+        {scheme: 'kchat-desktop', privileges: {standard: true}},
     ]);
 }
 
@@ -364,7 +365,7 @@ function initReceivedServer(servers: ConfigServer[]) {
 }
 
 async function initializeAfterAppReady() {
-    protocol.handle('mattermost-desktop', (request: Request) => {
+    protocol.handle('kchat-desktop', (request: Request) => {
         const url = parseURL(request.url);
         if (!url) {
             return new Response('bad', {status: 400});
@@ -408,11 +409,18 @@ async function initializeAfterAppReady() {
                 }
             }
 
+            const url = parseURL(details.url);
+            if (url?.protocol === 'kchat-desktop:' && url?.pathname.endsWith('html')) {
+                callback({
+                    responseHeaders: {
+                        ...details.responseHeaders,
+                        'Content-Security-Policy': [`default-src 'self'; style-src 'self' 'nonce-${NonceManager.create(details.url)}'; media-src data:; img-src 'self' data:`],
+                    },
+                });
+                return;
+            }
+
             downloadsManager.webRequestOnHeadersReceivedHandler(details, callback);
-            callback({
-                cancel: false,
-                responseHeaders: details.responseHeaders,
-            });
         },
     );
 

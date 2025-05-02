@@ -11,7 +11,7 @@ import ServerManager from 'common/servers/serverManager';
 import {ping} from 'common/utils/requests';
 import {parseURL} from 'common/utils/url';
 import NotificationManager from 'main/notifications';
-import {getLocalPreload, getLocalURLString} from 'main/utils';
+import {getLocalPreload} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
@@ -96,7 +96,7 @@ export function handleMainWindowIsShown() {
 export function handleWelcomeScreenModal(prefillURL?: string) {
     log.debug('handleWelcomeScreenModal');
 
-    const html = 'mattermost-desktop://renderer/welcomeScreen.html';
+    const html = 'kchat-desktop://renderer/welcomeScreen.html';
 
     const preload = getLocalPreload('internalAPI.js');
 
@@ -192,7 +192,7 @@ export function handleShowSettingsModal() {
 
     ModalManager.addModal(
         'settingsModal',
-        getLocalURLString('settings.html'),
+        'kchat-desktop://renderer/settings.html',
         getLocalPreload('internalAPI.js'),
         null,
         mainWindow,

@@ -22,7 +22,7 @@ import {Logger} from 'common/log';
 import {TAB_BAR_HEIGHT, DOWNLOADS_DROPDOWN_WIDTH, DOWNLOADS_DROPDOWN_HEIGHT, DOWNLOADS_DROPDOWN_FULL_WIDTH} from 'common/utils/constants';
 import downloadsManager from 'main/downloadsManager';
 import performanceMonitor from 'main/performanceMonitor';
-import {getLocalPreload, getLocalURLString} from 'main/utils';
+import {getLocalPreload} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
 
 import type {DownloadedItem} from 'types/downloads';
@@ -58,7 +58,7 @@ export class DownloadsDropdownView {
         this.view = new WebContentsView({webPreferences: {preload: getLocalPreload('internalAPI.js')}});
         this.view.setBackgroundColor('#00000000');
         performanceMonitor.registerView('DownloadsDropdownView', this.view.webContents);
-        this.view.webContents.loadURL(getLocalURLString('downloadsDropdown.html'));
+        this.view.webContents.loadURL('kchat-desktop://renderer/downloadsDropdown.html');
         MainWindow.get()?.contentView.addChildView(this.view);
     };
 

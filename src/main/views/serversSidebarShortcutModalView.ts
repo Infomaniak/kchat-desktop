@@ -12,8 +12,7 @@ import {
     SERVERS_SIDEBAR_WIDTH,
     TAB_BAR_HEIGHT,
 } from 'common/utils/constants';
-import {composeUserAgent, getLocalPreload, getLocalURLString} from 'main/utils';
-import MainWindow from 'main/windows/mainWindow';
+import {getLocalPreload} from 'main/utils';
 
 const log = new Logger('ServerSidebarShortcutModalView');
 
@@ -54,7 +53,7 @@ export class ServerSidebarShortcutModalView {
             },
         });
 
-        this.view.webContents.loadURL(getLocalURLString('serversSidebarShortcutModal.html'), {userAgent: composeUserAgent()}).
+        this.view.webContents.loadURL('kchat-desktop://renderer/serversSidebarShortcutModal.html').
             catch((reason) => {
                 log.error(`Servers sidebar window failed to load: ${reason}`);
                 log.info(process.env);

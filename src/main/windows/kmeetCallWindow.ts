@@ -23,7 +23,7 @@ import electronBuilder from '../../../electron-builder.json';
 import ServerViewState from '../../app/serverViewState';
 import {CALL_ENDED, CALL_READY_TO_CLOSE, CALL_RING_CLOSE_WINDOW, CALL_RING_WINDOW_IS_OPEN} from '../../common/communication';
 import {Logger} from '../../common/log';
-import {composeUserAgent, getLocalPreload, getLocalURLString} from '../utils';
+import {composeUserAgent, getLocalPreload} from '../utils';
 import ViewManager from '../views/viewManager';
 
 type CallInfoNotifyProps = {
@@ -156,7 +156,7 @@ class KmeetCallWindow {
 
         this.callInfo = callInfo;
 
-        const localURL = getLocalURLString('call.html');
+        const localURL = 'kchat-desktop://renderer/call.html';
         this.callWindow.loadURL(localURL, {
             userAgent: composeUserAgent(),
         }).catch(

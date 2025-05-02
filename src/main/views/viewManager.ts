@@ -480,7 +480,7 @@ export class ViewManager {
             const urlString = typeof url === 'string' ? url : url.toString();
             const urlView = new WebContentsView({webPreferences: {preload: getLocalPreload('internalAPI.js')}});
             urlView.setBackgroundColor('#00000000');
-            const localURL = `mattermost-desktop://renderer/urlView.html?url=${encodeURIComponent(urlString)}`;
+            const localURL = `kchat-desktop://renderer/urlView.html?url=${encodeURIComponent(urlString)}`;
             performanceMonitor.registerView('URLView', urlView.webContents);
             urlView.webContents.loadURL(localURL);
 

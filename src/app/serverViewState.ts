@@ -149,7 +149,7 @@ export class ServerViewState {
 
         const modalPromise = ModalManager.addModal<{prefillURL?: string}, Server>(
             'newServer',
-            'mattermost-desktop://renderer/newServer.html',
+            'kchat-desktop://renderer/newServer.html',
             getLocalPreload('internalAPI.js'),
             {prefillURL},
             mainWindow,
@@ -190,7 +190,7 @@ export class ServerViewState {
 
         const modalPromise = ModalManager.addModal<UniqueServerWithPermissions, {server: Server; permissions: Permissions}>(
             'editServer',
-            'mattermost-desktop://renderer/editServer.html',
+            'kchat-desktop://renderer/editServer.html',
             getLocalPreload('internalAPI.js'),
             {server: server.toUniqueServer(), permissions: PermissionsManager.getForServer(server) ?? {}},
             mainWindow);
@@ -222,7 +222,7 @@ export class ServerViewState {
 
         const modalPromise = ModalManager.addModal<string, boolean>(
             'removeServer',
-            'mattermost-desktop://renderer/removeServer.html',
+            'kchat-desktop://renderer/removeServer.html',
             getLocalPreload('internalAPI.js'),
             server.name,
             mainWindow,

@@ -16,8 +16,8 @@ import type {PermissionType} from 'types/trustedOrigin';
 
 const log = new Logger('AuthManager');
 const preload = getLocalPreload('internalAPI.js');
-const loginModalHtml = 'mattermost-desktop://renderer/loginModal.html';
-const permissionModalHtml = 'mattermost-desktop://renderer/permissionModal.html';
+const loginModalHtml = 'kchat-desktop://renderer/loginModal.html';
+const permissionModalHtml = 'kchat-desktop://renderer/permissionModal.html';
 
 type LoginModalResult = {
     username: string;

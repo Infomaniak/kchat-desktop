@@ -38,14 +38,14 @@ export const MASK_URL = 'URL';
 export const LOGS_MAX_STRING_LENGTH = 63;
 
 // We use this URL inside the Diagnostics to check if the computer has internet connectivity
-export const IS_ONLINE_ENDPOINT = 'https://community.mattermost.com/api/v4/system/ping';
+export const IS_ONLINE_ENDPOINT = '';
 
 export const COOKIE_NAME_USER_ID = 'MMUSERID';
 export const COOKIE_NAME_CSRF = 'MMCSRF';
 export const COOKIE_NAME_AUTH_TOKEN = 'MMAUTHTOKEN';
 
-export const DEFAULT_HELP_LINK = 'https://docs.mattermost.com/guides/collaborate.html';
-export const DEFAULT_ACADEMY_LINK = 'https://academy.mattermost.com/';
-export const DEFAULT_TE_REPORT_PROBLEM_LINK = 'https://mattermost.com/pl/report-a-bug';
-export const DEFAULT_EE_REPORT_PROBLEM_LINK = 'https://support.mattermost.com/hc/en-us/requests/new';
-export const DEFAULT_UPGRADE_LINK = 'https://forum.mattermost.com/t/mattermost-desktop-app-5-11-important-compatibility-notice/22599';
+export const DEFAULT_HELP_LINK = '';
+export const DEFAULT_ACADEMY_LINK = '';
+export const DEFAULT_TE_REPORT_PROBLEM_LINK = '';
+export const DEFAULT_EE_REPORT_PROBLEM_LINK = '';
+export const DEFAULT_UPGRADE_LINK = '';

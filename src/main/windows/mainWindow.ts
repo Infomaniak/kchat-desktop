@@ -141,7 +141,7 @@ export class MainWindow extends EventEmitter {
         const contextMenu = new ContextMenu({}, this.win);
         contextMenu.reload();
 
-        const localURL = 'mattermost-desktop://renderer/index.html';
+        const localURL = 'kchat-desktop://renderer/index.html';
         performanceMonitor.registerView('MainWindow', this.win.webContents);
         this.win.loadURL(localURL).catch(
             (reason) => {

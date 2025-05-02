@@ -69,7 +69,7 @@ export class DownloadsDropdownMenuView {
         this.view = new WebContentsView({webPreferences: {preload: getLocalPreload('internalAPI.js')}});
         this.view.setBackgroundColor('#00000000');
         performanceMonitor.registerView('DownloadsDropdownMenuView', this.view.webContents);
-        this.view.webContents.loadURL('mattermost-desktop://renderer/downloadsDropdownMenu.html');
+        this.view.webContents.loadURL('kchat-desktop://renderer/downloadsDropdownMenu.html');
         MainWindow.get()?.contentView.addChildView(this.view);
     };
 
