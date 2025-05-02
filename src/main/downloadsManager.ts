@@ -158,8 +158,10 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
             }
         }
 
-        // With no arguments it uses the same headers
-        cb({});
+        cb({
+            cancel: false,
+            responseHeaders: headers,
+        });
     };
 
     reloadFilesForMAS = () => {
