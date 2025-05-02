@@ -118,7 +118,12 @@
       "NSCameraUsageDescription": "Camera access may be used by kChat plugins, such as kMeet video conferencing.",
       "NSFocusStatusUsageDescription": "Focus status is used by kChat to determine whether to send notifications or not.",
       "LSFileQuarantineEnabled": true
-    }
+    },
+    "notarize": {
+      "teamId": "864VDCS2QY"
+    },
+    "bundleShortVersion": "3.3.4",
+    "bundleVersion": "25"
   },
   "mas": {
     "hardenedRuntime": false,
@@ -164,8 +169,7 @@
     "certificateSubjectName": "INFOMANIAK NETWORK SA",
     "target": [
       "nsis",
-      "zip",
-      "msi"
+      "zip"
     ],
     "extraFiles": [
       {
@@ -173,10 +177,6 @@
           "LICENSE.txt",
           "NOTICE.txt"
         ]
-      },
-      {
-        "from": "resources/windows/gpo",
-        "to": "gpo"
       }
     ],
     "signDlls": true,
@@ -185,10 +185,6 @@
   "nsis": {
     "artifactName": "${version}/${name}-setup-${version}-win.${ext}",
     "packElevateHelper": false
-  },
-  "msi": {
-    "additionalWixArgs": ["-ext", "WixUtilExtension"],
-    "upgradeCode": "{8523DAF0-699D-4CC7-9A65-C5E696A9DE6D}"
   },
   "rpm": {
     "fpm": ["--rpm-rpmbuild-define", "_build_id_links none", "--rpm-digest=sha256"]
