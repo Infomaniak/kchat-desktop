@@ -17,6 +17,13 @@ import {
 jest.mock('electron', () => ({
     app: {
         setSecureKeyboardEntryEnabled: jest.fn(),
+        getPath: jest.fn(),
+        getVersion: jest.fn(),
+    },
+    ipcMain: {
+        on: jest.fn(),
+        handle: jest.fn(),
+        emit: jest.fn(),
     },
 }));
 
