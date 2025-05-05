@@ -3,7 +3,7 @@
 
 import path from 'path';
 
-import {app, session} from 'electron';
+import {app, safeStorage, session} from 'electron';
 
 import Config from 'common/config';
 import parseArgs from 'main/ParseArgs';
@@ -48,6 +48,9 @@ jest.mock('electron', () => ({
         whenReady: jest.fn(),
         getLocale: jest.fn(),
         getLocaleCountryCode: jest.fn(),
+    },
+    safeStorage: {
+        isEncryptionAvailable: jest.fn(),
     },
     ipcMain: {
         on: jest.fn(),
