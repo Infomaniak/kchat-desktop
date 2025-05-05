@@ -1,0 +1,48 @@
+image: node:20.15.0
+
+stages:
+  - install
+  - lint
+  - build
+  - test
+
+variables:
+  NODE_ENV: development
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+
+default:
+  interruptible: true  
+
+before_script:
+  - npm ci
+
+install-deps:
+  stage: install
+  script:
+    - echo "Dependencies installed"
+
+lint:eslint:
+  stage: lint
+  script:
+    - echo "Running ESLint (non-blocking)..."
+    - npm run lint:js || echo "⚠️ ESLint warnings found, continuing anyway."
+  allow_failure: true  
+
+build-project:
+  stage: build
+  script:
+    - npm run build
+
+check-types:
+  stage: test
+  script:
+    - npm run check-types
+
+unit-tests:
+  stage: test
+  script:
+    - npm run test:unit
