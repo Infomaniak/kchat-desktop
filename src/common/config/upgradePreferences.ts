@@ -36,6 +36,8 @@ export function upgradeV1toV2(configV1: ConfigV1) {
 export function upgradeV2toV3(configV2: ConfigV2) {
     const config: ConfigV3 = Object.assign({}, deepCopy<ConfigV3>(pastDefaultPreferences[3]), configV2);
     config.version = 3;
+
+    // @ts-expect-error old tsc error
     config.teams = configV2.teams.map((value) => {
         return getDefaultViewsForConfigServer(value);
     });

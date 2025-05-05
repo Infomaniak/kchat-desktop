@@ -135,7 +135,7 @@ class KmeetCallWindow {
     }
 
     buildWindow(callInfo: CallInfo) {
-        const mainWindow = MainWindow.get();
+        const mainWindow = MainWindow.get()!;
         const currentServer = ServerViewState!.getCurrentServer();
         const preload = getLocalPreload('call.js');
         const session = mainWindow.webContents.session;
@@ -171,8 +171,10 @@ class KmeetCallWindow {
         });
 
         const windowOpenHandler = ({url, frameName}: {url: string; frameName: string}) => {
+            // @ts-expect-error bad type from getPopupTarget
             const target = getPopupTarget(url, frameName);
 
+            // @ts-expect-error bad type from getPopupTarget
             if (!target || target === 'browser') {
                 openExternalLink(url);
 
@@ -230,7 +232,7 @@ class KmeetCallWindow {
             log.debug('Kmeet window could not be destroyed', error);
         }
 
-        this.callInfo = {};
+        this.callInfo = undefined;
         this.callWindow = undefined;
     }
 

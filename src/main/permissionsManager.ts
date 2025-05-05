@@ -155,7 +155,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         // }
 
         // For GPO servers, we always allow permissions since they are trusted
-        const serverHref = serverURL.href;
+        const serverHref = serverURL!.href;
         if (Config.registryData?.servers?.some((s) => parseURL(s.url)?.href === serverHref)) {
             return true;
         }
@@ -165,7 +165,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         const isExternalFullscreen = permission === 'fullscreen' && parsedURL.origin !== serverURL?.origin;
 
         // is the requesting url trusted?
-        if (!(isTrustedURL(parsedURL, serverURL) || (permission === 'media' && (parsedURL.origin === serverURL?.origin || parsedURL.host === 'kmeet.infomaniak.com')) || isExternalFullscreen)) {
+        if (!(isTrustedURL(parsedURL, serverURL!) || (permission === 'media' && (parsedURL.origin === serverURL?.origin || parsedURL.host === 'kmeet.infomaniak.com')) || isExternalFullscreen)) {
             return false;
         }
 

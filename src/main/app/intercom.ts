@@ -19,6 +19,7 @@ import type {UniqueServer} from 'types/config';
 
 import {handleAppBeforeQuit} from './app';
 
+import type {CallInfo} from '../windows/kmeetCallWindow';
 import KmeetCallWindow from '../windows/kmeetCallWindow';
 
 const log = new Logger('App.Intercom');
@@ -176,7 +177,7 @@ export function handleToggleSecureInput(event: IpcMainEvent, secureInput: boolea
     app.setSecureKeyboardEntryEnabled(secureInput);
 }
 
-export function handleOpenKmeetWindow(_: any, callInfo: object) {
+export function handleOpenKmeetWindow(_: any, callInfo: CallInfo) {
     KmeetCallWindow.create(callInfo);
 }
 

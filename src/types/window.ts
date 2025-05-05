@@ -3,14 +3,14 @@
 
 import type {ipcRenderer, Rectangle} from 'electron/renderer';
 
+import type {CallInfo} from './callsIk';
 import type {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer, ConfigServer} from './config';
 import type {DownloadedItem, DownloadedItems, DownloadsMenuOpenEventPayload} from './downloads';
 import type {URLValidationResult} from './server';
 import type {SaveQueueItem} from './settings';
 import type {Theme} from './theme';
-import type {CallInfo} from './callsIk';
-import type {Language} from '../../i18n/i18n';
 
+import type {Language} from '../../i18n/i18n';
 
 declare global {
     interface Window {
@@ -99,6 +99,8 @@ declare global {
             openWindowsCameraPreferences: () => void;
             openWindowsMicrophonePreferences: () => void;
             getMediaAccessStatus: (mediaType: 'microphone' | 'camera' | 'screen') => Promise<'not-determined' | 'granted' | 'denied' | 'restricted' | 'unknown'>;
+
+            resetAuth: () => void;
 
             modals: {
                 cancelModal: <T>(data?: T) => void;

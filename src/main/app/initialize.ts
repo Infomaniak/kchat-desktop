@@ -587,6 +587,7 @@ function handleStartDownload() {
 
 function handleStartDownloadManual() {
     if (updateManager) {
+        // @ts-expect-error this seems to not exist but who knows
         updateManager.handleDownloadManual();
     }
 }

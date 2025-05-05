@@ -3,6 +3,8 @@
 // See LICENSE.txt for license information.
 'use strict';
 
+import fs from 'fs';
+
 import type {MenuItem, MenuItemConstructorOptions} from 'electron';
 import {app, clipboard, Menu, session, shell} from 'electron';
 
@@ -358,7 +360,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             label: localizeMessage('main.menus.app.help.troubleshooting.clear', 'Clear logs'),
             enabled: true,
             click() {
-                fs.unlink(`${getLogsPath()}/kchat-desktop.log`, (err) => {
+                fs.unlink(`${getLogsPath()}/kchat-desktop.log`, (err: unknown) => {
                     if (err) {
                         throw err;
                     }

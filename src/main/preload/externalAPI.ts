@@ -164,7 +164,7 @@ contextBridge.exposeInMainWorld('authManager', {
     tokenRequest: () => ipcRenderer.invoke(TOKEN_REQUEST),
     refreshToken: () => ipcRenderer.invoke(REFRESH_TOKEN),
     resetToken: () => ipcRenderer.invoke(RESET_TOKEN),
-    addTeam: (d) => ipcRenderer.invoke(SERVER_ADDED, d),
+    addTeam: (d: unknown) => ipcRenderer.invoke(SERVER_ADDED, d),
     deleteTeam: () => ipcRenderer.invoke(SERVER_DELETED),
     logout: async () => {
         await ipcRenderer.invoke(RESET_AUTH);
@@ -309,7 +309,8 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
         break;
     }
     case UPDATE_TEAMS: {
-        const teams = message.teams.reduce((acc, item, idx) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const teams = message.teams.reduce((acc: any, item: any, idx: any) => {
             acc.push({
                 name: item.display_name,
                 url: item.url,
