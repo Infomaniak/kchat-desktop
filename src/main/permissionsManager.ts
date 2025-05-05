@@ -58,6 +58,8 @@ const authorizablePermissionTypes = [
     'screenShare',
 ];
 
+const commons = 'commons'; //Ik: we store every permission globally (not scoped by server)
+
 type PermissionsByOrigin = {
     [origin: string]: Permissions;
 };
@@ -91,7 +93,11 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
     };
 
     getForServer = (server: MattermostServer): Permissions | undefined => {
-        return this.getValue(server.url.origin);
+        return this.ikGetForServer();
+    };
+
+    private ikGetForServer = () => {
+        return this.getValue(commons);
     };
 
     setForServer = (server: MattermostServer, permissions: Permissions) => {
@@ -100,8 +106,12 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
             this.checkMediaAccess('camera');
         }
 
-        return this.setValue(server.url.origin, permissions);
+        return this.ikSetForServer(permissions);
     };
+
+    private ikSetForServer(permissions: Permissions) {
+        return this.setValue(commons, permissions);
+    }
 
     private checkMediaAccess = (mediaType: 'microphone' | 'camera') => {
         if (systemPreferences.getMediaAccessStatus(mediaType) !== 'granted') {
@@ -155,7 +165,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         // }
 
         // For GPO servers, we always allow permissions since they are trusted
-        const serverHref = serverURL.href;
+        const serverHref = serverURL!.href;
         if (Config.registryData?.servers?.some((s) => parseURL(s.url)?.href === serverHref)) {
             return true;
         }
@@ -165,13 +175,13 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         const isExternalFullscreen = permission === 'fullscreen' && parsedURL.origin !== serverURL?.origin;
 
         // is the requesting url trusted?
-        if (!(isTrustedURL(parsedURL, serverURL) || (permission === 'media' && (parsedURL.origin === serverURL?.origin || parsedURL.host === 'kmeet.infomaniak.com')) || isExternalFullscreen)) {
+        if (!(isTrustedURL(parsedURL, serverURL!) || (permission === 'media' && (parsedURL.origin === serverURL?.origin || parsedURL.host === 'kmeet.infomaniak.com')) || isExternalFullscreen)) {
             return false;
         }
 
         // For certain permission types, we need to confirm with the user
         if (authorizablePermissionTypes.includes(permission) || isExternalFullscreen) {
-            const currentPermission = this.json[parsedURL.origin]?.[permission];
+            const currentPermission = this.json[commons]?.[permission];
 
             // If previously allowed, just allow
             if (currentPermission?.allowed) {
@@ -188,7 +198,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
             }
 
             // Make sure we don't pop multiple dialogs for the same permission check
-            const permissionKey = `${parsedURL.origin}:${permission}`;
+            const permissionKey = `${commons}:${permission}`;
             if (this.inflightPermissionChecks.has(permissionKey)) {
                 return this.inflightPermissionChecks.get(permissionKey)!;
             }
@@ -216,8 +226,8 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
                         allowed: response === 2,
                         alwaysDeny: (response === 1) ? true : undefined,
                     };
-                    this.json[parsedURL.origin] = {
-                        ...this.json[parsedURL.origin],
+                    this.json[commons] = {
+                        ...this.json[commons],
                         [permission]: newPermission,
                     };
                     this.writeToFile();
