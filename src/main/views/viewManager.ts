@@ -397,27 +397,19 @@ export class ViewManager {
     private addView = (view: MattermostWebContentsView): void => {
         this.views.set(view.id, view);
 
-        // Force a permission check for notifications
-        // ------------######### ----------
-        // ------------######### ----------
-        // TODO: FIX BEFORE MERGE
-        // ------------######### ----------
-        // ------------######### ----------
-
-        //
-        // if (view.view.type === TAB_MESSAGING) {
-        //     const notificationPermission = PermissionsManager.getForServer(view.view.server)?.notifications;
-        //     if (!notificationPermission || (!notificationPermission.allowed && notificationPermission.alwaysDeny !== true)) {
-        //         PermissionsManager.doPermissionRequest(
-        //             view.webContentsId,
-        //             'notifications',
-        //             {
-        //                 requestingUrl: view.view.server.url.toString(),
-        //                 isMainFrame: false,
-        //             },
-        //         );
-        //     }
-        // }
+        if (view.view.type === TAB_MESSAGING) {
+            const notificationPermission = PermissionsManager.getForServer(view.view.server)?.notifications;
+            if (!notificationPermission || (!notificationPermission.allowed && notificationPermission.alwaysDeny !== true)) {
+                PermissionsManager.doPermissionRequest(
+                    view.webContentsId,
+                    'notifications',
+                    {
+                        requestingUrl: view.view.server.url.toString(),
+                        isMainFrame: false,
+                    },
+                );
+            }
+        }
     };
 
     private showInitial = () => {
