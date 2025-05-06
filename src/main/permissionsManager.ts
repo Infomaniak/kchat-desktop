@@ -16,10 +16,12 @@ import {
     systemPreferences,
 } from 'electron';
 
+import serverViewState from 'app/serverViewState';
 import {
     GET_MEDIA_ACCESS_STATUS,
     OPEN_WINDOWS_CAMERA_PREFERENCES,
     OPEN_WINDOWS_MICROPHONE_PREFERENCES,
+    REFRESH_PERMISSION,
     UPDATE_PATHS,
 } from 'common/communication';
 import Config from 'common/config';
@@ -30,7 +32,7 @@ import {isTrustedURL, parseURL} from 'common/utils/url';
 import {t} from 'common/utils/util';
 import {permissionsJson} from 'main/constants';
 import {localizeMessage} from 'main/i18nManager';
-import ViewManager from 'main/views/viewManager';
+import viewManager from 'main/views/viewManager';
 import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 import MainWindow from 'main/windows/mainWindow';
 
@@ -77,6 +79,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         ipcMain.on(OPEN_WINDOWS_CAMERA_PREFERENCES, this.openWindowsCameraPreferences);
         ipcMain.on(OPEN_WINDOWS_MICROPHONE_PREFERENCES, this.openWindowsMicrophonePreferences);
         ipcMain.handle(GET_MEDIA_ACCESS_STATUS, this.handleGetMediaAccessStatus);
+        ipcMain.handle(REFRESH_PERMISSION, (_, perm) => this.refreshPermission(perm));
     }
 
     handlePermissionRequest = async (
@@ -124,12 +127,26 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         }
     };
 
+    refreshPermission = (permission: string) => {
+        if (!authorizablePermissionTypes.includes(permission)) {
+            return;
+        }
+
+        delete this.json[commons][permission];
+        this.writeToFile();
+
+        const webCOntent = viewManager.getCurrentView()!.webContentsId;
+        const current = serverViewState.getCurrentServer();
+        const details = {requestingUrl: current.url.toString(), isMainFrame: false};
+        this.doPermissionRequest(webCOntent, permission, details);
+    };
+
     doPermissionRequest = async (
         webContentsId: number,
         permission: string,
         details: PermissionRequestHandlerHandlerDetails,
     ) => {
-        log.debug('doPermissionRequest', permission, details);
+        log.debug('doPermissionRequest', webContentsId, permission, details);
 
         // is the requested permission type supported?
         if (!supportedPermissionTypes.includes(permission)) {
@@ -157,7 +174,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         if (CallsWidgetWindow.isCallsWidget(webContentsId)) {
             serverURL = CallsWidgetWindow.getViewURL();
         } else {
-            serverURL = ViewManager.getViewByWebContentsId(webContentsId)?.view.server.url;
+            serverURL = viewManager.getViewByWebContentsId(webContentsId)?.view.server.url;
         }
 
         // if (!serverURL) {
@@ -173,6 +190,10 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         // Exception for embedded videos such as YouTube
         // We still want to ask permission to do this though
         const isExternalFullscreen = permission === 'fullscreen' && parsedURL.origin !== serverURL?.origin;
+
+        console.log('🚀 tcl ~ permissionsManager.ts:264 ~ PermissionsManager ~ parsedURL:', parsedURL);
+        console.log('🚀 tcl ~ permissionsManager.ts:264 ~ PermissionsManager ~ serverURL:', serverURL);
+        console.log('🚀 tcl ~ permissionsManager.ts:185 ~ PermissionsManager ~ isTrustedURL(parsedURL, serverURL!):', !isTrustedURL(parsedURL, serverURL!));
 
         // is the requesting url trusted?
         if (!(isTrustedURL(parsedURL, serverURL!) || (permission === 'media' && (parsedURL.origin === serverURL?.origin || parsedURL.host === 'kmeet.infomaniak.com')) || isExternalFullscreen)) {

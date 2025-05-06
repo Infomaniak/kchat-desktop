@@ -243,6 +243,8 @@ export const GET_NONCE = 'get-nonce';
 export const DEVELOPER_MODE_UPDATED = 'developer-mode-updated';
 export const IS_DEVELOPER_MODE_ENABLED = 'is-developer-mode-enabled';
 
+export const REFRESH_PERMISSION = 'refresh-permission';
+
 export const METRICS_SEND = 'metrics-send';
 export const METRICS_RECEIVE = 'metrics-receive';
 export const METRICS_REQUEST = 'metrics-request';

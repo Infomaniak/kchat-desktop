@@ -319,6 +319,10 @@ class SettingsPage extends React.PureComponent<Props, State> {
         });
     };
 
+    refreshPermission = (permission: string) => {
+        window.desktop.refreshPermission(permission);
+    };
+
     handleShowUnreadBadge = () => {
         window.timers.setImmediate(this.saveSetting, CONFIG_TYPE_APP_OPTIONS, {key: 'showUnreadBadge', data: this.showUnreadBadgeRef.current?.checked});
         this.setState({
@@ -526,6 +530,12 @@ class SettingsPage extends React.PureComponent<Props, State> {
                 marginBottom: '4px',
                 marginLeft: '16px',
                 marginTop: '8px',
+            },
+
+            permissionContainer: {
+                display: 'grid',
+                gap: '8px',
+                width: 'max-content',
             },
         };
 
@@ -1161,6 +1171,29 @@ class SettingsPage extends React.PureComponent<Props, State> {
                     />
                 </FormText>
             </div>,
+        );
+
+        options.push(
+            <Row key='permissions'>
+                <Col md={12}>
+                    <h2 style={settingsPage.sectionHeading}>
+                        <FormattedMessage
+                            id='NOT_IMPL_YET'
+                            defaultMessage='Permissions'
+                        />
+                    </h2>
+                    <div style={settingsPage.permissionContainer}>
+
+                        <Button onClick={() => this.refreshPermission('media')}>Reset media permission</Button>
+                        <Button onClick={() => this.refreshPermission('geolocation')}>Reset geolocation permission</Button>
+                        <Button onClick={() => this.refreshPermission('notifications')}>Reset notifications permission</Button>
+                        <Button onClick={() => this.refreshPermission('openExternal')}>Reset openExternal permission</Button>
+                        <Button onClick={() => this.refreshPermission('screenShare')}>Reset screenShare permission</Button>
+                    </div>
+
+                </Col>
+            </Row>,
+
         );
 
         let optionsRow = null;

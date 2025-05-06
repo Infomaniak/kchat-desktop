@@ -105,6 +105,7 @@ import {
     METRICS_RECEIVE,
     LOAD_INCOMPATIBLE_SERVER,
     OPEN_SERVER_UPGRADE_LINK,
+    REFRESH_PERMISSION,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -123,6 +124,8 @@ contextBridge.exposeInMainWorld('timers', {
 });
 
 contextBridge.exposeInMainWorld('desktop', {
+    refreshPermission: (perm) => ipcRenderer.invoke(REFRESH_PERMISSION, perm),
+
     quit: (reason, stack) => ipcRenderer.send(QUIT, reason, stack),
     openAppMenu: () => ipcRenderer.send(OPEN_APP_MENU),
     closeServersDropdown: () => ipcRenderer.send(CLOSE_SERVERS_DROPDOWN),
