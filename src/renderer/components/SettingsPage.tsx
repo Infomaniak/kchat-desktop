@@ -12,7 +12,7 @@ import type {EmotionCache} from '@emotion/react';
 import React from 'react';
 import {FormCheck, Col, FormGroup, FormText, Container, Row, Button, FormControl, Modal} from 'react-bootstrap';
 import type {IntlShape} from 'react-intl';
-import {FormattedMessage, injectIntl} from 'react-intl';
+import {FormattedMessage, injectIntl, useIntl} from 'react-intl';
 import type {ActionMeta, MultiValue} from 'react-select';
 import ReactSelect from 'react-select';
 
@@ -43,6 +43,9 @@ type State = DeepPartial<CombinedConfig> & {
     availableSpellcheckerLanguages: Array<{label: string; value: string}>;
     canUpgrade?: boolean;
     cache?: EmotionCache;
+    permissions: Array<{
+        name: string; allowed: boolean;
+    }>;
 }
 
 type SavingStateItems = {
@@ -88,6 +91,7 @@ class SettingsPage extends React.PureComponent<Props, State> {
             allowSaveSpellCheckerURL: false,
             availableLanguages: [],
             availableSpellcheckerLanguages: [],
+            permissions: [],
         };
 
         this.getConfig();
@@ -143,8 +147,14 @@ class SettingsPage extends React.PureComponent<Props, State> {
     }
 
     getConfig = () => {
-        window.desktop.getLocalConfiguration().then((config) => {
-            this.setState({ready: true, maximized: false, ...this.convertConfigDataToState(config as Partial<LocalConfiguration>, this.state) as Omit<State, 'ready'>});
+        Promise.all([window.desktop.getLocalPermissions(), window.desktop.getLocalConfiguration()]).then(([perms, config]) => {
+            this.setState({ready: true, maximized: false, ...this.convertConfigDataToState(config as Partial<LocalConfiguration>, this.state) as Omit<State, 'ready'>, permissions: this.convertPermissionDataToState(perms)});
+        });
+    };
+
+    convertPermissionDataToState = (perms: Permissions) => {
+        return Object.entries(perms).map(([name, {allowed}]) => {
+            return {name, allowed};
         });
     };
 
@@ -320,7 +330,13 @@ class SettingsPage extends React.PureComponent<Props, State> {
     };
 
     refreshPermission = (permission: string) => {
-        window.desktop.refreshPermission(permission);
+        window.desktop.refreshPermission(permission).then((allowed) => {
+            this.setState((prevState) => ({
+                permissions: prevState.permissions.map((perm) =>
+                    (perm.name === permission ? {...perm, allowed} : perm),
+                ),
+            }));
+        });
     };
 
     handleShowUnreadBadge = () => {
@@ -534,7 +550,7 @@ class SettingsPage extends React.PureComponent<Props, State> {
 
             permissionContainer: {
                 display: 'grid',
-                gap: '8px',
+                gap: '0',
                 width: 'max-content',
             },
         };
@@ -1173,28 +1189,32 @@ class SettingsPage extends React.PureComponent<Props, State> {
             </div>,
         );
 
-        options.push(
-            <Row key='permissions'>
-                <Col md={12}>
-                    <h2 style={settingsPage.sectionHeading}>
-                        <FormattedMessage
-                            id='NOT_IMPL_YET'
-                            defaultMessage='Permissions'
-                        />
-                    </h2>
-                    <div style={settingsPage.permissionContainer}>
+        if (this.state.permissions.length > 0) {
+            options.push(
+                <Row key='permissions'>
+                    <Col md={12}>
+                        <h2 style={settingsPage.sectionHeading}>
+                            <FormattedMessage
+                                id='renderer.components.settingsPage.permissions.title'
+                                defaultMessage='Permissions123'
+                            />
+                        </h2>
+                        <div style={settingsPage.permissionContainer}>
+                            {this.state.permissions.map((perm) => (
+                                <Permission
+                                    key={perm.name}
+                                    name={perm.name}
+                                    allowed={perm.allowed}
+                                    onReset={() => this.refreshPermission(perm.name)}
+                                />
+                            ))}
 
-                        <Button onClick={() => this.refreshPermission('media')}>Reset media permission</Button>
-                        <Button onClick={() => this.refreshPermission('geolocation')}>Reset geolocation permission</Button>
-                        <Button onClick={() => this.refreshPermission('notifications')}>Reset notifications permission</Button>
-                        <Button onClick={() => this.refreshPermission('openExternal')}>Reset openExternal permission</Button>
-                        <Button onClick={() => this.refreshPermission('screenShare')}>Reset screenShare permission</Button>
-                    </div>
+                        </div>
 
-                </Col>
-            </Row>,
-
-        );
+                    </Col>
+                </Row>,
+            );
+        }
 
         let optionsRow = null;
         if (options.length > 0) {
@@ -1347,5 +1367,33 @@ class SettingsPage extends React.PureComponent<Props, State> {
         );
     }
 }
+
+const PermissionLabelMapping: Record<string, string> = {
+    notifications: 'renderer.components.settingsPage.permissions.notifications',
+    geolocation: 'renderer.components.settingsPage.permissions.geolocation',
+    screenShare: 'renderer.components.settingsPage.permissions.screenShare',
+    media: 'renderer.components.settingsPage.permissions.microphoneAndCamera',
+    openExternal: 'renderer.components.settingsPage.permissions.openExternal',
+
+};
+const Permission = ({name, allowed, onReset}) => {
+    const {formatMessage} = useIntl();
+    const stateKey = allowed ? 'renderer.components.settingsPage.permissions.allowed' : 'renderer.components.settingsPage.permissions.denied';
+    const state = formatMessage({id: stateKey});
+    const label = formatMessage({id: PermissionLabelMapping[name]}, {allowed: state});
+    return (
+        <p style={{display: 'flex', gap: '1em'}}>
+            <label>{label}</label>
+            <a
+                href='#'
+                onClick={() => onReset(name)}
+            >
+                <FormattedMessage
+                    id='renderer.components.settingsPage.permissions.reset'
+                    defaultMessage='reset'
+                />
+            </a>
+        </p>);
+};
 
 export default injectIntl(SettingsPage);

@@ -79,7 +79,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         ipcMain.on(OPEN_WINDOWS_CAMERA_PREFERENCES, this.openWindowsCameraPreferences);
         ipcMain.on(OPEN_WINDOWS_MICROPHONE_PREFERENCES, this.openWindowsMicrophonePreferences);
         ipcMain.handle(GET_MEDIA_ACCESS_STATUS, this.handleGetMediaAccessStatus);
-        ipcMain.handle(REFRESH_PERMISSION, (_, perm) => this.refreshPermission(perm));
+        ipcMain.handle(REFRESH_PERMISSION, this.refreshPermission);
     }
 
     handlePermissionRequest = async (
@@ -127,18 +127,19 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         }
     };
 
-    refreshPermission = (permission: string) => {
+    refreshPermission = async (_: IpcMainInvokeEvent, permission: string) => {
         if (!authorizablePermissionTypes.includes(permission)) {
-            return;
+            throw new Error(`Cannot refresh unknown permission (${permission})`);
         }
 
         delete this.json[commons][permission];
         this.writeToFile();
 
-        const webCOntent = viewManager.getCurrentView()!.webContentsId;
-        const current = serverViewState.getCurrentServer();
-        const details = {requestingUrl: current.url.toString(), isMainFrame: false};
-        this.doPermissionRequest(webCOntent, permission, details);
+        const webContentId = viewManager.getCurrentView()!.webContentsId;
+        const currentServer = serverViewState.getCurrentServer();
+        const details = {requestingUrl: currentServer.url.toString(), isMainFrame: false};
+
+        return this.doPermissionRequest(webContentId, permission, details);
     };
 
     doPermissionRequest = async (
@@ -190,10 +191,6 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         // Exception for embedded videos such as YouTube
         // We still want to ask permission to do this though
         const isExternalFullscreen = permission === 'fullscreen' && parsedURL.origin !== serverURL?.origin;
-
-        console.log('🚀 tcl ~ permissionsManager.ts:264 ~ PermissionsManager ~ parsedURL:', parsedURL);
-        console.log('🚀 tcl ~ permissionsManager.ts:264 ~ PermissionsManager ~ serverURL:', serverURL);
-        console.log('🚀 tcl ~ permissionsManager.ts:185 ~ PermissionsManager ~ isTrustedURL(parsedURL, serverURL!):', !isTrustedURL(parsedURL, serverURL!));
 
         // is the requesting url trusted?
         if (!(isTrustedURL(parsedURL, serverURL!) || (permission === 'media' && (parsedURL.origin === serverURL?.origin || parsedURL.host === 'kmeet.infomaniak.com')) || isExternalFullscreen)) {

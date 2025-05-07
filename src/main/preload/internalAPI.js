@@ -106,6 +106,7 @@ import {
     LOAD_INCOMPATIBLE_SERVER,
     OPEN_SERVER_UPGRADE_LINK,
     REFRESH_PERMISSION,
+    GET_LOCAL_PERMISSIONS,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -124,7 +125,6 @@ contextBridge.exposeInMainWorld('timers', {
 });
 
 contextBridge.exposeInMainWorld('desktop', {
-    refreshPermission: (perm) => ipcRenderer.invoke(REFRESH_PERMISSION, perm),
 
     quit: (reason, stack) => ipcRenderer.send(QUIT, reason, stack),
     openAppMenu: () => ipcRenderer.send(OPEN_APP_MENU),
@@ -165,6 +165,9 @@ contextBridge.exposeInMainWorld('desktop', {
     getLocalConfiguration: () => ipcRenderer.invoke(GET_LOCAL_CONFIGURATION),
     getDownloadLocation: (downloadLocation) => ipcRenderer.invoke(GET_DOWNLOAD_LOCATION, downloadLocation),
     getLanguageInformation: () => ipcRenderer.invoke(GET_LANGUAGE_INFORMATION),
+
+    refreshPermission: (perm) => ipcRenderer.invoke(REFRESH_PERMISSION, perm),
+    getLocalPermissions: () => ipcRenderer.invoke(GET_LOCAL_PERMISSIONS),
 
     getScreenPermissions: () => ipcRenderer.invoke(SCREEN_SHARE_PERMISSIONS),
     onSynchronizeConfig: (listener) => ipcRenderer.on('synchronize-config', () => listener()),

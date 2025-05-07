@@ -11,6 +11,7 @@ import type {SaveQueueItem} from './settings';
 import type {Theme} from './theme';
 
 import type {Language} from '../../i18n/i18n';
+import { Permissions } from './permissions';
 
 declare global {
     interface Window {
@@ -100,7 +101,8 @@ declare global {
             openWindowsMicrophonePreferences: () => void;
             getMediaAccessStatus: (mediaType: 'microphone' | 'camera' | 'screen') => Promise<'not-determined' | 'granted' | 'denied' | 'restricted' | 'unknown'>;
 
-            refreshPermission: (permission: string) => void;
+            refreshPermission: (permission: string) => Promise<boolean>;
+            getLocalPermissions: () => Promise<Permissions>;
 
             modals: {
                 cancelModal: <T>(data?: T) => void;
