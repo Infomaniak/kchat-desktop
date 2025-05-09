@@ -20,7 +20,7 @@ default:
 install-deps:
   stage: install
   script:
-    - apt-get update && apt-get install -y libxtst-dev libx11-dev libxkbfile-dev
+    - apt-get update && apt-get install -y libxtst6 libxtst-dev libx11-dev libxkbfile-dev
     - npm ci
 
 lint:
