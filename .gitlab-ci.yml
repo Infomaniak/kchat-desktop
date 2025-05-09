@@ -10,7 +10,7 @@ variables:
   NODE_ENV: development
 
 cache:
-  key: "node-modules-${CI_COMMIT_REF_SLUG}-$(cat package-lock.json | sha256sum | cut -d ' ' -f1)"
+  key: "node-modules-$(cat package-lock.json | sha256sum | cut -d ' ' -f1)"
   paths:
     - node_modules/
 
