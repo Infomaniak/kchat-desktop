@@ -2,6 +2,7 @@ image: node:20.15.0
 
 before_script:
   - apt-get update && apt-get install -y libxtst-dev libx11-dev libxkbfile-dev
+  - npm ci
 
 stages:
   - install
@@ -20,22 +21,19 @@ cache:
 default:
   interruptible: true  
 
-before_script:
-  - npm ci
-
 install-deps:
   stage: install
   script:
-    - echo "Dependencies installed"
+    - echo "Dependencies installed"  # Si tu veux garder ce message, mais il est optionnel
 
-lint:eslint:
+lint:
   stage: lint
   script:
     - echo "Running ESLint (non-blocking)..."
     - npm run lint:js || echo "⚠️ ESLint warnings found, continuing anyway."
   allow_failure: true  
 
-build-project:
+build:
   stage: build
   script:
     - npm run build
