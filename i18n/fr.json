@@ -327,9 +327,6 @@
   "main.menus.app.help.reportProblem": "Signaler un problème",
   "main.menus.app.help.userGuide": "Guide utilisateur",
   "main.menuualSize": "Taille réelle",
-  "main.menus.app.view.clearAllData": "Effacer toutes les données",
-  "main.menus.app.view.clearDataForServer": "Effacer les données pour le serveur actuel",
-  "main.menus.app.view.devToolsCurrentCallWidget": "Outils de développement pour le widget d'appel",
   "main.menus.app.view.devToolsSubMenu": "Outils de développement",
   "main.menus.app.view.developerModeBrowserOnly": "Mode navigateur uniquement",
   "main.menus.app.view.developerModeDisableContextMenu": "Désactiver le menu contextuel",
@@ -344,7 +341,6 @@
   "marer.components.configureServer.url.validating": "Validation...",
   "renderer.components.developerModeIndicator.tooltip": "Le mode développeur est activé. Ce paramètre ne devrait être activé que si un développeur Mattermost vous l'a demandé.",
   "remponents.errorView.troubleshooting.urlIsCorrect.appNameIsCorrect": "L'URL de {appName} <link>{url}</link> est correcte",
-  "renderer.components.errorView.troubleshooting.webContentsView.canReachFromBrowserWindow": "Vous pouvez ouvrir <link>{url}</link> dans une fenêtre de navigateur.",
   "renderer.components.newServerModal.error.nameRequired": "Le nom est obligatoire.",
   "renderer.components.newServerModal.error.serverNameExists": "Un serveur portant le même nom existe déjà.",
   "renderer.components.newServerModal.error.serverUrlExists": "Un serveur avec la même URL existe déjà.",
@@ -370,12 +366,12 @@
   "renderer.components.settingsPage.aeration.description": "Si cette option est activée, le rendu de l'interface utilisateur de {appName} sera de meilleur qualité mais cela peut entraîner une diminution de la stabilité sur certains systèmes.",
   "renderer.components.settingsPage.enableMetrics": "Envoyer des données d'utilisation anonymes vers les serveurs configurés",
   "renderer.components.settingsPage.enableMetrics.description": "Envoie les données d'utilisation relatives à l'application et à ses performances vers les serveurs configurés qui les acceptent.",
-  "renderer.components.welcomeScreen.slides.calls.subtitle": "Quand l'écriture n'est pas assez rapide, passez en douceur du chat aux appels audio et partage d'écran sans changer d'outil.",
-  "renderer.components.welcomeScreen.slides.calls.title": "Démarrez rapidement un appel sécurisé",
   "renderer.components.welcomeScreen.slides.collaborate.subtitle": "Collaborez efficacement avec les canaux persistants, le partage de fichiers et d'extraits de code et l'automatisation de workflow conçue pour les équipes techniques.",
   "renderer.components.welcomeScreen.slides.collaborate.title": "Collaborez en temps réel",
   "renderer.components.welcomeScreen.slides.integrate.subtitle": "Exécutez et automatisez vos workflows avec des intégrations flexibles et personnalisées pour des outils techniques populaires comme GitHub, GitLab et ServiceNow.",
   "renderer.components.welcomeScreen.slides.integrate.title": "Faites des intégrations avec vos outils favoris",
-  "redownloadsDropdown.Update.DownloadUpdate": "Télécharger la mise à jour",
-  "renderer.downloadsDropdown.Update.Downloading": "Téléchargement"
+  "redownloadsDropdown.Update.DownloadUpdate": "Télécharger la mise à jour"
+ 
 }
+  
+

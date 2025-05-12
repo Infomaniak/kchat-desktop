@@ -4,8 +4,9 @@
 import type {ipcRenderer, Rectangle} from 'electron/renderer';
 
 import type {CallInfo} from './callsIk';
-import type {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer, ConfigServer} from './config';
+import type {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer, ConfigServer, Server} from './config';
 import type {DownloadedItem, DownloadedItems, DownloadsMenuOpenEventPayload} from './downloads';
+import type {UniqueServerWithPermissions, Permissions} from './permissions';
 import type {URLValidationResult} from './server';
 import type {SaveQueueItem} from './settings';
 import type {Theme} from './theme';
@@ -41,6 +42,7 @@ declare global {
             focusCurrentView: () => void;
             openServerExternally: () => void;
             openServerUpgradeLink: () => void;
+            openChangelogLink: () => void;
             closeDownloadsDropdown: () => void;
             closeDownloadsDropdownMenu: () => void;
             openDownloadsDropdown: () => void;
@@ -57,6 +59,10 @@ declare global {
             getOrderedTabsForServer: (serverId: string) => Promise<UniqueView[]>;
             onUpdateServers: (listener: () => void) => void;
             validateServerURL: (url: string, currentId?: string) => Promise<URLValidationResult>;
+            getUniqueServersWithPermissions: () => Promise<UniqueServerWithPermissions[]>;
+            addServer: (server: Server) => void;
+            editServer: (server: UniqueServer, permissions?: Permissions) => void;
+            removeServer: (serverId: string) => void;
 
             getConfiguration: () => Promise<CombinedConfig[keyof CombinedConfig] | CombinedConfig>;
             getVersion: () => Promise<{name: string; version: string}>;
@@ -65,12 +71,12 @@ declare global {
             getFullScreenStatus: () => Promise<boolean>;
             getAvailableSpellCheckerLanguages: () => Promise<string[]>;
             getAvailableLanguages: () => Promise<string[]>;
-            getLocalConfiguration: () => Promise<LocalConfiguration[keyof LocalConfiguration] | Partial<LocalConfiguration>>;
+            getLocalConfiguration: () => Promise<LocalConfiguration>;
             getDownloadLocation: (downloadLocation?: string) => Promise<string>;
             getLanguageInformation: () => Promise<Language>;
 
             onSynchronizeConfig: (listener: () => void) => void;
-            onReloadConfiguration: (listener: () => void) => void;
+            onReloadConfiguration: (listener: () => void) => () => void;
             onDarkModeChange: (listener: (darkMode: boolean) => void) => void;
             onLoadRetry: (listener: (viewId: string, retry: Date, err: string, loadUrl: string) => void) => void;
             onLoadSuccess: (listener: (viewId: string) => void) => void;
@@ -199,6 +205,12 @@ declare global {
                 user: object;
                 channelId: string;
             };
+        };
+    }
+
+    interface Navigator {
+        windowControlsOverlay?: {
+            getTitlebarAreaRect: () => DOMRect;
         };
     }
 

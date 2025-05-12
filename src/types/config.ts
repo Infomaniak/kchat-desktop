@@ -55,7 +55,7 @@ export type ConfigV3 = {
     notifications: {
         flashWindow: number;
         bounceIcon: boolean;
-        bounceIconType: 'critical' | 'informational';
+        bounceIconType: '' | 'critical' | 'informational';
     };
     showUnreadBadge: boolean;
     useSpellChecker: boolean;

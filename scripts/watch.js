@@ -15,10 +15,12 @@ Promise.all([mainConfig, preloadConfig, rendererConfig].map((config) => {
             if (err) {
                 console.error(err);
             }
-            process.stdout.write(stats.toString({colors: true}));
-            process.stdout.write('\n');
-            if (!stats.hasErrors()) {
-                electron.restart();
+            if (stats) {
+                process.stdout.write(stats.toString({colors: true}));
+                process.stdout.write('\n');
+                if (!stats.hasErrors()) {
+                    electron.restart();
+                }
             }
             resolve();
         });

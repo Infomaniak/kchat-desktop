@@ -30,9 +30,10 @@ import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 import MainWindow from 'main/windows/mainWindow';
 import mainWindow from 'main/windows/mainWindow';
 
-import {generateHandleConsoleMessage, isCustomProtocol} from './webContentEventsCommon';
 
 import allowProtocolDialog from '../allowProtocolDialog';
+import {generateHandleConsoleMessage, isCustomProtocol} from './webContentEventsCommon';
+
 import {composeUserAgent, getLocalPreload} from '../utils';
 
 const log = new Logger('WebContentsEventManager');

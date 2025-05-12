@@ -1,5 +1,6 @@
 body {
     background-color: transparent;
+    margin: 0;
 }
 
 .LoadingScreen {
@@ -16,8 +17,10 @@ body {
     visibility: visible;
     z-index: 10;
     overflow:hidden;
-    
     transition: opacity 150ms 0ms ease-out, visibility 150ms 0ms step-start;
+}
+
+.LoadingScreen--darkMode .LoadingScreen__background {
 }
 
 .LoadingScreen__background

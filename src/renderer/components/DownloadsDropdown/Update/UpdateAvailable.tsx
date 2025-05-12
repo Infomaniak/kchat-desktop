@@ -5,11 +5,10 @@ import React, {useState} from 'react';
 import {Button} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
 
+import {START_UPDATE_DOWNLOAD_MANUAL} from 'common/communication';
 import LoadingWrapper from 'renderer/components/SaveButton/LoadingWrapper';
 
 import type {DownloadedItem} from 'types/downloads';
-
-import { START_UPDATE_DOWNLOAD_MANUAL} from 'common/communication';
 
 import Thumbnail from '../Thumbnail';
 

@@ -268,8 +268,8 @@ function flashFrame(flash: boolean) {
             MainWindow.get()?.flashFrame(flash);
         }
     }
-    if (process.platform === 'darwin' && Config.notifications.bounceIcon) {
-        app.dock.bounce(Config.notifications.bounceIconType);
+    if (process.platform === 'darwin' && Config.notifications.bounceIcon && Config.notifications.bounceIconType) {
+        app.dock?.bounce(Config.notifications.bounceIconType);
     }
 }
 

@@ -116,7 +116,6 @@ jest.mock('@sentry/electron/main', () => ({
         callback();
     },
 }));
-
 jest.mock('main/i18nManager', () => ({
     localizeMessage: jest.fn(),
     setLocale: jest.fn(),
