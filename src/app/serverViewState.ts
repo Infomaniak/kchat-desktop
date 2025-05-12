@@ -26,13 +26,15 @@ import {MattermostServer} from 'common/servers/MattermostServer';
 import ServerManager from 'common/servers/serverManager';
 import {URLValidationStatus} from 'common/utils/constants';
 import {isValidURI, isValidURL, parseURL} from 'common/utils/url';
+import PermissionsManager from 'main/permissionsManager';
 import {ServerInfo} from 'main/server/serverInfo';
-import {getLocalPreload, getLocalURLString} from 'main/utils';
+import {getLocalPreload} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
 
-import type {UniqueServer, Server} from 'types/config';
+import type {Server} from 'types/config';
+import type {Permissions, UniqueServerWithPermissions} from 'types/permissions';
 import type {URLValidationResult} from 'types/server';
 
 const log = new Logger('App', 'ServerViewState');
@@ -47,7 +49,7 @@ export class ServerViewState {
                 this.switchServer(serverFound.id);
             }
         });
-        ipcMain.on(SHOW_NEW_SERVER_MODAL, this.showNewServerModal);
+        ipcMain.on(SHOW_NEW_SERVER_MODAL, this.handleShowNewServerModal);
         ipcMain.on(SHOW_EDIT_SERVER_MODAL, this.showEditServerModal);
         ipcMain.on(SHOW_REMOVE_SERVER_MODAL, this.showRemoveServerModal);
         ipcMain.handle(VALIDATE_SERVER_URL, this.handleServerURLValidation);
@@ -137,25 +139,32 @@ export class ServerViewState {
      * Server Modals
      */
 
-    showNewServerModal = () => {
-        log.debug('showNewServerModal');
+    showNewServerModal = (prefillURL?: string) => {
+        log.debug('showNewServerModal', {prefillURL});
 
         const mainWindow = MainWindow.get();
         if (!mainWindow) {
             return;
         }
 
-        const modalPromise = ModalManager.addModal<null, Server>(
+        const modalPromise = ModalManager.addModal<{prefillURL?: string}, Server>(
             'newServer',
-            getLocalURLString('newServer.html'),
+            'kchat-desktop://renderer/newServer.html',
             getLocalPreload('internalAPI.js'),
-            null,
+            {prefillURL},
             mainWindow,
             !ServerManager.hasServers(),
         );
 
         modalPromise.then((data) => {
-            const newServer = ServerManager.addServer(data);
+            let initialLoadURL;
+            if (prefillURL) {
+                const parsedServerURL = parseURL(data.url);
+                if (parsedServerURL) {
+                    initialLoadURL = parseURL(`${parsedServerURL.origin}${prefillURL.substring(prefillURL.indexOf('/'))}`);
+                }
+            }
+            const newServer = ServerManager.addServer(data, initialLoadURL);
             this.switchServer(newServer.id, true);
         }).catch((e) => {
             // e is undefined for user cancellation
@@ -164,6 +173,8 @@ export class ServerViewState {
             }
         });
     };
+
+    private handleShowNewServerModal = () => this.showNewServerModal();
 
     private showEditServerModal = (e: IpcMainEvent, id: string) => {
         log.debug('showEditServerModal', id);
@@ -177,14 +188,19 @@ export class ServerViewState {
             return;
         }
 
-        const modalPromise = ModalManager.addModal<UniqueServer, Server>(
+        const modalPromise = ModalManager.addModal<UniqueServerWithPermissions, {server: Server; permissions: Permissions}>(
             'editServer',
-            getLocalURLString('editServer.html'),
+            'kchat-desktop://renderer/editServer.html',
             getLocalPreload('internalAPI.js'),
-            server.toUniqueServer(),
+            {server: server.toUniqueServer(), permissions: PermissionsManager.getForServer(server) ?? {}},
             mainWindow);
 
-        modalPromise.then((data) => ServerManager.editServer(id, data)).catch((e) => {
+        modalPromise.then((data) => {
+            if (!server.isPredefined) {
+                ServerManager.editServer(id, data.server);
+            }
+            PermissionsManager.setForServer(server, data.permissions);
+        }).catch((e) => {
             // e is undefined for user cancellation
             if (e) {
                 log.error(`there was an error in the edit server modal: ${e}`);
@@ -206,7 +222,7 @@ export class ServerViewState {
 
         const modalPromise = ModalManager.addModal<string, boolean>(
             'removeServer',
-            getLocalURLString('removeServer.html'),
+            'kchat-desktop://renderer/removeServer.html',
             getLocalPreload('internalAPI.js'),
             server.name,
             mainWindow,
@@ -219,11 +235,11 @@ export class ServerViewState {
                     this.currentServerId = remainingServers[0].id;
                 }
 
+                ServerManager.removeServer(server.id);
+
                 if (!remainingServers.length) {
                     delete this.currentServerId;
                 }
-
-                ServerManager.removeServer(server.id);
             }
         }).catch((e) => {
             // e is undefined for user cancellation
@@ -247,11 +263,11 @@ export class ServerViewState {
 
         let httpUrl = url;
         if (!isValidURL(url)) {
-            // If it already includes the protocol, tell them it's invalid
-            if (isValidURI(url)) {
+            // If it already includes the protocol, force it to HTTPS
+            if (isValidURI(url) && !url.toLowerCase().startsWith('http')) {
                 httpUrl = url.replace(/^((.+):\/\/)?/, 'https://');
-            } else {
-                // Otherwise add HTTPS for them
+            } else if (!'https://'.startsWith(url.toLowerCase()) && !'http://'.startsWith(url.toLowerCase())) {
+                // Check if they're starting to type `http(s)`, otherwise add HTTPS for them
                 httpUrl = `https://${url}`;
             }
         }
@@ -288,8 +304,14 @@ export class ServerViewState {
 
         // If we can't get the remote info, warn the user that this might not be the right URL
         // If the original URL was invalid, don't replace that as they probably have a typo somewhere
+        // Also strip the trailing slash if it's there so that the user can keep typing
         if (!remoteInfo) {
-            return {status: URLValidationStatus.NotMattermost, validatedURL: parsedURL.toString()};
+            // If the URL provided has a path, try to validate the server with parts of the path removed, until we reach the root and then return a failure
+            if (parsedURL.pathname !== '/') {
+                return this.handleServerURLValidation(e, parsedURL.toString().substring(0, parsedURL.toString().lastIndexOf('/')), currentId);
+            }
+
+            return {status: URLValidationStatus.NotMattermost, validatedURL: parsedURL.toString().replace(/\/$/, '')};
         }
 
         const remoteServerName = remoteInfo.siteName === 'Mattermost' ? remoteURL.host.split('.')[0] : remoteInfo.siteName;

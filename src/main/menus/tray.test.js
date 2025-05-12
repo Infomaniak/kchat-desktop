@@ -17,7 +17,18 @@ jest.mock('common/servers/serverManager', () => ({
 jest.mock('app/serverViewState', () => ({
     switchServer: jest.fn(),
 }));
-jest.mock('main/windows/settingsWindow', () => ({}));
+jest.mock('main/windows/mainWindow', () => ({
+    sendToRenderer: jest.fn(),
+    on: jest.fn(),
+}));
+jest.mock('main/views/modalManager', () => ({
+    addModal: jest.fn(),
+}));
+jest.mock('electron', () => ({
+    app: {
+        getPath: jest.fn(() => '/valid/downloads/path'),
+    },
+}));
 
 describe('main/menus/tray', () => {
     it('should show the first 9 servers (using order)', () => {

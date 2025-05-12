@@ -1,8 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {IpcMainEvent, IpcMainInvokeEvent} from 'electron';
-import {BrowserView, ipcMain} from 'electron';
+import type {IpcMainEvent} from 'electron';
+import {WebContentsView, ipcMain} from 'electron';
 
 import {
     CLOSE_DOWNLOADS_DROPDOWN,
@@ -13,7 +13,6 @@ import {
     REQUEST_DOWNLOADS_DROPDOWN_INFO,
     UPDATE_DOWNLOADS_DROPDOWN,
     UPDATE_DOWNLOADS_DROPDOWN_MENU_ITEM,
-    GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION,
     DOWNLOADS_DROPDOWN_OPEN_FILE,
     MAIN_WINDOW_CREATED,
     MAIN_WINDOW_RESIZED,
@@ -22,7 +21,8 @@ import Config from 'common/config';
 import {Logger} from 'common/log';
 import {TAB_BAR_HEIGHT, DOWNLOADS_DROPDOWN_WIDTH, DOWNLOADS_DROPDOWN_HEIGHT, DOWNLOADS_DROPDOWN_FULL_WIDTH} from 'common/utils/constants';
 import downloadsManager from 'main/downloadsManager';
-import {getLocalPreload, getLocalURLString} from 'main/utils';
+import performanceMonitor from 'main/performanceMonitor';
+import {getLocalPreload} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
 
 import type {DownloadedItem} from 'types/downloads';
@@ -33,7 +33,7 @@ export class DownloadsDropdownView {
     private bounds?: Electron.Rectangle;
     private windowBounds?: Electron.Rectangle;
     private item?: DownloadedItem;
-    private view?: BrowserView;
+    private view?: WebContentsView;
 
     constructor() {
         MainWindow.on(MAIN_WINDOW_CREATED, this.init);
@@ -47,8 +47,6 @@ export class DownloadsDropdownView {
         ipcMain.on(DOWNLOADS_DROPDOWN_OPEN_FILE, this.openFile);
         ipcMain.on(UPDATE_DOWNLOADS_DROPDOWN, this.updateDownloadsDropdown);
         ipcMain.on(UPDATE_DOWNLOADS_DROPDOWN_MENU_ITEM, this.updateDownloadsDropdownMenuItem);
-        ipcMain.removeHandler(GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION);
-        ipcMain.handle(GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION, this.getDownloadImageThumbnailLocation);
     }
 
     init = () => {
@@ -57,21 +55,11 @@ export class DownloadsDropdownView {
             throw new Error('Cannot initialize, no main window');
         }
         this.bounds = this.getBounds(this.windowBounds.width, DOWNLOADS_DROPDOWN_FULL_WIDTH, DOWNLOADS_DROPDOWN_HEIGHT);
-
-        const preload = getLocalPreload('internalAPI.js');
-        this.view = new BrowserView({webPreferences: {
-            preload,
-
-            // Workaround for this issue: https://github.com/electron/electron/issues/30993
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            transparent: true,
-        }});
-
-        this.view.webContents.loadURL(getLocalURLString('downloadsDropdown.html'));
-
-        //this.view.webContents.session.webRequest.onHeadersReceived(downloadsManager.webRequestOnHeadersReceivedHandler);
-        MainWindow.get()?.addBrowserView(this.view);
+        this.view = new WebContentsView({webPreferences: {preload: getLocalPreload('internalAPI.js')}});
+        this.view.setBackgroundColor('#00000000');
+        performanceMonitor.registerView('DownloadsDropdownView', this.view.webContents);
+        this.view.webContents.loadURL('kchat-desktop://renderer/downloadsDropdown.html');
+        MainWindow.get()?.contentView.addChildView(this.view);
     };
 
     /**
@@ -112,7 +100,7 @@ export class DownloadsDropdownView {
         }
 
         this.view.setBounds(this.bounds);
-        MainWindow.get()?.setTopBrowserView(this.view);
+        MainWindow.get()?.contentView.addChildView(this.view);
         this.view.webContents.focus();
         downloadsManager.onOpen();
         MainWindow.sendToRenderer(OPEN_DOWNLOADS_DROPDOWN);
@@ -184,10 +172,6 @@ export class DownloadsDropdownView {
         if (downloadsManager.getIsOpen()) {
             this.view?.setBounds(this.bounds);
         }
-    };
-
-    private getDownloadImageThumbnailLocation = (event: IpcMainInvokeEvent, location: string) => {
-        return location;
     };
 }
 

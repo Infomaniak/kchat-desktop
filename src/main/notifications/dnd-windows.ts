@@ -20,13 +20,13 @@ function getWindowsDoNotDisturb() {
     case 2:
         return true;
     case 1:
-        return !isPriority('Kchat.Desktop');
+        return !isPriority('Kchat.Desktop').value;
     case 0:
     case -1:
     case -2:
         return false;
     default:
-        return focusAssistValue;
+        return false;
     }
 }
 

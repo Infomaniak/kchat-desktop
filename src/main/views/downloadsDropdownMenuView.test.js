@@ -12,7 +12,6 @@ import {DownloadsDropdownMenuView} from './downloadsDropdownMenuView';
 
 jest.mock('main/utils', () => ({
     getLocalPreload: (file) => file,
-    getLocalURLString: (file) => file,
 }));
 jest.mock('electron', () => {
     class NotificationMock {
@@ -29,8 +28,10 @@ jest.mock('electron', () => {
     return {
         app: {
             getAppPath: () => '',
+            getPath: jest.fn(() => '/valid/downloads/path'),
         },
-        BrowserView: jest.fn().mockImplementation(() => ({
+        WebContentsView: jest.fn().mockImplementation(() => ({
+            setBackgroundColor: jest.fn(),
             webContents: {
                 loadURL: jest.fn(),
                 focus: jest.fn(),
@@ -52,6 +53,9 @@ jest.mock('macos-notification-state', () => ({
     getDoNotDisturb: jest.fn(),
 }));
 jest.mock('main/downloadsManager', () => ({}));
+jest.mock('main/performanceMonitor', () => ({
+    registerView: jest.fn(),
+}));
 jest.mock('main/windows/mainWindow', () => ({
     on: jest.fn(),
     get: jest.fn(),
@@ -66,7 +70,7 @@ jest.mock('fs', () => ({
 
 describe('main/views/DownloadsDropdownMenuView', () => {
     beforeEach(() => {
-        MainWindow.get.mockReturnValue({addBrowserView: jest.fn(), setTopBrowserView: jest.fn()});
+        MainWindow.get.mockReturnValue({contentView: {addChildView: jest.fn()}});
         MainWindow.getBounds.mockReturnValue({width: 800, height: 600, x: 0, y: 0});
         getDarwinDoNotDisturb.mockReturnValue(false);
     });

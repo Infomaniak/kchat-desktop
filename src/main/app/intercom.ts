@@ -9,8 +9,9 @@ import Config from 'common/config';
 import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {ping} from 'common/utils/requests';
+import {parseURL} from 'common/utils/url';
 import NotificationManager from 'main/notifications';
-import {getLocalPreload, getLocalURLString} from 'main/utils';
+import {getLocalPreload} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
@@ -18,6 +19,7 @@ import type {UniqueServer} from 'types/config';
 
 import {handleAppBeforeQuit} from './app';
 
+import type {CallInfo} from '../windows/kmeetCallWindow';
 import KmeetCallWindow from '../windows/kmeetCallWindow';
 
 const log = new Logger('App.Intercom');
@@ -92,10 +94,10 @@ export function handleMainWindowIsShown() {
     }
 }
 
-export function handleWelcomeScreenModal() {
+export function handleWelcomeScreenModal(prefillURL?: string) {
     log.debug('handleWelcomeScreenModal');
 
-    const html = getLocalURLString('welcomeScreen.html');
+    const html = 'kchat-desktop://renderer/welcomeScreen.html';
 
     const preload = getLocalPreload('internalAPI.js');
 
@@ -103,10 +105,17 @@ export function handleWelcomeScreenModal() {
     if (!mainWindow) {
         return;
     }
-    const modalPromise = ModalManager.addModal<null, UniqueServer>('welcomeScreen', html, preload, null, mainWindow, !ServerManager.hasServers());
+    const modalPromise = ModalManager.addModal<{prefillURL?: string}, UniqueServer>('welcomeScreen', html, preload, {prefillURL}, mainWindow, !ServerManager.hasServers());
     if (modalPromise) {
         modalPromise.then((data) => {
-            const newServer = ServerManager.addServer(data);
+            let initialLoadURL;
+            if (prefillURL) {
+                const parsedServerURL = parseURL(data.url);
+                if (parsedServerURL) {
+                    initialLoadURL = parseURL(`${parsedServerURL.origin}${prefillURL.substring(prefillURL.indexOf('/'))}`);
+                }
+            }
+            const newServer = ServerManager.addServer(data, initialLoadURL);
             ServerViewState.switchServer(newServer.id, true);
         }).catch((e) => {
             // e is undefined for user cancellation
@@ -120,7 +129,7 @@ export function handleWelcomeScreenModal() {
 }
 
 export function handleMentionNotification(event: IpcMainInvokeEvent, title: string, body: string, channelId: string, teamId: string, url: string, silent: boolean, soundName: string) {
-    log.debug('handleMentionNotification', {title, body, channelId, teamId, url, silent, soundName});
+    log.debug('handleMentionNotification', {channelId, teamId, url, silent, soundName});
     return NotificationManager.displayMention(title, body, channelId, teamId, url, silent, event.sender, soundName);
 }
 
@@ -168,7 +177,7 @@ export function handleToggleSecureInput(event: IpcMainEvent, secureInput: boolea
     app.setSecureKeyboardEntryEnabled(secureInput);
 }
 
-export function handleOpenKmeetWindow(_: any, callInfo: object) {
+export function handleOpenKmeetWindow(_: any, callInfo: CallInfo) {
     KmeetCallWindow.create(callInfo);
 }
 
@@ -184,7 +193,7 @@ export function handleShowSettingsModal() {
 
     ModalManager.addModal(
         'settingsModal',
-        getLocalURLString('settings.html'),
+        'kchat-desktop://renderer/settings.html',
         getLocalPreload('internalAPI.js'),
         null,
         mainWindow,

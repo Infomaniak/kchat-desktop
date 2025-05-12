@@ -39,10 +39,11 @@ export function handleAppSecondInstance(event: Event, argv: string[]) {
 
     // Protocol handler for win32
     // argv: An array of the second instance’s (command line / deep linked) arguments
-    MainWindow.show();
     const deeplinkingURL = getDeeplinkingURL(argv);
     if (deeplinkingURL) {
         openDeepLink(deeplinkingURL);
+    } else if (MainWindow.get()) {
+        MainWindow.show();
     }
 }
 
@@ -60,7 +61,11 @@ export function handleAppBrowserWindowCreated(event: Event, newWindow: BrowserWi
     log.debug('handleAppBrowserWindowCreated');
 
     // Screen cannot be required before app is ready
-    resizeScreen(newWindow);
+    if (app.isReady()) {
+        resizeScreen(newWindow);
+    } else {
+        newWindow.once('restore', () => resizeScreen(newWindow));
+    }
 }
 
 export function handleAppWillFinishLaunching() {

@@ -12,19 +12,17 @@ import {injectIntl} from 'react-intl';
 import type {UniqueView, UniqueServer} from 'types/config';
 import type {DownloadedItems} from 'types/downloads';
 
+import ConnectionErrorView from './ConnectionErrorView';
+import DeveloperModeIndicator from './DeveloperModeIndicator';
 import DownloadsDropdownButton from './DownloadsDropdown/DownloadsDropdownButton';
-import ErrorView from './ErrorView';
-import ExtraBar from './ExtraBar';
+import IncompatibleErrorView from './IncompatibleErrorView';
 import ServerDropdownButton from './ServerDropdownButton';
 import TabBar from './TabBar';
 
-import closeButton from '../../assets/titlebar/chrome-close.svg';
-import maximizeButton from '../../assets/titlebar/chrome-maximize.svg';
-import minimizeButton from '../../assets/titlebar/chrome-minimize.svg';
-import restoreButton from '../../assets/titlebar/chrome-restore.svg';
 import {playSound} from '../notificationSounds';
 
 import '../css/components/UpgradeButton.scss';
+import '../css/components/MainPage.css';
 
 enum Status {
     LOADING = 1,
@@ -32,13 +30,13 @@ enum Status {
     RETRY = -1,
     FAILED = 0,
     NOSERVERS = -2,
+    INCOMPATIBLE = -3,
 }
 
 type Props = {
     openMenu: () => void;
     darkMode: boolean;
     appName: string;
-    useNativeWindow: boolean;
     intl: IntlShape;
 };
 
@@ -54,19 +52,19 @@ type State = {
     tabViewStatus: Map<string, TabViewStatus>;
     modalOpen?: boolean;
     fullScreen?: boolean;
-    showExtraBar?: boolean;
     isMenuOpen: boolean;
     isDownloadsDropdownOpen: boolean;
     showDownloadsBadge: boolean;
     hasDownloads: boolean;
     threeDotsIsFocused: boolean;
+    developerMode: boolean;
 };
 
 type TabViewStatus = {
     status: Status;
     extra?: {
         url: string;
-        error: string;
+        error?: string;
     };
 }
 
@@ -93,6 +91,7 @@ class MainPage extends React.PureComponent<Props, State> {
             showDownloadsBadge: false,
             hasDownloads: false,
             threeDotsIsFocused: false,
+            developerMode: false,
         };
     }
 
@@ -190,6 +189,17 @@ class MainPage extends React.PureComponent<Props, State> {
             this.updateTabStatus(viewId, statusValue);
         });
 
+        window.desktop.onLoadIncompatibleServer((viewId, loadUrl) => {
+            console.error(`${viewId}: tried to load incompatible server`);
+            const statusValue = {
+                status: Status.INCOMPATIBLE,
+                extra: {
+                    url: loadUrl,
+                },
+            };
+            this.updateTabStatus(viewId, statusValue);
+        });
+
         // can't switch tabs sequentially for some reason...
         window.desktop.onSetActiveView(this.setActiveView);
 
@@ -210,10 +220,6 @@ class MainPage extends React.PureComponent<Props, State> {
 
         window.desktop.onModalClose(() => {
             this.setState({modalOpen: false});
-        });
-
-        window.desktop.onToggleBackButton((showExtraBar) => {
-            this.setState({showExtraBar});
         });
 
         window.desktop.onUpdateMentions((view, mentions, unreads, isExpired) => {
@@ -268,6 +274,10 @@ class MainPage extends React.PureComponent<Props, State> {
         }
 
         window.addEventListener('click', this.handleCloseDropdowns);
+
+        window.desktop.isDeveloperModeEnabled().then((developerMode) => {
+            this.setState({developerMode});
+        });
     }
 
     componentWillUnmount() {
@@ -326,23 +336,13 @@ class MainPage extends React.PureComponent<Props, State> {
         this.handleSelectTab(tab[0].id!);
     };
 
-    handleClose = (e: React.MouseEvent<HTMLDivElement>) => {
+    handleExitFullScreen = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation(); // since it is our button, the event goes into MainPage's onclick event, getting focus back.
-        window.desktop.closeWindow();
-    };
 
-    handleMinimize = (e: React.MouseEvent<HTMLDivElement>) => {
-        e.stopPropagation();
-        window.desktop.minimizeWindow();
-    };
-
-    handleMaximize = (e: React.MouseEvent<HTMLDivElement>) => {
-        e.stopPropagation();
-        window.desktop.maximizeWindow();
-    };
-
-    handleRestore = () => {
-        window.desktop.restoreWindow();
+        if (!this.state.fullScreen) {
+            return;
+        }
+        window.desktop.exitFullScreen();
     };
 
     openMenu = () => {
@@ -356,10 +356,6 @@ class MainPage extends React.PureComponent<Props, State> {
     focusOnWebView = () => {
         window.desktop.focusCurrentView();
         this.handleCloseDropdowns();
-    };
-
-    reloadCurrentView = () => {
-        window.desktop.reloadCurrentView();
     };
 
     showHideDownloadsBadge(value = false) {
@@ -387,6 +383,10 @@ class MainPage extends React.PureComponent<Props, State> {
         this.setState({
             threeDotsIsFocused: false,
         });
+    };
+
+    openServerExternally = () => {
+        window.desktop.openServerExternally();
     };
 
     render() {
@@ -429,60 +429,6 @@ class MainPage extends React.PureComponent<Props, State> {
                 openDownloadsDropdown={this.openDownloadsDropdown}
             />
         ) : null;
-
-        let maxButton;
-        if (this.state.maximized || this.state.fullScreen) {
-            maxButton = (
-                <div
-                    className='button restore-button'
-                    onClick={this.handleRestore}
-                >
-                    <img
-                        src={restoreButton}
-                        draggable={false}
-                    />
-                </div>
-            );
-        } else {
-            maxButton = (
-                <div
-                    className='button max-button'
-                    onClick={this.handleMaximize}
-                >
-                    <img
-                        src={maximizeButton}
-                        draggable={false}
-                    />
-                </div>
-            );
-        }
-
-        let titleBarButtons;
-        if (window.process.platform === 'win32' && !this.props.useNativeWindow) {
-            titleBarButtons = (
-                <span className='title-bar-btns'>
-                    <div
-                        className='button min-button'
-                        onClick={this.handleMinimize}
-                    >
-                        <img
-                            src={minimizeButton}
-                            draggable={false}
-                        />
-                    </div>
-                    {maxButton}
-                    <div
-                        className='button close-button'
-                        onClick={this.handleClose}
-                    >
-                        <img
-                            src={closeButton}
-                            draggable={false}
-                        />
-                    </div>
-                </span>
-            );
-        }
 
         const totalMentionCount = Object.keys(this.state.mentionCounts).reduce((sum, key) => {
             // Strip out current server from unread and mention counts
@@ -540,8 +486,22 @@ class MainPage extends React.PureComponent<Props, State> {
                         />
                     )}
                     {tabsRow}
+                    <DeveloperModeIndicator
+                        darkMode={this.props.darkMode}
+                        developerMode={this.state.developerMode}
+                    />
                     {downloadsDropdownButton}
-                    {titleBarButtons}
+                    {window.process.platform !== 'darwin' && this.state.fullScreen && (
+                        <div
+                            className={`button full-screen-button${this.props.darkMode ? ' darkMode' : ''}`}
+                            onClick={this.handleExitFullScreen}
+                        >
+                            <i className='icon icon-arrow-collapse'/>
+                        </div>
+                    )}
+                    {window.process.platform !== 'darwin' && !this.state.fullScreen && (
+                        <span style={{width: `${window.innerWidth - (window.navigator.windowControlsOverlay?.getTitlebarAreaRect().width ?? 0)}px`}}/>
+                    )}
                 </div>
             </Row>
         );
@@ -561,13 +521,22 @@ class MainPage extends React.PureComponent<Props, State> {
             switch (tabStatus.status) {
             case Status.FAILED:
                 component = (
-                    <ErrorView
-                        id={activeServer.name + '-fail'}
+                    <ConnectionErrorView
+                        darkMode={this.props.darkMode}
                         errorInfo={tabStatus.extra?.error}
                         url={tabStatus.extra ? tabStatus.extra.url : ''}
-                        active={true}
                         appName={this.props.appName}
-                        handleLink={this.reloadCurrentView}
+                        handleLink={this.openServerExternally}
+                    />);
+                break;
+            case Status.INCOMPATIBLE:
+                component = (
+                    <IncompatibleErrorView
+                        darkMode={this.props.darkMode}
+                        url={tabStatus.extra ? tabStatus.extra.url : ''}
+                        appName={this.props.appName}
+                        handleLink={this.openServerExternally}
+                        handleUpgradeLink={() => window.desktop.openServerUpgradeLink()}
                     />);
                 break;
             case Status.LOADING:
@@ -580,16 +549,9 @@ class MainPage extends React.PureComponent<Props, State> {
 
         const viewsRow = (
             <Fragment>
-                <ExtraBar
-                    darkMode={this.props.darkMode}
-                    show={this.state.showExtraBar}
-                    goBack={() => {
-                        window.desktop.goBack();
-                    }}
-                />
-                <Row>
+                <div className={classNames('MainPage__body', {darkMode: this.props.darkMode})}>
                     {views()}
-                </Row>
+                </div>
             </Fragment>);
 
         return (
@@ -599,8 +561,8 @@ class MainPage extends React.PureComponent<Props, State> {
             >
                 <Container fluid={true}>
                     {topRow}
-                    {viewsRow}
                 </Container>
+                {viewsRow}
             </div>
         );
     }

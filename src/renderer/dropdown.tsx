@@ -29,6 +29,7 @@ type State = {
     hasGPOServers?: boolean;
     isAnyDragging: boolean;
     windowBounds?: Electron.Rectangle;
+    nonce?: string;
 }
 
 function getStyle(style?: DraggingStyle | NotDraggingStyle) {
@@ -138,9 +139,13 @@ class ServerDropdown extends React.PureComponent<Record<string, never>, State> {
     };
 
     componentDidMount() {
-        window.desktop.serverDropdown.requestInfo();
         window.addEventListener('click', this.closeMenu);
         window.addEventListener('keydown', this.handleKeyboardShortcuts);
+        window.desktop.getNonce().then((nonce) => {
+            this.setState({nonce}, () => {
+                window.desktop.serverDropdown.requestInfo();
+            });
+        });
     }
 
     componentDidUpdate() {
@@ -205,9 +210,6 @@ class ServerDropdown extends React.PureComponent<Record<string, never>, State> {
     };
 
     editServer = (serverId: string) => {
-        if (this.serverIsPredefined(serverId)) {
-            return () => {};
-        }
         return (event: React.MouseEvent<HTMLButtonElement>) => {
             event.stopPropagation();
             window.desktop.serverDropdown.showEditServerModal(serverId);
@@ -231,6 +233,10 @@ class ServerDropdown extends React.PureComponent<Record<string, never>, State> {
     };
 
     render() {
+        if (!this.state.nonce) {
+            return null;
+        }
+
         return (
             <IntlProvider>
                 <div
@@ -256,6 +262,7 @@ class ServerDropdown extends React.PureComponent<Record<string, never>, State> {
                     </div>
                     <hr className='ServerDropdown__divider'/>
                     <DragDropContext
+                        nonce={this.state.nonce}
                         onDragStart={this.onDragStart}
                         onDragEnd={this.onDragEnd}
                     >
@@ -324,23 +331,25 @@ class ServerDropdown extends React.PureComponent<Record<string, never>, State> {
                                                             {this.isActiveServer(server) ? <i className='icon-check'/> : <i className='icon-server-variant'/>}
                                                             <span>{server.name}</span>
                                                         </div>
-                                                        {!server.isPredefined && <div className='ServerDropdown__indicators'>
+                                                        <div className='ServerDropdown__indicators'>
                                                             <button
                                                                 className='ServerDropdown__button-edit'
                                                                 onClick={this.editServer(server.id!)}
                                                             >
                                                                 <i className='icon-pencil-outline'/>
                                                             </button>
-                                                            <button
-                                                                className='ServerDropdown__button-remove'
-                                                                onClick={this.removeServer(server.id!)}
-                                                            >
-                                                                <i className='icon-trash-can-outline'/>
-                                                            </button>
+                                                            {!server.isPredefined &&
+                                                                <button
+                                                                    className='ServerDropdown__button-remove'
+                                                                    onClick={this.removeServer(server.id!)}
+                                                                >
+                                                                    <i className='icon-trash-can-outline'/>
+                                                                </button>
+                                                            }
                                                             {badgeDiv && <div className='ServerDropdown__badge'>
                                                                 {badgeDiv}
                                                             </div>}
-                                                        </div>}
+                                                        </div>
                                                     </button>
                                                 )}
                                             </Draggable>

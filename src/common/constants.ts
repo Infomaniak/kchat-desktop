@@ -1,16 +1,13 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {DownloadItemTypeEnum} from 'main/downloadsManager';
-
-import type {DownloadedItem} from 'types/downloads';
+import type {DownloadedItem, DownloadItemTypeEnum} from 'types/downloads';
 
 /**
  * This string includes special characters so that it's not confused with
  * a file that may have the same filename (eg APP_UPDATE)
  */
 export const APP_UPDATE_KEY = '#:(APP_UPDATE):#';
-
 export const UPDATE_DOWNLOAD_ITEM: Omit<DownloadedItem, 'filename' | 'state'> = {
     type: 'update' as DownloadItemTypeEnum,
     progress: 0,
@@ -41,8 +38,14 @@ export const MASK_URL = 'URL';
 export const LOGS_MAX_STRING_LENGTH = 63;
 
 // We use this URL inside the Diagnostics to check if the computer has internet connectivity
-export const IS_ONLINE_ENDPOINT = 'https://community.mattermost.com/api/v4/system/ping';
+export const IS_ONLINE_ENDPOINT = '';
 
 export const COOKIE_NAME_USER_ID = 'MMUSERID';
 export const COOKIE_NAME_CSRF = 'MMCSRF';
 export const COOKIE_NAME_AUTH_TOKEN = 'MMAUTHTOKEN';
+
+export const DEFAULT_HELP_LINK = '';
+export const DEFAULT_ACADEMY_LINK = '';
+export const DEFAULT_TE_REPORT_PROBLEM_LINK = '';
+export const DEFAULT_EE_REPORT_PROBLEM_LINK = '';
+export const DEFAULT_UPGRADE_LINK = '';
