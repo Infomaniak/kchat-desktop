@@ -16,7 +16,6 @@ import ConnectionErrorView from './ConnectionErrorView';
 import DeveloperModeIndicator from './DeveloperModeIndicator';
 import DownloadsDropdownButton from './DownloadsDropdown/DownloadsDropdownButton';
 import IncompatibleErrorView from './IncompatibleErrorView';
-import ServerDropdownButton from './ServerDropdownButton';
 import TabBar from './TabBar';
 
 import {playSound} from '../notificationSounds';
@@ -430,20 +429,6 @@ class MainPage extends React.PureComponent<Props, State> {
             />
         ) : null;
 
-        const totalMentionCount = Object.keys(this.state.mentionCounts).reduce((sum, key) => {
-            // Strip out current server from unread and mention counts
-            if (this.state.tabs.get(this.state.activeServerId!)?.map((tab) => tab.id).includes(key)) {
-                return sum;
-            }
-            return sum + this.state.mentionCounts[key];
-        }, 0);
-        const hasAnyUnreads = Object.keys(this.state.unreadCounts).reduce((sum, key) => {
-            if (this.state.tabs.get(this.state.activeServerId!)?.map((tab) => tab.id).includes(key)) {
-                return sum;
-            }
-            return sum || this.state.unreadCounts[key];
-        }, false);
-
         const activeServer = this.state.servers.find((srv) => srv.id === this.state.activeServerId);
 
         const topRow = (
@@ -475,16 +460,6 @@ class MainPage extends React.PureComponent<Props, State> {
                             })}
                         />
                     </button>
-                    { process.env.NODE_ENV === 'dev' && activeServer && (
-                        <ServerDropdownButton
-                            isDisabled={this.state.modalOpen}
-                            activeServerName={activeServer.name}
-                            totalMentionCount={totalMentionCount}
-                            hasUnreads={hasAnyUnreads}
-                            isMenuOpen={this.state.isMenuOpen}
-                            darkMode={this.props.darkMode}
-                        />
-                    )}
                     {tabsRow}
                     <DeveloperModeIndicator
                         darkMode={this.props.darkMode}
