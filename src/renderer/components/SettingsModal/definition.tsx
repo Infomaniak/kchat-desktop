@@ -14,7 +14,6 @@ import DownloadSetting from './components/DownloadSetting';
 import NotificationSetting from './components/NotificationSetting';
 import RadioSetting from './components/RadioSetting';
 import SelectSetting from './components/SelectSetting';
-import ServerSetting from './components/ServerSetting';
 import SpellCheckerSetting from './components/SpellCheckerSetting';
 import UpdatesSetting from './components/UpdatesSetting';
 
@@ -310,21 +309,6 @@ const definition: (intl: IntlShape) => Promise<SettingsDefinition> = async (intl
                 },
             ],
         },
-        servers: {
-            title: (
-                <FormattedMessage
-                    id='renderer.components.settingsPage.servers'
-                    defaultMessage='Servers'
-                />
-            ),
-            icon: 'server-variant',
-            settings: [
-                {
-                    id: 'teams',
-                    component: ServerSetting,
-                },
-            ],
-        },
         advanced: {
             title: (
                 <FormattedMessage
@@ -395,24 +379,6 @@ const definition: (intl: IntlShape) => Promise<SettingsDefinition> = async (intl
                                 }),
                             },
                         ],
-                    },
-                },
-                {
-                    id: 'enableMetrics',
-                    component: CheckSetting,
-                    props: {
-                        label: (
-                            <FormattedMessage
-                                id='renderer.components.settingsPage.enableMetrics'
-                                defaultMessage='Send anonymous usage data to your configured servers'
-                            />
-                        ),
-                        subLabel: (
-                            <FormattedMessage
-                                id='renderer.components.settingsPage.enableMetrics.description'
-                                defaultMessage='Sends usage data about the application and its performance to your configured servers that accept it.'
-                            />
-                        ),
                     },
                 },
                 {
