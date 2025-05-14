@@ -169,8 +169,7 @@
     "certificateSubjectName": "INFOMANIAK NETWORK SA",
     "target": [
       "nsis",
-      "zip",
-      "msi"
+      "zip"
     ],
     "extraFiles": [
       {
@@ -178,10 +177,6 @@
           "LICENSE.txt",
           "NOTICE.txt"
         ]
-      },
-      {
-        "from": "resources/windows/gpo",
-        "to": "gpo"
       }
     ],
     "signDlls": true,
