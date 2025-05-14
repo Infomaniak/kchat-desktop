@@ -29,10 +29,3 @@ export type Setting = {
     condition?: boolean;
     props?: ComponentProps<Setting['component']>;
 };
-
-export type DeveloperSettings = {
-    browserOnly?: boolean;
-    disableNotificationStorage?: boolean;
-    disableUserActivityMonitor?: boolean;
-    disableContextMenu?: boolean;
-};

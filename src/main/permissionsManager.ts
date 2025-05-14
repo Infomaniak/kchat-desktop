@@ -24,7 +24,6 @@ import {
     REFRESH_PERMISSION,
     UPDATE_PATHS,
 } from 'common/communication';
-import Config from 'common/config';
 import JsonFileManager from 'common/JsonFileManager';
 import {Logger} from 'common/log';
 import type {MattermostServer} from 'common/servers/MattermostServer';

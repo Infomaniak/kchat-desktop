@@ -63,7 +63,7 @@ import NonceManager from 'main/nonceManager';
 import {getDoNotDisturb} from 'main/notifications';
 import parseArgs from 'main/ParseArgs';
 import PerformanceMonitor from 'main/performanceMonitor';
-import permissionsManager, {PermissionsManager} from 'main/permissionsManager';
+import permissionsManager from 'main/permissionsManager';
 import TokenManager from 'main/tokenManager';
 import Tray from 'main/tray/tray';
 import TrustedOriginsStore from 'main/trustedOrigins';
@@ -563,7 +563,7 @@ async function initializeAfterAppReady() {
 
     // handle permission requests
     // - approve if a supported permission type and the request comes from the renderer or one of the defined servers
-    defaultSession.setPermissionRequestHandler(PermissionsManager.handlePermissionRequest);
+    defaultSession.setPermissionRequestHandler(permissionsManager.handlePermissionRequest);
 
     if (wasUpdated(AppVersionManager.lastAppVersion)) {
         clearAppCache();

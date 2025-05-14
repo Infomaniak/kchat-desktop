@@ -12,6 +12,7 @@ import type {SettingsDefinition} from 'types/settings';
 import CheckSetting from './components/CheckSetting';
 import DownloadSetting from './components/DownloadSetting';
 import NotificationSetting from './components/NotificationSetting';
+import {PermissionSettings} from './components/PermissionSettings';
 import RadioSetting from './components/RadioSetting';
 import SelectSetting from './components/SelectSetting';
 import SpellCheckerSetting from './components/SpellCheckerSetting';
@@ -406,6 +407,10 @@ const definition: (intl: IntlShape) => Promise<SettingsDefinition> = async (intl
                             </>
                         ),
                     },
+                },
+                {
+                    id: 'Permissions',
+                    component: PermissionSettings,
                 },
             ],
         },

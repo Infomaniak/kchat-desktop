@@ -1,0 +1,26 @@
+.PermissionSetting__heading {
+    margin: 0;
+}
+
+.PermissionSetting__label {
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 16px;
+    color: rgba(var(--center-channel-color-rgb), 0.64);
+}
+
+.PermissionSetting__content {
+    margin-top: 12px;
+    display:flex;
+    flex-flow: column;
+
+    &__perm {
+        display:flex;
+        gap: 1em;
+        margin-bottom: 0;
+
+        > label {
+            margin-bottom: 0;
+        }
+    }
+}
