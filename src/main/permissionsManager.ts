@@ -154,12 +154,6 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         //     return false;
         // }
 
-        // For GPO servers, we always allow permissions since they are trusted
-        const serverHref = serverURL!.href;
-        if (Config.registryData?.servers?.some((s) => parseURL(s.url)?.href === serverHref)) {
-            return true;
-        }
-
         // Exception for embedded videos such as YouTube
         // We still want to ask permission to do this though
         const isExternalFullscreen = permission === 'fullscreen' && parsedURL.origin !== serverURL?.origin;

@@ -281,7 +281,11 @@ function initializeBeforeAppReady() {
     }
 
     protocol.registerSchemesAsPrivileged([
-        {scheme: 'kchat-desktop', privileges: {standard: true}},
+        {scheme: 'kchat-desktop',
+            privileges: {
+                standard: true,
+                secure: true,
+            }},
     ]);
 }
 
