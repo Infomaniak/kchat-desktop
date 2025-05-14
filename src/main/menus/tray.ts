@@ -7,6 +7,7 @@ import type {MenuItem, MenuItemConstructorOptions} from 'electron';
 import {Menu, app} from 'electron';
 
 import ServerViewState from 'app/serverViewState';
+import {ModalConstants} from 'common/constants';
 import ServerManager from 'common/servers/serverManager';
 import {localizeMessage} from 'main/i18nManager';
 import {getLocalPreload} from 'main/utils';
@@ -35,7 +36,7 @@ export function createTemplate() {
                 }
 
                 ModalManager.addModal(
-                    'settingsModal',
+                    ModalConstants.SETTINGS_MODAL,
                     'kchat-desktop://renderer/settings.html',
                     getLocalPreload('internalAPI.js'),
                     null,

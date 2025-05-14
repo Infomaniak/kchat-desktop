@@ -27,6 +27,7 @@
  *      - TYPE=[type], e.g. "MASTER", "PR", "RELEASE", "CLOUD"
  */
 
+const fs = require('fs');
 const path = require('path');
 
 const generator = require('mochawesome-report-generator');
@@ -41,7 +42,6 @@ const {
     readJsonFromFile,
     writeJsonToFile,
 } = require('./utils/report');
-const {createTestCycle, createTestExecutions} = require('./utils/test_cases');
 
 require('dotenv').config();
 
@@ -50,8 +50,6 @@ const saveReport = async () => {
         BRANCH,
         BUILD_ID,
         BUILD_TAG,
-        ZEPHYR_ENABLE,
-        ZEPHYR_CYCLE_KEY,
         TYPE,
         WEBHOOK_URL,
     } = process.env;
@@ -76,10 +74,13 @@ const saveReport = async () => {
     console.log(summary);
     writeJsonToFile(summary, 'summary.json', MOCHAWESOME_REPORT_DIR);
 
-    // const result = await saveArtifacts();
-    // if (result && result.success) {
-    //     console.log('Successfully uploaded artifacts to S3:', result.reportLink);
-    // }
+    const result = await saveArtifacts();
+    if (result && result.success) {
+        console.log('Successfully uploaded artifacts to S3:', result.reportLink);
+
+        // save the report link to a file For CI to use
+        fs.writeFileSync('report-link.txt', result.reportLink);
+    }
 
     // Create or use an existing test cycle
     // let testCycle = {};
@@ -93,13 +94,6 @@ const saveReport = async () => {
         const data = generateTestReport(summary, false, false, undefined);
         await sendReport('summary report to notif channel', WEBHOOK_URL, data);
     }
-
-    // Save test cases to Test Management
-    // if (ZEPHYR_ENABLE === 'true') {
-    //     await createTestExecutions(jsonReport, testCycle);
-    // }
-
-    // chai.expect(Boolean(jsonReport.stats.failures), FAILURE_MESSAGE).to.be.false;
 };
 
 saveReport();

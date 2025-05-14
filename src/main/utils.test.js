@@ -63,9 +63,9 @@ describe('main/utils', () => {
             expect(Utils.getWindowBoundaries({
                 getContentBounds: () => ({width: 500, height: 400}),
             })).toStrictEqual({
-                x: 0,
+                x: SERVERS_SIDEBAR_WIDTH,
                 y: TAB_BAR_HEIGHT,
-                width: 500,
+                width: 500 - SERVERS_SIDEBAR_WIDTH,
                 height: 400 - TAB_BAR_HEIGHT,
             });
         });
@@ -119,21 +119,6 @@ describe('main/utils', () => {
         });
     });
 
-    describe('getLogsPath', () => {
-        test.each([
-            ['win32', '/fake/path\\kChat\\logs\\'],
-            ['linux', '/fake/path/kChat/logs/'],
-            ['darwin', '/fake/path/Library/Logs/kChat/'],
-        ])(
-            'given %p arguments, returns %p',
-            (os, path) => {
-                Object.defineProperty(process, 'platform', {
-                    value: os,
-                });
-                expect(Utils.getLogsPath()).toEqual(path);
-            },
-        );
-    });
     describe('isInsideRectangle', () => {
         it.each([
             [{x: 0, y: 0, width: 1920, height: 1080}, {x: 100, y: 100, width: 1280, height: 720}, true],

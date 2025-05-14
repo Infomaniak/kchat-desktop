@@ -18,7 +18,6 @@ describe('focus', function desc() {
     };
 
     let firstServer;
-    let loadingScreen;
 
     beforeEach(async () => {
         env.cleanDataDir();
@@ -28,9 +27,6 @@ describe('focus', function desc() {
         await asyncSleep(1000);
         this.app = await env.getApp();
         this.serverMap = await env.getServerMap(this.app);
-
-        loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
-        await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
         firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
         await env.loginToMattermost(firstServer);
         const textbox = await firstServer.waitForSelector('#post_textbox');
@@ -45,14 +41,14 @@ describe('focus', function desc() {
     });
 
     describe('Focus textbox tests', () => {
-        it('MM-T1315 should return focus to the message box when closing the settings window', async () => {
+        it('MM-T1315 should return focus to the message box when closing the settings modal', async () => {
             this.app.evaluate(({ipcMain}, showWindow) => {
                 ipcMain.emit(showWindow);
             }, SHOW_SETTINGS_WINDOW);
             const settingsWindow = await this.app.waitForEvent('window', {
                 predicate: (window) => window.url().includes('settings'),
             });
-            await settingsWindow.waitForSelector('.settingsPage.container');
+            await settingsWindow.waitForSelector('.SettingsModal');
             await settingsWindow.close();
 
             const isTextboxFocused = await firstServer.$eval('#post_textbox', (el) => el === document.activeElement);
@@ -69,7 +65,7 @@ describe('focus', function desc() {
             textboxString.should.equal('Mattermost');
         });
 
-        it('MM-T1316 should return focus to the message box when closing the settings window', async () => {
+        it('MM-T1316 should return focus to the message box when closing the Add Server modal', async () => {
             const mainView = this.app.windows().find((window) => window.url().includes('index'));
             const dropdownView = this.app.windows().find((window) => window.url().includes('dropdown'));
             await mainView.click('.ServerDropdownButton');
@@ -77,8 +73,8 @@ describe('focus', function desc() {
             const newServerView = await this.app.waitForEvent('window', {
                 predicate: (window) => window.url().includes('newServer'),
             });
-            await newServerView.waitForSelector('#cancelNewServerModal');
-            await newServerView.click('#cancelNewServerModal');
+            await newServerView.waitForSelector('#newServerModal_cancel');
+            await newServerView.click('#newServerModal_cancel');
 
             const isTextboxFocused = await firstServer.$eval('#post_textbox', (el) => el === document.activeElement);
             isTextboxFocused.should.be.true;

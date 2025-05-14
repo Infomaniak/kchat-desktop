@@ -4,19 +4,14 @@
 import classNames from 'classnames';
 import React from 'react';
 
+// @ts-expect-error gif not valid
 import loaderIk from '../../../assets/loading@2x.gif';
-
-import LoadingIcon from './LoadingIcon';
-
-import useAnimationEnd from '../../hooks/useAnimationEnd';
 
 const LOADING_STATE = {
     INITIALIZING: 'initializing', // animation graphics are hidden
     LOADING: 'loading', // animation graphics fade in and animate
     LOADED: 'loaded', // animation graphics fade out
 };
-
-const ANIMATION_COMPLETION_DELAY = 500;
 
 type Props = {
     loading: boolean;

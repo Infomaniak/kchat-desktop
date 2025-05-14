@@ -6,8 +6,6 @@ import type {BuildConfig} from 'types/config';
 
 import {IKOrigin} from './ikConfig';
 
-import {DEFAULT_ACADEMY_LINK, DEFAULT_HELP_LINK, DEFAULT_UPGRADE_LINK} from '../../common/constants';
-
 // For detailed guides, please refer to https://docs.mattermost.com/deployment/desktop-app-deployment.html
 
 /**

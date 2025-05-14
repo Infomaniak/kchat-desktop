@@ -14,7 +14,7 @@ describe('menu_bar/dropdown', function desc() {
         env.createTestUserDataDir();
         env.cleanTestConfig();
         fs.writeFileSync(env.configFilePath, JSON.stringify(config));
-        await asyncSleep(1000);
+        await asyncSleep(2000);
         this.app = await env.getApp();
     };
 
@@ -80,7 +80,7 @@ describe('menu_bar/dropdown', function desc() {
         const newServerModal = await this.app.waitForEvent('window', {
             predicate: (window) => window.url().includes('newServer'),
         });
-        const modalTitle = await newServerModal.innerText('#newServerModal .modal-title');
+        const modalTitle = await newServerModal.innerText('#newServerModal .Modal__header__text_container');
         modalTitle.should.equal('Add Server');
 
         await afterFunc();

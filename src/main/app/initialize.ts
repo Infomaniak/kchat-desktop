@@ -63,8 +63,7 @@ import NonceManager from 'main/nonceManager';
 import {getDoNotDisturb} from 'main/notifications';
 import parseArgs from 'main/ParseArgs';
 import PerformanceMonitor from 'main/performanceMonitor';
-import PermissionsManager from 'main/permissionsManager';
-import permissionsManager from 'main/permissionsManager';
+import permissionsManager, {PermissionsManager} from 'main/permissionsManager';
 import TokenManager from 'main/tokenManager';
 import Tray from 'main/tray/tray';
 import TrustedOriginsStore from 'main/trustedOrigins';
@@ -272,15 +271,11 @@ function initializeBeforeAppReady() {
     AllowProtocolDialog.init();
 
     // Alows protocol in dev
-    if (mainProtocol) {
+    if (isDev && process.env.NODE_ENV !== 'test') {
+        app.setAsDefaultProtocolClient('kchat-dev', process.execPath, [path.resolve(process.cwd(), 'dist/')]);
+    } else if (mainProtocol) {
         app.setAsDefaultProtocolClient(mainProtocol);
     }
-
-    // if (isDev && process.env.NODE_ENV !== 'test') {
-    //     log.info('In development mode, deeplinking is disabled');
-    // } else if (mainProtocol) {
-    //     app.setAsDefaultProtocolClient(mainProtocol);
-    // }
 
     if (process.platform === 'darwin' || process.platform === 'win32') {
         nativeTheme.on('updated', handleUpdateTheme);
@@ -288,7 +283,11 @@ function initializeBeforeAppReady() {
     }
 
     protocol.registerSchemesAsPrivileged([
-        {scheme: 'kchat-desktop', privileges: {standard: true}},
+        {scheme: 'kchat-desktop',
+            privileges: {
+                standard: true,
+                secure: true,
+            }},
     ]);
 }
 
@@ -595,6 +594,7 @@ function handleStartDownload() {
 
 function handleStartDownloadManual() {
     if (updateManager) {
+        // @ts-expect-error this seems to not exist but who knows
         updateManager.handleDownloadManual();
     }
 }

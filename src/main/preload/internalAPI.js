@@ -107,6 +107,10 @@ import {
     OPEN_SERVER_UPGRADE_LINK,
     REFRESH_PERMISSION,
     GET_LOCAL_PERMISSIONS,
+    ADD_SERVER,
+    EDIT_SERVER,
+    REMOVE_SERVER,
+    GET_UNIQUE_SERVERS_WITH_PERMISSIONS,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -153,6 +157,10 @@ contextBridge.exposeInMainWorld('desktop', {
     getOrderedTabsForServer: (serverId) => ipcRenderer.invoke(GET_ORDERED_TABS_FOR_SERVER, serverId),
     onUpdateServers: (listener) => ipcRenderer.on(SERVERS_UPDATE, () => listener()),
     validateServerURL: (url, currentId) => ipcRenderer.invoke(VALIDATE_SERVER_URL, url, currentId),
+    getUniqueServersWithPermissions: () => ipcRenderer.invoke(GET_UNIQUE_SERVERS_WITH_PERMISSIONS),
+    addServer: (server) => ipcRenderer.send(ADD_SERVER, server),
+    editServer: (server, permissions) => ipcRenderer.send(EDIT_SERVER, server, permissions),
+    removeServer: (serverId) => ipcRenderer.send(REMOVE_SERVER, serverId),
 
     getConfiguration: () => ipcRenderer.invoke(GET_CONFIGURATION),
     getTheme: () => ipcRenderer.invoke(GET_APP_THEME),
@@ -171,7 +179,10 @@ contextBridge.exposeInMainWorld('desktop', {
 
     getScreenPermissions: () => ipcRenderer.invoke(SCREEN_SHARE_PERMISSIONS),
     onSynchronizeConfig: (listener) => ipcRenderer.on('synchronize-config', () => listener()),
-    onReloadConfiguration: (listener) => ipcRenderer.on(RELOAD_CONFIGURATION, () => listener()),
+    onReloadConfiguration: (listener) => {
+        ipcRenderer.on(RELOAD_CONFIGURATION, () => listener());
+        return () => ipcRenderer.off(RELOAD_CONFIGURATION, listener);
+    },
     onDarkModeChange: (listener) => ipcRenderer.on(DARK_MODE_CHANGE, (_, darkMode) => listener(darkMode)),
     onLoadRetry: (listener) => ipcRenderer.on(LOAD_RETRY, (_, viewId, retry, err, loadUrl) => listener(viewId, retry, err, loadUrl)),
     onLoadSuccess: (listener) => ipcRenderer.on(LOAD_SUCCESS, (_, viewId) => listener(viewId)),
@@ -319,18 +330,6 @@ contextBridge.exposeInMainWorld('desktop', {
         pingDomain: (url) => ipcRenderer.invoke(PING_DOMAIN, url),
     },
 });
-
-// TODO: This is for modals only, should probably move this out for them
-const createKeyDownListener = () => {
-    ipcRenderer.invoke(GET_MODAL_UNCLOSEABLE).then((uncloseable) => {
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !uncloseable) {
-                ipcRenderer.send(MODAL_CANCEL);
-            }
-        });
-    });
-};
-createKeyDownListener();
 
 ipcRenderer.on(METRICS_REQUEST, async (_, name) => {
     const memory = await process.getProcessMemoryInfo();

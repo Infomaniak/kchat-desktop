@@ -36,3 +36,5 @@ sentry.properties
 .eslintcache
 
 *.p8
+
+.aider*

@@ -33,11 +33,32 @@ describe('Trigger Notification From desktop', function desc() {
 
     // This support to getBadge is only available for MacOS
     env.shouldTest(it, process.platform === 'darwin')('should receive a notification on macOS', async () => {
-        await triggerTestNotification(firstServer);
-        const badgeValue = await this.app.evaluate(async ({app}) => {
-            return app.dock.getBadge();
+        await asyncSleep(2000);
+
+        // Get the initial badge value
+        const beforeBadgeValue = await this.app.evaluate(async ({app}) => {
+            const badge = app.dock.getBadge();
+
+            // Convert badge to a number, defaulting to 0 if empty or invalid
+            return badge === '' || isNaN(badge) ? 0 : parseInt(badge, 10);
         });
-        badgeValue.should.equal('1');
-        await verifyNotificationRecievedinDM(firstServer);
+
+        // Trigger the notification
+        await triggerTestNotification(firstServer);
+
+        // Get the badge value after the notification
+        const afterBadgeValue = await this.app.evaluate(async ({app}) => {
+            const badge = app.dock.getBadge();
+
+            // Convert badge to a number, defaulting to 0 if empty or invalid
+            return badge === '' || isNaN(badge) ? 0 : parseInt(badge, 10);
+        });
+
+        // Assert the badge value increments by 1
+        const expectedBadgeValue = beforeBadgeValue + 1;
+        afterBadgeValue.should.equal(expectedBadgeValue);
+
+        // Verify notification received in DM
+        await verifyNotificationRecievedinDM(firstServer, afterBadgeValue);
     });
 });

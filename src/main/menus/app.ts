@@ -3,10 +3,16 @@
 // See LICENSE.txt for license information.
 'use strict';
 
-import type {MenuItem, MenuItemConstructorOptions} from 'electron';
-import {app, clipboard, Menu, session, shell} from 'electron';
+import * as fs from 'fs';
 
+import type {MenuItem, MenuItemConstructorOptions} from 'electron';
+import {app, clipboard, ipcMain, Menu, session, shell} from 'electron';
+import log from 'electron-log';
+
+import {SHOW_NEW_SERVER_MODAL} from 'common/communication';
 import type {Config} from 'common/config';
+import {ModalConstants} from 'common/constants';
+import ServerManager from 'common/servers/serverManager';
 import {t} from 'common/utils/util';
 import {clearAllData} from 'main/app/utils';
 import type {UpdateManager} from 'main/autoUpdater';
@@ -14,7 +20,7 @@ import DeveloperMode from 'main/developerMode';
 import Diagnostics from 'main/diagnostics';
 import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
-import TokenManager from 'main/tokenManager';
+import tokenManager from 'main/tokenManager';
 import {getLocalPreload, getLogsPath} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import ViewManager from 'main/views/viewManager';
@@ -59,7 +65,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             }
 
             ModalManager.addModal(
-                'settingsModal',
+                ModalConstants.SETTINGS_MODAL,
                 'kchat-desktop://renderer/settings.html',
                 getLocalPreload('internalAPI.js'),
                 null,
@@ -68,14 +74,14 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         },
     });
 
-    /*if (config.enableServerManagement === true && ServerManager.hasServers()) {
+    if (config.enableServerManagement === true && ServerManager.hasServers()) {
         platformAppMenu.push({
             label: localizeMessage('main.menus.app.file.signInToAnotherServer', 'Sign in to Another Server'),
             click() {
                 ipcMain.emit(SHOW_NEW_SERVER_MODAL);
             },
         });
-    }*/
+    }
 
     if (isMac) {
         platformAppMenu = platformAppMenu.concat([
@@ -228,7 +234,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         click() {
             session.defaultSession.clearCache();
             session.defaultSession.clearStorageData();
-            TokenManager.reset();
+            tokenManager.reset();
             ViewManager.reload();
         },
     }];
@@ -312,8 +318,6 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         }],
     });
 
-    // const servers = ServerManager.getOrderedServers();
-    // const currentServer = ServerManager.hasServers() ? ServerViewState.getCurrentServer() : undefined;
     const windowMenu = {
         id: 'window',
         label: localizeMessage('main.menus.app.window', '&Window'),
@@ -338,6 +342,41 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
     template.push(windowMenu);
 
     const submenu = [];
+    if (updateManager && config.canUpgrade) {
+        if (updateManager.versionDownloaded) {
+            submenu.push({
+                label: localizeMessage('main.menus.app.help.restartAndUpdate', 'Restart and Update'),
+                click() {
+                    updateManager.handleUpdate();
+                },
+            });
+        } else if (updateManager.versionAvailable) {
+            submenu.push({
+                label: localizeMessage('main.menus.app.help.downloadUpdate', 'Download Update'),
+                click() {
+                    updateManager.handleDownload();
+                },
+            });
+        } else {
+            submenu.push({
+                label: localizeMessage('main.menus.app.help.checkForUpdates', 'Check for Updates'),
+                click() {
+                    updateManager.checkForUpdates(true);
+                },
+            });
+        }
+        submenu.push(separatorItem);
+    }
+
+    submenu.push(separatorItem);
+
+    submenu.push({
+        id: 'Show logs',
+        label: localizeMessage('main.menus.app.help.ShowLogs', 'Show logs'),
+        click() {
+            shell.showItemInFolder(log.transports.file.getFile().path);
+        },
+    });
 
     submenu.push({
         id: 'diagnostics',

@@ -46,6 +46,8 @@ export type DesktopAPI = {
         sessionID: string;
     }>;
     leaveCall: () => void;
+    openCallDialing: (callInfo: CallInfo) => void
+    closeDial: () => void
     callsWidgetConnected: (callID: string, sessionID: string) => void;
     resizeCallsWidget: (width: number, height: number) => void;
     sendCallsError: (err: string, callID?: string, errMsg?: string) => void;

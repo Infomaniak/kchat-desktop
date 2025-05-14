@@ -349,7 +349,7 @@ body {
                         }
 
                         .DownloadsDropdown__Update__Details__Description {
-                            color: rgba(63, 67, 80, 0.64);
+                            color: rgba(var(--center-channel-color-rgb), 0.64);
                             font-size: 10px;
                             font-style: normal;
                             font-weight: 400;
@@ -361,19 +361,20 @@ body {
                             }
                         }
 
-                        .DownloadsDropdown__Update__Details__DescriptionManual {
-                            color: rgba(63, 67, 80, 0.64);
-                            font-size: 9px;
-                            font-style: normal;
-                            font-weight: 400;
-                            letter-spacing: 0.02em;
-                            line-height: 15px;
-                            max-width: 200px;
-                            margin-top: 5px;
-                            margin-bottom: 5px;
+                        .DownloadsDropdown__Update__Details__Changelog {
+                            color: var(--link-color);
+                            text-decoration: none;
+                            font-size: 12px;
+                            font-weight: 600;
+                            margin-top: 6px;
+                            display: inline-block;
+
+                            &:hover, &:focus {
+                                filter: brightness(90%);
+                            }
                         }
 
-                        button#downloadUpdateButton, button#manualUpdateButton {
+                        button#downloadUpdateButton {
                             font-style: normal;
                             font-weight: 600;
                             font-size: 12px;
