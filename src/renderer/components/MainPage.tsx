@@ -5,7 +5,6 @@
 import classNames from 'classnames';
 import React, {Fragment} from 'react';
 import type {DropResult} from 'react-beautiful-dnd';
-import {Container} from 'react-bootstrap';
 import type {IntlShape} from 'react-intl';
 import {injectIntl} from 'react-intl';
 
@@ -460,7 +459,6 @@ class MainPage extends React.PureComponent<Props, State> {
                             })}
                         />
                     </button>
-                    {tabsRow}
                     <DeveloperModeIndicator
                         darkMode={this.props.darkMode}
                         developerMode={this.state.developerMode}
@@ -534,10 +532,8 @@ class MainPage extends React.PureComponent<Props, State> {
                 className='MainPage'
                 onClick={this.focusOnWebView}
             >
-                <Container fluid={true}>
-                    {topRow}
-                    {viewsRow}
-                </Container>
+                {topRow}
+                {viewsRow}
             </div>
         );
     }
