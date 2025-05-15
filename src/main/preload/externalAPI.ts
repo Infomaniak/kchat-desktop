@@ -240,6 +240,8 @@ setInterval(() => {
  ****************************************************************************
  */
 
+// IK: THIS IS NEEDED
+
 // Disabling no-explicit-any for this legacy code
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?: {type?: string; message?: any; data?: any}} = {}) => {

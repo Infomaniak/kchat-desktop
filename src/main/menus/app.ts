@@ -3,31 +3,27 @@
 // See LICENSE.txt for license information.
 'use strict';
 
-import fs from 'fs';
-
 import type {MenuItem, MenuItemConstructorOptions} from 'electron';
-import {app, clipboard, Menu, session, shell} from 'electron';
+import {app, clipboard, ipcMain, Menu, session, shell} from 'electron';
+import log from 'electron-log';
 
+import ServerViewState from 'app/serverViewState';
+import {SHOW_NEW_SERVER_MODAL} from 'common/communication';
 import type {Config} from 'common/config';
+import {ModalConstants} from 'common/constants';
+import ServerManager from 'common/servers/serverManager';
 import {t} from 'common/utils/util';
-import {clearAllData} from 'main/app/utils';
+import {clearAllData, clearDataForServer} from 'main/app/utils';
 import type {UpdateManager} from 'main/autoUpdater';
 import DeveloperMode from 'main/developerMode';
 import Diagnostics from 'main/diagnostics';
 import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
-import TokenManager from 'main/tokenManager';
-import {getLocalPreload, getLogsPath} from 'main/utils';
+import tokenManager from 'main/tokenManager';
+import {getLocalPreload} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
-
-// import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
-// import log from 'electron-log';
-// import ServerViewState from 'app/serverViewState';
-// import {OPEN_SERVERS_DROPDOWN, SHOW_NEW_SERVER_MODAL} from 'common/communication';
-// import {getViewDisplayName} from 'common/views/View';
-// import type {ViewType} from 'common/views/View';
 
 export function createTemplate(config: Config, updateManager: UpdateManager) {
     const separatorItem: MenuItemConstructorOptions = {
@@ -61,7 +57,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             }
 
             ModalManager.addModal(
-                'settingsModal',
+                ModalConstants.SETTINGS_MODAL,
                 'kchat-desktop://renderer/settings.html',
                 getLocalPreload('internalAPI.js'),
                 null,
@@ -70,14 +66,14 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         },
     });
 
-    /*if (config.enableServerManagement === true && ServerManager.hasServers()) {
+    if (config.enableServerManagement === true && ServerManager.hasServers()) {
         platformAppMenu.push({
             label: localizeMessage('main.menus.app.file.signInToAnotherServer', 'Sign in to Another Server'),
             click() {
                 ipcMain.emit(SHOW_NEW_SERVER_MODAL);
             },
         });
-    }*/
+    }
 
     if (isMac) {
         platformAppMenu = platformAppMenu.concat([
@@ -174,6 +170,24 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         },
     ];
 
+    // if (CallsWidgetWindow.isOpen()) {
+    //     devToolsSubMenu.push({
+    //         label: localizeMessage('main.menus.app.view.devToolsCurrentCallWidget', 'Developer Tools for Call Widget'),
+    //         click() {
+    //             CallsWidgetWindow.openDevTools();
+    //         },
+    //     });
+
+    //     if (CallsWidgetWindow.isPopoutOpen()) {
+    //         devToolsSubMenu.push({
+    //             label: localizeMessage('main.menus.app.view.devToolsCurrentCallWidgetPopout', 'Developer Tools for Call Widget Popout'),
+    //             click() {
+    //                 CallsWidgetWindow.openPopoutDevTools();
+    //             },
+    //         });
+    //     }
+    // }
+
     if (DeveloperMode.enabled()) {
         devToolsSubMenu.push(...[
             separatorItem,
@@ -230,7 +244,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         click() {
             session.defaultSession.clearCache();
             session.defaultSession.clearStorageData();
-            TokenManager.reset();
+            tokenManager.reset();
             ViewManager.reload();
         },
     }];
@@ -314,8 +328,8 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         }],
     });
 
-    // const servers = ServerManager.getOrderedServers();
-    // const currentServer = ServerManager.hasServers() ? ServerViewState.getCurrentServer() : undefined;
+    const servers = ServerManager.getOrderedServers();
+    const currentServer = ServerManager.hasServers() ? ServerViewState.getCurrentServer() : undefined;
     const windowMenu = {
         id: 'window',
         label: localizeMessage('main.menus.app.window', '&Window'),
@@ -340,6 +354,41 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
     template.push(windowMenu);
 
     const submenu = [];
+    if (updateManager && config.canUpgrade) {
+        if (updateManager.versionDownloaded) {
+            submenu.push({
+                label: localizeMessage('main.menus.app.help.restartAndUpdate', 'Restart and Update'),
+                click() {
+                    updateManager.handleUpdate();
+                },
+            });
+        } else if (updateManager.versionAvailable) {
+            submenu.push({
+                label: localizeMessage('main.menus.app.help.downloadUpdate', 'Download Update'),
+                click() {
+                    updateManager.handleDownload();
+                },
+            });
+        } else {
+            submenu.push({
+                label: localizeMessage('main.menus.app.help.checkForUpdates', 'Check for Updates'),
+                click() {
+                    updateManager.checkForUpdates(true);
+                },
+            });
+        }
+        submenu.push(separatorItem);
+    }
+
+    submenu.push(separatorItem);
+
+    submenu.push({
+        id: 'Show logs',
+        label: localizeMessage('main.menus.app.help.ShowLogs', 'Show logs'),
+        click() {
+            shell.showItemInFolder(log.transports.file.getFile().path);
+        },
+    });
 
     submenu.push({
         id: 'diagnostics',
@@ -349,26 +398,6 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         },
     });
 
-    submenu.push({id: 'Troubleshooting',
-        label: localizeMessage('main.menus.app.help.troubleshooting', 'Troubleshooting'),
-        submenu: [{
-            label: localizeMessage('main.menus.app.help.troubleshooting.open', 'Open log folder'),
-            enabled: true,
-            click() {
-                shell.showItemInFolder(getLogsPath());
-            }}, {
-            label: localizeMessage('main.menus.app.help.troubleshooting.clear', 'Clear logs'),
-            enabled: true,
-            click() {
-                fs.unlink(`${getLogsPath()}/kchat-desktop.log`, (err: unknown) => {
-                    if (err) {
-                        throw err;
-                    }
-                    // eslint-disable-next-line no-console
-                    console.log('Delete log file successfully.');
-                });
-            }}],
-    });
     submenu.push(separatorItem);
 
     const version = localizeMessage('main.menus.app.help.versionString', 'Version {version}{commit}', {

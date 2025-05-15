@@ -119,21 +119,6 @@ describe('main/utils', () => {
         });
     });
 
-    describe.skip('getLogsPath', () => {
-        test.each([
-            ['win32', '/fake/path\\kChat\\logs\\'],
-            ['linux', '/fake/path/kChat/logs/'],
-            ['darwin', '/fake/path/Library/Logs/kChat/'],
-        ])(
-            'given %p arguments, returns %p',
-            (os, path) => {
-                Object.defineProperty(process, 'platform', {
-                    value: os,
-                });
-                expect(Utils.getLogsPath()).toEqual(path);
-            },
-        );
-    });
     describe('isInsideRectangle', () => {
         it.each([
             [{x: 0, y: 0, width: 1920, height: 1080}, {x: 100, y: 100, width: 1280, height: 720}, true],

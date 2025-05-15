@@ -8,7 +8,7 @@ import 'renderer/css/settings.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import SettingsPage from '../../components/SettingsPage';
+import SettingsModal from '../../components/SettingsModal';
 import IntlProvider from '../../intl_provider';
 import setupDarkMode from '../darkMode';
 
@@ -22,8 +22,7 @@ const start = async () => {
     ReactDOM.render(
         (
             <IntlProvider>
-                <SettingsPage
-                    show={true}
+                <SettingsModal
                     onClose={onClose}
                 />
             </IntlProvider>

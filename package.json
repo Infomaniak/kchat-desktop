@@ -136,7 +136,7 @@
         "copy-webpack-plugin": "10.2.4",
         "cross-env": "7.0.3",
         "css-loader": "6.7.1",
-        "electron": "34.0.1",
+        "electron": "35.2.0",
         "electron-builder": "24.13.3",
         "electron-connect": "0.6.3",
         "eslint": "8.57.0",
@@ -165,6 +165,8 @@
         "webpack-merge": "5.8.0"
     },
     "dependencies": {
+        "@emotion/react": "11.11.4",
+        "@floating-ui/react": "0.26.28",
         "@infomaniak/compass-icons": "0.13.0",
         "@infomaniak/jitsi-meet-electron-sdk": "^6.0.10-nightly.19",
         "@sentry/electron": "^4.22.0",

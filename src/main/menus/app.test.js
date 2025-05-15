@@ -24,6 +24,8 @@ jest.mock('electron-context-menu', () => {
     return () => jest.fn();
 });
 
+jest.mock('electron-is-dev', () => false);
+
 jest.mock('electron', () => {
     class NotificationMock {
         static isSupported = jest.fn();
@@ -100,6 +102,9 @@ jest.mock('main/AutoLauncher', () => ({
 // jest.mock('main/windows/callsWidgetWindow', () => ({
 //     isOpen: jest.fn(),
 // }));
+jest.mock('main/views/modalManager', () => ({
+    addModal: jest.fn(),
+}));
 jest.mock('main/views/modalManager', () => ({
     addModal: jest.fn(),
 }));

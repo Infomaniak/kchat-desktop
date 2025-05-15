@@ -95,7 +95,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
     };
 
     setForServer = (server: MattermostServer, permissions: Permissions) => {
-        if (permissions.media?.allowed) {
+        if (permissions.media?.allowed && (process.platform === 'win32' || process.platform === 'darwin')) {
             this.checkMediaAccess('microphone');
             this.checkMediaAccess('camera');
         }
@@ -153,12 +153,6 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         // if (!serverURL) {
         //     return false;
         // }
-
-        // For GPO servers, we always allow permissions since they are trusted
-        const serverHref = serverURL!.href;
-        if (Config.registryData?.servers?.some((s) => parseURL(s.url)?.href === serverHref)) {
-            return true;
-        }
 
         // Exception for embedded videos such as YouTube
         // We still want to ask permission to do this though

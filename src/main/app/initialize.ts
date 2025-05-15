@@ -269,15 +269,11 @@ function initializeBeforeAppReady() {
     AllowProtocolDialog.init();
 
     // Alows protocol in dev
-    if (mainProtocol) {
+    if (isDev && process.env.NODE_ENV !== 'test') {
+        app.setAsDefaultProtocolClient('kchat-dev', process.execPath, [path.resolve(process.cwd(), 'dist/')]);
+    } else if (mainProtocol) {
         app.setAsDefaultProtocolClient(mainProtocol);
     }
-
-    // if (isDev && process.env.NODE_ENV !== 'test') {
-    //     log.info('In development mode, deeplinking is disabled');
-    // } else if (mainProtocol) {
-    //     app.setAsDefaultProtocolClient(mainProtocol);
-    // }
 
     if (process.platform === 'darwin' || process.platform === 'win32') {
         nativeTheme.on('updated', handleUpdateTheme);
@@ -285,7 +281,11 @@ function initializeBeforeAppReady() {
     }
 
     protocol.registerSchemesAsPrivileged([
-        {scheme: 'kchat-desktop', privileges: {standard: true}},
+        {scheme: 'kchat-desktop',
+            privileges: {
+                standard: true,
+                secure: true,
+            }},
     ]);
 }
 

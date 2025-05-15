@@ -19,6 +19,7 @@ import {
     SERVERS_UPDATE,
     REACT_APP_INITIALIZED,
     OPEN_SERVER_EXTERNALLY,
+    OPEN_CHANGELOG_LINK,
     HISTORY,
     GET_VIEW_INFO_FOR_TEST,
     SESSION_EXPIRED,
@@ -41,11 +42,12 @@ import {
     REQUEST_BROWSER_HISTORY_STATUS,
     UNREADS_AND_MENTIONS,
     CALL_API_AVAILABLE,
+    OPEN_SERVER_UPGRADE_LINK,
     TAB_LOGIN_CHANGED,
     DEVELOPER_MODE_UPDATED,
-    OPEN_SERVER_UPGRADE_LINK,
 } from 'common/communication';
 import Config from 'common/config';
+import {DEFAULT_CHANGELOG_LINK} from 'common/constants';
 import {Logger} from 'common/log';
 import type {MattermostServer} from 'common/servers/MattermostServer';
 import ServerManager from 'common/servers/serverManager';
@@ -60,9 +62,9 @@ import DeveloperMode from 'main/developerMode';
 import performanceMonitor from 'main/performanceMonitor';
 import PermissionsManager from 'main/permissionsManager';
 import TokenManager from 'main/tokenManager';
-import ModalManager from 'main/views/modalManager';
 import callDialingWindow from 'main/windows/callDialingWindow';
 import KmeetCallWindow from 'main/windows/kmeetCallWindow';
+import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
 import type {DeveloperSettings} from 'types/settings';
@@ -100,6 +102,7 @@ export class ViewManager {
         ipcMain.on(TAB_LOGIN_CHANGED, this.handleTabLoginChanged);
         ipcMain.on(OPEN_SERVER_EXTERNALLY, this.handleOpenServerExternally);
         ipcMain.on(OPEN_SERVER_UPGRADE_LINK, this.handleOpenServerUpgradeLink);
+        ipcMain.on(OPEN_CHANGELOG_LINK, this.handleOpenChangelogLink);
         ipcMain.on(UNREADS_AND_MENTIONS, this.handleUnreadsAndMentionsChanged);
         ipcMain.on(SESSION_EXPIRED, this.handleSessionExpired);
 
@@ -129,14 +132,24 @@ export class ViewManager {
 
     private init = async () => {
         TokenManager.load();
-        LoadingScreen.show();
         if (ServerManager.hasServers()) {
             // TODO: This init should be happening elsewhere, future refactor will fix this
             ServerViewState.init();
-            await updateServerInfos(ServerManager.getAllServers());
-            ServerManager.getAllServers().forEach((server) => this.loadServer(server));
+            LoadingScreen.show();
+
+            // We need to wait for the current server to be initialized before showing anything
+            // But we can initialize other servers in parallel
+            const otherServers = ServerManager.getAllServers().filter((server) => server.id !== ServerViewState.getCurrentServer().id);
+            const currentServer = ServerViewState.getCurrentServer();
+            otherServers.forEach((server) => this.initServer(server));
+            await this.initServer(currentServer);
             this.showInitial();
         }
+    };
+
+    private initServer = async (server: MattermostServer) => {
+        await updateServerInfos([server]);
+        this.loadServer(server);
     };
 
     private handleDeveloperModeUpdated = (json: DeveloperSettings) => {
@@ -698,6 +711,10 @@ export class ViewManager {
         if (Config.upgradeLink) {
             shell.openExternal(Config.upgradeLink);
         }
+    };
+
+    private handleOpenChangelogLink = () => {
+        shell.openExternal(DEFAULT_CHANGELOG_LINK);
     };
 
     private handleUnreadsAndMentionsChanged = (e: IpcMainEvent, isUnread: boolean, mentionCount: number) => {
