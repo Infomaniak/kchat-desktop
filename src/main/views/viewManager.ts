@@ -410,6 +410,7 @@ export class ViewManager {
     private addView = (view: MattermostWebContentsView): void => {
         this.views.set(view.id, view);
 
+        // Force a permission check for notifications
         if (view.view.type === TAB_MESSAGING) {
             const notificationPermission = PermissionsManager.getForServer(view.view.server)?.notifications;
             if (!notificationPermission || (!notificationPermission.allowed && notificationPermission.alwaysDeny !== true)) {

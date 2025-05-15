@@ -285,6 +285,12 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             return downloadsManager.openDownloadsDropdown();
         },
     }, separatorItem, {
+        id: 'clear-data-for-server',
+        label: localizeMessage('main.menus.app.view.clearDataForServer', 'Clear Data for Current Server'),
+        async click() {
+            return clearDataForServer(ServerViewState.getCurrentServer());
+        },
+    }, {
         id: 'clear-data',
         label: localizeMessage('main.menus.app.view.clearAllData', 'Clear All Data'),
         async click() {
@@ -353,6 +359,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
     };
     template.push(windowMenu);
 
+    const currentRemoteInfo = currentServer ? ServerManager.getRemoteInfo(currentServer.id) : undefined;
     const submenu = [];
     if (updateManager && config.canUpgrade) {
         if (updateManager.versionDownloaded) {
