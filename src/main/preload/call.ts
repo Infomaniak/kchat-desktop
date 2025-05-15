@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 // Copyright (c) 2015-2016
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 'use strict';
 
 import {

@@ -33,7 +33,7 @@ module.exports = merge(base, {
         serversSidebarShortcutModal: './src/renderer/modals/serversSidebarShortcut/serversSidebarShortcut.tsx',
     },
     output: {
-        path: path.resolve(__dirname, 'dist/renderer'),
+        path: process.env.NODE_ENV === 'test' ? path.resolve(__dirname, 'e2e/dist/renderer') : path.resolve(__dirname, 'dist/renderer'),
         filename: '[name]_bundle.js',
         assetModuleFilename: '[name].[ext]',
     },
@@ -185,13 +185,20 @@ module.exports = merge(base, {
             use: [
                 MiniCssExtractPlugin.loader,
                 'css-loader',
-                'sass-loader',
+                {
+                    loader: 'sass-loader',
+                    options: {
+                        sassOptions: {
+                            includePaths: [path.resolve(__dirname, 'node_modules')],
+                        },
+                    },
+                },
             ],
         }, {
             test: /\.mp3$/,
             type: 'asset/inline',
         }, {
-            test: /\.(svg|gif)$/,
+            test: /\.(svg|gif|jpg)$/,
             type: 'asset/resource',
         }, {
             test: /\.(eot|ttf|woff|woff2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,

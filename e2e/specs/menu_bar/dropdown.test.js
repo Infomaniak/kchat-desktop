@@ -14,7 +14,7 @@ describe('menu_bar/dropdown', function desc() {
         env.createTestUserDataDir();
         env.cleanTestConfig();
         fs.writeFileSync(env.configFilePath, JSON.stringify(config));
-        await asyncSleep(1000);
+        await asyncSleep(2000);
         this.app = await env.getApp();
     };
 
@@ -54,17 +54,17 @@ describe('menu_bar/dropdown', function desc() {
         after(afterFunc);
 
         it('MM-T4406_1 should show the dropdown', async () => {
-            let dropdownHeight = await browserWindow.evaluate((window) => window.getBrowserViews().find((view) => view.webContents.getURL().includes('dropdown')).getBounds().height);
+            let dropdownHeight = await browserWindow.evaluate((window) => window.contentView.children.find((view) => view.webContents.getURL().includes('dropdown')).getBounds().height);
             dropdownHeight.should.equal(0);
 
             await mainWindow.click('.ServerDropdownButton');
-            dropdownHeight = await browserWindow.evaluate((window) => window.getBrowserViews().find((view) => view.webContents.getURL().includes('dropdown')).getBounds().height);
+            dropdownHeight = await browserWindow.evaluate((window) => window.contentView.children.find((view) => view.webContents.getURL().includes('dropdown')).getBounds().height);
             dropdownHeight.should.be.greaterThan(0);
         });
 
         it('MM-T4406_2 should hide the dropdown', async () => {
             await mainWindow.click('.TabBar');
-            const dropdownHeight = await browserWindow.evaluate((window) => window.getBrowserViews().find((view) => view.webContents.getURL().includes('dropdown')).getBounds().height);
+            const dropdownHeight = await browserWindow.evaluate((window) => window.contentView.children.find((view) => view.webContents.getURL().includes('dropdown')).getBounds().height);
             dropdownHeight.should.equal(0);
         });
     });
@@ -80,7 +80,7 @@ describe('menu_bar/dropdown', function desc() {
         const newServerModal = await this.app.waitForEvent('window', {
             predicate: (window) => window.url().includes('newServer'),
         });
-        const modalTitle = await newServerModal.innerText('#newServerModal .modal-title');
+        const modalTitle = await newServerModal.innerText('#newServerModal .Modal__header__text_container');
         modalTitle.should.equal('Add Server');
 
         await afterFunc();
@@ -100,9 +100,9 @@ describe('menu_bar/dropdown', function desc() {
         after(afterFunc);
 
         it('MM-T4408_1 should show the first view', async () => {
-            const firstViewIsAttached = await browserWindow.evaluate((window, url) => Boolean(window.getBrowserViews().find((view) => view.webContents.getURL() === url)), env.exampleURL);
+            const firstViewIsAttached = await browserWindow.evaluate((window, url) => Boolean(window.contentView.children.find((view) => view.webContents.getURL() === url)), env.exampleURL);
             firstViewIsAttached.should.be.true;
-            const secondViewIsAttached = await browserWindow.evaluate((window) => Boolean(window.getBrowserViews().find((view) => view.webContents.getURL() === 'https://github.com/')));
+            const secondViewIsAttached = await browserWindow.evaluate((window) => Boolean(window.contentView.children.find((view) => view.webContents.getURL() === 'https://github.com/')));
             secondViewIsAttached.should.be.false;
         });
 
@@ -110,9 +110,9 @@ describe('menu_bar/dropdown', function desc() {
             await mainWindow.click('.ServerDropdownButton');
             await dropdownView.click('.ServerDropdown button.ServerDropdown__button:nth-child(2)');
 
-            const firstViewIsAttached = await browserWindow.evaluate((window, url) => Boolean(window.getBrowserViews().find((view) => view.webContents.getURL() === url)), env.exampleURL);
+            const firstViewIsAttached = await browserWindow.evaluate((window, url) => Boolean(window.contentView.children.find((view) => view.webContents.getURL() === url)), env.exampleURL);
             firstViewIsAttached.should.be.false;
-            const secondViewIsAttached = await browserWindow.evaluate((window) => Boolean(window.getBrowserViews().find((view) => view.webContents.getURL() === 'https://github.com/')));
+            const secondViewIsAttached = await browserWindow.evaluate((window) => Boolean(window.contentView.children.find((view) => view.webContents.getURL() === 'https://github.com/')));
             secondViewIsAttached.should.be.true;
         });
     });

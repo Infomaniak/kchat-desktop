@@ -6,7 +6,6 @@ import classNames from 'classnames';
 import React from 'react';
 import type {DraggingStyle, DropResult, NotDraggingStyle} from 'react-beautiful-dnd';
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
-import {Nav, NavItem, NavLink} from 'react-bootstrap';
 import type {IntlShape} from 'react-intl';
 import {FormattedMessage, injectIntl} from 'react-intl';
 
@@ -32,6 +31,10 @@ type Props = {
     intl: IntlShape;
 };
 
+type State = {
+    nonce?: string;
+}
+
 function getStyle(style?: DraggingStyle | NotDraggingStyle) {
     if (style?.transform) {
         const axisLockX = `${style.transform.slice(0, style.transform.indexOf(','))}, 0px)`;
@@ -43,7 +46,12 @@ function getStyle(style?: DraggingStyle | NotDraggingStyle) {
     return style;
 }
 
-class TabBar extends React.PureComponent<Props> {
+class TabBar extends React.PureComponent<Props, State> {
+    constructor(props: Props) {
+        super(props);
+        this.state = {};
+    }
+
     onCloseTab = (id: string) => {
         return (event: React.MouseEvent<HTMLButtonElement>) => {
             event.stopPropagation();
@@ -51,7 +59,19 @@ class TabBar extends React.PureComponent<Props> {
         };
     };
 
+    componentDidMount(): void {
+        window.desktop.getNonce().then((nonce) => {
+            this.setState({
+                nonce,
+            });
+        });
+    }
+
     render() {
+        if (!this.state.nonce) {
+            return null;
+        }
+
         const tabs = this.props.tabs.map((tab, index) => {
             const sessionExpired = this.props.sessionsExpired[tab.id!];
             const hasUnreads = this.props.unreadCounts[tab.id!];
@@ -98,9 +118,8 @@ class TabBar extends React.PureComponent<Props> {
                         }
 
                         return (
-                            <NavItem
+                            <li
                                 ref={provided.innerRef}
-                                as='li'
                                 id={`serverTabItem${index}`}
                                 draggable={false}
                                 title={this.props.intl.formatMessage({id: `common.tabs.${tab.name}`, defaultMessage: getViewDisplayName(tab.name as ViewType)})}
@@ -112,14 +131,16 @@ class TabBar extends React.PureComponent<Props> {
                                 {...provided.dragHandleProps}
                                 style={getStyle(provided.draggableProps.style)}
                             >
-                                <NavLink
-                                    eventKey={index}
+                                <a
                                     draggable={false}
-                                    active={this.props.activeTabId === tab.id}
-                                    disabled={this.props.tabsDisabled}
-                                    onSelect={() => {
-                                        this.props.onSelect(tab.id!);
+                                    onClick={() => {
+                                        if (!this.props.tabsDisabled) {
+                                            this.props.onSelect(tab.id!);
+                                        }
                                     }}
+                                    className={classNames({
+                                        disabled: this.props.tabsDisabled,
+                                    })}
                                 >
                                     <div className='TabBar-tabSeperator'>
                                         <FormattedMessage
@@ -136,8 +157,8 @@ class TabBar extends React.PureComponent<Props> {
                                             </button>
                                         }
                                     </div>
-                                </NavLink>
-                            </NavItem>
+                                </a>
+                            </li>
                         );
                     }}
                 </Draggable>
@@ -145,26 +166,28 @@ class TabBar extends React.PureComponent<Props> {
         });
 
         return (
-            <DragDropContext onDragEnd={this.props.onDrop}>
+            <DragDropContext
+                nonce={this.state.nonce}
+                onDragEnd={this.props.onDrop}
+            >
                 <Droppable
                     isDropDisabled={this.props.tabsDisabled}
                     droppableId='tabBar'
                     direction='horizontal'
                 >
                     {(provided) => (
-                        <Nav
+                        <div
                             ref={provided.innerRef}
                             className={classNames('TabBar', {
                                 darkMode: this.props.isDarkMode,
                             })}
                             id={this.props.id}
-                            variant='tabs'
                             {...provided.droppableProps}
                         >
                             {/*{tabs}*/}
                             {this.props.isMenuOpen ? <span className='TabBar-nonDrag'/> : null}
                             {provided.placeholder}
-                        </Nav>
+                        </div>
                     )}
                 </Droppable>
             </DragDropContext>

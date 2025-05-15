@@ -14,13 +14,10 @@ import {
     OPEN_SERVERS_DROPDOWN,
     SWITCH_TAB,
     CLOSE_VIEW,
-    WINDOW_CLOSE,
-    WINDOW_MINIMIZE,
-    WINDOW_MAXIMIZE,
-    WINDOW_RESTORE,
+    EXIT_FULLSCREEN,
     DOUBLE_CLICK_ON_WINDOW,
     FOCUS_BROWSERVIEW,
-    RELOAD_CURRENT_VIEW,
+    OPEN_SERVER_EXTERNALLY,
     CLOSE_DOWNLOADS_DROPDOWN,
     CLOSE_DOWNLOADS_DROPDOWN_MENU,
     OPEN_DOWNLOADS_DROPDOWN,
@@ -45,7 +42,6 @@ import {
     PLAY_SOUND,
     MODAL_OPEN,
     MODAL_CLOSE,
-    TOGGLE_BACK_BUTTON,
     UPDATE_MENTIONS,
     SHOW_DOWNLOADS_DROPDOWN_BUTTON_BADGE,
     HIDE_DOWNLOADS_DROPDOWN_BUTTON_BADGE,
@@ -72,7 +68,6 @@ import {
     START_UPDATE_DOWNLOAD,
     START_UPGRADE,
     TOGGLE_DOWNLOADS_DROPDOWN_MENU,
-    GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION,
     DOWNLOADS_DROPDOWN_OPEN_FILE,
     MODAL_CANCEL,
     MODAL_RESULT,
@@ -100,6 +95,20 @@ import {
     UPDATE_SIDEBAR_MODAL,
     SWITCH_SERVER_SIDEBAR,
     SCREEN_SHARE_PERMISSIONS,
+    OPEN_NOTIFICATION_PREFERENCES,
+    OPEN_WINDOWS_CAMERA_PREFERENCES,
+    OPEN_WINDOWS_MICROPHONE_PREFERENCES,
+    GET_MEDIA_ACCESS_STATUS,
+    GET_NONCE,
+    IS_DEVELOPER_MODE_ENABLED,
+    METRICS_REQUEST,
+    METRICS_RECEIVE,
+    LOAD_INCOMPATIBLE_SERVER,
+    OPEN_SERVER_UPGRADE_LINK,
+    ADD_SERVER,
+    EDIT_SERVER,
+    REMOVE_SERVER,
+    GET_UNIQUE_SERVERS_WITH_PERMISSIONS,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -117,10 +126,6 @@ contextBridge.exposeInMainWorld('timers', {
     setImmediate,
 });
 
-contextBridge.exposeInMainWorld('mas', {
-    getThumbnailLocation: (location) => ipcRenderer.invoke(GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION, location),
-});
-
 contextBridge.exposeInMainWorld('desktop', {
     quit: (reason, stack) => ipcRenderer.send(QUIT, reason, stack),
     openAppMenu: () => ipcRenderer.send(OPEN_APP_MENU),
@@ -128,19 +133,19 @@ contextBridge.exposeInMainWorld('desktop', {
     openServersDropdown: () => ipcRenderer.send(OPEN_SERVERS_DROPDOWN),
     switchTab: (viewId) => ipcRenderer.send(SWITCH_TAB, viewId),
     closeView: (viewId) => ipcRenderer.send(CLOSE_VIEW, viewId),
-    closeWindow: () => ipcRenderer.send(WINDOW_CLOSE),
-    minimizeWindow: () => ipcRenderer.send(WINDOW_MINIMIZE),
-    maximizeWindow: () => ipcRenderer.send(WINDOW_MAXIMIZE),
-    restoreWindow: () => ipcRenderer.send(WINDOW_RESTORE),
+    exitFullScreen: () => ipcRenderer.send(EXIT_FULLSCREEN),
     doubleClickOnWindow: (windowName) => ipcRenderer.send(DOUBLE_CLICK_ON_WINDOW, windowName),
     focusCurrentView: () => ipcRenderer.send(FOCUS_BROWSERVIEW),
-    reloadCurrentView: () => ipcRenderer.send(RELOAD_CURRENT_VIEW),
+    openServerExternally: () => ipcRenderer.send(OPEN_SERVER_EXTERNALLY),
+    openServerUpgradeLink: () => ipcRenderer.send(OPEN_SERVER_UPGRADE_LINK),
     closeDownloadsDropdown: () => ipcRenderer.send(CLOSE_DOWNLOADS_DROPDOWN),
     closeDownloadsDropdownMenu: () => ipcRenderer.send(CLOSE_DOWNLOADS_DROPDOWN_MENU),
     openDownloadsDropdown: () => ipcRenderer.send(OPEN_DOWNLOADS_DROPDOWN),
     goBack: () => ipcRenderer.send(HISTORY, -1),
     checkForUpdates: () => ipcRenderer.send(CHECK_FOR_UPDATES),
     updateConfiguration: (saveQueueItems) => ipcRenderer.send(UPDATE_CONFIGURATION, saveQueueItems),
+    getNonce: () => ipcRenderer.invoke(GET_NONCE),
+    isDeveloperModeEnabled: () => ipcRenderer.invoke(IS_DEVELOPER_MODE_ENABLED),
 
     updateServerOrder: (serverOrder) => ipcRenderer.send(UPDATE_SERVER_ORDER, serverOrder),
     updateTabOrder: (serverId, viewOrder) => ipcRenderer.send(UPDATE_TAB_ORDER, serverId, viewOrder),
@@ -149,6 +154,10 @@ contextBridge.exposeInMainWorld('desktop', {
     getOrderedTabsForServer: (serverId) => ipcRenderer.invoke(GET_ORDERED_TABS_FOR_SERVER, serverId),
     onUpdateServers: (listener) => ipcRenderer.on(SERVERS_UPDATE, () => listener()),
     validateServerURL: (url, currentId) => ipcRenderer.invoke(VALIDATE_SERVER_URL, url, currentId),
+    getUniqueServersWithPermissions: () => ipcRenderer.invoke(GET_UNIQUE_SERVERS_WITH_PERMISSIONS),
+    addServer: (server) => ipcRenderer.send(ADD_SERVER, server),
+    editServer: (server, permissions) => ipcRenderer.send(EDIT_SERVER, server, permissions),
+    removeServer: (serverId) => ipcRenderer.send(REMOVE_SERVER, serverId),
 
     getConfiguration: () => ipcRenderer.invoke(GET_CONFIGURATION),
     getTheme: () => ipcRenderer.invoke(GET_APP_THEME),
@@ -164,11 +173,15 @@ contextBridge.exposeInMainWorld('desktop', {
 
     getScreenPermissions: () => ipcRenderer.invoke(SCREEN_SHARE_PERMISSIONS),
     onSynchronizeConfig: (listener) => ipcRenderer.on('synchronize-config', () => listener()),
-    onReloadConfiguration: (listener) => ipcRenderer.on(RELOAD_CONFIGURATION, () => listener()),
+    onReloadConfiguration: (listener) => {
+        ipcRenderer.on(RELOAD_CONFIGURATION, () => listener());
+        return () => ipcRenderer.off(RELOAD_CONFIGURATION, listener);
+    },
     onDarkModeChange: (listener) => ipcRenderer.on(DARK_MODE_CHANGE, (_, darkMode) => listener(darkMode)),
     onLoadRetry: (listener) => ipcRenderer.on(LOAD_RETRY, (_, viewId, retry, err, loadUrl) => listener(viewId, retry, err, loadUrl)),
     onLoadSuccess: (listener) => ipcRenderer.on(LOAD_SUCCESS, (_, viewId) => listener(viewId)),
     onLoadFailed: (listener) => ipcRenderer.on(LOAD_FAILED, (_, viewId, err, loadUrl) => listener(viewId, err, loadUrl)),
+    onLoadIncompatibleServer: (listener) => ipcRenderer.on(LOAD_INCOMPATIBLE_SERVER, (_, viewId, loadUrl) => listener(viewId, loadUrl)),
     onSetActiveView: (listener) => ipcRenderer.on(SET_ACTIVE_VIEW, (_, serverId, viewId) => listener(serverId, viewId)),
     onMaximizeChange: (listener) => ipcRenderer.on(MAXIMIZE_CHANGE, (_, maximize) => listener(maximize)),
     onEnterFullScreen: (listener) => ipcRenderer.on('enter-full-screen', () => listener()),
@@ -176,7 +189,6 @@ contextBridge.exposeInMainWorld('desktop', {
     onPlaySound: (listener) => ipcRenderer.on(PLAY_SOUND, (_, soundName) => listener(soundName)),
     onModalOpen: (listener) => ipcRenderer.on(MODAL_OPEN, () => listener()),
     onModalClose: (listener) => ipcRenderer.on(MODAL_CLOSE, () => listener()),
-    onToggleBackButton: (listener) => ipcRenderer.on(TOGGLE_BACK_BUTTON, (_, showExtraBar) => listener(showExtraBar)),
     onUpdateMentions: (listener) => ipcRenderer.on(UPDATE_MENTIONS, (_event, view, mentions, unreads, isExpired) => listener(view, mentions, unreads, isExpired)),
     onCloseServersDropdown: (listener) => ipcRenderer.on(CLOSE_SERVERS_DROPDOWN, () => listener()),
     onOpenServersDropdown: (listener) => ipcRenderer.on(OPEN_SERVERS_DROPDOWN, () => listener()),
@@ -188,6 +200,10 @@ contextBridge.exposeInMainWorld('desktop', {
     onAppMenuWillClose: (listener) => ipcRenderer.on(APP_MENU_WILL_CLOSE, () => listener()),
     onFocusThreeDotMenu: (listener) => ipcRenderer.on(FOCUS_THREE_DOT_MENU, () => listener()),
     updateURLViewWidth: (width) => ipcRenderer.send(UPDATE_URL_VIEW_WIDTH, width),
+    openNotificationPreferences: () => ipcRenderer.send(OPEN_NOTIFICATION_PREFERENCES),
+    openWindowsCameraPreferences: () => ipcRenderer.send(OPEN_WINDOWS_CAMERA_PREFERENCES),
+    openWindowsMicrophonePreferences: () => ipcRenderer.send(OPEN_WINDOWS_MICROPHONE_PREFERENCES),
+    getMediaAccessStatus: (mediaType) => ipcRenderer.invoke(GET_MEDIA_ACCESS_STATUS, mediaType),
 
     resetAuth: async () => {
         await ipcRenderer.invoke(RESET_AUTH);
@@ -309,15 +325,10 @@ contextBridge.exposeInMainWorld('desktop', {
     },
 });
 
-// TODO: This is for modals only, should probably move this out for them
-const createKeyDownListener = () => {
-    ipcRenderer.invoke(GET_MODAL_UNCLOSEABLE).then((uncloseable) => {
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && !uncloseable) {
-                ipcRenderer.send(MODAL_CANCEL);
-            }
-        });
-    });
-};
-createKeyDownListener();
+ipcRenderer.on(METRICS_REQUEST, async (_, name) => {
+    const memory = await process.getProcessMemoryInfo();
+    ipcRenderer.send(METRICS_RECEIVE, name, {cpu: process.getCPUUsage().percentCPUUsage, memory: memory.residentSet ?? memory.private});
+});
 
+// Call this once to unset it to 0
+process.getCPUUsage();

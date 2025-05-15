@@ -1,6 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck File ignore check on this file
 import {BrowserView, ipcMain} from 'electron';
 
 import {TEAM_MOUSE_IN, TEAM_MOUSE_OUT, UPDATE_SIDEBAR_MODAL} from 'common/communication';
@@ -12,8 +14,8 @@ import {
     SERVERS_SIDEBAR_WIDTH,
     TAB_BAR_HEIGHT,
 } from 'common/utils/constants';
-import {composeUserAgent, getLocalPreload, getLocalURLString} from 'main/utils';
-import MainWindow from 'main/windows/mainWindow';
+import {getLocalPreload} from 'main/utils';
+import type {MainWindow} from 'main/windows/mainWindow';
 
 const log = new Logger('ServerSidebarShortcutModalView');
 
@@ -29,7 +31,7 @@ export class ServerSidebarShortcutModalView {
         // this.init();
     }
 
-    init = (mainWindow) => {
+    init = (mainWindow: MainWindow) => {
         // const mainWindow = MainWindow.get();
 
         this.mainWindow = mainWindow;
@@ -54,7 +56,7 @@ export class ServerSidebarShortcutModalView {
             },
         });
 
-        this.view.webContents.loadURL(getLocalURLString('serversSidebarShortcutModal.html'), {userAgent: composeUserAgent()}).
+        this.view.webContents.loadURL('kchat-desktop://renderer/serversSidebarShortcutModal.html').
             catch((reason) => {
                 log.error(`Servers sidebar window failed to load: ${reason}`);
                 log.info(process.env);

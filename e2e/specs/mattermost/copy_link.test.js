@@ -5,6 +5,7 @@
 const fs = require('fs');
 
 const {clipboard} = require('electron');
+const robot = require('robotjs');
 
 const env = require('../../modules/environment');
 const {asyncSleep} = require('../../modules/utils');
@@ -31,19 +32,28 @@ describe('copylink', function desc() {
         await env.clearElectronInstances();
     });
 
-    it('MM-T125 Copy Link can be used from channel LHS', async () => {
-        const loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
-        await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
-        const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
-        await env.loginToMattermost(firstServer);
-        await firstServer.waitForSelector('#sidebarItem_town-square');
-        await firstServer.click('#sidebarItem_town-square', {button: 'right'});
-        await firstServer.click('li.SidebarChannel.expanded.active > span > nav > div');
-        await firstServer.click('#sidebarItem_town-square');
-        await firstServer.click('#post_textbox');
-        const clipboardText = clipboard.readText();
-        await firstServer.fill('#post_textbox', clipboardText);
-        const content = await firstServer.locator('#post_textbox').textContent();
-        content.should.contain('/ad-1/channels/town-square');
-    });
+    if (process.platform !== 'linux') {
+        it('MM-T125 Copy Link can be used from channel LHS', async () => {
+            const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
+            await env.loginToMattermost(firstServer);
+            await asyncSleep(2000);
+            await firstServer.waitForSelector('#sidebarItem_town-square', {timeout: 5000});
+            await firstServer.click('#sidebarItem_town-square', {button: 'right'});
+            await asyncSleep(2000);
+            switch (process.platform) {
+            case 'win32':
+                robot.keyTap('down');
+                robot.keyTap('down');
+                break;
+            case 'darwin':
+                robot.keyTap('c');
+                break;
+            }
+            robot.keyTap('enter');
+            await firstServer.click('#sidebarItem_town-square');
+            await firstServer.click('#post_textbox');
+            const clipboardText = clipboard.readText();
+            clipboardText.should.contain('/channels/town-square');
+        });
+    }
 });

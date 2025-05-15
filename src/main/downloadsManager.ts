@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 import type {DownloadItem, Event, WebContents, FileFilter, IpcMainInvokeEvent} from 'electron';
-import {ipcMain, dialog, shell, Menu, app} from 'electron';
+import {ipcMain, dialog, shell, Menu, app, nativeImage} from 'electron';
 import type {ProgressInfo, UpdateInfo} from 'electron-updater';
 
 import {
@@ -36,17 +36,12 @@ import {doubleSecToMs, getPercentage, isStringWithLength, readFilenameFromConten
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
 
-import type {DownloadedItem, DownloadItemDoneEventState, DownloadedItems, DownloadItemState, DownloadItemUpdatedEventState} from 'types/downloads';
+import {type DownloadedItem, type DownloadItemDoneEventState, type DownloadedItems, type DownloadItemState, type DownloadItemUpdatedEventState, DownloadItemTypeEnum} from 'types/downloads';
 
 import appVersionManager from './AppVersionManager';
 import {downloadsJson} from './constants';
 
 const log = new Logger('DownloadsManager');
-
-export enum DownloadItemTypeEnum {
-    FILE = 'file',
-    UPDATE = 'update',
-}
 
 export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     autoCloseTimeout: NodeJS.Timeout | null;
@@ -123,7 +118,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
                 item.setSavePath(info.filePath);
             }
 
-            this.upsertFileToDownloads(item, 'progressing');
+            await this.upsertFileToDownloads(item, 'progressing');
             this.progressingItems.set(this.getFileId(item), item);
             this.handleDownloadItemEvents(item, webContents);
             this.openDownloadsDropdown();
@@ -163,8 +158,10 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
             }
         }
 
-        // With no arguments it uses the same headers
-        cb({});
+        cb({
+            cancel: false,
+            responseHeaders: headers,
+        });
     };
 
     reloadFilesForMAS = () => {
@@ -501,10 +498,10 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
         }
     };
 
-    private upsertFileToDownloads = (item: DownloadItem, state: DownloadItemState, overridePath?: string) => {
+    private upsertFileToDownloads = async (item: DownloadItem, state: DownloadItemState, overridePath?: string) => {
         const fileId = this.getFileId(item);
         log.debug('upsertFileToDownloads', {fileId});
-        const formattedItem = this.formatDownloadItem(item, state, overridePath);
+        const formattedItem = await this.formatDownloadItem(item, state, overridePath);
         this.save(fileId, formattedItem);
         this.checkIfMaxFilesReached();
     };
@@ -545,10 +542,10 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     /**
      *  DownloadItem event handlers
      */
-    private updatedEventController = (updatedEvent: Event, state: DownloadItemUpdatedEventState, item: DownloadItem) => {
+    private updatedEventController = async (updatedEvent: Event, state: DownloadItemUpdatedEventState, item: DownloadItem) => {
         log.debug('updatedEventController', {state});
 
-        this.upsertFileToDownloads(item, state);
+        await this.upsertFileToDownloads(item, state);
 
         if (state === 'interrupted') {
             this.fileSizes.delete(item.getFilename());
@@ -557,7 +554,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
         this.shouldShowBadge();
     };
 
-    private doneEventController = (doneEvent: Event, state: DownloadItemDoneEventState, item: DownloadItem, webContents: WebContents) => {
+    private doneEventController = async (doneEvent: Event, state: DownloadItemDoneEventState, item: DownloadItem, webContents: WebContents) => {
         log.debug('doneEventController', {state});
 
         if (state === 'completed' && !this.open) {
@@ -571,7 +568,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
             func();
         }
 
-        this.upsertFileToDownloads(item, state, bookmark?.originalPath);
+        await this.upsertFileToDownloads(item, state, bookmark?.originalPath);
         this.fileSizes.delete(item.getFilename());
         this.progressingItems.delete(this.getFileId(item));
         this.shouldAutoClose();
@@ -631,10 +628,32 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
     /**
      * Internal utils
      */
-    private formatDownloadItem = (item: DownloadItem, state: DownloadItemState, overridePath?: string): DownloadedItem => {
+    private formatDownloadItem = async (item: DownloadItem, state: DownloadItemState, overridePath?: string): Promise<DownloadedItem> => {
         const totalBytes = this.getFileSize(item);
         const receivedBytes = item.getReceivedBytes();
         const progress = getPercentage(receivedBytes, totalBytes);
+
+        let thumbnailData;
+        if (state === 'completed' && item.getMimeType().toLowerCase().startsWith('image/')) {
+            const fallback = async () => {
+                // We also will cap this at 1MB so as to not inflate the memory usage of the downloads dropdown
+                if (item.getReceivedBytes() < 1000000) {
+                    thumbnailData = (await nativeImage.createFromPath(overridePath ?? item.getSavePath())).toDataURL();
+                }
+            };
+
+            // Linux doesn't support the thumbnail creation so we have to use the base function
+            if (process.platform === 'linux') {
+                await fallback();
+            } else {
+                // This has been known to fail on Windows, see: https://github.com/mattermost/desktop/issues/3140
+                try {
+                    thumbnailData = (await nativeImage.createThumbnailFromPath(overridePath ?? item.getSavePath(), {height: 32, width: 32})).toDataURL();
+                } catch {
+                    await fallback();
+                }
+            }
+        }
 
         return {
             addedAt: doubleSecToMs(item.getStartTime()),
@@ -647,6 +666,7 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
             totalBytes,
             type: DownloadItemTypeEnum.FILE,
             bookmark: this.getBookmark(item),
+            thumbnailData,
         };
     };
 
