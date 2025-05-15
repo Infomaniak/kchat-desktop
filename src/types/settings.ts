@@ -10,13 +10,6 @@ export type SaveQueueItem = {
     data: Config[keyof Config];
 };
 
-export type DeveloperSettings = {
-    browserOnly?: boolean;
-    disableNotificationStorage?: boolean;
-    disableUserActivityMonitor?: boolean;
-    disableContextMenu?: boolean;
-};
-
 export type SettingsDefinition = Record<string, SettingCategory>;
 export type SettingCategory = {
     title: ReactNode;
