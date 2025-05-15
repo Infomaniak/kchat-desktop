@@ -3,7 +3,9 @@
 // See LICENSE.txt for license information.
 
 import type {BuildConfig} from 'types/config';
+
 import {IKOrigin} from './ikConfig';
+
 
 // For detailed guides, please refer to https://docs.mattermost.com/deployment/desktop-app-deployment.html
 
@@ -29,6 +31,8 @@ const buildConfig: BuildConfig = {
         },
     ],
     helpLink: '',
+    academyLink: '',
+    upgradeLink: '',
     enableServerManagement: true,
     enableAutoUpdater: true,
     managedResources: ['trusted'],

@@ -3,13 +3,13 @@
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+import * as Sentry from '@sentry/electron/renderer';
 import React, {useEffect, useMemo, useState} from 'react';
+import type {DropResult} from 'react-beautiful-dnd';
 import ReactDOM from 'react-dom';
 
-import {ConfigServer, UniqueServer} from 'types/config';
-import {DropResult} from 'react-beautiful-dnd';
-import {Theme} from 'types/theme';
-import * as Sentry from '@sentry/electron/renderer';
+import type {ConfigServer, UniqueServer} from 'types/config';
+import type {Theme} from 'types/theme';
 
 import ServersSidebar from './components/ServersSidebar';
 import {filterAndSortTeamsByDisplayName} from './components/ServersSidebar/utils';

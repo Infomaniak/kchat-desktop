@@ -3,14 +3,15 @@
 
 import type {ipcRenderer, Rectangle} from 'electron/renderer';
 
-import type {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer, ConfigServer} from './config';
+import type {CallInfo} from './callsIk';
+import type {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer, ConfigServer, Server} from './config';
 import type {DownloadedItem, DownloadedItems, DownloadsMenuOpenEventPayload} from './downloads';
+import type {UniqueServerWithPermissions, Permissions} from './permissions';
 import type {URLValidationResult} from './server';
 import type {SaveQueueItem} from './settings';
 import type {Theme} from './theme';
-import type {CallInfo} from './callsIk';
-import type {Language} from '../../i18n/i18n';
 
+import type {Language} from '../../i18n/i18n';
 
 declare global {
     interface Window {
@@ -29,9 +30,6 @@ declare global {
         timers: {
             setImmediate: typeof setImmediate;
         };
-        mas: {
-            getThumbnailLocation: (location: string) => Promise<string>;
-        };
         desktop: {
             quit: (reason: string, stack: string) => void;
             openAppMenu: () => void;
@@ -39,19 +37,20 @@ declare global {
             openServersDropdown: () => void;
             switchTab: (viewId: string) => void;
             closeView: (viewId: string) => void;
-            closeWindow: () => void;
-            minimizeWindow: () => void;
-            maximizeWindow: () => void;
-            restoreWindow: () => void;
+            exitFullScreen: () => void;
             doubleClickOnWindow: (windowName?: string) => void;
             focusCurrentView: () => void;
-            reloadCurrentView: () => void;
+            openServerExternally: () => void;
+            openServerUpgradeLink: () => void;
+            openChangelogLink: () => void;
             closeDownloadsDropdown: () => void;
             closeDownloadsDropdownMenu: () => void;
             openDownloadsDropdown: () => void;
             goBack: () => void;
             checkForUpdates: () => void;
             updateConfiguration: (saveQueueItems: SaveQueueItem[]) => void;
+            getNonce: () => Promise<string | undefined>;
+            isDeveloperModeEnabled: () => Promise<boolean>;
 
             updateServerOrder: (serverOrder: string[]) => Promise<void>;
             updateTabOrder: (serverId: string, viewOrder: string[]) => Promise<void>;
@@ -60,6 +59,10 @@ declare global {
             getOrderedTabsForServer: (serverId: string) => Promise<UniqueView[]>;
             onUpdateServers: (listener: () => void) => void;
             validateServerURL: (url: string, currentId?: string) => Promise<URLValidationResult>;
+            getUniqueServersWithPermissions: () => Promise<UniqueServerWithPermissions[]>;
+            addServer: (server: Server) => void;
+            editServer: (server: UniqueServer, permissions?: Permissions) => void;
+            removeServer: (serverId: string) => void;
 
             getConfiguration: () => Promise<CombinedConfig[keyof CombinedConfig] | CombinedConfig>;
             getVersion: () => Promise<{name: string; version: string}>;
@@ -68,16 +71,17 @@ declare global {
             getFullScreenStatus: () => Promise<boolean>;
             getAvailableSpellCheckerLanguages: () => Promise<string[]>;
             getAvailableLanguages: () => Promise<string[]>;
-            getLocalConfiguration: () => Promise<LocalConfiguration[keyof LocalConfiguration] | Partial<LocalConfiguration>>;
+            getLocalConfiguration: () => Promise<LocalConfiguration>;
             getDownloadLocation: (downloadLocation?: string) => Promise<string>;
             getLanguageInformation: () => Promise<Language>;
 
             onSynchronizeConfig: (listener: () => void) => void;
-            onReloadConfiguration: (listener: () => void) => void;
+            onReloadConfiguration: (listener: () => void) => () => void;
             onDarkModeChange: (listener: (darkMode: boolean) => void) => void;
             onLoadRetry: (listener: (viewId: string, retry: Date, err: string, loadUrl: string) => void) => void;
             onLoadSuccess: (listener: (viewId: string) => void) => void;
             onLoadFailed: (listener: (viewId: string, err: string, loadUrl: string) => void) => void;
+            onLoadIncompatibleServer: (listener: (viewId: string, loadUrl: string) => void) => void;
             onSetActiveView: (listener: (serverId: string, viewId: string) => void) => void;
             onMaximizeChange: (listener: (maximize: boolean) => void) => void;
             onEnterFullScreen: (listener: () => void) => void;
@@ -85,7 +89,6 @@ declare global {
             onPlaySound: (listener: (soundName: string) => void) => void;
             onModalOpen: (listener: () => void) => void;
             onModalClose: (listener: () => void) => void;
-            onToggleBackButton: (listener: (showExtraBar: boolean) => void) => void;
             onUpdateMentions: (listener: (view: string, mentions: number, unreads: boolean, isExpired: boolean) => void) => void;
             onCloseServersDropdown: (listener: () => void) => void;
             onOpenServersDropdown: (listener: () => void) => void;
@@ -98,6 +101,12 @@ declare global {
             onFocusThreeDotMenu: (listener: () => void) => void;
 
             updateURLViewWidth: (width?: number) => void;
+            openNotificationPreferences: () => void;
+            openWindowsCameraPreferences: () => void;
+            openWindowsMicrophonePreferences: () => void;
+            getMediaAccessStatus: (mediaType: 'microphone' | 'camera' | 'screen') => Promise<'not-determined' | 'granted' | 'denied' | 'restricted' | 'unknown'>;
+
+            resetAuth: () => void;
 
             modals: {
                 cancelModal: <T>(data?: T) => void;
@@ -196,6 +205,18 @@ declare global {
                 user: object;
                 channelId: string;
             };
+        };
+    }
+
+    interface Navigator {
+        windowControlsOverlay?: {
+            getTitlebarAreaRect: () => DOMRect;
+        };
+    }
+
+    interface Navigator {
+        windowControlsOverlay?: {
+            getTitlebarAreaRect: () => DOMRect;
         };
     }
 }

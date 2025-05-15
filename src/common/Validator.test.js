@@ -151,6 +151,7 @@ describe('common/Validator', () => {
             trayIconTheme: 'use_system',
             useSpellChecker: true,
             version: 3,
+            theme: {},
         };
 
         it('should ensure messaging view is open', () => {

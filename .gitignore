@@ -34,3 +34,7 @@ sentry.properties
 *.tsbuildinfo
 
 .eslintcache
+
+*.p8
+
+.aider*

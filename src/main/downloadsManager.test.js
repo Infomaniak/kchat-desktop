@@ -28,9 +28,9 @@ jest.mock('electron', () => {
     return {
         app: {
             getAppPath: jest.fn(),
-            getPath: jest.fn(),
+            getPath: jest.fn(() => '/valid/downloads/path'),
         },
-        BrowserView: jest.fn().mockImplementation(() => ({
+        WebContentsView: jest.fn().mockImplementation(() => ({
             webContents: {
                 loadURL: jest.fn(),
                 focus: jest.fn(),
@@ -149,11 +149,11 @@ describe('main/downloadsManager', () => {
     it('should mark "completed" files that were deleted as "deleted"', () => {
         expect(new DownloadsManager(JSON.stringify(downloadsJson))).toHaveProperty('downloads', {...downloadsJson, 'file1.txt': {...downloadsJson['file1.txt'], state: 'deleted'}});
     });
-    it('should handle a new download', () => {
+    it('should handle a new download', async () => {
         const dl = new DownloadsManager({});
         path.parse.mockImplementation(() => ({base: 'file.txt'}));
         dl.willDownloadURLs.set('http://some-url.com/some-text.txt', {filePath: locationMock});
-        dl.handleNewDownload({preventDefault: jest.fn()}, item, {id: 0, getURL: jest.fn(), downloadURL: jest.fn()});
+        await dl.handleNewDownload({preventDefault: jest.fn()}, item, {id: 0, getURL: jest.fn(), downloadURL: jest.fn()});
         expect(dl).toHaveProperty('downloads', {'file.txt': {
             addedAt: nowSeconds * 1000,
             filename: 'file.txt',

@@ -6,8 +6,12 @@ export type RemoteInfo = {
     serverVersion?: string;
     siteName?: string;
     siteURL?: string;
+    licenseSku?: string;
+    helpLink?: string;
+    reportProblemLink?: string;
     hasFocalboard?: boolean;
     hasPlaybooks?: boolean;
+    hasUserSurvey?: boolean;
 };
 
 export type ClientConfig = {
@@ -15,6 +19,8 @@ export type ClientConfig = {
     SiteURL: string;
     SiteName: string;
     BuildBoards: string;
+    HelpLink: string;
+    ReportAProblemLink: string;
 }
 
 export type URLValidationResult = {

@@ -60,6 +60,7 @@ const downloadsSchema = Joi.object<DownloadedItems>().pattern(
         receivedBytes: Joi.number().min(0),
         totalBytes: Joi.number().min(0),
         bookmark: Joi.string(),
+        thumbnailData: Joi.string(),
     });
 
 const configDataSchemaV0 = Joi.object<ConfigV0>({
@@ -150,6 +151,7 @@ const configDataSchemaV3 = Joi.object<ConfigV3>({
     logLevel: Joi.string().default('info'),
     appLanguage: Joi.string().allow(''),
     theme: Joi.object().default(undefined),
+    enableMetrics: Joi.boolean(),
 });
 
 // eg. data['community.mattermost.com'] = { data: 'certificate data', issuerName: 'COMODO RSA Domain Validation Secure Server CA'};
@@ -185,7 +187,7 @@ export function validateArgs(data: Args) {
 }
 
 // validate bounds_info.json
-export function validateBoundsInfo(data: SavedWindowState) {
+export function validateBoundsInfo(data: SavedWindowState | null) {
     return validateAgainstSchema(data, boundsInfoSchema);
 }
 

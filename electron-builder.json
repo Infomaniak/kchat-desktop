@@ -180,16 +180,13 @@
       }
     ],
     "signDlls": true,
-    "publisherName": "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH"
+   "publisherName": "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH"
   },
   "nsis": {
     "artifactName": "${name}-setup-${version}-win.${ext}",
     "packElevateHelper": false
   },
   "rpm": {
-    "fpm": [
-      "--rpm-rpmbuild-define",
-      "_build_id_links none"
-    ]
+    "fpm": ["--rpm-rpmbuild-define", "_build_id_links none", "--rpm-digest=sha256"]
   }
 }
