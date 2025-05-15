@@ -17,29 +17,38 @@ cache:
 default:
   interruptible: true
 
-install-deps:
-  stage: install
-  script:
+.default-linux-deps:
+  before_script:
     - apt-get update && apt-get install -y libxtst6 libxtst-dev libx11-dev libxkbfile-dev
     - npm ci
 
+install-deps:
+  stage: install
+  extends: .default-linux-deps
+  script:
+    - echo "Dépendances installées"
+
 lint:
   stage: lint
+  extends: .default-linux-deps
   script:
     - npm run lint:js
   allow_failure: true
 
 build:
   stage: build
+  extends: .default-linux-deps
   script:
     - npm run build
 
 check-types:
   stage: test
+  extends: .default-linux-deps
   script:
     - npm run check-types
 
 unit-tests:
   stage: test
+  extends: .default-linux-deps
   script:
     - npm run test:unit
