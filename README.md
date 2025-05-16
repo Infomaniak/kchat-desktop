@@ -6,7 +6,7 @@ Infomaniak fork of the mattermost desktop app modified to work with our internal
 
 ## Running the project
 
-[![nightly-builds](https://github.com/mattermost/desktop/actions/workflows/nightly-builds.yaml/badge.svg)](https://github.com/mattermost/desktop/actions/workflows/nightly-builds.yaml)
+### Prerequisites
 
 -   Node 16
 
