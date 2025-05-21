@@ -93,12 +93,12 @@ export default function SpellCheckerSetting({
             }
             {propValue &&
                 <div className='SpellCheckerSetting__alternative'>
-                    <h4 className='SpellCheckerSetting__alternative__heading'>
+                    <h3 className='SpellCheckerSetting__alternative__heading'>
                         <FormattedMessage
                             id='renderer.components.settingsPage.checkSpelling.editSpellcheckUrl'
                             defaultMessage='Use an alternative dictionary URL'
                         />
-                    </h4>
+                    </h3>
                     <div className='SpellCheckerSetting__alternative__label'>
                         <FormattedMessage
                             id='renderer.components.settingsPage.checkSpelling.specifyURL'
