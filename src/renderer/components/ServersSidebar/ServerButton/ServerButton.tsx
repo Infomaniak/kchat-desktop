@@ -1,9 +1,13 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import classNames from 'classnames';
-import React, {FC} from 'react';
+import type {FC} from 'react';
+import React, {useState} from 'react';
 import {Draggable} from 'react-beautiful-dnd';
-import {Theme} from 'types/theme';
+
+import type {Theme} from 'types/theme';
+
+import ImageWithPlaceholder from './ImageWithPlaceholder';
 
 type Props = {
     draggableId: string;
@@ -83,13 +87,11 @@ const ServerButton: FC<Props> = ({
                 >
                     {badgeDiv}
                     <span className='ServerButton__content'>
-                        {!iconUrl && <span className='ServerButton__initial'>{initial}</span>}
-                        {iconUrl && (
-                            <img
-                                className='ServerButton__image'
-                                src={iconUrl}
-                            />)
-                        }
+                        <ImageWithPlaceholder
+                            src={iconUrl}
+                            alt={initial}
+                            className='ServerButton__image'
+                        />
                     </span>
                 </button>
             )}
