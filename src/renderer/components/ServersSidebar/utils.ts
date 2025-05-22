@@ -1,8 +1,9 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {CSSProperties} from 'react';
-import {ConfigServer, ServerTeam} from 'types/config';
-import {Theme} from 'types/theme';
+import type {CSSProperties} from 'react';
+
+import type {ConfigServer, ServerTeam} from 'types/config';
+import type {Theme} from 'types/theme';
 
 export function imageURLForTeam(team: ServerTeam) {
     return team?.last_team_icon_update && team?.status === 'ok' ? `${team.url}/api/v4/teams/${team.id}/image?_=${team.last_team_icon_update}` : null;
