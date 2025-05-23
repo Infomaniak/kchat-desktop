@@ -14,11 +14,11 @@
 
     h3 {
         margin-top: 0;
-        font-size: 16px;
         line-height: 24px;
     }
 
     .SpellCheckerSetting__alternative {
+        margin-top: 24px;
         .SpellCheckerSetting__alternative__content {
             display: flex;
             margin-top: 16px;
@@ -40,6 +40,7 @@
     
         .SpellCheckerSetting__alternative__heading {
             margin-bottom: 0;
+            font-size: 14px;
         }
     
         .SpellCheckerSetting__alternative__label {

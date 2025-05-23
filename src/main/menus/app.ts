@@ -23,6 +23,8 @@ import {localizeMessage} from 'main/i18nManager';
 import tokenManager from 'main/tokenManager';
 import {getLocalPreload, getLogsPath} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
+import serversSidebar from 'main/views/serversSidebar';
+import {ServerSidebarShortcutModalView} from 'main/views/serversSidebarShortcutModalView';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
 
@@ -174,6 +176,12 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             label: localizeMessage('main.menus.app.view.devToolsCurrentServer', 'Developer Tools for Current Server'),
             click() {
                 ViewManager.getCurrentView()?.openDevTools();
+            },
+        },
+        {
+            label: localizeMessage('main.menus.app.view.devToolsSidebar', 'Server Sidebar Dev Tools'),
+            click() {
+                serversSidebar.openSidebarDevtools();
             },
         },
     ];

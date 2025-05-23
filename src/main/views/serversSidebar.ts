@@ -109,6 +109,10 @@ export class ServerSidebar {
         this.setOrderedServers();
     };
 
+    openSidebarDevtools = () => {
+        this.view?.webContents.openDevTools({mode: 'detach'});
+    };
+
     hide = () => {
         const mainWindow = MainWindow.get();
 
