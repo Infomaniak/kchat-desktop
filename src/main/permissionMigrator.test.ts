@@ -93,4 +93,53 @@ describe('extractCommonsPermissions', () => {
         const result = extractCommonsPermissions(input);
         expect(result).toEqual(null);
     });
+
+    it('Correctly migrates multiple permission types with mixed cases', () => {
+        const input = {
+            [server1]: {
+                notifications: {allowed: true},
+                media: {allowed: true},
+                geolocation: {allowed: false, alwaysDeny: true},
+            },
+            [server2]: {
+                notifications: {allowed: true},
+                media: {allowed: true},
+                geolocation: {allowed: false, alwaysDeny: true},
+            },
+        };
+
+        const result = extractCommonsPermissions(input);
+
+        expect(result).toEqual({
+            commons: {
+                notifications: {allowed: true},
+                media: {allowed: true},
+                geolocation: {allowed: false, alwaysDeny: true},
+            },
+        });
+    });
+
+    it('Migrates permission types that are identical across servers and drops those that differ', () => {
+        const input = {
+            [server1]: {
+                notifications: {allowed: true},
+                media: {allowed: true},
+                geolocation: {allowed: false},
+            },
+            [server2]: {
+                notifications: {allowed: true},
+                media: {allowed: false}, // differs
+                geolocation: {allowed: false},
+            },
+        };
+
+        const result = extractCommonsPermissions(input);
+
+        expect(result).toEqual({
+            commons: {
+                notifications: {allowed: true},
+                geolocation: {allowed: false},
+            },
+        });
+    });
 });
