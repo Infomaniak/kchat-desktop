@@ -6,6 +6,7 @@ import type {BuildConfig} from 'types/config';
 
 import {IKOrigin} from './ikConfig';
 
+
 // For detailed guides, please refer to https://docs.mattermost.com/deployment/desktop-app-deployment.html
 
 /**

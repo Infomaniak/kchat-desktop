@@ -62,9 +62,9 @@ import DeveloperMode from 'main/developerMode';
 import performanceMonitor from 'main/performanceMonitor';
 import PermissionsManager from 'main/permissionsManager';
 import TokenManager from 'main/tokenManager';
-import ModalManager from 'main/views/modalManager';
 import callDialingWindow from 'main/windows/callDialingWindow';
 import KmeetCallWindow from 'main/windows/kmeetCallWindow';
+import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
 import type {DeveloperSettings} from 'types/settings';
@@ -410,6 +410,7 @@ export class ViewManager {
     private addView = (view: MattermostWebContentsView): void => {
         this.views.set(view.id, view);
 
+        // Force a permission check for notifications
         if (view.view.type === TAB_MESSAGING) {
             const notificationPermission = PermissionsManager.getForServer(view.view.server)?.notifications;
             if (!notificationPermission || (!notificationPermission.allowed && notificationPermission.alwaysDeny !== true)) {
