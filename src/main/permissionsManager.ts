@@ -28,27 +28,18 @@ import JsonFileManager from 'common/JsonFileManager';
 import {Logger} from 'common/log';
 import type {MattermostServer} from 'common/servers/MattermostServer';
 import {isTrustedURL, parseURL} from 'common/utils/url';
-import {t} from 'common/utils/util';
+import Utils, {t} from 'common/utils/util';
 import {permissionsJson} from 'main/constants';
 import {localizeMessage} from 'main/i18nManager';
 import viewManager from 'main/views/viewManager';
 import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 import MainWindow from 'main/windows/mainWindow';
 
-import type {Permissions} from 'types/permissions';
+import {supportedPermissionTypes, type PermissionType, type Permissions} from 'types/permissions';
+
+import {extractCommonsPermissions} from './permissionMigrator';
 
 const log = new Logger('PermissionsManager');
-
-// supported permission types
-const supportedPermissionTypes = [
-    'media',
-    'geolocation',
-    'notifications',
-    'fullscreen',
-    'openExternal',
-    'clipboard-sanitized-write',
-    'screenShare',
-];
 
 // permissions that require a dialog
 const authorizablePermissionTypes = [
@@ -93,6 +84,27 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
             details,
         ));
     };
+
+    async migratePermission() {
+        if (!Utils.isVersionGreaterThanOrEqualTo('SOMETHIGN CURRENT VERSION', '3.4.0')) {
+            log.info('Skipping permission migration: version too old');
+            return;
+        }
+
+        log.info('Starting permission migration');
+        const newPermissions = extractCommonsPermissions(this.json);
+
+        log.debug('Migrated permissions:', newPermissions);
+
+        this.json = newPermissions ?? {};
+
+        try {
+            await this.writeToFile();
+            log.info('Permissions migration completed and saved');
+        } catch (error) {
+            log.error('Failed to save migrated permissions:', error);
+        }
+    }
 
     getForServer = (server: MattermostServer): Permissions | undefined => {
         return this.ikGetForServer();
@@ -149,7 +161,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         log.debug('doPermissionRequest', webContentsId, permission, details);
 
         // is the requested permission type supported?
-        if (!supportedPermissionTypes.includes(permission)) {
+        if (!supportedPermissionTypes.includes(permission as PermissionType)) {
             return false;
         }
 

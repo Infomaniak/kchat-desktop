@@ -143,6 +143,8 @@ export async function initialize() {
     initializeAppEventListeners();
     initializeBeforeAppReady();
 
+    await permissionsManager.migratePermission();
+
     // wait for registry config data to load and app ready event
     await Promise.all([
         app.whenReady(),
