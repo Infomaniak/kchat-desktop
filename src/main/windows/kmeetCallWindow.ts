@@ -243,6 +243,12 @@ class KmeetCallWindow {
             return;
         }
 
+        if (this.callWindow && !this.callWindow.isDestroyed()) {
+            log.info('Call window is already open, focusing on the existing window.');
+            this.callWindow.focus();
+            return;
+        }
+
         if (this.callWindow) {
             this.callWindow?.on('closed', () => {
                 this.buildWindow(callInfo);
