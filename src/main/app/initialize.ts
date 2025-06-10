@@ -356,12 +356,7 @@ function initIKserver() {
 
 function initReceivedServer(servers: ConfigServer[]) {
     ServerManager.removePredefinedServersHandler(true);
-    servers.forEach((server) => {
-        if (ServerManager.serverNameExist(server)) {
-            return;
-        }
-        ServerManager.addServer(server);
-    });
+    ServerManager.manageServersReceivedHandler(servers);
 }
 
 async function initializeAfterAppReady() {
