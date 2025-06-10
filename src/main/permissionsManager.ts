@@ -86,7 +86,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
     };
 
     async migratePermission() {
-        if (!Utils.isVersionGreaterThanOrEqualTo('SOMETHIGN CURRENT VERSION', '3.4.0')) {
+        if (!Utils.isVersionGreaterThanOrEqualTo(app.getVersion(), '3.4.0')) {
             log.info('Skipping permission migration: version too old');
             return;
         }
