@@ -102,10 +102,12 @@ export class ModalManager {
         this.modalQueue.forEach((modal, index) => {
             if (index === 0) {
                 MainWindow.sendToRenderer(MODAL_OPEN);
+                ipcMain.emit(MODAL_OPEN);
                 modal.show(undefined, Boolean(withDevTools));
                 WebContentsEventManager.addWebContentsEventListeners(modal.view.webContents);
             } else {
                 MainWindow.sendToRenderer(MODAL_CLOSE);
+                ipcMain.emit(MODAL_CLOSE);
                 modal.hide();
             }
         });
@@ -128,6 +130,7 @@ export class ModalManager {
             this.showModal();
         } else {
             MainWindow.sendToRenderer(MODAL_CLOSE);
+            ipcMain.emit(MODAL_CLOSE);
             ViewManager.focusCurrentView();
         }
     };
