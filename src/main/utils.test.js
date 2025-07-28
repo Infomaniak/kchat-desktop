@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 'use strict';
-import {TAB_BAR_HEIGHT} from 'common/utils/constants';
+import {TAB_BAR_HEIGHT, SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
 
 import * as Utils from './utils';
 

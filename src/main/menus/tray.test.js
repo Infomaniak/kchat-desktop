@@ -24,6 +24,13 @@ jest.mock('main/windows/mainWindow', () => ({
 jest.mock('main/views/modalManager', () => ({
     addModal: jest.fn(),
 }));
+jest.mock('electron', () => {
+    return {
+        app: {
+            getPath: jest.fn(),
+        },
+    };
+});
 
 describe('main/menus/tray', () => {
     it('should show the first 9 servers (using order)', () => {
