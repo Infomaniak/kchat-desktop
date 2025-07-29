@@ -287,5 +287,9 @@
     "renderer.components.configureServer.connect.default": "Conecta",
     "renderer.components.configureServer.cardtitle": "Proporciona los detalles de tu servidor",
     "main.menus.app.view.downloads": "Descargas",
-    "main.permissionsManager.checkPermission.dialog.message.notifications": "{appName} desea enviarte notificaciones."
+    "main.permissionsManager.checkPermission.dialog.message.notifications": "{appName} desea enviarte notificaciones.",
+    "renderer.downloadFileStatus.completed": "Descargado",
+    "renderer.downloadFileStatus.deleted": "Eliminado",
+    "renderer.downloadFileStatus.noFolder": "Carpeta eliminada",
+    "renderer.downloadFileStatus.cancelled": "Cancelado"
 }

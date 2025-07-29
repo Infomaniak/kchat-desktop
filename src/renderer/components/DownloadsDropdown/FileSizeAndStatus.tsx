@@ -25,7 +25,7 @@ const FileSizeAndStatus = ({item}: OwnProps) => {
     }, [receivedBytes, addedAt, totalBytes, translate]);
 
     const fileSizeOrByteProgress = getFileSizeOrBytesProgress(item);
-    const statusOrETA = item.state === 'progressing' ? getRemainingTime() : getDownloadingFileStatus(item);
+    const statusOrETA = item.state === 'progressing' ? getRemainingTime() : getDownloadingFileStatus(item, translate.formatMessage);
 
     return (
         <>
