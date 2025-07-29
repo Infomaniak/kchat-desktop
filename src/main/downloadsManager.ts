@@ -301,10 +301,6 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
         }
 
         if (fs.existsSync(item.location)) {
-            if (file.state === 'no folder') {
-                file.state = 'completed';
-                this.save(fileId, file);
-            }
             let func;
             const bookmark = this.bookmarks.get(this.getDownloadedFileId(item));
             if (bookmark) {
