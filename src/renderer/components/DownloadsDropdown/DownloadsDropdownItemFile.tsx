@@ -49,7 +49,7 @@ const DownloadsDropdownItemFile = ({item, activeItem, appName}: OwnProps) => {
                     </div>
                     <div
                         className={classNames('DownloadsDropdown__File__Body__Details__FileSizeAndStatus', {
-                            cancelled: (/(cancelled|deleted|interrupted)/).test(item.state),
+                            cancelled: (/(cancelled|deleted|interrupted|no folder)/).test(item.state),
                         })}
                     >
                         <FileSizeAndStatus item={item}/>
