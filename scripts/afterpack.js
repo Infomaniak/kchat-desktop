@@ -1,8 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import fs from 'fs/promises';
-
 const {spawnSync} = require('child_process');
+const fs = require('fs/promises');
 const path = require('path');
 
 const {flipFuses, FuseVersion, FuseV1Options} = require('@electron/fuses');
@@ -63,7 +62,7 @@ exports.default = async function afterPack(context) {
 };
 
 /** @type {(appOutDir: string) => Promise<void>} */
-export async function copyAssetsCar(appOutDir) {
+async function copyAssetsCar(appOutDir) {
     console.log('\nCopying Assets.car file for macOS');
 
     // Get the directory of the current project
