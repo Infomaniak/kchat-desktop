@@ -8,6 +8,7 @@ release*/
 npm-debug.log*
 
 build/
+!build/Assets.car
 coverage/
 dist/
 mochawesome-report/
