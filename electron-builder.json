@@ -117,7 +117,8 @@
       "NSMicrophoneUsageDescription": "Microphone access may be used by kChat plugins, such as kMeet video conferencing.",
       "NSCameraUsageDescription": "Camera access may be used by kChat plugins, such as kMeet video conferencing.",
       "NSFocusStatusUsageDescription": "Focus status is used by kChat to determine whether to send notifications or not.",
-      "LSFileQuarantineEnabled": true
+      "LSFileQuarantineEnabled": true,
+      "CFBundleIconName": "kChat-AppIcon"
     },
     "notarize": {
       "teamId": "864VDCS2QY"
