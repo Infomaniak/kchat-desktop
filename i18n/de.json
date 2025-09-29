@@ -326,5 +326,9 @@
     "main.permissionsManager.checkPermission.dialog.detail.notifications": "{appName} sendet dir Benachrichtigungen über Nachrichten und Anrufe. Du kannst deine Benachrichtigungseinstellungen in den Einstellungen konfigurieren.",
     "main.permissionsManager.checkPermission.dialog.title": "Erlaubnis anfordern",
     "main.permissionsManager.checkPermission.dialog.message.geolocation": "{appName} ({url}) würde gerne auf deinen Standort zugreifen.",
-    "main.permissionsManager.checkPermission.dialog.detail.media": "{appName} verwendet das Mikrofon und die Kamera für Anrufe und Sprachnachrichten. Du kannst dies später in den Einstellungen deines Computers jederzeit ändern."
+    "main.permissionsManager.checkPermission.dialog.detail.media": "{appName} verwendet das Mikrofon und die Kamera für Anrufe und Sprachnachrichten. Du kannst dies später in den Einstellungen deines Computers jederzeit ändern.",
+    "renderer.downloadFileStatus.completed": "Heruntergeladen",
+    "renderer.downloadFileStatus.deleted": "Gelöscht",
+    "renderer.downloadFileStatus.noFolder": "Ordner entfernt",
+    "renderer.downloadFileStatus.cancelled": "Abgebrochen"
 }

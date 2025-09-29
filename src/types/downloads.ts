@@ -8,7 +8,7 @@ export enum DownloadItemTypeEnum {
 
 export type DownloadItemUpdatedEventState = 'interrupted' | 'progressing';
 export type DownloadItemDoneEventState = 'completed' | 'cancelled' | 'interrupted';
-export type DownloadItemState = DownloadItemUpdatedEventState | DownloadItemDoneEventState | 'deleted' | 'available';
+export type DownloadItemState = DownloadItemUpdatedEventState | DownloadItemDoneEventState | 'deleted' | 'available' | 'no folder';
 
 export type DownloadedItem = {
     type: DownloadItemTypeEnum;

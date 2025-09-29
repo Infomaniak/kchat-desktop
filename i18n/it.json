@@ -71,6 +71,10 @@
     "renderer.modals.call.decline": "Declina",
     "renderer.modals.call.cancel": "Riattaccare",
     "renderer.modals.call.calling": "chiamata in arrivo...",
-    "renderer.modals.call.waiting": "In attesa.."
+    "renderer.modals.call.waiting": "In attesa..",
+    "renderer.downloadFileStatus.completed": "Scaricato",
+    "renderer.downloadFileStatus.deleted": "Eliminato",
+    "renderer.downloadFileStatus.noFolder": "Cartella rimossa",
+    "renderer.downloadFileStatus.cancelled": "Annullato"
 }
  
