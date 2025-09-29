@@ -7,7 +7,6 @@ import type {MenuItemConstructorOptions, MenuItem, WebContents} from 'electron';
 import {app, Menu, session, shell, clipboard} from 'electron';
 
 import type {Config} from 'common/config';
-import ServerManager from 'common/servers/serverManager';
 import {t} from 'common/utils/util';
 import type {UpdateManager} from 'main/autoUpdater';
 import Diagnostics from 'main/diagnostics';
@@ -17,7 +16,6 @@ import TokenManager from 'main/tokenManager';
 import {getLogsPath, getLocalPreload, getLocalURLString} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import serversSidebar from 'main/views/serversSidebar';
-import {ServerSidebarShortcutModalView} from 'main/views/serversSidebarShortcutModalView';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
 

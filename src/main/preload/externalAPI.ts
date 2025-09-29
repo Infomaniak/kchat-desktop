@@ -47,7 +47,6 @@ import {
     CALL_JOINED,
     CALL_RINGING,
     UPDATE_TEAMS,
-    RESET_TEAMS,
     TOKEN_REFRESHED,
     TOKEN_REQUEST,
     REFRESH_TOKEN,
@@ -159,16 +158,6 @@ const desktopAPI: KchatDesktopApi = {
     unregister: (channel) => ipcRenderer.removeAllListeners(channel),
 };
 contextBridge.exposeInMainWorld('desktopAPI', desktopAPI);
-
-// const logPrefix = '[current server]';
-
-// contextBridge.exposeInMainWorld('logManager', {
-//     info: (...args: unknown[]) => log.info(logPrefix, ...args),
-//     debug: (...args: unknown[]) => log.debug(logPrefix, ...args),
-//     log: (...args: unknown[]) => log.log(logPrefix, ...args),
-//     warn: (...args: unknown[]) => log.warn(logPrefix, ...args),
-//     error: (...args: unknown[]) => log.error(logPrefix, ...args),
-// });
 
 contextBridge.exposeInMainWorld('authManager', {
     tokenRequest: () => ipcRenderer.invoke(TOKEN_REQUEST),
@@ -346,7 +335,7 @@ const getUnreadCount = () => {
 
 // Disabling no-explicit-any for this legacy code
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?: {type?: string; message?: any}} = {}) => {
+window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?: {type?: string; message?: any; data?: any}} = {}) => {
     const {type, message = {}} = data;
     if (origin !== window.location.origin) {
         return;
@@ -417,7 +406,8 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
         break;
     }
     case UPDATE_TEAMS: {
-        const teams = message.teams.reduce((acc, item, idx) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const teams = message.teams.reduce((acc: any, item: any, idx: any) => {
             acc.push({
                 name: item.display_name,
                 url: item.url,

@@ -3,7 +3,6 @@
 
 import {BrowserWindow} from 'electron';
 
-
 import Config from 'common/config';
 
 let callWindow: BrowserWindow | null = null;

@@ -7,7 +7,7 @@ import log from 'electron-log';
 import {CALL_CANCEL, CALL_DECLINED, CALL_DIAL_UPDATED, CALL_JOINED} from 'common/communication';
 import ViewManager from 'main/views/viewManager';
 
-import type {CallInfo} from 'types/callsIk';
+import type {IkCallInfo} from 'types/callsIk';
 
 import MainWindow from './mainWindow';
 
@@ -23,7 +23,7 @@ class CallDialingWindow {
         ipcMain.on(CALL_DIAL_UPDATED, this.handleCallInfoUpdated);
     }
 
-    create(callInfo: CallInfo) {
+    create(callInfo: IkCallInfo) {
         if (this.window) {
             return this.window;
         }
@@ -86,21 +86,21 @@ class CallDialingWindow {
         return Boolean(this.window?.isClosable());
     }
 
-    private handleCallInfoUpdated = (_: any, callInfo: CallInfo) => {
+    private handleCallInfoUpdated = (_: any, callInfo: IkCallInfo) => {
         ViewManager.sendToAllViews(CALL_DIAL_UPDATED, callInfo);
     };
 
-    private handleCallDeclined = (_: any, callInfo: CallInfo) => {
+    private handleCallDeclined = (_: any, callInfo: IkCallInfo) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_DECLINED, callInfo);
     };
 
-    private handleCallAccepted = (_: any, callInfo: CallInfo) => {
+    private handleCallAccepted = (_: any, callInfo: IkCallInfo) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_JOINED, callInfo);
     };
 
-    private handleCallCancel = (_: any, callInfo: CallInfo) => {
+    private handleCallCancel = (_: any, callInfo: IkCallInfo) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_CANCEL, callInfo);
     };

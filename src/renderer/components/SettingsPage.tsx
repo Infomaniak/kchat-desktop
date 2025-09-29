@@ -812,14 +812,18 @@ class SettingsPage extends React.PureComponent<Props, State> {
                         checked={this.state.showTrayIcon}
                         onChange={this.handleChangeShowTrayIcon}
                     />
-                    {window.process.platform === 'darwin' ? <FormattedMessage
-                        id='renderer.components.settingsPage.trayIcon.show.darwin'
-                        defaultMessage='Show {appName} icon in the menu bar'
-                        values={{appName: this.state.appName}}
-                    /> : <FormattedMessage
-                                                                id='renderer.components.settingsPage.trayIcon.show'
-                                                                defaultMessage='Show icon in the notification area'
-                                                                 />
+                    {window.process.platform === 'darwin' ? (
+                        <FormattedMessage
+                            id='renderer.components.settingsPage.trayIcon.show.darwin'
+                            defaultMessage='Show {appName} icon in the menu bar'
+                            values={{appName: this.state.appName}}
+                        />
+                    ) : (
+                        <FormattedMessage
+                            id='renderer.components.settingsPage.trayIcon.show'
+                            defaultMessage='Show icon in the notification area'
+                        />
+                    )
                     }
                     <FormText>
                         <FormattedMessage

@@ -5,10 +5,10 @@
 
 import path from 'path';
 
-import { app, ipcMain } from 'electron';
+import {app, ipcMain} from 'electron';
 
-import { UPDATE_PATHS } from 'common/communication';
-import { isLocalEnv } from 'common/config/ikConfig';
+import {UPDATE_PATHS} from 'common/communication';
+import {isLocalEnv} from 'common/config/ikConfig';
 
 let userDataPath;
 

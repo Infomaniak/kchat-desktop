@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {IpcMainEvent, IpcMainInvokeEvent} from 'electron';
-import {BrowserView, dialog, ipcMain, session, shell} from 'electron';
+import {BrowserView, dialog, ipcMain, session} from 'electron';
 import isDev from 'electron-is-dev';
 
 import ServerViewState from 'app/serverViewState';

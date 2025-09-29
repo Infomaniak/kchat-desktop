@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import path from 'path';
-import URL from 'url';
 
 import {init} from '@sentry/electron/main';
 import {app, ipcMain, nativeTheme, session} from 'electron';

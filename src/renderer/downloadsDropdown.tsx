@@ -1,12 +1,11 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import * as Sentry from '@sentry/electron/renderer';
 import classNames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {FormattedMessage} from 'react-intl';
-
-import * as Sentry from '@sentry/electron/renderer';
 
 import type {DownloadedItem, DownloadedItems} from 'types/downloads';
 

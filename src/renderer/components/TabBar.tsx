@@ -4,14 +4,11 @@
 
 import classNames from 'classnames';
 import React from 'react';
-import type {DraggingStyle, DropResult, NotDraggingStyle} from 'react-beautiful-dnd';
-import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
-import {Nav, NavItem, NavLink} from 'react-bootstrap';
+import type {DropResult} from 'react-beautiful-dnd';
+import {DragDropContext, Droppable} from 'react-beautiful-dnd';
+import {Nav} from 'react-bootstrap';
 import type {IntlShape} from 'react-intl';
-import {FormattedMessage, injectIntl} from 'react-intl';
-
-import type {ViewType} from 'common/views/View';
-import {canCloseView, getViewDisplayName} from 'common/views/View';
+import {injectIntl} from 'react-intl';
 
 import type {UniqueView} from 'types/config';
 
@@ -32,17 +29,6 @@ type Props = {
     intl: IntlShape;
 };
 
-function getStyle(style?: DraggingStyle | NotDraggingStyle) {
-    if (style?.transform) {
-        const axisLockX = `${style.transform.slice(0, style.transform.indexOf(','))}, 0px)`;
-        return {
-            ...style,
-            transform: axisLockX,
-        };
-    }
-    return style;
-}
-
 class TabBar extends React.PureComponent<Props> {
     onCloseTab = (id: string) => {
         return (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -52,98 +38,6 @@ class TabBar extends React.PureComponent<Props> {
     };
 
     render() {
-        const tabs = this.props.tabs.map((tab, index) => {
-            const sessionExpired = this.props.sessionsExpired[tab.id!];
-            const hasUnreads = this.props.unreadCounts[tab.id!];
-
-            let mentionCount = 0;
-            if (this.props.mentionCounts[tab.id!] > 0) {
-                mentionCount = this.props.mentionCounts[tab.id!];
-            }
-
-            let badgeDiv: React.ReactNode;
-            if (sessionExpired) {
-                badgeDiv = (
-                    <div className='TabBar-expired'>
-                        <i className='icon-alert-circle-outline'/>
-                    </div>
-                );
-            } else if (mentionCount !== 0) {
-                badgeDiv = (
-                    <div className='TabBar-badge'>
-                        <span>{mentionCount}</span>
-                    </div>
-                );
-            } else if (hasUnreads) {
-                badgeDiv = (
-                    <div className='TabBar-dot'/>
-                );
-            }
-
-            return (
-                <Draggable
-                    key={tab.id}
-                    draggableId={`serverTabItem-${tab.id}`}
-                    index={index}
-                >
-                    {(provided, snapshot) => {
-                        if (!tab.isOpen) {
-                            return (
-                                <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                />
-                            );
-                        }
-
-                        return (
-                            <NavItem
-                                ref={provided.innerRef}
-                                as='li'
-                                id={`serverTabItem${index}`}
-                                draggable={false}
-                                title={this.props.intl.formatMessage({id: `common.tabs.${tab.name}`, defaultMessage: getViewDisplayName(tab.name as ViewType)})}
-                                className={classNames('serverTabItem', {
-                                    active: this.props.activeTabId === tab.id,
-                                    dragging: snapshot.isDragging,
-                                })}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                style={getStyle(provided.draggableProps.style)}
-                            >
-                                <NavLink
-                                    eventKey={index}
-                                    draggable={false}
-                                    active={this.props.activeTabId === tab.id}
-                                    disabled={this.props.tabsDisabled}
-                                    onSelect={() => {
-                                        this.props.onSelect(tab.id!);
-                                    }}
-                                >
-                                    <div className='TabBar-tabSeperator'>
-                                        <FormattedMessage
-                                            id={`common.tabs.${tab.name}`}
-                                            defaultMessage={getViewDisplayName(tab.name as ViewType)}
-                                        />
-                                        { badgeDiv }
-                                        {canCloseView(tab.name as ViewType) &&
-                                            <button
-                                                className='serverTabItem__close'
-                                                onClick={this.onCloseTab(tab.id!)}
-                                            >
-                                                <i className='icon-close'/>
-                                            </button>
-                                        }
-                                    </div>
-                                </NavLink>
-                            </NavItem>
-                        );
-                    }}
-                </Draggable>
-            );
-        });
-
         return (
             <DragDropContext onDragEnd={this.props.onDrop}>
                 <Droppable
@@ -161,7 +55,6 @@ class TabBar extends React.PureComponent<Props> {
                             variant='tabs'
                             {...provided.droppableProps}
                         >
-                            {/*{tabs}*/}
                             {this.props.isMenuOpen ? <span className='TabBar-nonDrag'/> : null}
                             {provided.placeholder}
                         </Nav>

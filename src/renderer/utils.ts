@@ -35,17 +35,17 @@ const getFileSizeOrBytesProgress = (item: DownloadedItem) => {
 
 const getDownloadingFileStatus = (
     item: DownloadedItem,
-    formatMessage: (descriptor: MessageDescriptor, values?: Record<string, any>) => string
+    formatMessage: (descriptor: MessageDescriptor, values?: Record<string, any>) => string,
 ): string => {
     switch (item.state) {
-        case 'completed':
-            return formatMessage({ id: 'renderer.downloadFileStatus.completed' }, { defaultValue: 'Downloaded' });
-        case 'deleted':
-            return formatMessage({ id: 'renderer.downloadFileStatus.deleted' }, { defaultValue: 'Deleted' });
-        case 'no folder':
-            return formatMessage({ id: 'renderer.downloadFileStatus.noFolder' }, { defaultValue: 'No folder' });
-        default:
-            return formatMessage({ id: 'renderer.downloadFileStatus.cancelled' }, { defaultValue: 'Cancelled' });
+    case 'completed':
+        return formatMessage({id: 'renderer.downloadFileStatus.completed'}, {defaultValue: 'Downloaded'});
+    case 'deleted':
+        return formatMessage({id: 'renderer.downloadFileStatus.deleted'}, {defaultValue: 'Deleted'});
+    case 'no folder':
+        return formatMessage({id: 'renderer.downloadFileStatus.noFolder'}, {defaultValue: 'No folder'});
+    default:
+        return formatMessage({id: 'renderer.downloadFileStatus.cancelled'}, {defaultValue: 'Cancelled'});
     }
 };
 

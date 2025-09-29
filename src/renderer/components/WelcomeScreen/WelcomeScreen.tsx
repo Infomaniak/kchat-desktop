@@ -1,9 +1,9 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import classNames from 'classnames';
 import React, {useState, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import classNames from 'classnames';
 
 import chat2 from 'renderer/assets/svg/chat2.svg';
 import Header from 'renderer/components/Header';

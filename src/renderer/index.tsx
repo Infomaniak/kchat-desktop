@@ -5,12 +5,11 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'renderer/css/index.css';
 
+import * as Sentry from '@sentry/electron/renderer';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 import type {CombinedConfig} from 'types/config';
-
-import * as Sentry from '@sentry/electron/renderer';
 
 import MainPage from './components/MainPage';
 import IntlProvider from './intl_provider';

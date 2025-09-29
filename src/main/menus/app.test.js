@@ -92,6 +92,7 @@ jest.mock('main/AutoLauncher', () => ({
     enable: jest.fn(),
     disable: jest.fn(),
 }));
+
 // jest.mock('main/windows/callsWidgetWindow', () => ({
 //     isOpen: jest.fn(),
 // }));

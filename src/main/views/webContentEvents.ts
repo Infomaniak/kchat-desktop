@@ -31,7 +31,6 @@ import {flushCookiesStore} from 'main/app/utils';
 import ContextMenu from 'main/contextMenu';
 import ViewManager from 'main/views/viewManager';
 import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
-import MainWindow from 'main/windows/mainWindow';
 import mainWindow from 'main/windows/mainWindow';
 
 import {protocols} from '../../../electron-builder.json';
