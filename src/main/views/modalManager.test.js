@@ -14,6 +14,7 @@ jest.mock('electron', () => ({
     ipcMain: {
         handle: jest.fn(),
         on: jest.fn(),
+        emit: jest.fn(),
     },
 }));
 

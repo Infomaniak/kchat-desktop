@@ -77,6 +77,7 @@ jest.mock('common/servers/serverManager', () => ({
     getOrderedServers: jest.fn(),
     getOrderedTabsForServer: jest.fn(),
     getRemoteInfo: jest.fn(),
+    on: jest.fn(),
 }));
 jest.mock('app/serverViewState', () => ({
     switchServer: jest.fn(),
@@ -90,6 +91,7 @@ jest.mock('main/downloadsManager', () => ({
 jest.mock('main/views/viewManager', () => ({}));
 jest.mock('main/windows/mainWindow', () => ({
     get: jest.fn(),
+    on: jest.fn(),
 }));
 jest.mock('common/views/View', () => ({
     getViewDisplayName: (name) => name,
