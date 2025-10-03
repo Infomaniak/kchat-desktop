@@ -193,7 +193,7 @@ jobs:
           # find ./build/{macos-release,win-release,linux} -type f -exec cp --backup=numbered -t ./ghr-dist {} +
           run: |
             mkdir -p ./ghr-dist
-            find ./build/{win-release,linux} -type f -exec cp --backup=numbered -t ./ghr-dist {} +
+            find ./build/win-release -type f -exec cp --backup=numbered -t ./ghr-dist {} +
 
         - name: release/publish-release
           env:
