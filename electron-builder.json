@@ -187,6 +187,9 @@
     "artifactName": "${name}-setup-${version}-win.${ext}",
     "packElevateHelper": false
   },
+  "msi": {
+    "perMachine": true
+  },
   "rpm": {
     "fpm": [
       "--rpm-rpmbuild-define",
