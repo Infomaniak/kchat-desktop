@@ -1,7 +1,7 @@
 {
   "publish": {
     "provider": "s3",
-    "channel": "latest",
+    "channel": "beta",
     "bucket": "kchat",
     "endpoint": "https://download.storage5.infomaniak.com",
     "path": "/"
@@ -169,7 +169,8 @@
     "certificateSubjectName": "INFOMANIAK NETWORK SA",
     "target": [
       "nsis",
-      "zip"
+      "zip",
+      "msi"
     ],
     "extraFiles": [
       {
