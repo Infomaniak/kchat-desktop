@@ -26,6 +26,7 @@ import MainWindow from 'main/windows/mainWindow';
 import type {CombinedConfig} from 'types/config';
 
 import {ModalView} from './modalView';
+import serversSidebar from './serversSidebar';
 
 const log = new Logger('ModalManager');
 
@@ -104,6 +105,7 @@ export class ModalManager {
                 MainWindow.sendToRenderer(MODAL_OPEN);
                 ipcMain.emit(MODAL_OPEN);
                 modal.show(undefined, Boolean(withDevTools));
+                this.initializeModalBounds();
                 WebContentsEventManager.addWebContentsEventListeners(modal.view.webContents);
             } else {
                 MainWindow.sendToRenderer(MODAL_CLOSE);
@@ -152,7 +154,8 @@ export class ModalManager {
 
         if (this.modalQueue.length) {
             const currentModal = this.modalQueue[0];
-            currentModal.view.setBounds(getAdjustedWindowBoundaries(bounds.width, bounds.height));
+            const hasSidebar = serversSidebar.shouldDisplaySidebar;
+            currentModal.view.setBounds(getAdjustedWindowBoundaries(bounds.width, bounds.height, false, hasSidebar));
         }
     };
 
@@ -177,6 +180,13 @@ export class ModalManager {
         const modalView = this.modalQueue.find((modal) => modal.view.webContents.id === event.sender.id);
         return modalView?.uncloseable;
     };
+
+    private initializeModalBounds() {
+        const bounds = MainWindow.getBounds();
+        if (bounds) {
+            this.handleResizeModal(bounds);
+        }
+    }
 }
 
 const modalManager = new ModalManager();
