@@ -25,6 +25,13 @@ button {
         flex-direction: column;
         align-items: center;
     }
+
+    &__modal-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 6; //One higher than .ServerButton__badge
+    }
 }
 
 .ServerButton {

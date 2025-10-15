@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import prettyBytes from 'pretty-bytes';
-import type {IntlShape} from 'react-intl';
+import type {IntlShape, MessageDescriptor} from 'react-intl';
 
 import type {DownloadedItem} from 'types/downloads';
 
@@ -33,14 +33,19 @@ const getFileSizeOrBytesProgress = (item: DownloadedItem) => {
     return `${totalMegabytes}`;
 };
 
-const getDownloadingFileStatus = (item: DownloadedItem) => {
+const getDownloadingFileStatus = (
+    item: DownloadedItem,
+    formatMessage: (descriptor: MessageDescriptor, values?: Record<string, any>) => string
+): string => {
     switch (item.state) {
-    case 'completed':
-        return 'Downloaded';
-    case 'deleted':
-        return 'Deleted';
-    default:
-        return 'Cancelled';
+        case 'completed':
+            return formatMessage({ id: 'renderer.downloadFileStatus.completed' }, { defaultValue: 'Downloaded' });
+        case 'deleted':
+            return formatMessage({ id: 'renderer.downloadFileStatus.deleted' }, { defaultValue: 'Deleted' });
+        case 'no folder':
+            return formatMessage({ id: 'renderer.downloadFileStatus.noFolder' }, { defaultValue: 'No folder' });
+        default:
+            return formatMessage({ id: 'renderer.downloadFileStatus.cancelled' }, { defaultValue: 'Cancelled' });
     }
 };
 

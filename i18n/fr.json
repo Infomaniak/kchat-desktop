@@ -325,7 +325,11 @@
     "main.downloadsManager.specifyDownloadsFolder": "Indiquez le dossier dans lequel les fichiers seront téléchargés",
     "renderer.components.newServerModal.validating": "Validation...",
     "main.permissionsManager.checkPermission.dialog.detail.media": "{appName} utilisera le microphone et la caméra pour les appels et les messages vocaux. Vous pouvez toujours modifier cette option ultérieurement dans les paramètres de votre ordinateur.",
-    "renderer.components.configureServer.url.insecure": "L'URL de votre serveur n'est potentiellement pas sécurisée. Pour de meilleurs résultats, utilisez une URL avec le protocole HTTPS."
+    "renderer.components.configureServer.url.insecure": "L'URL de votre serveur n'est potentiellement pas sécurisée. Pour de meilleurs résultats, utilisez une URL avec le protocole HTTPS.",
+    "renderer.downloadFileStatus.completed": "Téléchargé",
+    "renderer.downloadFileStatus.deleted": "Supprimé",
+    "renderer.downloadFileStatus.noFolder": "Dossier supprimé",
+    "renderer.downloadFileStatus.cancelled": "Annulé"
 }
   
 

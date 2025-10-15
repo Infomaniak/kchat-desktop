@@ -286,6 +286,17 @@ export class DownloadsManager extends JsonFileManager<DownloadedItems> {
             return;
         }
 
+        const folderPath = path.dirname(item.location);
+        const fileId = this.getDownloadedFileId(item);
+        const file = this.downloads[fileId];
+
+        if (!fs.existsSync(folderPath)) {
+            log.debug('openFile', 'FOLDER_DELETED');
+            file.state = 'no folder';
+            this.save(fileId, file);
+            return;
+        }
+
         if (fs.existsSync(item.location)) {
             let func;
             const bookmark = this.bookmarks.get(this.getDownloadedFileId(item));
