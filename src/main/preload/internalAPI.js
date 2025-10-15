@@ -105,6 +105,8 @@ import {
     METRICS_RECEIVE,
     LOAD_INCOMPATIBLE_SERVER,
     OPEN_SERVER_UPGRADE_LINK,
+    REFRESH_PERMISSION,
+    GET_LOCAL_PERMISSIONS,
     ADD_SERVER,
     EDIT_SERVER,
     REMOVE_SERVER,
@@ -127,6 +129,7 @@ contextBridge.exposeInMainWorld('timers', {
 });
 
 contextBridge.exposeInMainWorld('desktop', {
+
     quit: (reason, stack) => ipcRenderer.send(QUIT, reason, stack),
     openAppMenu: () => ipcRenderer.send(OPEN_APP_MENU),
     closeServersDropdown: () => ipcRenderer.send(CLOSE_SERVERS_DROPDOWN),
@@ -170,6 +173,9 @@ contextBridge.exposeInMainWorld('desktop', {
     getLocalConfiguration: () => ipcRenderer.invoke(GET_LOCAL_CONFIGURATION),
     getDownloadLocation: (downloadLocation) => ipcRenderer.invoke(GET_DOWNLOAD_LOCATION, downloadLocation),
     getLanguageInformation: () => ipcRenderer.invoke(GET_LANGUAGE_INFORMATION),
+
+    refreshPermission: (perm) => ipcRenderer.invoke(REFRESH_PERMISSION, perm),
+    getLocalPermissions: () => ipcRenderer.invoke(GET_LOCAL_PERMISSIONS),
 
     getScreenPermissions: () => ipcRenderer.invoke(SCREEN_SHARE_PERMISSIONS),
     onSynchronizeConfig: (listener) => ipcRenderer.on('synchronize-config', () => listener()),

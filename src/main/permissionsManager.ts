@@ -16,38 +16,30 @@ import {
     systemPreferences,
 } from 'electron';
 
+import serverViewState from 'app/serverViewState';
 import {
     GET_MEDIA_ACCESS_STATUS,
     OPEN_WINDOWS_CAMERA_PREFERENCES,
     OPEN_WINDOWS_MICROPHONE_PREFERENCES,
+    REFRESH_PERMISSION,
     UPDATE_PATHS,
 } from 'common/communication';
-import Config from 'common/config';
 import JsonFileManager from 'common/JsonFileManager';
 import {Logger} from 'common/log';
 import type {MattermostServer} from 'common/servers/MattermostServer';
 import {isTrustedURL, parseURL} from 'common/utils/url';
-import {t} from 'common/utils/util';
+import Utils, {t} from 'common/utils/util';
 import {permissionsJson} from 'main/constants';
 import {localizeMessage} from 'main/i18nManager';
-import ViewManager from 'main/views/viewManager';
+import viewManager from 'main/views/viewManager';
 import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 import MainWindow from 'main/windows/mainWindow';
 
-import type {Permissions} from 'types/permissions';
+import {supportedPermissionTypes, type PermissionType, type Permissions} from 'types/permissions';
+
+import {extractCommonsPermissions} from './permissionMigrator';
 
 const log = new Logger('PermissionsManager');
-
-// supported permission types
-const supportedPermissionTypes = [
-    'media',
-    'geolocation',
-    'notifications',
-    'fullscreen',
-    'openExternal',
-    'clipboard-sanitized-write',
-    'screenShare',
-];
 
 // permissions that require a dialog
 const authorizablePermissionTypes = [
@@ -57,6 +49,8 @@ const authorizablePermissionTypes = [
     'openExternal',
     'screenShare',
 ];
+
+const commons = 'commons'; //Ik: we store every permission globally (not scoped by server)
 
 type PermissionsByOrigin = {
     [origin: string]: Permissions;
@@ -75,6 +69,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         ipcMain.on(OPEN_WINDOWS_CAMERA_PREFERENCES, this.openWindowsCameraPreferences);
         ipcMain.on(OPEN_WINDOWS_MICROPHONE_PREFERENCES, this.openWindowsMicrophonePreferences);
         ipcMain.handle(GET_MEDIA_ACCESS_STATUS, this.handleGetMediaAccessStatus);
+        ipcMain.handle(REFRESH_PERMISSION, this.refreshPermission);
     }
 
     handlePermissionRequest = async (
@@ -90,8 +85,33 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         ));
     };
 
+    async migratePermission() {
+        if (!Utils.isVersionGreaterThanOrEqualTo(app.getVersion(), '3.4.0')) {
+            log.info('Skipping permission migration: version too old');
+            return;
+        }
+
+        log.info('Starting permission migration');
+        const newPermissions = extractCommonsPermissions(this.json);
+
+        log.debug('Migrated permissions:', newPermissions);
+
+        this.json = newPermissions ?? {};
+
+        try {
+            await this.writeToFile();
+            log.info('Permissions migration completed and saved');
+        } catch (error) {
+            log.error('Failed to save migrated permissions:', error);
+        }
+    }
+
     getForServer = (server: MattermostServer): Permissions | undefined => {
-        return this.getValue(server.url.origin);
+        return this.ikGetForServer();
+    };
+
+    private ikGetForServer = () => {
+        return this.getValue(commons);
     };
 
     setForServer = (server: MattermostServer, permissions: Permissions) => {
@@ -100,8 +120,12 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
             this.checkMediaAccess('camera');
         }
 
-        return this.setValue(server.url.origin, permissions);
+        return this.ikSetForServer(permissions);
     };
+
+    private ikSetForServer(permissions: Permissions) {
+        return this.setValue(commons, permissions);
+    }
 
     private checkMediaAccess = (mediaType: 'microphone' | 'camera') => {
         if (systemPreferences.getMediaAccessStatus(mediaType) !== 'granted') {
@@ -114,15 +138,30 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         }
     };
 
+    refreshPermission = async (_: IpcMainInvokeEvent, permission: string) => {
+        if (!authorizablePermissionTypes.includes(permission)) {
+            throw new Error(`Cannot refresh unknown permission (${permission})`);
+        }
+
+        delete this.json[commons][permission];
+        this.writeToFile();
+
+        const webContentId = viewManager.getCurrentView()!.webContentsId;
+        const currentServer = serverViewState.getCurrentServer();
+        const details = {requestingUrl: currentServer.url.toString(), isMainFrame: false};
+
+        return this.doPermissionRequest(webContentId, permission, details);
+    };
+
     doPermissionRequest = async (
         webContentsId: number,
         permission: string,
         details: PermissionRequestHandlerHandlerDetails,
     ) => {
-        log.debug('doPermissionRequest', permission, details);
+        log.debug('doPermissionRequest', webContentsId, permission, details);
 
         // is the requested permission type supported?
-        if (!supportedPermissionTypes.includes(permission)) {
+        if (!supportedPermissionTypes.includes(permission as PermissionType)) {
             return false;
         }
 
@@ -147,7 +186,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         if (CallsWidgetWindow.isCallsWidget(webContentsId)) {
             serverURL = CallsWidgetWindow.getViewURL();
         } else {
-            serverURL = ViewManager.getViewByWebContentsId(webContentsId)?.view.server.url;
+            serverURL = viewManager.getViewByWebContentsId(webContentsId)?.view.server.url;
         }
 
         // if (!serverURL) {
@@ -165,7 +204,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
 
         // For certain permission types, we need to confirm with the user
         if (authorizablePermissionTypes.includes(permission) || isExternalFullscreen) {
-            const currentPermission = this.json[parsedURL.origin]?.[permission];
+            const currentPermission = this.json[commons]?.[permission];
 
             // If previously allowed, just allow
             if (currentPermission?.allowed) {
@@ -182,7 +221,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
             }
 
             // Make sure we don't pop multiple dialogs for the same permission check
-            const permissionKey = `${parsedURL.origin}:${permission}`;
+            const permissionKey = `${commons}:${permission}`;
             if (this.inflightPermissionChecks.has(permissionKey)) {
                 return this.inflightPermissionChecks.get(permissionKey)!;
             }
@@ -210,8 +249,8 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
                         allowed: response === 2,
                         alwaysDeny: (response === 1) ? true : undefined,
                     };
-                    this.json[parsedURL.origin] = {
-                        ...this.json[parsedURL.origin],
+                    this.json[commons] = {
+                        ...this.json[commons],
                         [permission]: newPermission,
                     };
                     this.writeToFile();

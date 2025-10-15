@@ -37,11 +37,13 @@ import {
     SCREEN_SHARE_PERMISSIONS,
     SHOW_SETTINGS_WINDOW,
     DEVELOPER_MODE_UPDATED,
+    GET_LOCAL_PERMISSIONS,
 } from 'common/communication';
 import Config from 'common/config';
 import buildConfig from 'common/config/buildConfig';
 import {IKOrigin} from 'common/config/ikConfig';
 import {Logger} from 'common/log';
+import type {MattermostServer} from 'common/servers/MattermostServer';
 import ServerManager from 'common/servers/serverManager';
 import {IKDriveAllowedUrls, IKLoginAllowedUrls, IKWelcomeAllowedUrls, KChatTokenWhitelist} from 'common/utils/constants';
 import {parseURL} from 'common/utils/url';
@@ -61,7 +63,7 @@ import NonceManager from 'main/nonceManager';
 import {getDoNotDisturb} from 'main/notifications';
 import parseArgs from 'main/ParseArgs';
 import PerformanceMonitor from 'main/performanceMonitor';
-import PermissionsManager from 'main/permissionsManager';
+import permissionsManager from 'main/permissionsManager';
 import TokenManager from 'main/tokenManager';
 import Tray from 'main/tray/tray';
 import TrustedOriginsStore from 'main/trustedOrigins';
@@ -140,6 +142,8 @@ export async function initialize() {
     await initializeConfig();
     initializeAppEventListeners();
     initializeBeforeAppReady();
+
+    await permissionsManager.migratePermission();
 
     // wait for registry config data to load and app ready event
     await Promise.all([
@@ -310,6 +314,7 @@ function initializeInterCommunicationEventListeners() {
     ipcMain.handle(PING_DOMAIN, handlePingDomain);
     ipcMain.handle(GET_CONFIGURATION, handleGetConfiguration);
     ipcMain.handle(GET_LOCAL_CONFIGURATION, handleGetLocalConfiguration);
+    ipcMain.handle(GET_LOCAL_PERMISSIONS, handleGetLocalPermissions);
     ipcMain.on(UPDATE_CONFIGURATION, updateConfiguration);
     ipcMain.on(UPDATE_TEAMS, updateTeamsHandler);
     ipcMain.handle(GET_DARK_MODE, handleGetDarkMode);
@@ -327,6 +332,10 @@ function initializeInterCommunicationEventListeners() {
 function handleInitializeJitsi() {
 }
 
+function handleGetLocalPermissions() {
+    const dummyServ = {} as MattermostServer;
+    return permissionsManager.getForServer(dummyServ);
+}
 function updateTeamsHandler(_: any, servers: ConfigServer[]) {
     const [defaultServer] = buildConfig.defaultServers!;
     const [firstServer] = servers;
@@ -551,7 +560,7 @@ async function initializeAfterAppReady() {
 
     // handle permission requests
     // - approve if a supported permission type and the request comes from the renderer or one of the defined servers
-    defaultSession.setPermissionRequestHandler(PermissionsManager.handlePermissionRequest);
+    defaultSession.setPermissionRequestHandler(permissionsManager.handlePermissionRequest);
 
     if (wasUpdated(AppVersionManager.lastAppVersion)) {
         clearAppCache();

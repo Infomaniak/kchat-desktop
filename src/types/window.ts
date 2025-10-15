@@ -106,6 +106,8 @@ declare global {
             openWindowsMicrophonePreferences: () => void;
             getMediaAccessStatus: (mediaType: 'microphone' | 'camera' | 'screen') => Promise<'not-determined' | 'granted' | 'denied' | 'restricted' | 'unknown'>;
 
+            refreshPermission: (permission: string) => Promise<boolean>;
+            getLocalPermissions: () => Promise<Permissions>;
             resetAuth: () => void;
 
             modals: {

@@ -11,3 +11,16 @@ export type Permissions = {
 };
 
 export type UniqueServerWithPermissions = {server: UniqueServer; permissions: Permissions};
+
+// supported permission types
+export const supportedPermissionTypes = [
+    'media',
+    'geolocation',
+    'notifications',
+    'fullscreen',
+    'openExternal',
+    'clipboard-sanitized-write',
+    'screenShare',
+] as const;
+
+export type PermissionType = typeof supportedPermissionTypes[number];
