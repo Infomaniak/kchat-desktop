@@ -104,6 +104,7 @@ export const GET_MODAL_UNCLOSEABLE = 'get-modal-uncloseable';
 
 export const UPDATE_PATHS = 'update-paths';
 
+export const SET_URL_FOR_URL_VIEW = 'set-url-for-url-view';
 export const UPDATE_URL_VIEW_WIDTH = 'update-url-view-width';
 
 export const CALL_JOINED_BROWSER = 'call-joined-browser';

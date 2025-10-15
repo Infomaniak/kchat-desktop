@@ -1,8 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {BrowserWindow, IpcMainEvent, IpcMainInvokeEvent} from 'electron';
-import {session, WebContentsView, ipcMain, shell} from 'electron';
+import type {BrowserWindow, IpcMainEvent, IpcMainInvokeEvent, View} from 'electron';
+import {WebContentsView, ipcMain, shell} from 'electron';
 import isDev from 'electron-is-dev';
 
 import ServerViewState from 'app/serverViewState';
@@ -45,6 +45,7 @@ import {
     OPEN_SERVER_UPGRADE_LINK,
     TAB_LOGIN_CHANGED,
     DEVELOPER_MODE_UPDATED,
+    SET_URL_FOR_URL_VIEW,
 } from 'common/communication';
 import Config from 'common/config';
 import {DEFAULT_CHANGELOG_LINK} from 'common/constants';
@@ -84,6 +85,7 @@ export class ViewManager {
     private currentView?: string;
     private callWindow?: BrowserWindow | null;
 
+    private urlView?: WebContentsView;
     private urlViewCancel?: () => void;
 
     constructor() {
@@ -145,11 +147,31 @@ export class ViewManager {
             await this.initServer(currentServer);
             this.showInitial();
         }
+
+        this.initURLView();
     };
 
     private initServer = async (server: MattermostServer) => {
         await updateServerInfos([server]);
         this.loadServer(server);
+    };
+
+    private initURLView = () => {
+        const mainWindow = MainWindow.get();
+        if (!mainWindow) {
+            return;
+        }
+
+        const urlView = new WebContentsView({webPreferences: {preload: getLocalPreload('internalAPI.js')}});
+        urlView.setBackgroundColor('#00000000');
+
+        urlView.webContents.loadURL('mattermost-desktop://renderer/urlView.html');
+
+        MainWindow.get()?.contentView.addChildView(urlView);
+
+        performanceMonitor.registerView('URLView', urlView.webContents);
+
+        this.urlView = urlView;
     };
 
     private handleDeveloperModeUpdated = (json: DeveloperSettings) => {
@@ -180,6 +202,17 @@ export class ViewManager {
 
     isViewClosed = (viewId: string) => {
         return this.closedViews.has(viewId);
+    };
+
+    private isViewInFront = (view: View) => {
+        const mainWindow = MainWindow.get();
+        if (!mainWindow) {
+            return false;
+        }
+
+        const index = mainWindow.contentView.children.indexOf(view);
+        const front = mainWindow.contentView.children.length - 1;
+        return index === front;
     };
 
     showById = (viewId: string) => {
@@ -482,34 +515,29 @@ export class ViewManager {
         if (this.urlViewCancel) {
             this.urlViewCancel();
         }
+
         if (url && url !== '') {
             const urlString = typeof url === 'string' ? url : url.toString();
-            const urlView = new WebContentsView({webPreferences: {preload: getLocalPreload('internalAPI.js')}});
-            urlView.setBackgroundColor('#00000000');
-            const localURL = `kchat-desktop://renderer/urlView.html?url=${encodeURIComponent(urlString)}`;
-            performanceMonitor.registerView('URLView', urlView.webContents);
-            urlView.webContents.loadURL(localURL);
+            // const urlView = new WebContentsView({webPreferences: {preload: getLocalPreload('internalAPI.js')}});
+            // urlView.setBackgroundColor('#00000000');
+            // const localURL = `kchat-desktop://renderer/urlView.html?url=${encodeURIComponent(urlString)}`;
+            // performanceMonitor.registerView('URLView', urlView.webContents);
+            // urlView.webContents.loadURL(localURL);
 
-            // This is a workaround for an issue where the URL view would steal focus from the main window
-            // See: https://github.com/electron/electron/issues/42339
-            urlView.webContents.on('focus', () => {
-                log.debug('URL view focus prevented');
-                this.getCurrentView()?.focus();
-            });
+            if (this.urlView && !this.isViewInFront(this.urlView)) {
+                log.silly('moving URL view to front');
+                MainWindow.get()?.contentView.addChildView(this.urlView);
+            }
 
-            MainWindow.get()?.contentView.addChildView(urlView);
+            this.urlView?.webContents.send(SET_URL_FOR_URL_VIEW, urlString);
+            this.urlView?.setVisible(true);
+
             const boundaries = this.views.get(this.currentView || '')?.getBounds() ?? MainWindow.getBounds();
 
             const hideView = () => {
                 delete this.urlViewCancel;
-                try {
-                    mainWindow.contentView.removeChildView(urlView);
-                } catch (e) {
-                    log.error('Failed to remove URL view', e);
-                }
 
-                performanceMonitor.unregisterView(urlView.webContents.id);
-                urlView.webContents.close();
+                this.urlView?.setVisible(false);
             };
 
             const adjustWidth = (event: IpcMainEvent, width: number) => {
@@ -527,7 +555,7 @@ export class ViewManager {
                 };
 
                 log.silly('showURLView.setBounds', boundaries, bounds);
-                urlView.setBounds(bounds);
+                this.urlView?.setBounds(bounds);
             };
 
             ipcMain.on(UPDATE_URL_VIEW_WIDTH, adjustWidth);

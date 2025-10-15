@@ -111,6 +111,7 @@ import {
     EDIT_SERVER,
     REMOVE_SERVER,
     GET_UNIQUE_SERVERS_WITH_PERMISSIONS,
+    SET_URL_FOR_URL_VIEW,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 
@@ -205,6 +206,7 @@ contextBridge.exposeInMainWorld('desktop', {
     onUpdateDownloadsDropdown: (listener) => ipcRenderer.on(UPDATE_DOWNLOADS_DROPDOWN, (_, downloads, darkMode, windowBounds, item) => listener(downloads, darkMode, windowBounds, item)),
     onAppMenuWillClose: (listener) => ipcRenderer.on(APP_MENU_WILL_CLOSE, () => listener()),
     onFocusThreeDotMenu: (listener) => ipcRenderer.on(FOCUS_THREE_DOT_MENU, () => listener()),
+    onSetURLForURLView: (listener) => ipcRenderer.on(SET_URL_FOR_URL_VIEW, (_, url) => listener(url)),
     updateURLViewWidth: (width) => ipcRenderer.send(UPDATE_URL_VIEW_WIDTH, width),
     openNotificationPreferences: () => ipcRenderer.send(OPEN_NOTIFICATION_PREFERENCES),
     openWindowsCameraPreferences: () => ipcRenderer.send(OPEN_WINDOWS_CAMERA_PREFERENCES),

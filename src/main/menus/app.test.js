@@ -14,7 +14,7 @@ import {localizeMessage} from 'main/i18nManager';
 
 import {createTemplate} from './app';
 
-jest.mock('electron-extension-installer', () => {
+jest.mock('electron-devtools-installer', () => {
     return () => ({
         REACT_DEVELOPER_TOOLS: 'react-developer-tools',
     });
