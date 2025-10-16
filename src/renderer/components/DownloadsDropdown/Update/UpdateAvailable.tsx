@@ -5,9 +5,9 @@ import React from 'react';
 import {Button} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
 
-import type {DownloadedItem} from 'types/downloads';
+import {START_UPDATE_DOWNLOAD_MANUAL} from 'common/communication';
 
-import { START_UPDATE_DOWNLOAD_MANUAL} from 'common/communication';
+import type {DownloadedItem} from 'types/downloads';
 
 import Thumbnail from '../Thumbnail';
 

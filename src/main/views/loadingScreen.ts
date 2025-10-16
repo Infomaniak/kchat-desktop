@@ -5,9 +5,9 @@ import {BrowserView, app, ipcMain} from 'electron';
 
 import {DARK_MODE_CHANGE, LOADING_SCREEN_ANIMATION_FINISHED, MAIN_WINDOW_RESIZED, TOGGLE_LOADING_SCREEN_VISIBILITY} from 'common/communication';
 import {Logger} from 'common/log';
+import {SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
 import {getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
-import { SERVERS_SIDEBAR_WIDTH } from 'common/utils/constants';
 
 import ServersSidebar from './serversSidebar';
 
@@ -85,7 +85,7 @@ export class LoadingScreen {
             const mainWindow = MainWindow.get();
             mainWindow?.removeBrowserView(this.view!);
         }
-    }
+    };
 
     private create = () => {
         const preload = getLocalPreload('internalAPI.js');
@@ -120,8 +120,8 @@ export class LoadingScreen {
             if (!mainWindow) {
                 return;
             }
-            const windowBoundaries = getWindowBoundaries(mainWindow, false, ServersSidebar.shouldDisplaySidebar)
-            this.view.setBounds({ ...windowBoundaries, width: windowBoundaries.width + SERVERS_SIDEBAR_WIDTH, x: windowBoundaries.x - SERVERS_SIDEBAR_WIDTH });
+            const windowBoundaries = getWindowBoundaries(mainWindow, false, ServersSidebar.shouldDisplaySidebar);
+            this.view.setBounds({...windowBoundaries, width: windowBoundaries.width + SERVERS_SIDEBAR_WIDTH, x: windowBoundaries.x - SERVERS_SIDEBAR_WIDTH});
         }
     };
 }

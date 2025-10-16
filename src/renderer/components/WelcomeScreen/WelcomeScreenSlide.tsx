@@ -9,7 +9,6 @@ import 'renderer/css/components/WelcomeScreenSlide.scss';
 type WelcomeScreenSlideProps = {
     title: string;
     subtitle: string | React.ReactElement;
-    image: React.ReactNode;
     isMain?: boolean;
     darkMode?: boolean;
 };
@@ -17,7 +16,6 @@ type WelcomeScreenSlideProps = {
 const WelcomeScreenSlide = ({
     title,
     subtitle,
-    image,
     isMain,
     darkMode,
 }: WelcomeScreenSlideProps) => (
@@ -30,9 +28,6 @@ const WelcomeScreenSlide = ({
             },
         )}
     >
-        {/* <div className='WelcomeScreenSlide__image'>
-            {image}
-        </div> */}
         <div className='WelcomeScreenSlide__title'>
             {title}
         </div>

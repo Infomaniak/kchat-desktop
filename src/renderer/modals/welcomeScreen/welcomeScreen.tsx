@@ -21,7 +21,7 @@ const onConnect = (data: UniqueServer) => {
 
 const WelcomeScreenModalWrapper = () => {
     const [darkMode, setDarkMode] = useState(false);
-    const [getStarted, setGetStarted] = useState(false);
+    const [getStarted] = useState(false);
     const [mobileView, setMobileView] = useState(false);
 
     const handleWindowResize = () => {

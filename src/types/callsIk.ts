@@ -5,7 +5,7 @@ export type UserProfile = {
     [key: string]: any;
 };
 
-export type CallInfo = {
+export type IkCallInfo = {
     users: UserProfile[];
     caller: UserProfile;
     currentUser: UserProfile;

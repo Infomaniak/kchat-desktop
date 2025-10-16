@@ -6,10 +6,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'renderer/css/index.css';
 import 'renderer/css/settings.css';
 
+import * as Sentry from '@sentry/electron/renderer';
 import React from 'react';
 import ReactDOM from 'react-dom';
-
-import * as Sentry from '@sentry/electron/renderer';
 
 import darkStyles from 'renderer/css/lazy/settings-dark.lazy.css';
 

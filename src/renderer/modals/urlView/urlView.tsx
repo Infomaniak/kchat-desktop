@@ -6,10 +6,9 @@ import 'renderer/css/components/HoveringURL.css';
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 
+import * as Sentry from '@sentry/electron/renderer';
 import React from 'react';
 import ReactDOM from 'react-dom';
-
-import * as Sentry from '@sentry/electron/renderer';
 
 import UrlDescription from '../../components/urlDescription';
 

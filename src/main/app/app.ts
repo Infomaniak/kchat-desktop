@@ -6,7 +6,6 @@ import {app, dialog} from 'electron';
 
 import {Logger} from 'common/log';
 import {parseURL} from 'common/utils/url';
-
 import updateManager from 'main/autoUpdater';
 import CertificateStore from 'main/certificateStore';
 import {localizeMessage} from 'main/i18nManager';

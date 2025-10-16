@@ -24,6 +24,7 @@ import {CallsWidgetWindow} from './callsWidgetWindow';
 jest.mock('electron', () => ({
     app: {
         getAppPath: () => '/path/to/app',
+        getPath: jest.fn(),
     },
     BrowserWindow: jest.fn(),
     ipcMain: {
@@ -38,9 +39,6 @@ jest.mock('electron', () => ({
     systemPreferences: {
         getUserDefault: jest.fn(),
         getMediaAccessStatus: jest.fn(() => 'granted'),
-    },
-    app: {
-        getPath: jest.fn(),
     },
 }));
 

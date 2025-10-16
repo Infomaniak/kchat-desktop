@@ -1,14 +1,14 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import fs from 'fs';
+import path from 'path';
+
 import type {LevelOption} from 'electron-log';
 import log from 'electron-log';
 
 import Util from 'common/utils/util';
-
 import {getLogsPath} from 'main/utils';
-import fs from 'fs';
-import path from 'path';
 
 export const setLoggingLevel = (level: string) => {
     if (log.transports.file.level === level) {
@@ -21,6 +21,7 @@ export const setLoggingLevel = (level: string) => {
 };
 
 logInit();
+
 // Start on info by default
 setLoggingLevel('info');
 

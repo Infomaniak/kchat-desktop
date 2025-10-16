@@ -31,7 +31,6 @@ const path = require('path');
 
 const generator = require('mochawesome-report-generator');
 
-const {saveArtifacts} = require('./utils/artifacts');
 const {MOCHAWESOME_REPORT_DIR} = require('./utils/constants');
 const {
     generateShortSummary,
@@ -41,7 +40,6 @@ const {
     readJsonFromFile,
     writeJsonToFile,
 } = require('./utils/report');
-const {createTestCycle, createTestExecutions} = require('./utils/test_cases');
 
 require('dotenv').config();
 
@@ -50,8 +48,6 @@ const saveReport = async () => {
         BRANCH,
         BUILD_ID,
         BUILD_TAG,
-        ZEPHYR_ENABLE,
-        ZEPHYR_CYCLE_KEY,
         TYPE,
         WEBHOOK_URL,
     } = process.env;

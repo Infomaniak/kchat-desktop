@@ -4,15 +4,15 @@
 
 import fs from 'fs';
 
-import {IpcMainEvent, net, session, ipcMain, safeStorage} from 'electron';
-
+import type {IpcMainEvent} from 'electron';
+import {net, session, ipcMain, safeStorage} from 'electron';
 import log from 'electron-log';
 
 import {UPDATE_PATHS} from 'common/communication';
 
-import {tokenApiEndpoint} from '../common/config/ikConfig';
-
 import {tokensStorePath} from './constants';
+
+import {tokenApiEndpoint} from '../common/config/ikConfig';
 
 // import * as Validator from '../common/Validator';
 
@@ -31,7 +31,7 @@ export class TokenManager {
     data: Token | Record<string, never>;
     requestPromise: Promise<Token> | void;
     revokePromise: Promise<any> | void;
-    safeStorageAvailable: boolean
+    safeStorageAvailable: boolean;
 
     constructor(tokensStorePath: string) {
         this.clientID = 'A7376A6D-9A79-4B06-A837-7D92DB93965B';
@@ -79,7 +79,7 @@ export class TokenManager {
 
             return this.data;
         });
-    }
+    };
 
     // Returns if token is still valid.
     // checkValidity = () => {
@@ -98,11 +98,11 @@ export class TokenManager {
     // Returns available token data.
     getToken = () => {
         return this.data;
-    }
+    };
 
     hasToken = () => {
         return Boolean(this.data.token);
-    }
+    };
 
     // Store token from api response and write to disk.
     handleStoreToken = (_: IpcMainEvent, message: Token) => {
@@ -113,7 +113,7 @@ export class TokenManager {
 
         log.silly('tokenManager.handleStoreToken');
         this.encrypt(this.data);
-    }
+    };
 
     // Write to disk.
     save = (data: Token | Record<string, never>) => {
@@ -123,7 +123,7 @@ export class TokenManager {
     reset = () => {
         this.data = {};
         this.save(this.data);
-    }
+    };
 
     // Setup api request for token refresh.
     handleRefreshToken = (callback?: (...args: any[]) => void) => {
@@ -213,7 +213,7 @@ export class TokenManager {
         });
 
         return this.requestPromise;
-    }
+    };
 
     // Revoke existing token
     handleRevokeToken = (callback?: (...args: any[]) => void) => {
@@ -278,7 +278,7 @@ export class TokenManager {
         });
 
         return this.revokePromise;
-    }
+    };
 
     // Encrypts a token obj to disk then returs the decrypted version for the class to return
     encrypt = (tokenObj: Token): Token => {
@@ -311,7 +311,7 @@ export class TokenManager {
             this.save(tokenObj);
             return tokenObj;
         }
-    }
+    };
 
     decrypt = (tokenObj: Token | Record<string, never>) => {
         if (!this.safeStorageAvailable) {
@@ -332,7 +332,7 @@ export class TokenManager {
             log.error('Token decryption did not work', error);
             return tokenObj;
         }
-    }
+    };
 }
 
 let tokenManager = new TokenManager(tokensStorePath);

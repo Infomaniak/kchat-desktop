@@ -2,15 +2,16 @@
 // See LICENSE.txt for license information.
 
 import type {ipcRenderer, Rectangle} from 'electron/renderer';
+import type {JitsiMeetExternalAPI} from 'jitsi-meet';
 
+import type {IkCallInfo} from './callsIk';
 import type {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer, ConfigServer} from './config';
 import type {DownloadedItem, DownloadedItems, DownloadsMenuOpenEventPayload} from './downloads';
 import type {URLValidationResult} from './server';
 import type {SaveQueueItem} from './settings';
 import type {Theme} from './theme';
-import type {CallInfo} from './callsIk';
-import type {Language} from '../../i18n/i18n';
 
+import type {Language} from '../../i18n/i18n';
 
 declare global {
     interface Window {
@@ -184,13 +185,13 @@ declare global {
         };
         dialApi: {
             onInfo: (callback: (...args: any[]) => unknown) => void;
-            callDeclined: (callInfo?: CallInfo) => void;
-            callCanceled: (callInfo?: CallInfo) => void;
-            callAccept: (callInfo?: CallInfo) => void;
+            callDeclined: (callInfo?: IkCallInfo) => void;
+            callCanceled: (callInfo?: IkCallInfo) => void;
+            callAccept: (callInfo?: IkCallInfo) => void;
             callDefault: () => void;
         };
         jitsiNodeAPI: {
-            setupRenderer: (ref: any) => void;
+            setupRenderer: (parentNode: Element, callInfo: IkCallInfo) => JitsiMeetExternalAPI;
             onLoadServerUrl: (listener: (serverUrl: string) => void) => void;
             getCallInfo: () => {
                 user: object;
