@@ -61,7 +61,7 @@ class CallRenderer extends EventEmitter {
      * @param {string} state updated state
      * @param {Object} data ancillary data to the event
      */
-    handleStateChange(state: string, _: any) {
+    handleStateChange(state: string) {
         console.log(`handling ${state} state update from main process`);
 
         switch (state) {
@@ -69,9 +69,6 @@ class CallRenderer extends EventEmitter {
             this.openNewWindow();
             break;
 
-        // case STATES.SHOW:
-        //     this._showWindow();
-        //     break;
         default:
             break;
         }

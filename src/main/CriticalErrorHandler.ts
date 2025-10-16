@@ -10,7 +10,6 @@ import {app, dialog} from 'electron';
 
 import {Logger} from 'common/log';
 import {localizeMessage} from 'main/i18nManager';
-import { isSigPipeError } from './utils';
 
 const log = new Logger('CriticalErrorHandler');
 

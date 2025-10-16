@@ -4,8 +4,6 @@
 import classNames from 'classnames';
 import React from 'react';
 
-import Logo from 'renderer/components/Logo';
-
 import 'renderer/css/components/Header.scss';
 
 type HeaderProps = {

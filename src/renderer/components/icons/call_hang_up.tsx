@@ -1,7 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {CSSProperties} from 'react';
+import type {CSSProperties} from 'react';
+import React from 'react';
 
 type Props = {
     className?: string;

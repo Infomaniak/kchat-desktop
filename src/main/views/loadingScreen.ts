@@ -7,7 +7,7 @@ import {DARK_MODE_CHANGE, LOADING_SCREEN_ANIMATION_FINISHED, MAIN_WINDOW_RESIZED
 import {Logger} from 'common/log';
 import {SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
 import performanceMonitor from 'main/performanceMonitor';
-import {getLocalPreload, getWindowBoundaries} from 'main/utils';
+import {getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
 
 import ServersSidebar from './serversSidebar';
@@ -72,6 +72,15 @@ export class LoadingScreen {
         if (this.view && this.state === LoadingScreenState.VISIBLE) {
             this.state = LoadingScreenState.FADING;
             this.view.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, false);
+        }
+    };
+
+    hide = () => {
+        if (this.view && this.state === LoadingScreenState.VISIBLE) {
+            this.state = LoadingScreenState.FADING;
+            this.view.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, false);
+            const mainWindow = MainWindow.get();
+            mainWindow?.removeBrowserView(this.view!);
         }
     };
 

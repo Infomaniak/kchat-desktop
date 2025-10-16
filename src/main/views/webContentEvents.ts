@@ -27,7 +27,6 @@ import ContextMenu from 'main/contextMenu';
 import PluginsPopUpsManager from 'main/views/pluginsPopUps';
 import ViewManager from 'main/views/viewManager';
 import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
-import MainWindow from 'main/windows/mainWindow';
 import mainWindow from 'main/windows/mainWindow';
 
 

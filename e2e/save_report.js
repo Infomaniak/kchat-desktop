@@ -32,7 +32,6 @@ const path = require('path');
 
 const generator = require('mochawesome-report-generator');
 
-const {saveArtifacts} = require('./utils/artifacts');
 const {MOCHAWESOME_REPORT_DIR} = require('./utils/constants');
 const {
     generateShortSummary,
