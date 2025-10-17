@@ -155,7 +155,7 @@ export class ModalManager {
         if (this.modalQueue.length) {
             const currentModal = this.modalQueue[0];
             const hasSidebar = serversSidebar.shouldDisplaySidebar;
-            currentModal.view.setBounds(getAdjustedWindowBoundaries(bounds.width, bounds.height, false, hasSidebar));
+            currentModal.view.setBounds(getAdjustedWindowBoundaries(bounds.width, bounds.height, hasSidebar));
         }
     };
 

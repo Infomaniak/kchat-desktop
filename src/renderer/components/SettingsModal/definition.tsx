@@ -421,7 +421,7 @@ const definition: (intl: IntlShape) => Promise<SettingsDefinition> = async (intl
                     },
                 },
                 {
-                    id: 'Permissions',
+                    id: 'permissions',
                     component: PermissionSettings,
                 },
             ],

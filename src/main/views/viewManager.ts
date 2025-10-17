@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {BrowserWindow, IpcMainEvent, IpcMainInvokeEvent, View} from 'electron';
-import {WebContentsView, ipcMain, shell} from 'electron';
+import {WebContentsView, ipcMain, session, shell} from 'electron';
 import isDev from 'electron-is-dev';
 
 import ServerViewState from 'app/serverViewState';
@@ -63,9 +63,9 @@ import DeveloperMode from 'main/developerMode';
 import performanceMonitor from 'main/performanceMonitor';
 import PermissionsManager from 'main/permissionsManager';
 import TokenManager from 'main/tokenManager';
+import ModalManager from 'main/views/modalManager';
 import callDialingWindow from 'main/windows/callDialingWindow';
 import KmeetCallWindow from 'main/windows/kmeetCallWindow';
-import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
 import type {DeveloperSettings} from 'types/settings';
@@ -518,6 +518,7 @@ export class ViewManager {
 
         if (url && url !== '') {
             const urlString = typeof url === 'string' ? url : url.toString();
+
             // const urlView = new WebContentsView({webPreferences: {preload: getLocalPreload('internalAPI.js')}});
             // urlView.setBackgroundColor('#00000000');
             // const localURL = `kchat-desktop://renderer/urlView.html?url=${encodeURIComponent(urlString)}`;
