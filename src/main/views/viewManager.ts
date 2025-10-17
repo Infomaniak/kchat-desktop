@@ -445,7 +445,7 @@ export class ViewManager {
 
         // Force a permission check for notifications
         if (view.view.type === TAB_MESSAGING) {
-            const notificationPermission = PermissionsManager.getForServer(view.view.server)?.notifications;
+            const notificationPermission = PermissionsManager.getForServer()?.notifications;
             if (!notificationPermission || (!notificationPermission.allowed && notificationPermission.alwaysDeny !== true)) {
                 PermissionsManager.doPermissionRequest(
                     view.webContentsId,

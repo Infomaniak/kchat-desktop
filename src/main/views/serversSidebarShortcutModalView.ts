@@ -13,7 +13,7 @@ import {
     SERVERS_SIDEBAR_WIDTH,
     TAB_BAR_HEIGHT,
 } from 'common/utils/constants';
-import {composeUserAgent, getLocalPreload, getLocalURLString} from 'main/utils';
+import {getLocalPreload} from 'main/utils';
 
 const log = new Logger('ServerSidebarShortcutModalView');
 
@@ -30,7 +30,7 @@ export class ServerSidebarShortcutModalView {
         // this.init();
     }
 
-    init = (mainWindow: MainWindow) => {
+    init = (mainWindow: BrowserWindow) => {
         // const mainWindow = MainWindow.get();
 
         this.mainWindow = mainWindow;

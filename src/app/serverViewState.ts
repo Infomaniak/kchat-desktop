@@ -19,9 +19,7 @@ import {
     UPDATE_SHORTCUT_MENU,
     UPDATE_TAB_ORDER,
     VALIDATE_SERVER_URL,
-    GET_UNIQUE_SERVERS_WITH_PERMISSIONS,
     ADD_SERVER,
-    EDIT_SERVER,
     REMOVE_SERVER,
 } from 'common/communication';
 import Config from 'common/config';
@@ -202,7 +200,7 @@ export class ServerViewState {
             ModalConstants.EDIT_SERVER_MODAL,
             'kchat-desktop://renderer/editServer.html',
             getLocalPreload('internalAPI.js'),
-            {server: server.toUniqueServer(), permissions: PermissionsManager.getForServer(server) ?? {}},
+            {server: server.toUniqueServer(), permissions: PermissionsManager.getForServer() ?? {}},
             mainWindow);
 
         modalPromise.then((data) => {
@@ -433,7 +431,7 @@ export class ServerViewState {
         return ServerManager.getAllServers().
             map((server) => ({
                 server: server.toUniqueServer(),
-                permissions: PermissionsManager.getForServer(server) ?? {},
+                permissions: PermissionsManager.getForServer() ?? {},
             }));
     };
 

@@ -4,7 +4,7 @@
 import type {ipcRenderer, Rectangle} from 'electron/renderer';
 import type {JitsiMeetExternalAPI} from 'jitsi-meet';
 
-import type {CallInfo} from './callsIk';
+import type {IkCallInfo} from './callsIk';
 import type {CombinedConfig, LocalConfiguration, UniqueView, UniqueServer, ConfigServer, Server} from './config';
 import type {DownloadedItem, DownloadedItems, DownloadsMenuOpenEventPayload} from './downloads';
 import type {UniqueServerWithPermissions, Permissions} from './permissions';
