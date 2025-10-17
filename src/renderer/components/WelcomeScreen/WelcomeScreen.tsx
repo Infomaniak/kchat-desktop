@@ -56,12 +56,6 @@ function WelcomeScreen({
                                 id: 'renderer.components.welcomeScreen.slides.welcome.message',
                                 defaultMessage: 'You don’t have a kChat, discover it with kSuite',
                             })}
-                            image={(
-                                <img
-                                    src={chat2}
-                                    draggable={false}
-                                />
-                            )}
                             isMain={true}
                             darkMode={darkMode}
                         />

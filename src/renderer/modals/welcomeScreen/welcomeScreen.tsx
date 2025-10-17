@@ -20,7 +20,7 @@ const onConnect = (data: UniqueServer) => {
 const WelcomeScreenModalWrapper = () => {
     const [data, setData] = useState<{prefillURL?: string}>();
     const [darkMode, setDarkMode] = useState(false);
-    const [getStarted] = useState(false);
+    const [getStarted, setGetStarted] = useState(false);
     const [mobileView, setMobileView] = useState(false);
 
     const handleWindowResize = () => {

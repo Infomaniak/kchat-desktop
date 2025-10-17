@@ -8,6 +8,7 @@ import {Logger} from 'common/log';
 import {SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
 import performanceMonitor from 'main/performanceMonitor';
 import {getLocalPreload, getWindowBoundaries} from 'main/utils';
+import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
 import ServersSidebar from './serversSidebar';
@@ -88,6 +89,8 @@ export class LoadingScreen {
             this.state = LoadingScreenState.FADING;
             this.view.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, false);
             const mainWindow = MainWindow.get();
+
+            // @ts-expect-error WebContentsView instead of BrowserView
             mainWindow?.removeBrowserView(this.view!);
         }
     };
