@@ -1,9 +1,8 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-
 import {CheckCircleIcon, CloseCircleIcon} from '@infomaniak/compass-icons/components';
+import React, {useEffect, useState} from 'react';
 
 import {getIconClassName, isImageFile} from 'renderer/utils';
 

@@ -3,10 +3,12 @@
 
 import 'renderer/css/components/HoveringURL.css';
 
-import React from 'react';
-import ReactDOM from 'react-dom';
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
 
 import * as Sentry from '@sentry/electron/renderer';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
 import UrlDescription from '../../components/urlDescription';
 

@@ -23,7 +23,6 @@ import tokenManager from 'main/tokenManager';
 import {getLocalPreload} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import serversSidebar from 'main/views/serversSidebar';
-import {ServerSidebarShortcutModalView} from 'main/views/serversSidebarShortcutModalView';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
 

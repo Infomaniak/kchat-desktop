@@ -1,18 +1,18 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {FC} from 'react';
-
-import '../../css/components/ServersSidebar.scss';
 import classNames from 'classnames';
+import type {FC} from 'react';
+import React from 'react';
+import type {DropResult} from 'react-beautiful-dnd';
+import {DragDropContext, Droppable} from 'react-beautiful-dnd';
 
-import {DragDropContext, Droppable, DropResult} from 'react-beautiful-dnd';
+import type {ServerTeam} from 'types/config';
+import type {Theme} from 'types/theme';
 
-import {Theme} from 'types/theme';
-import {ServerTeam} from 'types/config';
-
-import {applyCssVars, imageURLForTeam, initialForTeam} from './utils';
 import ServerButton from './ServerButton';
+import {applyCssVars, imageURLForTeam, initialForTeam} from './utils';
+import '../../css/components/ServersSidebar.scss';
 
 type Props = {
     teams: ServerTeam[];

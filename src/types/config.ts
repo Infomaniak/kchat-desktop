@@ -76,7 +76,7 @@ export type ConfigV3 = {
     appLanguage?: string;
     theme?: object;
     enableMetrics?: boolean;
-
+    Permissions?: string;
 }
 
 export type ConfigV2 =

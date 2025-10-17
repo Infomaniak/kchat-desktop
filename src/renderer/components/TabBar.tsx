@@ -7,10 +7,7 @@ import React from 'react';
 import type {DraggingStyle, DropResult, NotDraggingStyle} from 'react-beautiful-dnd';
 import {DragDropContext, Draggable, Droppable} from 'react-beautiful-dnd';
 import type {IntlShape} from 'react-intl';
-import {FormattedMessage, injectIntl} from 'react-intl';
-
-import type {ViewType} from 'common/views/View';
-import {canCloseView, getViewDisplayName} from 'common/views/View';
+import {injectIntl} from 'react-intl';
 
 import type {UniqueView} from 'types/config';
 
@@ -184,7 +181,6 @@ class TabBar extends React.PureComponent<Props, State> {
                             id={this.props.id}
                             {...provided.droppableProps}
                         >
-                            {/*{tabs}*/}
                             {this.props.isMenuOpen ? <span className='TabBar-nonDrag'/> : null}
                             {provided.placeholder}
                         </div>

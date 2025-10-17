@@ -28,5 +28,4 @@ const ImageWithPlaceholder: React.FC<ImageWithPlaceholderProps> = ({
     );
 };
 
-
 export default ImageWithPlaceholder;
