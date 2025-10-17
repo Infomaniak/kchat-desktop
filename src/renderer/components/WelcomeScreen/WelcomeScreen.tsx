@@ -5,7 +5,6 @@ import classNames from 'classnames';
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 
-import chat2 from 'renderer/assets/svg/chat2.svg';
 import Header from 'renderer/components/Header';
 import LoadingBackground from 'renderer/components/LoadingScreen/LoadingBackground';
 
