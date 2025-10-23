@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {CheckCircleIcon, CloseCircleIcon} from '@infomaniak/compass-icons/components';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 
 import {getIconClassName, isImageFile} from 'renderer/utils';
 
@@ -47,15 +47,15 @@ const Thumbnail = ({item}: OwnProps) => {
 
     return (
         <div className='DownloadsDropdown__Thumbnail__Container'>
-            {showImagePreview && item.thumbnailData ?
+            {showImagePreview && item.thumbnailData ? (
                 <div
                     className='DownloadsDropdown__Thumbnail preview'
                     style={{
                         backgroundImage: `url("${item.thumbnailData}")`,
                         backgroundSize: 'cover',
                     }}
-                /> :
-                <div className={`DownloadsDropdown__Thumbnail ${getIconClassName(item)}`}/>}
+                />
+            ) : <div className={`DownloadsDropdown__Thumbnail ${getIconClassName(item)}`}/>}
             {showBadge(item.state)}
         </div>
     );

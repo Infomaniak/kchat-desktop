@@ -15,7 +15,6 @@ import ConnectionErrorView from './ConnectionErrorView';
 import DeveloperModeIndicator from './DeveloperModeIndicator';
 import DownloadsDropdownButton from './DownloadsDropdown/DownloadsDropdownButton';
 import IncompatibleErrorView from './IncompatibleErrorView';
-import TabBar from './TabBar';
 
 import {playSound} from '../notificationSounds';
 
@@ -389,28 +388,6 @@ class MainPage extends React.PureComponent<Props, State> {
 
     render() {
         const {intl} = this.props;
-        let currentTabs: UniqueView[] = [];
-        if (this.state.activeServerId) {
-            currentTabs = this.state.tabs.get(this.state.activeServerId) ?? [];
-        }
-
-        const tabsRow = (
-            <TabBar
-                id='tabBar'
-                isDarkMode={this.props.darkMode}
-                tabs={currentTabs}
-                sessionsExpired={this.state.sessionsExpired}
-                unreadCounts={this.state.unreadCounts}
-                mentionCounts={this.state.mentionCounts}
-                activeServerId={this.state.activeServerId}
-                activeTabId={this.state.activeTabId}
-                onSelect={this.handleSelectTab}
-                onCloseTab={this.handleCloseTab}
-                onDrop={this.handleDragAndDrop}
-                tabsDisabled={this.state.modalOpen}
-                isMenuOpen={this.state.isMenuOpen || this.state.isDownloadsDropdownOpen}
-            />
-        );
 
         const topBarClassName = classNames('topBar', {
             macOS: window.process.platform === 'darwin',

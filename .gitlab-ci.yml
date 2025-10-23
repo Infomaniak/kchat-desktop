@@ -33,7 +33,6 @@ lint:
   extends: .default-linux-deps
   script:
     - npm run lint:js
-  allow_failure: true
 
 build:
   stage: build

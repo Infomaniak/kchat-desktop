@@ -24,7 +24,7 @@ const electronBinaryPath = (() => {
     const exeExtension = (process.platform === 'win32') ? '.exe' : '';
     return path.join(sourceRootDir, 'node_modules/electron/dist/electron' + exeExtension);
 })();
-const userDataDir = path.join(sourceRootDir, 'e2e/testUserData/');
+const userDataDir = path.join(sourceRootDir, 'e2e/testUserData');
 const configFilePath = path.join(userDataDir, 'config.json');
 const downloadsFilePath = path.join(userDataDir, 'downloads.json');
 const downloadsLocation = path.join(userDataDir, 'Downloads');
@@ -217,17 +217,9 @@ module.exports = {
                 RESOURCES_PATH: userDataDir,
             },
             executablePath: electronBinaryPath,
-            args: [`${path.join(sourceRootDir, 'e2e/dist')}`, `--user-data-dir=${userDataDir}`, '--disable-dev-mode', '--no-sandbox', ...args],
+            args: [`${path.join(sourceRootDir, 'e2e/dist')}`, `--user-data-dir=${userDataDir}`, '--disable-dev-shm-usage', '--disable-dev-mode', '--disable-gpu', '--no-sandbox', ...args],
         };
 
-        // if (process.env.MM_DEBUG_SETTINGS) {
-        //     options.chromeDriverLogPath = './chromedriverlog.txt';
-        // }
-        // if (process.platform === 'darwin' || process.platform === 'linux') {
-        //     // on a mac, debugging port might conflict with other apps
-        //     // this changes the default debugging port so chromedriver can run without issues.
-        //     options.chromeDriverArgs.push('remote-debugging-port=9222');
-        //}
         return electron.launch(options).then(async (eapp) => {
             await eapp.evaluate(async ({app}) => {
                 const promise = new Promise((resolve) => {
@@ -251,6 +243,9 @@ module.exports = {
                         return null;
                     }
                     const info = await window.testHelper.getViewInfoForTest();
+                    if (!info) {
+                        return null;
+                    }
                     return {viewName: `${info.serverName}___${info.viewType}`, webContentsId: info.webContentsId};
                 }).then((result) => {
                     if (result) {
@@ -266,24 +261,7 @@ module.exports = {
         await window.waitForSelector('#input_loginId');
         await window.waitForSelector('#input_password-input');
         await window.waitForSelector('#saveSetting');
-
-        let username = process.env.MM_TEST_USERNAME;
-        switch (process.platform) {
-        case 'darwin':
-            username = 'success+sysadmin+macos@simulator.amazonses.com';
-            break;
-        case 'linux':
-            username = 'success+sysadmin+linux@simulator.amazonses.com';
-            break;
-        case 'win32':
-            username = 'success+sysadmin+windows@simulator.amazonses.com';
-            break;
-        default:
-            throw new Error('Unsupported platform');
-        }
-
-        await window.type('#input_loginId', username);
-
+        await window.type('#input_loginId', process.env.MM_TEST_USER_NAME);
         await window.type('#input_password-input', process.env.MM_TEST_PASSWORD);
         await window.click('#saveSetting');
     },

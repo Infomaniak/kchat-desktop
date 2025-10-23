@@ -3,7 +3,7 @@
 
 import path from 'path';
 
-import {app, safeStorage, session} from 'electron';
+import {app, session} from 'electron';
 
 import Config from 'common/config';
 import parseArgs from 'main/ParseArgs';
@@ -69,14 +69,11 @@ jest.mock('electron', () => ({
         defaultSession: {
             webRequest: {
                 onHeadersReceived: jest.fn(),
+                onBeforeSendHeaders: jest.fn(),
             },
             setSpellCheckerDictionaryDownloadURL: jest.fn(),
             setPermissionRequestHandler: jest.fn(),
             on: jest.fn(),
-            webRequest: {
-                onHeadersReceived: jest.fn(),
-                onBeforeSendHeaders: jest.fn(),
-            },
         },
     },
     protocol: {
@@ -121,7 +118,7 @@ jest.mock('main/i18nManager', () => ({
     setLocale: jest.fn(),
 }));
 
-jest.mock('electron-extension-installer', () => {
+jest.mock('electron-devtools-installer', () => {
     return () => ({
         REACT_DEVELOPER_TOOLS: 'react-developer-tools',
     });

@@ -6,7 +6,7 @@ import {pathToFileURL} from 'url';
 
 import {init} from '@sentry/electron/main';
 import {app, ipcMain, nativeTheme, net, protocol, session} from 'electron';
-import installExtension, {REACT_DEVELOPER_TOOLS} from 'electron-extension-installer';
+import installExtension, {REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS} from 'electron-devtools-installer';
 import isDev from 'electron-is-dev';
 
 import {
@@ -43,7 +43,6 @@ import Config from 'common/config';
 import buildConfig from 'common/config/buildConfig';
 import {IKOrigin} from 'common/config/ikConfig';
 import {Logger} from 'common/log';
-import type {MattermostServer} from 'common/servers/MattermostServer';
 import ServerManager from 'common/servers/serverManager';
 import {IKDriveAllowedUrls, IKLoginAllowedUrls, IKWelcomeAllowedUrls, KChatTokenWhitelist} from 'common/utils/constants';
 import {parseURL} from 'common/utils/url';
@@ -333,8 +332,7 @@ function handleInitializeJitsi() {
 }
 
 function handleGetLocalPermissions() {
-    const dummyServ = {} as MattermostServer;
-    return permissionsManager.getForServer(dummyServ);
+    return permissionsManager.getForServer();
 }
 function updateTeamsHandler(_: any, servers: ConfigServer[]) {
     const [defaultServer] = buildConfig.defaultServers!;
@@ -500,12 +498,12 @@ async function initializeAfterAppReady() {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (global.isDev || __IS_NIGHTLY_BUILD__) {
-        installExtension(REACT_DEVELOPER_TOOLS, {
+        installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS], {
             loadExtensionOptions: {
                 allowFileAccess: true,
             },
         }).
-            then((name) => log.info(`Added Extension:  ${name}`)).
+            then(([react, redux]) => log.info(`Added Extension:  ${react.name}, ${redux.name}`)).
             catch((err) => log.error('An error occurred: ', err));
     }
 

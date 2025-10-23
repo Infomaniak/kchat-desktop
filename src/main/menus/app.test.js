@@ -3,7 +3,6 @@
 
 'use strict';
 
-import {safeStorage} from 'electron';
 import {getDoNotDisturb as getDarwinDoNotDisturb} from 'macos-notification-state';
 
 import ServerViewState from 'app/serverViewState';
@@ -14,7 +13,7 @@ import {localizeMessage} from 'main/i18nManager';
 
 import {createTemplate} from './app';
 
-jest.mock('electron-extension-installer', () => {
+jest.mock('electron-devtools-installer', () => {
     return () => ({
         REACT_DEVELOPER_TOOLS: 'react-developer-tools',
     });

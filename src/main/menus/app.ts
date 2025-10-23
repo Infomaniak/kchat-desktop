@@ -277,6 +277,10 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         visible: false,
         accelerator: 'CmdOrCtrl+Shift+=',
     }, {
+        role: 'zoomIn',
+        visible: false,
+        accelerator: 'CmdOrCtrl+Plus',
+    }, {
         role: 'zoomOut',
         label: localizeMessage('main.menus.app.view.zoomOut', 'Zoom Out'),
         accelerator: 'CmdOrCtrl+-',
@@ -341,8 +345,6 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         }],
     });
 
-    const servers = ServerManager.getOrderedServers();
-    const currentServer = ServerManager.hasServers() ? ServerViewState.getCurrentServer() : undefined;
     const windowMenu = {
         id: 'window',
         label: localizeMessage('main.menus.app.window', '&Window'),
@@ -366,7 +368,6 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
     };
     template.push(windowMenu);
 
-    const currentRemoteInfo = currentServer ? ServerManager.getRemoteInfo(currentServer.id) : undefined;
     const submenu = [];
     if (updateManager && config.canUpgrade) {
         if (updateManager.versionDownloaded) {

@@ -106,7 +106,7 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         }
     }
 
-    getForServer = (server: MattermostServer): Permissions | undefined => {
+    getForServer = (): Permissions | undefined => {
         return this.ikGetForServer();
     };
 

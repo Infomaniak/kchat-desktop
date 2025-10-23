@@ -32,6 +32,7 @@ const Component = () => {
             },
         };
 
+        // @ts-expect-error old error
         window.jitsiNodeAPI!.setupRenderer(options);
     });
 

@@ -4,7 +4,6 @@
 import {WebContentsView, app, ipcMain} from 'electron';
 import type {WebContentsViewConstructorOptions, Event, Input} from 'electron/main';
 import {EventEmitter} from 'events';
-import semver from 'semver';
 
 import AppState from 'common/appState';
 import {
@@ -17,7 +16,6 @@ import {
     BROWSER_HISTORY_STATUS_UPDATED,
     CLOSE_SERVERS_DROPDOWN,
     CLOSE_DOWNLOADS_DROPDOWN,
-    LOAD_INCOMPATIBLE_SERVER,
 } from 'common/communication';
 import type {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';

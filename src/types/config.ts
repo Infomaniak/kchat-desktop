@@ -72,10 +72,11 @@ export type ConfigV3 = {
     alwaysMinimize?: boolean;
     alwaysClose?: boolean;
     logLevel?: string;
+    permissions?: string;
     appLanguage?: string;
     theme?: object;
     enableMetrics?: boolean;
-    Permissions?: any;
+    Permissions?: string;
 }
 
 export type ConfigV2 =
