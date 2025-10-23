@@ -85,7 +85,9 @@ check-types:
 
 unit-tests:
   stage: test
-  extends: .node-base
+  extends:
+    - .node-base
+    - .system-deps
   needs: ["install"]
   dependencies:
     - install
