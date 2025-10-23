@@ -19,6 +19,7 @@ jest.mock('fs', () => ({
 jest.mock('electron', () => ({
     app: {
         name: 'Mattermost',
+        getPath: jest.fn(),
     },
     ipcMain: {
         on: jest.fn(),
@@ -54,9 +55,12 @@ jest.mock('main/windows/callsWidgetWindow', () => ({
     isCallsWidget: jest.fn(),
     getViewURL: jest.fn(),
 }));
+
+// Ik change : enhance mainWindow and serverViewState mock
 jest.mock('main/windows/mainWindow', () => ({
     get: jest.fn(),
 }));
+jest.mock('app/serverViewState', () => ({}));
 
 describe('main/PermissionsManager', () => {
     const env = process.env;

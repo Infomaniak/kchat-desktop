@@ -1,6 +1,14 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import type {
+    TAvatarElement,
+    TAvatarSizes,
+    TAvatarSizeToken,
+    TAvatarVariant,
+} from './Avatar.types';
+
 import {cyan, green, indigo, neutral, orange, purple, red, teal} from '../../foundations/colors';
+
 type THeadingSizeToken =
     | 0
     | 25
@@ -17,13 +25,6 @@ type THeadingSizeToken =
     | 900
     | 1000;
 type TStatusBadgeSizeToken = Exclude<TAvatarSizeToken, 'xxxs' | 'xxs' | 'xxl' | 'xxxl'>;
-
-import type {
-    TAvatarElement,
-    TAvatarSizes,
-    TAvatarSizeToken,
-    TAvatarVariant,
-} from './Avatar.types';
 
 // by usin a tuple as type we can guarantee that indexes are aways correct when checking for them
 const AVATAR_SIZES: TAvatarSizes = ['xxxs', 'xxs', 'xs', 'sm', 'md', 'lg', 'xl', 'xxl', 'xxxl'];

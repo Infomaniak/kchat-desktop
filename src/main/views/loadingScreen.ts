@@ -84,6 +84,17 @@ export class LoadingScreen {
         }
     };
 
+    hide = () => {
+        if (this.view && this.state === LoadingScreenState.VISIBLE) {
+            this.state = LoadingScreenState.FADING;
+            this.view.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, false);
+            const mainWindow = MainWindow.get();
+
+            // @ts-expect-error WebContentsView instead of BrowserView
+            mainWindow?.removeBrowserView(this.view!);
+        }
+    };
+
     private create = () => {
         this.view = new WebContentsView({
             webPreferences: {

@@ -5,7 +5,6 @@ import classNames from 'classnames';
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 
-import chat2 from 'renderer/assets/svg/chat2.svg';
 import Header from 'renderer/components/Header';
 import LoadingBackground from 'renderer/components/LoadingScreen/LoadingBackground';
 
@@ -56,12 +55,6 @@ function WelcomeScreen({
                                 id: 'renderer.components.welcomeScreen.slides.welcome.message',
                                 defaultMessage: 'You don’t have a kChat, discover it with kSuite',
                             })}
-                            image={(
-                                <img
-                                    src={chat2}
-                                    draggable={false}
-                                />
-                            )}
                             isMain={true}
                             darkMode={darkMode}
                         />

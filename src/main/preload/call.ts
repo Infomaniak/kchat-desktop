@@ -51,6 +51,7 @@ interface Config extends _Config {
 type CallInfo = {
     channelID: string;
     locale: string;
+    name: string;
     user: {
         first_name: string;
     };
@@ -127,26 +128,33 @@ const onErrorOccurred = ({error}: Parameters<ExternalAPIEventCallbacks['errorOcc
     }
 };
 
+// ik: legacy lint error
+/* eslint-disable */
 window.jitsiNodeAPI = {
+
+    // @ts-expect-error legacy type error
     setupRenderer,
+
+    // @ts-expect-error legacy type error
     getCallInfo: () => ipcRenderer.invoke('get-call-info'),
     onLoadServerUrl: (listener) => ipcRenderer.on('load-server-url', (_, url) => listener(url)),
     ipc: {
-        on: (channel, listener) => {
+
+        on: (channel: any, listener: any) => {
             if (!whitelistedIpcChannels.includes(channel)) {
                 return;
             }
 
             return ipcRenderer.on(channel, listener);
         },
-        send: (channel) => {
+        send: (channel: any) => {
             if (!whitelistedIpcChannels.includes(channel)) {
                 return;
             }
 
             return ipcRenderer.send(channel);
         },
-        removeListener: (channel, listener) => {
+        removeListener: (channel: any, listener: any) => {
             if (!whitelistedIpcChannels.includes(channel)) {
                 return;
             }
@@ -155,3 +163,5 @@ window.jitsiNodeAPI = {
         },
     },
 };
+/* eslint-disable */
+

@@ -3,7 +3,6 @@
 
 'use strict';
 
-import {safeStorage} from 'electron';
 import {getDoNotDisturb as getDarwinDoNotDisturb} from 'macos-notification-state';
 
 import ServerViewState from 'app/serverViewState';

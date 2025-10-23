@@ -3,10 +3,9 @@
 
 import 'renderer/css/components/HoveringURL.css';
 
+import * as Sentry from '@sentry/electron/renderer';
 import React from 'react';
 import ReactDOM from 'react-dom';
-
-import * as Sentry from '@sentry/electron/renderer';
 
 import UrlDescription from '../../components/urlDescription';
 

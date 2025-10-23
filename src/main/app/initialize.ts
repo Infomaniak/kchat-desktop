@@ -43,7 +43,6 @@ import Config from 'common/config';
 import buildConfig from 'common/config/buildConfig';
 import {IKOrigin} from 'common/config/ikConfig';
 import {Logger} from 'common/log';
-import type {MattermostServer} from 'common/servers/MattermostServer';
 import ServerManager from 'common/servers/serverManager';
 import {IKDriveAllowedUrls, IKLoginAllowedUrls, IKWelcomeAllowedUrls, KChatTokenWhitelist} from 'common/utils/constants';
 import {parseURL} from 'common/utils/url';
@@ -333,8 +332,7 @@ function handleInitializeJitsi() {
 }
 
 function handleGetLocalPermissions() {
-    const dummyServ = {} as MattermostServer;
-    return permissionsManager.getForServer(dummyServ);
+    return permissionsManager.getForServer();
 }
 function updateTeamsHandler(_: any, servers: ConfigServer[]) {
     const [defaultServer] = buildConfig.defaultServers!;

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import classNames from 'classnames';
 import type {FC} from 'react';
-import React, {useState} from 'react';
+import React from 'react';
 import {Draggable} from 'react-beautiful-dnd';
 
 import type {Theme} from 'types/theme';

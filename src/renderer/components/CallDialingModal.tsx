@@ -9,7 +9,7 @@ import {FormattedMessage, injectIntl} from 'react-intl';
 
 import {playSoundLoop} from 'renderer/notificationSounds';
 
-import type {CallInfo, UserProfile} from 'types/callsIk';
+import type {IkCallInfo, UserProfile} from 'types/callsIk';
 
 import Avatars from './Avatars/Avatars';
 import {CallAccept, CallHangUp} from './icons';
@@ -19,7 +19,7 @@ type Props = Record<string, never> & {
 }
 
 type State = {
-    callInfo?: CallInfo;
+    callInfo?: IkCallInfo;
     trad: string;
 }
 

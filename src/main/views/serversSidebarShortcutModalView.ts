@@ -1,8 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck File ignore check on this file
+import type {BrowserWindow} from 'electron';
 import {BrowserView, ipcMain} from 'electron';
 
 import {TEAM_MOUSE_IN, TEAM_MOUSE_OUT, UPDATE_SIDEBAR_MODAL} from 'common/communication';
@@ -15,7 +14,6 @@ import {
     TAB_BAR_HEIGHT,
 } from 'common/utils/constants';
 import {getLocalPreload} from 'main/utils';
-import type {MainWindow} from 'main/windows/mainWindow';
 
 const log = new Logger('ServerSidebarShortcutModalView');
 
@@ -23,6 +21,7 @@ export class ServerSidebarShortcutModalView {
     private view?: BrowserView;
     private currentTeam?: { index: number; name: string };
     private timeOutId?: NodeJS.Timeout;
+    private mainWindow!: BrowserWindow;
 
     constructor() {
         ipcMain.on(TEAM_MOUSE_IN, this.handleMouseIn);
@@ -31,7 +30,7 @@ export class ServerSidebarShortcutModalView {
         // this.init();
     }
 
-    init = (mainWindow: MainWindow) => {
+    init = (mainWindow: BrowserWindow) => {
         // const mainWindow = MainWindow.get();
 
         this.mainWindow = mainWindow;

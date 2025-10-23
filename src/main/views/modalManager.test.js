@@ -36,6 +36,15 @@ jest.mock('process', () => ({
     env: {},
 }));
 
+// Ik change : add serversSidebar mock and mainWindow getBounds mock
+jest.mock('main/views/serversSidebar', () => ({}));
+jest.mock('main/windows/mainWindow', () => ({
+    on: jest.fn(),
+    get: jest.fn(),
+    getBounds: jest.fn(),
+    sendToRenderer: jest.fn(),
+}));
+
 describe('main/views/modalManager', () => {
     describe('addModal', () => {
         const modalManager = new ModalManager();
