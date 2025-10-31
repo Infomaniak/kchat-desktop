@@ -9,10 +9,9 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  background-size: cover;
-  background-image: url('renderer/assets/svg/background-light.svg');
+  background-color: white;
 }
 
 .MainPage__body.darkMode {
-  background-image: url('renderer/assets/svg/background-dark.svg');
+  background-color: dark;
 }
