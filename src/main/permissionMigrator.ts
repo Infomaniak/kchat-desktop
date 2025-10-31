@@ -19,56 +19,42 @@ function permissionsMatch(
 
 function allServersHaveSamePermission(
     perms: Array<{ allowed: boolean; alwaysDeny?: boolean } | undefined>,
-): perms is Array<{ allowed: boolean; alwaysDeny?: boolean }> {
-    if (perms.some((p) => p === undefined)) {
+): boolean {
+    const definedPerms = perms.filter((p) => p !== undefined);
+
+    if (definedPerms.length === 0) {
         return false;
     }
-    const first = perms[0]!;
-    return perms.every((p) => permissionsMatch(p!, first));
-}
 
-function removeConflictingPermission(type: PermissionType, commons: StrictPermissions) {
-    if (type in commons) {
-        delete commons[type];
-    }
+    const first = definedPerms[0]!;
+    return definedPerms.every((p) => permissionsMatch(p!, first));
 }
 
 export function extractCommonsPermissions(initialPermissions: PermissionsMap): PermissionsMap | null {
-    const existingCommons: StrictPermissions = 'commons' in initialPermissions ? {...(initialPermissions.commons ?? {})} : {};
-
-    const commons: StrictPermissions = {...existingCommons};
-
+    const hasCommons = 'commons' in initialPermissions;
     const serverEntries = Object.entries(initialPermissions).filter(([key]) => key !== 'commons');
 
-    // nothing to migrate
     if (serverEntries.length === 0) {
         return null;
     }
 
+    if (hasCommons) {
+        return {
+            commons: {...(initialPermissions.commons ?? {})},
+        };
+    }
+
+    const commons: StrictPermissions = {};
+
     for (const type of supportedPermissionTypes) {
         const serverPermsForType = serverEntries.map(([, perms]) => perms[type]);
 
-        if (!allServersHaveSamePermission(serverPermsForType)) {
-            removeConflictingPermission(type, commons);
-            continue;
-        }
-
-        const firstPerm = serverPermsForType[0]!;
-        const commonsPerm = commons[type];
-
-        if (commonsPerm) {
-            if (!permissionsMatch(commonsPerm, firstPerm)) {
-                removeConflictingPermission(type, commons);
+        if (allServersHaveSamePermission(serverPermsForType)) {
+            const firstPerm = serverPermsForType.find((p) => p !== undefined);
+            if (firstPerm) {
+                commons[type] = {...firstPerm};
             }
-            continue;
         }
-
-        commons[type] = {...firstPerm};
-    }
-
-    // if no commons was created then exit
-    if (Object.keys(commons).length === 0) {
-        return null;
     }
 
     return {commons};

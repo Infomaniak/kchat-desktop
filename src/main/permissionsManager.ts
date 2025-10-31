@@ -94,9 +94,14 @@ export class PermissionsManager extends JsonFileManager<PermissionsByOrigin> {
         log.info('Starting permission migration');
         const newPermissions = extractCommonsPermissions(this.json);
 
+        if (newPermissions === null) {
+            log.info('No migration needed');
+            return;
+        }
+
         log.debug('Migrated permissions:', newPermissions);
 
-        this.json = newPermissions ?? {};
+        this.json = newPermissions;
 
         try {
             await this.writeToFile();
