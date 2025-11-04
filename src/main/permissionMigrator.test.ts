@@ -33,7 +33,7 @@ describe('extractCommonsPermissions', () => {
         });
     });
 
-    it('All server permissions are same, commons exists but differs → remove from commons and servers', () => {
+    it('All server permissions are same, commons exists but differs → keep commons', () => {
         const input = {
             commons: {notifications: {allowed: false}},
             [server1]: {notifications: {allowed: true}},
@@ -42,7 +42,9 @@ describe('extractCommonsPermissions', () => {
 
         const result = extractCommonsPermissions(input);
 
-        expect(result).toEqual(null);
+        expect(result).toEqual({
+            commons: {notifications: {allowed: false}},
+        });
     });
 
     it('Server permissions differ, no commons → remove from servers (drop entirely)', () => {
@@ -53,7 +55,7 @@ describe('extractCommonsPermissions', () => {
 
         const result = extractCommonsPermissions(input);
 
-        expect(result).toEqual(null);
+        expect(result).toEqual({commons: {}});
     });
 
     it('Server permissions differ, commons exists → remove from commons and servers (conflict)', () => {
@@ -65,7 +67,9 @@ describe('extractCommonsPermissions', () => {
 
         const result = extractCommonsPermissions(input);
 
-        expect(result).toEqual(null);
+        expect(result).toEqual({
+            commons: {notifications: {allowed: true}},
+        });
     });
 
     it('Handles alwaysDeny properly: one has alwaysDeny, others do not → treat as conflict, drop all', () => {
@@ -76,7 +80,7 @@ describe('extractCommonsPermissions', () => {
 
         const result = extractCommonsPermissions(input);
 
-        expect(result).toEqual(null);
+        expect(result).toEqual({commons: {}});
     });
 
     it('Returns null when there are no server entries', () => {
@@ -91,7 +95,7 @@ describe('extractCommonsPermissions', () => {
         };
 
         const result = extractCommonsPermissions(input);
-        expect(result).toEqual(null);
+        expect(result).toEqual({commons: {}});
     });
 
     it('Correctly migrates multiple permission types with mixed cases', () => {
