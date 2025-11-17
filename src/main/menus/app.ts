@@ -3,6 +3,8 @@
 // See LICENSE.txt for license information.
 'use strict';
 
+import fs from 'fs';
+
 import type {MenuItemConstructorOptions, MenuItem, WebContents} from 'electron';
 import {app, Menu, session, shell, clipboard} from 'electron';
 
@@ -13,7 +15,7 @@ import Diagnostics from 'main/diagnostics';
 import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
 import TokenManager from 'main/tokenManager';
-import {getLogsPath, getLocalPreload, getLocalURLString} from 'main/utils';
+import {getLogsPath, getLocalPreload, getLocalURLString, clearAllApplicationCache} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import serversSidebar from 'main/views/serversSidebar';
 import ViewManager from 'main/views/viewManager';
@@ -202,7 +204,9 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         click() {
             session.defaultSession.clearCache();
             session.defaultSession.clearStorageData();
+            clearAllApplicationCache();
             TokenManager.reset();
+
             ViewManager.reload();
         },
     }, {
