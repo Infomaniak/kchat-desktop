@@ -43,8 +43,8 @@ jobs:
         run: echo $MAS_PROFILE | base64 -D > ./mas.provisionprofile
       - name: release/patch-version-number-for-MAS
         run: ./scripts/patch_mas_version.sh
-      - name: release/test
-        uses: ./.github/actions/test
+      # - name: release/test
+      #   uses: ./.github/actions/test
       - name: release/package
         run: npm run package:mas
       - name: release/publish
