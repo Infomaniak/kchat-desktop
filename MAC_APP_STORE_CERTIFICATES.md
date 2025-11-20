@@ -165,40 +165,6 @@ Apple certificates expire after **1 year**.
 
 ⚠️ **Don't delete old certificates before creating new ones**
 
----
-
-## Troubleshooting
-
-### "No valid signing identity found"
-
-- Verify that private keys 🔑 are present in Keychain
-- Recreate CSR from the same Mac
-
-### "Provisioning profile doesn't include signing certificate"
-
-- The provisioning profile uses an old certificate
-- Recreate the provisioning profile with new certificates
-
-### "Unable to find p12 certificate"
-
-- The CSC_LINK base64 is corrupted or incomplete
-- Check that there are no spaces or line breaks
-
-### GitHub Action fails with "authentication failed"
-
-- Verify App Store Connect API Keys
-- Ensure the key has "App Manager" role minimum
-
----
-
-## Contacts
-
-- **Apple Developer Account Holder**: [email]
-- **App Store Connect Admin**: [email]
-- **GitHub Admin**: [email]
-
----
-
 ## Useful Links
 
 - [Apple Developer Portal](https://developer.apple.com/account)
