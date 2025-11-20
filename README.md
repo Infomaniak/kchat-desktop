@@ -55,3 +55,7 @@ Installation finished, setup env.
 5 - Now, you can use the terminal from VSCode if needed.
 
 6 - Setup SSH key, pull repo, and run app.
+
+## Certificates
+
+[documentation for mac App Store](MAC_APP_STORE_CERTIFICATES.md)
