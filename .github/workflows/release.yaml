@@ -68,141 +68,141 @@ jobs:
     #               path: ./artifacts
     #               retention-days: 1
 
-    build-linux:
-        runs-on: ubuntu-latest
-        steps:
-            - name: release/checkout-repo
-              uses: actions/checkout@v3
-            - name: release/setup-node
-              uses: actions/setup-node@v3
-              with:
-                  node-version-file: "package.json"
-                  cache: "npm"
-                  cache-dependency-path: package-lock.json
-            - name: release/install-dependencies
-              env:
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-              run: |
-                  wget -qO - https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_22.04/Release.key | sudo apt-key add -
-                  wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 && chmod a+x /usr/local/bin/yq
-                  sudo apt-get update || true && sudo apt-get install -y ca-certificates libxtst-dev libpng++-dev gcc-aarch64-linux-gnu g++-aarch64-linux-gnu jq icnsutils graphicsmagick tzdata
-                  npm ci
-            - name: release/update-version
-              uses: ./.github/actions/version
-            # - name: release/test
-            #   uses: ./.github/actions/test
-            - name: release/build
-              env:
-                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-                  SENTRY_RELEASE: ${{ github.ref_name }}
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-              run: |
-                  mkdir -p ./build/linux
-                  npm run package:linux
-                  bash -x ./scripts/cp_artifacts.sh release ./build/linux
-            - name: release/upload-build
-              uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-              with:
-                name: build-${{ runner.os }}
-                path: ./build
-                compression-level: 0
-                retention-days: 14
+    # build-linux:
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - name: release/checkout-repo
+    #           uses: actions/checkout@v3
+    #         - name: release/setup-node
+    #           uses: actions/setup-node@v3
+    #           with:
+    #               node-version-file: "package.json"
+    #               cache: "npm"
+    #               cache-dependency-path: package-lock.json
+    #         - name: release/install-dependencies
+    #           env:
+    #               NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    #           run: |
+    #               wget -qO - https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_22.04/Release.key | sudo apt-key add -
+    #               wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 && chmod a+x /usr/local/bin/yq
+    #               sudo apt-get update || true && sudo apt-get install -y ca-certificates libxtst-dev libpng++-dev gcc-aarch64-linux-gnu g++-aarch64-linux-gnu jq icnsutils graphicsmagick tzdata
+    #               npm ci
+    #         - name: release/update-version
+    #           uses: ./.github/actions/version
+    #         # - name: release/test
+    #         #   uses: ./.github/actions/test
+    #         - name: release/build
+    #           env:
+    #               SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    #               SENTRY_RELEASE: ${{ github.ref_name }}
+    #               AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #               AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #           run: |
+    #               mkdir -p ./build/linux
+    #               npm run package:linux
+    #               bash -x ./scripts/cp_artifacts.sh release ./build/linux
+    #         - name: release/upload-build
+    #           uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+    #           with:
+    #             name: build-${{ runner.os }}
+    #             path: ./build
+    #             compression-level: 0
+    #             retention-days: 14
 
-    build-msi-installer:
-        runs-on: windows-2022
-        steps:
-            - name: release/checkout-repo
-              uses: actions/checkout@v3
-            - name: release/setup-node
-              uses: actions/setup-node@v3
-              with:
-                  node-version: "18.15.0"
-            - name: release/optimize
-              shell: powershell
-              run: ./scripts/Makefile.ps1 optimize
-            - name: release/install-deps
-              env:
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-              shell: powershell
-              run: |
-                  ./scripts/Makefile.ps1 install-deps
-                  choco install yq --version 4.15.1 -y
-                  npm i -g node-gyp
-                  node-gyp install
-                  node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers"
-                  node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch arm64
-                  node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch ia32
-                  npm ci --openssl_fips=''
-            - name: release/update-version
-              uses: ./.github/actions/version
-            # - name: release/test
-            #   uses: ./.github/actions/test
-            - name: release/build
-              shell: powershell
-              env:
-                  MM_WIN_INSTALLERS: 1
-                  # PFX_KEY: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX_KEY }}
-                  # CSC_KEY_PASSWORD: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_KEY_PASSWORD }}
-                  # PFX: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX }}
-                  # CSC_LINK: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_LINK }}
-                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-                  SENTRY_RELEASE: ${{ github.ref_name }}
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  SM_API_KEY: ${{ secrets.SM_API_KEY }}
-                  SM_CLIENT_CERT_FILE_B64: ${{ secrets.SM_CLIENT_CERT_FILE_B64 }}
-                  SM_CLIENT_CERT_PASSWORD: ${{ secrets.SM_CLIENT_CERT_PASSWORD }}
-                  SM_HOST: ${{ secrets.SM_HOST }}
-                  SM_CODE_SIGNING_CERT_SHA1_HASH: ${{ secrets.SM_CODE_SIGNING_CERT_SHA1_HASH }}
-                  SM_KEYPAIR_ALIAS: ${{ secrets.SM_KEYPAIR_ALIAS }}
-                  SM_TOOLS_URI: ${{ secrets.SM_TOOLS_URI }}
-                  SM_CLIENT_CERT_FILE: ${{ secrets.SM_CLIENT_CERT_FILE }}
-              run: |
-                  ./scripts/setup-keylocker.ps1
-                  ./scripts/Makefile.ps1 build
-            - name: release/package
-              run: |
-                mkdir -p ./build/win-release
-                bash -x ./scripts/cp_artifacts.sh release ./build/win-release
-            - name: release/upload-build
-              uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
-              with:
-                name: build-${{ runner.os }}
-                path: ./build
-                compression-level: 0
-                retention-days: 14
+    # build-msi-installer:
+    #     runs-on: windows-2022
+    #     steps:
+    #         - name: release/checkout-repo
+    #           uses: actions/checkout@v3
+    #         - name: release/setup-node
+    #           uses: actions/setup-node@v3
+    #           with:
+    #               node-version: "18.15.0"
+    #         - name: release/optimize
+    #           shell: powershell
+    #           run: ./scripts/Makefile.ps1 optimize
+    #         - name: release/install-deps
+    #           env:
+    #               NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    #           shell: powershell
+    #           run: |
+    #               ./scripts/Makefile.ps1 install-deps
+    #               choco install yq --version 4.15.1 -y
+    #               npm i -g node-gyp
+    #               node-gyp install
+    #               node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers"
+    #               node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch arm64
+    #               node-gyp install --devdir="C:\Users\runneradmin\.electron-gyp" --target=$(jq -r .devDependencies.electron package.json) --dist-url="https://electronjs.org/headers" --arch ia32
+    #               npm ci --openssl_fips=''
+    #         - name: release/update-version
+    #           uses: ./.github/actions/version
+    #         # - name: release/test
+    #         #   uses: ./.github/actions/test
+    #         - name: release/build
+    #           shell: powershell
+    #           env:
+    #               MM_WIN_INSTALLERS: 1
+    #               # PFX_KEY: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX_KEY }}
+    #               # CSC_KEY_PASSWORD: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_KEY_PASSWORD }}
+    #               # PFX: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_PFX }}
+    #               # CSC_LINK: ${{ secrets.MM_DESKTOP_MSI_INSTALLER_CSC_LINK }}
+    #               SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+    #               SENTRY_RELEASE: ${{ github.ref_name }}
+    #               AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #               AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #               SM_API_KEY: ${{ secrets.SM_API_KEY }}
+    #               SM_CLIENT_CERT_FILE_B64: ${{ secrets.SM_CLIENT_CERT_FILE_B64 }}
+    #               SM_CLIENT_CERT_PASSWORD: ${{ secrets.SM_CLIENT_CERT_PASSWORD }}
+    #               SM_HOST: ${{ secrets.SM_HOST }}
+    #               SM_CODE_SIGNING_CERT_SHA1_HASH: ${{ secrets.SM_CODE_SIGNING_CERT_SHA1_HASH }}
+    #               SM_KEYPAIR_ALIAS: ${{ secrets.SM_KEYPAIR_ALIAS }}
+    #               SM_TOOLS_URI: ${{ secrets.SM_TOOLS_URI }}
+    #               SM_CLIENT_CERT_FILE: ${{ secrets.SM_CLIENT_CERT_FILE }}
+    #           run: |
+    #               ./scripts/setup-keylocker.ps1
+    #               ./scripts/Makefile.ps1 build
+    #         - name: release/package
+    #           run: |
+    #             mkdir -p ./build/win-release
+    #             bash -x ./scripts/cp_artifacts.sh release ./build/win-release
+    #         - name: release/upload-build
+    #           uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+    #           with:
+    #             name: build-${{ runner.os }}
+    #             path: ./build
+    #             compression-level: 0
+    #             retention-days: 14
 
-    github-release:
-      runs-on: ubuntu-22.04
-      needs:
-        - build-msi-installer
-        - build-linux
-      steps:
-        - name: release/checkout-repo
-          uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    # github-release:
+    #   runs-on: ubuntu-22.04
+    #   needs:
+    #     - build-msi-installer
+    #     - build-linux
+    #   steps:
+    #     - name: release/checkout-repo
+    #       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-        - name: release/download-builds
-          uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
-          with:
-            path: build
-            pattern: build-*
-            merge-multiple: true
+    #     - name: release/download-builds
+    #       uses: actions/download-artifact@c850b930e6ba138125429b7e5c93fc707a7f8427 # v4.1.4
+    #       with:
+    #         path: build
+    #         pattern: build-*
+    #         merge-multiple: true
 
-        - name: release/setup-files-for-github-release
-          # find ./build/{macos-release,win-release,linux} -type f -exec cp --backup=numbered -t ./ghr-dist {} +
-          run: |
-            mkdir -p ./ghr-dist
-            find ./build/{win-release,linux} -type f -exec cp --backup=numbered -t ./ghr-dist {} +
+    #     - name: release/setup-files-for-github-release
+    #       # find ./build/{macos-release,win-release,linux} -type f -exec cp --backup=numbered -t ./ghr-dist {} +
+    #       run: |
+    #         mkdir -p ./ghr-dist
+    #         find ./build/{win-release,linux} -type f -exec cp --backup=numbered -t ./ghr-dist {} +
 
-        - name: release/publish-release
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          run: |
-            VERSION=$(jq -r .version package.json)
-            RELEASE_TITLE="v${VERSION} ($(date -u "+%Y-%m-%d"))"
-            [[ $VERSION =~ "-beta" ]] || [[ $VERSION =~ "-alpha" ]] && PRERELEASE="--prerelease"
-            gh release create --draft ${PRERELEASE} --verify-tag --target "${GITHUB_SHA}" --title "${RELEASE_TITLE}" "${GITHUB_REF_NAME}" ./ghr-dist/*
+    #     - name: release/publish-release
+    #       env:
+    #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #       run: |
+    #         VERSION=$(jq -r .version package.json)
+    #         RELEASE_TITLE="v${VERSION} ($(date -u "+%Y-%m-%d"))"
+    #         [[ $VERSION =~ "-beta" ]] || [[ $VERSION =~ "-alpha" ]] && PRERELEASE="--prerelease"
+    #         gh release create --draft ${PRERELEASE} --verify-tag --target "${GITHUB_SHA}" --title "${RELEASE_TITLE}" "${GITHUB_REF_NAME}" ./ghr-dist/*
 
     end-notification:
         runs-on: ubuntu-latest
