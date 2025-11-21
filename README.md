@@ -58,4 +58,4 @@ Installation finished, setup env.
 
 ## Certificates
 
-[documentation for mac App Store](MAC_APP_STORE_CERTIFICATES.md)
+For MacOS certificates, see the internal gitlab wiki
