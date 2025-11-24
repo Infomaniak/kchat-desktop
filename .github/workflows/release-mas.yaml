@@ -40,6 +40,7 @@ jobs:
           brew install yq
           sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
           npm ci
+          gem install fastlane -v 2.229.0
       - name: release/copy-provisioning-profile
         run: echo $MAS_PROFILE | base64 -D > ./mas.provisionprofile
       - name: release/patch-version-number-for-MAS
