@@ -40,7 +40,7 @@ jobs:
           brew install yq
           sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
           npm ci
-          bundle install
+          gem install fastlane
       - name: release/copy-provisioning-profile
         run: echo $MAS_PROFILE | base64 -D > ./mas.provisionprofile
       - name: release/patch-version-number-for-MAS
@@ -50,4 +50,4 @@ jobs:
       - name: release/package
         run: npm run package:mas
       - name: release/publish
-        run: bundle exec fastlane publish_test path:"$(find . -name \*.pkg -print -quit)"
+        run: fastlane publish_test path:"$(find . -name \*.pkg -print -quit)"
