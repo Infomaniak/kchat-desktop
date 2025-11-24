@@ -23,7 +23,7 @@ lane :publish_test do |options|
         key_id: ENV['MACOS_API_KEY_ID'],
         issuer_id: ENV['MACOS_API_ISSUER_ID'],
         key_filepath: "./#{api_key_path}",
-        in_house: ENV['MACOS_IN_HOUSE'] == 'true', # optional but may be required if using match/sigh
+        in_house: ENV['MACOS_IN_HOUSE'] == 'true',
       )
 
       File.delete("../#{api_key_path}")
