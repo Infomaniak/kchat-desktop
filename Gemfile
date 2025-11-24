@@ -4,6 +4,9 @@
 
 source "https://rubygems.org"
 
+# Pin openssl to fix "invalid curve name" error with OpenSSL 3.6.0+
+# See: https://github.com/fastlane/fastlane/pull/29763
+gem 'openssl', '>= 3.1.2', '!= 3.2.0', '!= 3.2.1', '!= 3.3.0'
 gem 'fastlane', '~> 2.229'
 
 plugins_path = File.join(File.dirname(__FILE__), 'fastlane', 'Pluginfile')
