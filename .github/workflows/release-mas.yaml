@@ -14,7 +14,20 @@ env:
   TERM: xterm
 
 jobs:
+  begin-notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: release/notify-channel
+        run: |
+          jq --null-input \
+          --arg icon_url "https://infomaniak.kchat.infomaniak.com/static/emoji/kchat.png" \
+          --arg username "DesktopReleaseBot" \
+          --arg text "[$GITHUB_REF_NAME] TestFlight release started from GitHub, it should take about 15 minutes to complete." \
+          '{"username":$username,"icon_url": $icon_url, "text": $text }' > /tmp/webhook-data.json
+          curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOTIFICATION FAILED! check logs as this will succeed intentionally"
+
   mac-app-store-preflight:
+    needs: begin-notification
     runs-on: macos-15
     env:
       MACOS_NOTIFICATION_STATE_NO_SDK_CHECK: true
@@ -50,3 +63,16 @@ jobs:
         run: npm run package:mas
       - name: release/publish
         run: fastlane publish_test path:"$(find . -name \*.pkg -print -quit)"
+
+  end-notification:
+    needs: mac-app-store-preflight
+    runs-on: ubuntu-latest
+    steps:
+      - name: release/notify-channel
+        run: |
+          jq --null-input \
+          --arg icon_url "https://infomaniak.kchat.infomaniak.com/static/emoji/kchat.png" \
+          --arg username "DesktopReleaseBot" \
+          --arg text "[$GITHUB_REF_NAME] TestFlight release completed! Build is now available on App Store Connect." \
+          '{"username":$username,"icon_url": $icon_url, "text": $text }' > /tmp/webhook-data.json
+          curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOTIFICATION FAILED! check logs as this will succeed intentionally"
