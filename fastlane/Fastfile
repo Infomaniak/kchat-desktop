@@ -19,15 +19,19 @@ lane :publish_test do |options|
         end
       end
     
-      api_key = app_store_connect_api_key
-    
+      api_key = app_store_connect_api_key(
+        key_id: ENV['MACOS_API_KEY_ID'],
+        issuer_id: ENV['MACOS_API_ISSUER_ID'],
+        key_filepath: api_key_path
+      )
+
       File.delete("../#{api_key_path}")
     end
 
     pilot(
       pkg: options[:path],
       skip_waiting_for_build_processing: ENV['CI'] === 'true',
-      api_key: app_store_connect_api_key,
+      api_key: api_key,
       verbose: true
     )
 end
