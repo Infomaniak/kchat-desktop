@@ -30,7 +30,6 @@ cache:
 .system-deps:
   before_script:
     - apt-get update && apt-get install -y libxtst6 libxtst-dev libx11-dev libxkbfile-dev
-    - npm rebuild
 
 install:
   stage: setup
