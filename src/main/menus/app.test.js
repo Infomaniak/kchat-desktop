@@ -222,46 +222,6 @@ describe('main/menus/app', () => {
     //     expect(signInOption).not.toBe(undefined);
     // });
 
-    it('should not show `Sign in to Another Server` if `enableServerManagement` is false', () => {
-        localizeMessage.mockImplementation((id) => {
-            switch (id) {
-            case 'main.menus.app.file':
-                return '&File';
-            case 'main.menus.app.file.signInToAnotherServer':
-                return 'Sign in to Another Server';
-            default:
-                return '';
-            }
-        });
-        ServerManager.hasServers.mockReturnValue(true);
-        const modifiedConfig = {
-            ...config,
-            enableServerManagement: false,
-        };
-        const menu = createTemplate(modifiedConfig);
-        const fileMenu = menu.find((item) => item.label === '&AppName' || item.label === '&File');
-        const signInOption = fileMenu.submenu.find((item) => item.label === 'Sign in to Another Server');
-        expect(signInOption).toBe(undefined);
-    });
-
-    it('should not show `Sign in to Another Server` if no servers are configured', () => {
-        localizeMessage.mockImplementation((id) => {
-            switch (id) {
-            case 'main.menus.app.file':
-                return '&File';
-            case 'main.menus.app.file.signInToAnotherServer':
-                return 'Sign in to Another Server';
-            default:
-                return '';
-            }
-        });
-        ServerManager.hasServers.mockReturnValue(false);
-        const menu = createTemplate(config);
-        const fileMenu = menu.find((item) => item.label === '&AppName' || item.label === '&File');
-        const signInOption = fileMenu.submenu.find((item) => item.label === 'Sign in to Another Server');
-        expect(signInOption).toBe(undefined);
-    });
-
     it.skip('should show the first 9 servers (using order) in the Window menu', () => {
         localizeMessage.mockImplementation((id) => {
             if (id === 'main.menus.app.window') {

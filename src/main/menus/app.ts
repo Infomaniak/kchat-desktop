@@ -67,15 +67,6 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         },
     });
 
-    if (config.enableServerManagement === true && ServerManager.hasServers()) {
-        platformAppMenu.push({
-            label: localizeMessage('main.menus.app.file.signInToAnotherServer', 'Sign in to Another Server'),
-            click() {
-                ipcMain.emit(SHOW_NEW_SERVER_MODAL);
-            },
-        });
-    }
-
     if (isMac) {
         platformAppMenu = platformAppMenu.concat([
             separatorItem, {
