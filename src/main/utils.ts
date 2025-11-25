@@ -10,6 +10,7 @@ const exec = promisify(execOriginal);
 
 import type {BrowserWindow} from 'electron';
 import {app} from 'electron';
+import log from 'electron-log';
 
 import {SERVERS_SIDEBAR_WIDTH, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import Utils from 'common/utils/util';
@@ -158,6 +159,43 @@ export function openScreensharePermissionsSettingsMacOS() {
     }
     return exec('open "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"',
         {timeout: 1000});
+}
+
+/**
+ * Clears all application cache and persistent data
+ * This includes userData directory contents (preserving config), session cache, and storage data
+ */
+export async function clearAllApplicationCache() {
+    const userDataPath = app.getPath('userData');
+
+    const filesToKeep = ['config.json', 'logs'];
+    const cleared: string[] = [];
+    const failed: string[] = [];
+
+    try {
+        const items = fs.readdirSync(userDataPath);
+
+        for (const item of items) {
+            if (!filesToKeep.includes(item)) {
+                const fullPath = path.join(userDataPath, item);
+                try {
+                    const stat = fs.statSync(fullPath);
+                    if (stat.isDirectory()) {
+                        fs.rmSync(fullPath, {recursive: true, force: true});
+                    } else {
+                        fs.unlinkSync(fullPath);
+                    }
+                    cleared.push(item);
+                    log.info(`Successfully cleared: ${item}`);
+                } catch (err) {
+                    failed.push(item);
+                    log.warn(`Failed to delete ${fullPath}:`, err);
+                }
+            }
+        }
+    } catch (err) {
+        log.error('Error clearing application cache:', err);
+    }
 }
 
 export function isKDE() {
