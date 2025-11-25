@@ -10,14 +10,25 @@ import {Logger} from 'common/log';
 
 const log = new Logger('AutoLauncher');
 
+interface AutoLaunchOptions {
+    name: string;
+    path?: string;
+    isHidden?: boolean;
+}
 export class AutoLauncher {
     appLauncher: AutoLaunch;
 
     constructor() {
-        this.appLauncher = new AutoLaunch({
+        const options: AutoLaunchOptions = {
             name: app.name,
             isHidden: true,
-        });
+        };
+
+        if (process.platform === 'linux' && process.env.APPIMAGE) {
+            options.path = process.env.APPIMAGE;
+        }
+
+        this.appLauncher = new AutoLaunch(options);
     }
 
     async upgradeAutoLaunch() {
