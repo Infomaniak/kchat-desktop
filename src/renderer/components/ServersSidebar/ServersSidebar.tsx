@@ -29,6 +29,7 @@ type Props = {
 
     isDropDisabled: boolean;
     theme?: Theme;
+    modalOverlayEnabled?: boolean;
 }
 
 const ServersSidebar: FC<Props> = ({
@@ -41,6 +42,7 @@ const ServersSidebar: FC<Props> = ({
     unreads,
     theme,
     showButtonsIndex,
+    modalOverlayEnabled,
 
     onDragEnd,
     onButtonClick,
@@ -50,6 +52,7 @@ const ServersSidebar: FC<Props> = ({
             className={classNames('ServersSidebar')}
             style={theme && Object.keys(theme).length ? applyCssVars(theme) : {}}
         >
+            { modalOverlayEnabled && <div className='ServersSidebar__modal-overlay'/> }
             <DragDropContext onDragEnd={onDragEnd}>
                 <Droppable
                     isDropDisabled={isDropDisabled}

@@ -23,7 +23,7 @@ import electronBuilder from '../../../electron-builder.json';
 import ServerViewState from '../../app/serverViewState';
 import {CALL_ENDED, CALL_READY_TO_CLOSE, CALL_RING_CLOSE_WINDOW, CALL_RING_WINDOW_IS_OPEN} from '../../common/communication';
 import {Logger} from '../../common/log';
-import {composeUserAgent, getLocalPreload, getLocalURLString} from '../utils';
+import {composeUserAgent, getLocalPreload} from '../utils';
 import ViewManager from '../views/viewManager';
 
 type CallInfoNotifyProps = {
@@ -174,7 +174,7 @@ class KmeetCallWindow {
     }
 
     buildWindow(callInfo: CallInfo) {
-        const mainWindow = MainWindow.get();
+        const mainWindow = MainWindow.get()!;
         const currentServer = ServerViewState!.getCurrentServer();
         const preload = getLocalPreload('call.js');
         const session = mainWindow.webContents.session;
@@ -195,7 +195,7 @@ class KmeetCallWindow {
 
         this.callInfo = callInfo;
 
-        const localURL = getLocalURLString('call.html');
+        const localURL = 'kchat-desktop://renderer/call.html';
         this.callWindow.loadURL(localURL, {
             userAgent: composeUserAgent(),
         }).catch(
@@ -210,8 +210,10 @@ class KmeetCallWindow {
         });
 
         const windowOpenHandler = ({url, frameName}: {url: string; frameName: string}) => {
+            // @ts-expect-error bad type from getPopupTarget
             const target = getPopupTarget(url, frameName);
 
+            // @ts-expect-error bad type from getPopupTarget
             if (!target || target === 'browser') {
                 openExternalLink(url);
 
@@ -275,7 +277,7 @@ class KmeetCallWindow {
             log.debug('Kmeet window could not be destroyed', error);
         }
 
-        this.callInfo = {};
+        this.callInfo = undefined;
         this.callWindow = undefined;
     }
 

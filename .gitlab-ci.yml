@@ -1,0 +1,106 @@
+image: node:20.15.0
+
+stages:
+  - setup
+  - quality
+  - build
+  - test
+
+variables:
+  NODE_ENV: development
+  npm_config_cache: "$CI_PROJECT_DIR/.npm"
+
+default:
+  interruptible: true
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - node_modules/
+    - .npm/
+  policy: pull
+
+.node-base:
+  before_script:
+    - node --version
+    - npm --version
+
+.system-deps:
+  before_script:
+    - apt-get update && apt-get install -y libxtst6 libxtst-dev libx11-dev libxkbfile-dev
+    - npm rebuild
+
+install:
+  stage: setup
+  extends: .system-deps
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules/
+      - .npm/
+    policy: pull-push
+  script:
+    - npm ci --prefer-offline --no-audit
+  artifacts:
+    expire_in: 1h
+    paths:
+      - node_modules/
+
+lint:
+  stage: quality
+  extends: .node-base
+  needs: ["install"]
+  dependencies:
+    - install
+  script:
+    - npm run lint:js
+  allow_failure: true
+
+build:
+  stage: build
+  extends: .node-base
+  needs: ["install"]
+  dependencies:
+    - install
+  script:
+    - npm run build
+  artifacts:
+    expire_in: 1h
+    paths:
+      - dist/
+      - build/
+
+check-types:
+  stage: test
+  extends: .node-base
+  needs: ["install"]
+  dependencies:
+    - install
+  script:
+    - npm run check-types
+
+unit-tests:
+  stage: test
+  extends:
+    - .node-base
+    - .system-deps
+  needs: ["install"]
+  dependencies:
+    - install
+  script:
+    - npm run test:unit
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    when: always
+    expire_in: 7 days
+    reports:
+      junit: junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+    paths:
+      - coverage/

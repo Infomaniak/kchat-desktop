@@ -26,6 +26,7 @@ import MainWindow from 'main/windows/mainWindow';
 import type {CombinedConfig} from 'types/config';
 
 import {ModalView} from './modalView';
+import serversSidebar from './serversSidebar';
 
 const log = new Logger('ModalManager');
 
@@ -65,6 +66,18 @@ export class ModalManager {
         return this.modalPromises.get(key) as Promise<T2>;
     };
 
+    removeModal = (key: string) => {
+        const modalView = this.modalQueue.find((modal) => modal.key === key);
+        if (!modalView) {
+            return;
+        }
+
+        modalView.hide();
+        modalView.resolve(null);
+        this.modalPromises.delete(key);
+        this.filterActive();
+    };
+
     findModalByCaller = (event: IpcMainInvokeEvent) => {
         if (this.modalQueue.length) {
             const requestModal = this.modalQueue.find((modal) => {
@@ -90,10 +103,13 @@ export class ModalManager {
         this.modalQueue.forEach((modal, index) => {
             if (index === 0) {
                 MainWindow.sendToRenderer(MODAL_OPEN);
+                ipcMain.emit(MODAL_OPEN);
                 modal.show(undefined, Boolean(withDevTools));
+                this.initializeModalBounds();
                 WebContentsEventManager.addWebContentsEventListeners(modal.view.webContents);
             } else {
                 MainWindow.sendToRenderer(MODAL_CLOSE);
+                ipcMain.emit(MODAL_CLOSE);
                 modal.hide();
             }
         });
@@ -116,6 +132,7 @@ export class ModalManager {
             this.showModal();
         } else {
             MainWindow.sendToRenderer(MODAL_CLOSE);
+            ipcMain.emit(MODAL_CLOSE);
             ViewManager.focusCurrentView();
         }
     };
@@ -137,7 +154,8 @@ export class ModalManager {
 
         if (this.modalQueue.length) {
             const currentModal = this.modalQueue[0];
-            currentModal.view.setBounds(getAdjustedWindowBoundaries(bounds.width, bounds.height));
+            const hasSidebar = serversSidebar.shouldDisplaySidebar;
+            currentModal.view.setBounds(getAdjustedWindowBoundaries(bounds.width, bounds.height, hasSidebar));
         }
     };
 
@@ -162,6 +180,13 @@ export class ModalManager {
         const modalView = this.modalQueue.find((modal) => modal.view.webContents.id === event.sender.id);
         return modalView?.uncloseable;
     };
+
+    private initializeModalBounds() {
+        const bounds = MainWindow.getBounds();
+        if (bounds) {
+            this.handleResizeModal(bounds);
+        }
+    }
 }
 
 const modalManager = new ModalManager();

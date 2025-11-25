@@ -4,6 +4,7 @@
 import classNames from 'classnames';
 import React from 'react';
 
+// @ts-expect-error gif not valid
 import loaderIk from '../../../assets/loading@2x.gif';
 
 const LOADING_STATE = {

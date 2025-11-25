@@ -30,7 +30,7 @@ export type DesktopAPI = {
     onLogout: () => void;
 
     // Unreads/mentions/notifications
-    sendNotification: (title: string, body: string, channelId: string, teamId: string, url: string, silent: boolean, soundName: string) => Promise<{result: string; reason?: string; data?: string}>;
+    sendNotification: (title: string, body: string, channelId: string, teamId: string, url: string, silent: boolean, soundName: string) => Promise<{status: string; reason?: string; data?: string}>;
     onNotificationClicked: (listener: (channelId: string, teamId: string, url: string) => void) => () => void;
     setUnreadsAndMentions: (isUnread: boolean, mentionCount: number) => void;
 
@@ -69,6 +69,17 @@ export type DesktopAPI = {
     openLinkFromCalls: (url: string) => void;
 
     focusPopout: () => void;
+
+    openThreadForCalls: (threadID: string) => void;
+    onOpenThreadForCalls: (listener: (threadID: string) => void) => () => void;
+
+    openStopRecordingModal: (channelID: string) => void;
+    onOpenStopRecordingModal: (listener: (channelID: string) => void) => () => void;
+
+    openCallsUserSettings: () => void;
+    onOpenCallsUserSettings: (listener: () => void) => () => void;
+
+    onSendMetrics: (listener: (metricsMap: Map<string, {cpu?: number; memory?: number}>) => void) => () => void;
 
     // Utility
     unregister: (channel: string) => void;

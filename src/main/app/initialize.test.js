@@ -49,6 +49,9 @@ jest.mock('electron', () => ({
         getLocale: jest.fn(),
         getLocaleCountryCode: jest.fn(),
     },
+    safeStorage: {
+        isEncryptionAvailable: jest.fn(),
+    },
     ipcMain: {
         on: jest.fn(),
         handle: jest.fn(),
@@ -64,15 +67,22 @@ jest.mock('electron', () => ({
     },
     session: {
         defaultSession: {
-            setSpellCheckerDictionaryDownloadURL: jest.fn(),
-            setPermissionRequestHandler: jest.fn(),
-            on: jest.fn(),
             webRequest: {
                 onHeadersReceived: jest.fn(),
                 onBeforeSendHeaders: jest.fn(),
             },
+            setSpellCheckerDictionaryDownloadURL: jest.fn(),
+            setPermissionRequestHandler: jest.fn(),
+            on: jest.fn(),
         },
     },
+    protocol: {
+        registerSchemesAsPrivileged: jest.fn(),
+        handle: jest.fn(),
+    },
+}));
+jest.mock('main/performanceMonitor', () => ({
+    init: jest.fn(),
 }));
 
 jest.mock('@sentry/electron/main', () => ({
@@ -103,13 +113,12 @@ jest.mock('@sentry/electron/main', () => ({
         callback();
     },
 }));
-
 jest.mock('main/i18nManager', () => ({
     localizeMessage: jest.fn(),
     setLocale: jest.fn(),
 }));
 
-jest.mock('electron-extension-installer', () => {
+jest.mock('electron-devtools-installer', () => {
     return () => ({
         REACT_DEVELOPER_TOOLS: 'react-developer-tools',
     });
@@ -189,6 +198,7 @@ jest.mock('main/CriticalErrorHandler', () => ({
 }));
 jest.mock('main/notifications', () => ({
     displayDownloadCompleted: jest.fn(),
+    getDoNotDisturb: jest.fn(),
 }));
 jest.mock('main/ParseArgs', () => jest.fn());
 jest.mock('common/servers/serverManager', () => ({
@@ -211,9 +221,6 @@ jest.mock('main/windows/callsWidgetWindow', () => ({}));
 jest.mock('main/views/viewManager', () => ({
     getViewByWebContentsId: jest.fn(),
     handleDeepLink: jest.fn(),
-}));
-jest.mock('main/windows/settingsWindow', () => ({
-    show: jest.fn(),
 }));
 jest.mock('main/windows/mainWindow', () => ({
     get: jest.fn(),

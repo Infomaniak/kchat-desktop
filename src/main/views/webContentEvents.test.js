@@ -3,13 +3,15 @@
 
 'use strict';
 
-import {shell, BrowserWindow} from 'electron';
+import {shell, BrowserWindow, dialog} from 'electron';
 
 import {getLevel} from 'common/log';
 import ContextMenu from 'main/contextMenu';
 import ViewManager from 'main/views/viewManager';
 
+import PluginsPopUpsManager from './pluginsPopUps';
 import {WebContentsEventManager} from './webContentEvents';
+import {generateHandleConsoleMessage} from './webContentEventsCommon';
 
 import allowProtocolDialog from '../allowProtocolDialog';
 
@@ -22,6 +24,12 @@ jest.mock('electron', () => ({
     },
     BrowserWindow: jest.fn(),
     session: {},
+    dialog: {
+        showErrorBox: jest.fn(),
+    },
+}));
+jest.mock('main/i18nManager', () => ({
+    localizeMessage: jest.fn(),
 }));
 jest.mock('main/contextMenu', () => jest.fn());
 jest.mock('main/windows/mainWindow', () => ({
@@ -33,6 +41,11 @@ jest.mock('main/views/viewManager', () => ({
     getViewByWebContentsId: jest.fn(),
     handleDeepLink: jest.fn(),
 }));
+
+jest.mock('main/views/pluginsPopUps', () => ({
+    handleNewWindow: jest.fn(() => ({action: 'allow'})),
+}));
+
 jest.mock('../utils', () => ({
     composeUserAgent: jest.fn(),
 }));
@@ -90,24 +103,8 @@ describe('main/views/webContentsEvents', () => {
             expect(event.preventDefault).not.toBeCalled();
         });
 
-        it('should allow navigation when isCustomLoginURL', () => {
-            willNavigate(event, 'http://server-1.com/oauth/authorize');
-            expect(event.preventDefault).not.toBeCalled();
-        });
-
-        it('should not allow navigation when isCustomLoginURL is external', () => {
-            willNavigate(event, 'http://loginurl.com/oauth/authorize');
-            expect(event.preventDefault).toBeCalled();
-        });
-
         it('should allow navigation when protocol is mailto', () => {
             willNavigate(event, 'mailto:test@mattermost.com');
-            expect(event.preventDefault).not.toBeCalled();
-        });
-
-        it('should allow navigation when a custom login is in progress', () => {
-            webContentsEventManager.customLogins[1] = {inProgress: true};
-            willNavigate(event, 'http://anyoldurl.com');
             expect(event.preventDefault).not.toBeCalled();
         });
 
@@ -119,32 +116,6 @@ describe('main/views/webContentsEvents', () => {
         it('should not allow navigation under any other circumstances', () => {
             willNavigate(event, 'http://someotherurl.com');
             expect(event.preventDefault).toBeCalled();
-        });
-    });
-
-    describe('didStartNavigation', () => {
-        const webContentsEventManager = new WebContentsEventManager();
-        const didStartNavigation = webContentsEventManager.generateDidStartNavigation(1);
-
-        beforeEach(() => {
-            webContentsEventManager.getServerURLFromWebContentsId = jest.fn().mockImplementation(() => new URL('http://server-1.com'));
-        });
-
-        afterEach(() => {
-            jest.clearAllMocks();
-            webContentsEventManager.customLogins = {};
-        });
-
-        it('should add custom login entry on custom login URL', () => {
-            webContentsEventManager.customLogins[1] = {inProgress: false};
-            didStartNavigation(event, 'http://server-1.com/oauth/authorize');
-            expect(webContentsEventManager.customLogins[1]).toStrictEqual({inProgress: true});
-        });
-
-        it('should remove custom login entry once navigating back to internal URL', () => {
-            webContentsEventManager.customLogins[1] = {inProgress: true};
-            didStartNavigation(event, 'http://server-1.com/subpath');
-            expect(webContentsEventManager.customLogins[1]).toStrictEqual({inProgress: false});
         });
     });
 
@@ -177,13 +148,20 @@ describe('main/views/webContentsEvents', () => {
             expect(newWindow({url: 'a-bad<url'})).toStrictEqual({action: 'deny'});
         });
 
+        it('should deny and show dialog on invalid URL', () => {
+            expect(newWindow({url: 'https://google.com/?^'})).toStrictEqual({action: 'deny'});
+            expect(newWindow({url: 'https://example.com/path}'})).toStrictEqual({action: 'deny'});
+            expect(shell.openExternal).not.toBeCalled();
+            expect(dialog.showErrorBox).toBeCalled();
+        });
+
         it('should allow dev tools to open', () => {
             expect(newWindow({url: 'devtools://aaaaaa.com'})).toStrictEqual({action: 'allow'});
         });
 
-        it('should open invalid URIs in browser', () => {
-            expect(newWindow({url: 'https://google.com/?^'})).toStrictEqual({action: 'deny'});
-            expect(shell.openExternal).toBeCalledWith('https://google.com/?^');
+        it('should defer about:blank to PluginsPopUpsManager', () => {
+            expect(newWindow({url: 'about:blank'})).toStrictEqual({action: 'allow'});
+            expect(PluginsPopUpsManager.handleNewWindow).toHaveBeenCalledWith(1, {url: 'about:blank'});
         });
 
         it('should divert to allowProtocolDialog for custom protocols that are not mattermost or http', () => {
@@ -191,9 +169,9 @@ describe('main/views/webContentsEvents', () => {
             expect(allowProtocolDialog.handleDialogEvent).toBeCalledWith('spotify:', 'spotify:album:2OZbaW9tgO62ndm375lFZr');
         });
 
-        it('should divert to allowProtocolDialog for invalid URIs with custom protocols', () => {
+        it('should ignore invalid URIs with custom protocols', () => {
             expect(newWindow({url: 'customproto:test\\data'})).toStrictEqual({action: 'deny'});
-            expect(allowProtocolDialog.handleDialogEvent).toBeCalledWith('customproto:', 'customproto:test\\data');
+            expect(shell.openExternal).not.toBeCalled();
         });
 
         it('should open in the browser when there is no server matching', () => {
@@ -251,33 +229,33 @@ describe('main/views/webContentsEvents', () => {
             withPrefix: jest.fn().mockReturnThis(),
         };
         webContentsEventManager.log = jest.fn().mockReturnValue(logObject);
-        const consoleMessage = webContentsEventManager.generateHandleConsoleMessage();
+        const consoleMessage = generateHandleConsoleMessage(logObject);
 
         afterEach(() => {
             getLevel.mockReset();
         });
 
         it('should respect logging levels', () => {
-            consoleMessage({}, 0, 'test0', 0, '');
+            consoleMessage({level: 'info', message: 'test0', lineNumber: 0, sourceId: ''});
             expect(logObject.debug).toHaveBeenCalledWith('test0');
 
-            consoleMessage({}, 1, 'test1', 0, '');
+            consoleMessage({level: 'info', message: 'test1', lineNumber: 0, sourceId: ''});
             expect(logObject.debug).toHaveBeenCalledWith('test1');
 
-            consoleMessage({}, 2, 'test2', 0, '');
+            consoleMessage({level: 'warning', message: 'test2', lineNumber: 0, sourceId: ''});
             expect(logObject.warn).toHaveBeenCalledWith('test2');
 
-            consoleMessage({}, 3, 'test3', 0, '');
+            consoleMessage({level: 'error', message: 'test3', lineNumber: 0, sourceId: ''});
             expect(logObject.error).toHaveBeenCalledWith('test3');
         });
 
         it('should only add line numbers for debug and silly', () => {
             getLevel.mockReturnValue('debug');
-            consoleMessage({}, 0, 'test1', 42, 'meaning_of_life.js');
+            consoleMessage({level: 'info', message: 'test1', lineNumber: 42, sourceId: 'meaning_of_life.js'});
             expect(logObject.debug).toHaveBeenCalledWith('test1', '(meaning_of_life.js:42)');
 
             getLevel.mockReturnValue('warn');
-            consoleMessage({}, 0, 'test2', 42, 'meaning_of_life.js');
+            consoleMessage({level: 'info', message: 'test2', lineNumber: 42, sourceId: 'meaning_of_life.js'});
             expect(logObject.warn).not.toHaveBeenCalledWith('test2', '(meaning_of_life.js:42)');
         });
     });

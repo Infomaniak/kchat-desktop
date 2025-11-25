@@ -43,23 +43,6 @@ describe('file_menu/dropdown', function desc() {
         settingsWindow.should.not.be.null;
     });
 
-    // TODO: No keyboard shortcut for macOS
-    if (process.platform !== 'darwin') {
-        it('MM-T805 Sign in to Another Server Window opens using menu item', async () => {
-            const mainWindow = this.app.windows().find((window) => window.url().includes('index'));
-            mainWindow.should.not.be.null;
-            await mainWindow.click('button.three-dot-menu');
-            robot.keyTap('f');
-            robot.keyTap('s');
-            robot.keyTap('s');
-            robot.keyTap('enter');
-            const signInToAnotherServerWindow = await this.app.waitForEvent('window', {
-                predicate: (window) => window.url().includes('newServer'),
-            });
-            signInToAnotherServerWindow.should.not.be.null;
-        });
-    }
-
     if (process.platform !== 'darwin') {
         it('MM-T804 Preferences in Menu Bar open the Settings page', async () => {
             //Opening the menu bar

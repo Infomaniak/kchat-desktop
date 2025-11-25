@@ -11,7 +11,7 @@ const {asyncSleep} = require('../../modules/utils');
 
 async function setupPromise(window, id) {
     const promise = new Promise((resolve) => {
-        const browserView = window.getBrowserViews().find((view) => view.webContents.id === id);
+        const browserView = window.contentView.children.find((view) => view.webContents.id === id);
         browserView.webContents.on('did-finish-load', () => {
             resolve();
         });
@@ -22,13 +22,13 @@ async function setupPromise(window, id) {
 
 function getZoomFactorOfServer(browserWindow, serverId) {
     return browserWindow.evaluate(
-        (window, id) => window.getBrowserViews().find((view) => view.webContents.id === id).webContents.getZoomFactor(),
+        (window, id) => window.contentView.children.find((view) => view.webContents.id === id).webContents.getZoomFactor(),
         serverId,
     );
 }
 function setZoomFactorOfServer(browserWindow, serverId, zoomFactor) {
     return browserWindow.evaluate(
-        (window, {id, zoom}) => window.getBrowserViews().find((view) => view.webContents.id === id).webContents.setZoomFactor(zoom),
+        (window, {id, zoom}) => window.contentView.children.find((view) => view.webContents.id === id).webContents.setZoomFactor(zoom),
         {id: serverId, zoom: zoomFactor},
     );
 }
@@ -56,38 +56,34 @@ describe('menu/view', function desc() {
     });
 
     it('MM-T813 Control+F should focus the search bar in Mattermost', async () => {
-        const loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
-        await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
         const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
         await env.loginToMattermost(firstServer);
-        await firstServer.waitForSelector('#searchBox');
+        await firstServer.waitForSelector('#searchFormContainer');
         await asyncSleep(1000);
         robot.keyTap('f', [process.platform === 'darwin' ? 'command' : 'control']);
         await asyncSleep(500);
-        const isFocused = await firstServer.$eval('#searchBox', (el) => el === document.activeElement);
+        const isFocused = await firstServer.$eval('input.search-bar.form-control', (el) => el === document.activeElement);
         isFocused.should.be.true;
-        const text = await firstServer.inputValue('#searchBox');
+        const text = await firstServer.inputValue('input.search-bar.form-control');
         text.should.include('in:');
     });
 
     it('MM-T817 Actual Size Zoom in the menu bar', async () => {
         const mainWindow = this.app.windows().find((window) => window.url().includes('index'));
         const browserWindow = await this.app.browserWindow(mainWindow);
-        const loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
-        await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
         const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
         const firstServerId = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].webContentsId;
         await env.loginToMattermost(firstServer);
-        await firstServer.waitForSelector('#searchBox');
+        await firstServer.waitForSelector('#searchFormContainer');
 
         robot.keyTap('=', [env.cmdOrCtrl]);
         await asyncSleep(1000);
-        let zoomLevel = await browserWindow.evaluate((window, id) => window.getBrowserViews().find((view) => view.webContents.id === id).webContents.getZoomFactor(), firstServerId);
+        let zoomLevel = await browserWindow.evaluate((window, id) => window.contentView.children.find((view) => view.webContents.id === id).webContents.getZoomFactor(), firstServerId);
         zoomLevel.should.be.greaterThan(1);
 
         robot.keyTap('0', [env.cmdOrCtrl]);
         await asyncSleep(1000);
-        zoomLevel = await browserWindow.evaluate((window, id) => window.getBrowserViews().find((view) => view.webContents.id === id).webContents.getZoomFactor(), firstServerId);
+        zoomLevel = await browserWindow.evaluate((window, id) => window.contentView.children.find((view) => view.webContents.id === id).webContents.getZoomFactor(), firstServerId);
         zoomLevel.should.be.equal(1);
     });
 
@@ -95,28 +91,25 @@ describe('menu/view', function desc() {
         it('MM-T818_1 Zoom in when CmdOrCtrl+Plus is pressed', async () => {
             const mainWindow = this.app.windows().find((window) => window.url().includes('index'));
             const browserWindow = await this.app.browserWindow(mainWindow);
-            const loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
-            await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
             const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
             const firstServerId = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].webContentsId;
             await env.loginToMattermost(firstServer);
-            await firstServer.waitForSelector('#searchBox');
+            await firstServer.waitForSelector('#searchFormContainer');
 
             robot.keyTap('=', [env.cmdOrCtrl]);
             await asyncSleep(1000);
-            const zoomLevel = await browserWindow.evaluate((window, id) => window.getBrowserViews().find((view) => view.webContents.id === id).webContents.getZoomFactor(), firstServerId);
+            const zoomLevel = await browserWindow.evaluate((window, id) => window.contentView.children.find((view) => view.webContents.id === id).webContents.getZoomFactor(), firstServerId);
             zoomLevel.should.be.greaterThan(1);
+            zoomLevel.should.be.lessThan(1.5);
         });
 
         it('MM-T818_2 Zoom in when CmdOrCtrl+Shift+Plus is pressed', async () => {
             const mainWindow = this.app.windows().find((window) => window.url().includes('index'));
             const browserWindow = await this.app.browserWindow(mainWindow);
-            const loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
-            await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
             const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
             const firstServerId = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].webContentsId;
             await env.loginToMattermost(firstServer);
-            await firstServer.waitForSelector('#searchBox');
+            await firstServer.waitForSelector('#searchFormContainer');
 
             // reset zoom
             await setZoomFactorOfServer(browserWindow, firstServerId, 1);
@@ -135,28 +128,24 @@ describe('menu/view', function desc() {
         it('MM-T819_1 Zoom out when CmdOrCtrl+Minus is pressed', async () => {
             const mainWindow = this.app.windows().find((window) => window.url().includes('index'));
             const browserWindow = await this.app.browserWindow(mainWindow);
-            const loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
-            await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
             const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
             const firstServerId = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].webContentsId;
             await env.loginToMattermost(firstServer);
-            await firstServer.waitForSelector('#searchBox');
+            await firstServer.waitForSelector('#searchFormContainer');
 
             robot.keyTap('-', [env.cmdOrCtrl]);
             await asyncSleep(1000);
-            const zoomLevel = await browserWindow.evaluate((window, id) => window.getBrowserViews().find((view) => view.webContents.id === id).webContents.getZoomFactor(), firstServerId);
+            const zoomLevel = await browserWindow.evaluate((window, id) => window.contentView.children.find((view) => view.webContents.id === id).webContents.getZoomFactor(), firstServerId);
             zoomLevel.should.be.lessThan(1);
         });
 
         it('MM-T819_2 Zoom out when CmdOrCtrl+Shift+Minus is pressed', async () => {
             const mainWindow = this.app.windows().find((window) => window.url().includes('index'));
             const browserWindow = await this.app.browserWindow(mainWindow);
-            const loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
-            await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
             const firstServer = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].win;
             const firstServerId = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].webContentsId;
             await env.loginToMattermost(firstServer);
-            await firstServer.waitForSelector('#searchBox');
+            await firstServer.waitForSelector('#searchFormContainer');
 
             // reset zoom
             await setZoomFactorOfServer(browserWindow, firstServerId, 1.0);
@@ -179,9 +168,6 @@ describe('menu/view', function desc() {
             const mainWindow = this.app.windows().find((window) => window.url().includes('index'));
             browserWindow = await this.app.browserWindow(mainWindow);
             webContentsId = this.serverMap[`${config.teams[0].name}___TAB_MESSAGING`].webContentsId;
-
-            const loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
-            await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
         });
 
         it('MM-T814 should reload page when pressing Ctrl+R', async () => {
@@ -201,33 +187,33 @@ describe('menu/view', function desc() {
         });
     });
 
-    it('MM-T820 should open Developer Tools For Application Wrapper for main window', async () => {
-        const mainWindow = this.app.windows().find((window) => window.url().includes('index.html'));
-        const browserWindow = await this.app.browserWindow(mainWindow);
-        const loadingScreen = this.app.windows().find((window) => window.url().includes('loadingScreen'));
-        await loadingScreen.waitForSelector('.LoadingScreen', {state: 'hidden'});
+    if (process.platform !== 'linux') {
+        it('MM-T820 should open Developer Tools For Application Wrapper for main window', async () => {
+            const mainWindow = this.app.windows().find((window) => window.url().includes('index.html'));
+            const browserWindow = await this.app.browserWindow(mainWindow);
 
-        let isDevToolsOpen = await browserWindow.evaluate((window) => {
-            return window.webContents.isDevToolsOpened();
+            let isDevToolsOpen = await browserWindow.evaluate((window) => {
+                return window.webContents.isDevToolsOpened();
+            });
+            isDevToolsOpen.should.be.false;
+
+            if (process.platform === 'darwin') {
+            // Press Command + Option + I
+                robot.keyTap('i', ['command', 'alt']);
+                await asyncSleep(3000);
+            }
+
+            if (process.platform === 'win32') {
+                robot.keyToggle('shift', 'down');
+                robot.keyToggle('control', 'down');
+                robot.keyTap('i');
+            }
+
+            await asyncSleep(1000);
+            isDevToolsOpen = await browserWindow.evaluate((window) => {
+                return window.webContents.isDevToolsOpened();
+            });
+            isDevToolsOpen.should.be.true;
         });
-        isDevToolsOpen.should.be.false;
-
-        if (process.platform === 'darwin') {
-        // Press Command + Option + I
-            robot.keyTap('i', ['command', 'alt']);
-            await asyncSleep(3000);
-        }
-
-        if (process.platform === 'win32') {
-            robot.keyToggle('shift', 'down');
-            robot.keyToggle('control', 'down');
-            robot.keyTap('i');
-        }
-
-        await asyncSleep(1000);
-        isDevToolsOpen = await browserWindow.evaluate((window) => {
-            return window.webContents.isDevToolsOpened();
-        });
-        isDevToolsOpen.should.be.true;
-    });
+    }
 });

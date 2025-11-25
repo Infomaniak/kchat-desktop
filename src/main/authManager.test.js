@@ -14,9 +14,6 @@ jest.mock('common/utils/url', () => {
         isTrustedURL: (url) => {
             return url.toString() === 'http://trustedurl.com/';
         },
-        isCustomLoginURL: (url) => {
-            return url.toString() === 'http://customloginurl.com/';
-        },
     };
 });
 
@@ -51,7 +48,6 @@ jest.mock('main/views/modalManager', () => ({
 
 jest.mock('main/utils', () => ({
     getLocalPreload: (file) => file,
-    getLocalURLString: (file) => file,
 }));
 
 describe('main/authManager', () => {
@@ -70,13 +66,6 @@ describe('main/authManager', () => {
         it('should popLoginModal when isTrustedURL', () => {
             ViewManager.getViewByWebContentsId.mockReturnValue({view: {server: {url: new URL('http://trustedurl.com/')}}});
             authManager.handleAppLogin({preventDefault: jest.fn()}, {id: 1}, {url: 'http://trustedurl.com/'}, null, jest.fn());
-            expect(authManager.popLoginModal).toBeCalled();
-            expect(authManager.popPermissionModal).not.toBeCalled();
-        });
-
-        it('should popLoginModal when isCustomLoginURL', () => {
-            ViewManager.getViewByWebContentsId.mockReturnValue({view: {server: {url: new URL('http://customloginurl.com/')}}});
-            authManager.handleAppLogin({preventDefault: jest.fn()}, {id: 1}, {url: 'http://customloginurl.com/'}, null, jest.fn());
             expect(authManager.popLoginModal).toBeCalled();
             expect(authManager.popPermissionModal).not.toBeCalled();
         });
@@ -122,7 +111,7 @@ describe('main/authManager', () => {
                     host: 'anormalurl',
                 });
             expect(ModalManager.addModal).toBeCalledWith(
-                'proxy-anormalurl',
+                'proxyLoginModal-anormalurl',
                 expect.any(String),
                 expect.any(String),
                 expect.any(Object),
@@ -135,7 +124,7 @@ describe('main/authManager', () => {
                     host: 'anormalurl',
                 });
             expect(ModalManager.addModal).toBeCalledWith(
-                'login-http://anormalurl.com',
+                'loginModal-http://anormalurl.com',
                 expect.any(String),
                 expect.any(String),
                 expect.any(Object),

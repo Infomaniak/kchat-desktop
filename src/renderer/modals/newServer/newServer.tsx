@@ -1,9 +1,6 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'renderer/css/modals.css';
-
 import React, {useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
 
@@ -25,20 +22,28 @@ const onSave = (data: UniqueServer) => {
 };
 
 const NewServerModalWrapper: React.FC = () => {
+    const [data, setData] = useState<{prefillURL?: string}>();
     const [unremoveable, setUnremovable] = useState<boolean>();
 
     useEffect(() => {
         window.desktop.modals.isModalUncloseable().then((uncloseable) => {
             setUnremovable(uncloseable);
         });
+
+        window.desktop.modals.getModalInfo<{prefillURL?: string}>().
+            then((data) => {
+                setData(data);
+            });
     }, []);
 
     return (
         <IntlProvider>
             <NewServerModal
-                onClose={unremoveable ? undefined : onClose}
+                unremoveable={unremoveable}
+                onClose={onClose}
                 onSave={onSave}
                 editMode={false}
+                prefillURL={data?.prefillURL}
                 show={true}
             />
         </IntlProvider>

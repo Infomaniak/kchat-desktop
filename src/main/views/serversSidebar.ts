@@ -10,8 +10,15 @@ import {
     GET_SERVER_THEME,
     MAIN_WINDOW_CREATED,
     MAIN_WINDOW_RESIZED,
+    MODAL_CLOSE,
+    MODAL_OPEN,
     PREFERRED_THEME,
-    SERVERS_UPDATE, SWITCH_SERVER, SWITCH_SERVER_SIDEBAR, TEAMS_ORDER_PREFERENCE, TEAMS_ORDER_PREFERENCE_UPDATED, UPDATE_APPSTATE,
+    SERVERS_UPDATE,
+    SWITCH_SERVER,
+    SWITCH_SERVER_SIDEBAR,
+    TEAMS_ORDER_PREFERENCE,
+    TEAMS_ORDER_PREFERENCE_UPDATED,
+    UPDATE_APPSTATE,
     UPDATE_SERVERS_SIDEBAR,
     UPDATE_TEAMS,
     USER_LOCALE,
@@ -19,13 +26,12 @@ import {
 import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {DEFAULT_TEAM_NAME, SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
-import {composeUserAgent, getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
+import {getLocalPreload, getWindowBoundaries} from 'main/utils';
 import MainWindow from 'main/windows/mainWindow';
 
 import type {ConfigServer, UniqueServer} from 'types/config';
 import type {Theme} from 'types/theme';
 
-import ServerSidebarShortcutModalView from './serversSidebarShortcutModalView';
 import viewManager from './viewManager';
 
 const log = new Logger('ServersSidebar');
@@ -39,14 +45,13 @@ export class ServerSidebar {
     private teamsOrderPreference: string[];
     private isReadyToSwitchServer: boolean;
     private shouldDisplay: boolean;
+    private modalOverlayEnabled: boolean;
 
     private unreads: Map<string, boolean>;
     private mentions: Map<string, number>;
     private expired: Map<string, boolean>;
 
     private windowBounds?: Electron.Rectangle;
-
-    private modal;
 
     constructor() {
         this.servers = [];
@@ -56,6 +61,7 @@ export class ServerSidebar {
         this.userLocale = '';
         this.isReadyToSwitchServer = false;
         this.shouldDisplay = false;
+        this.modalOverlayEnabled = false;
 
         this.unreads = new Map();
         this.mentions = new Map();
@@ -73,6 +79,8 @@ export class ServerSidebar {
         ipcMain.on(SWITCH_SERVER, this.handleSwitchServer);
         ipcMain.on(SWITCH_SERVER_SIDEBAR, this.handleSwitchServerSidebar);
         ipcMain.on(EMIT_CONFIGURATION, this.updateServers);
+        ipcMain.on(MODAL_OPEN, this.handleModalOpen);
+        ipcMain.on(MODAL_CLOSE, this.handleModalClose);
 
         ServerManager.on(SERVERS_UPDATE, this.updateServers);
     }
@@ -103,15 +111,13 @@ export class ServerSidebar {
 
         this.setBounds();
 
-        this.view.webContents.loadURL(getLocalURLString('serversSidebar.html'), {userAgent: composeUserAgent()}).
+        this.view.webContents.loadURL('kchat-desktop://renderer/serversSidebar.html').
             catch((reason) => {
                 log.error(`Servers sidebar window failed to load: ${reason}`);
                 log.info(process.env);
             });
 
         this.setOrderedServers();
-
-        this.modal = ServerSidebarShortcutModalView.init(mainWindow);
     };
 
     openSidebarDevtools = () => {
@@ -156,7 +162,7 @@ export class ServerSidebar {
                 return;
             }
 
-            const windowBoundaries = getWindowBoundaries(mainWindow, false, true);
+            const windowBoundaries = getWindowBoundaries(mainWindow, true);
             this.view.setBounds({...windowBoundaries, x: 0, width: SERVERS_SIDEBAR_WIDTH});
         }
     };
@@ -235,7 +241,18 @@ export class ServerSidebar {
             this.teamsOrderPreference,
             this.isReadyToSwitchServer,
             this.userLocale,
+            this.modalOverlayEnabled,
         );
+    };
+
+    private handleModalOpen = () => {
+        this.modalOverlayEnabled = true;
+        this.updateSidebar();
+    };
+
+    private handleModalClose = () => {
+        this.modalOverlayEnabled = false;
+        this.updateSidebar();
     };
 
     private updateWindowBounds = () => {
@@ -266,35 +283,6 @@ export class ServerSidebar {
 
     private setOrderedServers = () => {
         this.servers = ServerManager.getOrderedServers().map((server) => server.toUniqueServer());
-    };
-
-    private setIsReadyToSwitchServer = (value: boolean) => {
-        this.isReadyToSwitchServer = value;
-        this.updateSidebar();
-    };
-
-    private registerKeyboardEvents = () => {
-        viewManager.getCurrentView()?.registerWebContentEvent('before-input-event', (_: any, event: Electron.Event<any>) => {
-            this.setIsReadyToSwitchServer(false);
-
-            if (event.alt && event.meta) {
-                this.setIsReadyToSwitchServer(true);
-            }
-
-            const code = String(event.code);
-            if (event.alt && event.meta && code.startsWith('Digit')) {
-                const codeIndex = Number(code.split('Digit').pop());
-                const teamId = this.teamsOrderPreference?.[codeIndex - 1];
-                const team = this.teams.find((t) => t.teamInfo?.id === teamId);
-                const server = this.servers.find((s) => s.name === team?.name);
-
-                if (!server?.id) {
-                    return;
-                }
-
-                ServerViewState.switchServer(server.id);
-            }
-        });
     };
 }
 

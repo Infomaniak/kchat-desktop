@@ -14,6 +14,7 @@ jest.mock('electron', () => ({
     ipcMain: {
         handle: jest.fn(),
         on: jest.fn(),
+        emit: jest.fn(),
     },
 }));
 
@@ -33,6 +34,15 @@ jest.mock('main/windows/mainWindow', () => ({
 }));
 jest.mock('process', () => ({
     env: {},
+}));
+
+// Ik change : add serversSidebar mock and mainWindow getBounds mock
+jest.mock('main/views/serversSidebar', () => ({}));
+jest.mock('main/windows/mainWindow', () => ({
+    on: jest.fn(),
+    get: jest.fn(),
+    getBounds: jest.fn(),
+    sendToRenderer: jest.fn(),
 }));
 
 describe('main/views/modalManager', () => {

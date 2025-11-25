@@ -6,7 +6,6 @@ import classNames from 'classnames';
 import React from 'react';
 import type {DropResult} from 'react-beautiful-dnd';
 import {DragDropContext, Droppable} from 'react-beautiful-dnd';
-import {Nav} from 'react-bootstrap';
 import type {IntlShape} from 'react-intl';
 import {injectIntl} from 'react-intl';
 
@@ -29,7 +28,16 @@ type Props = {
     intl: IntlShape;
 };
 
-class TabBar extends React.PureComponent<Props> {
+type State = {
+    nonce?: string;
+}
+
+class TabBar extends React.PureComponent<Props, State> {
+    constructor(props: Props) {
+        super(props);
+        this.state = {};
+    }
+
     onCloseTab = (id: string) => {
         return (event: React.MouseEvent<HTMLButtonElement>) => {
             event.stopPropagation();
@@ -37,27 +45,41 @@ class TabBar extends React.PureComponent<Props> {
         };
     };
 
+    componentDidMount(): void {
+        window.desktop.getNonce().then((nonce) => {
+            this.setState({
+                nonce,
+            });
+        });
+    }
+
     render() {
+        if (!this.state.nonce) {
+            return null;
+        }
+
         return (
-            <DragDropContext onDragEnd={this.props.onDrop}>
+            <DragDropContext
+                nonce={this.state.nonce}
+                onDragEnd={this.props.onDrop}
+            >
                 <Droppable
                     isDropDisabled={this.props.tabsDisabled}
                     droppableId='tabBar'
                     direction='horizontal'
                 >
                     {(provided) => (
-                        <Nav
+                        <div
                             ref={provided.innerRef}
                             className={classNames('TabBar', {
                                 darkMode: this.props.isDarkMode,
                             })}
                             id={this.props.id}
-                            variant='tabs'
                             {...provided.droppableProps}
                         >
                             {this.props.isMenuOpen ? <span className='TabBar-nonDrag'/> : null}
                             {provided.placeholder}
-                        </Nav>
+                        </div>
                     )}
                 </Droppable>
             </DragDropContext>

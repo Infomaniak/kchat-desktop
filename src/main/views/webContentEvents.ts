@@ -1,19 +1,16 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import path from 'path';
-
 import type {WebContents, Event} from 'electron';
-import {BrowserWindow, shell} from 'electron';
+import {BrowserWindow, dialog, shell} from 'electron';
 
 import Config from 'common/config';
-import {Logger, getLevel} from 'common/log';
+import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {
     isAdminUrl,
     isCallsPopOutURL,
     isChannelExportUrl,
-    isCustomLoginURL,
     isHelpUrl,
     isImageProxyUrl,
     isInternalURL,
@@ -23,41 +20,28 @@ import {
     isPluginUrl,
     isPublicFilesUrl,
     isTeamUrl,
-    isTrustedURL,
     isValidURI,
     parseURL,
 } from 'common/utils/url';
-import {flushCookiesStore} from 'main/app/utils';
 import ContextMenu from 'main/contextMenu';
+import {localizeMessage} from 'main/i18nManager';
+import PluginsPopUpsManager from 'main/views/pluginsPopUps';
 import ViewManager from 'main/views/viewManager';
 import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
 import mainWindow from 'main/windows/mainWindow';
 
-import {protocols} from '../../../electron-builder.json';
+import {generateHandleConsoleMessage, isCustomProtocol, isMattermostProtocol} from './webContentEventsCommon';
+
 import allowProtocolDialog from '../allowProtocolDialog';
 import {composeUserAgent, getLocalPreload} from '../utils';
 
-type CustomLogin = {
-    inProgress: boolean;
-}
-
-enum ConsoleMessageLevel {
-    Verbose,
-    Info,
-    Warning,
-    Error
-}
-
 const log = new Logger('WebContentsEventManager');
-const scheme = protocols && protocols[0] && protocols[0].schemes && protocols[0].schemes[0];
 
 export class WebContentsEventManager {
-    customLogins: Record<number, CustomLogin>;
     listeners: Record<number, () => void>;
     popupWindow?: {win: BrowserWindow; serverURL?: URL};
 
     constructor() {
-        this.customLogins = {};
         this.listeners = {};
     }
 
@@ -110,14 +94,7 @@ export class WebContentsEventManager {
                 return;
             }
 
-            if (serverURL && isCustomLoginURL(parsedURL, serverURL)) {
-                return;
-            }
             if (parsedURL.protocol === 'mailto:') {
-                return;
-            }
-            if (this.customLogins[webContentsId]?.inProgress) {
-                flushCookiesStore();
                 return;
             }
 
@@ -138,25 +115,6 @@ export class WebContentsEventManager {
         };
     };
 
-    private generateDidStartNavigation = (webContentsId: number) => {
-        return (event: Event, url: string) => {
-            this.log(webContentsId).debug('did-start-navigation', url);
-
-            const parsedURL = parseURL(url)!;
-            const serverURL = this.getServerURLFromWebContentsId(webContentsId);
-
-            if (!serverURL || !isTrustedURL(parsedURL, serverURL)) {
-                return;
-            }
-
-            if (serverURL && isCustomLoginURL(parsedURL, serverURL)) {
-                this.customLogins[webContentsId].inProgress = true;
-            } else if (serverURL && this.customLogins[webContentsId].inProgress && isInternalURL(serverURL || new URL(''), parsedURL)) {
-                this.customLogins[webContentsId].inProgress = false;
-            }
-        };
-    };
-
     private denyNewWindow = (details: Electron.HandlerDetails): {action: 'deny' | 'allow'} => {
         this.log().warn(`Prevented popup window to open a new window to ${details.url}.`);
         return {action: 'deny'};
@@ -172,21 +130,37 @@ export class WebContentsEventManager {
                 return {action: 'deny'};
             }
 
+            if (!isValidURI(details.url)) {
+                this.log(webContentsId).warn(`Ignoring invalid URL: ${details.url}`);
+                dialog.showErrorBox(
+                    localizeMessage('main.webContentEvents.invalidLinkTitle', 'Invalid Link'),
+                    localizeMessage(
+                        'main.webContentEvents.invalidLinkDescription',
+                        'The link you clicked appears to be malformed and cannot be opened. Please check the URL for errors before trying again.',
+                    ),
+                );
+                return {action: 'deny'};
+            }
+
             // Dev tools case
             if (parsedURL.protocol === 'devtools:') {
                 return {action: 'allow'};
             }
 
-            // Check for custom protocol
-            if (parsedURL.protocol !== 'http:' && parsedURL.protocol !== 'https:' && parsedURL.protocol !== `${scheme}:`) {
-                allowProtocolDialog.handleDialogEvent(parsedURL.protocol, details.url);
+            // Allow plugins to open blank popup windows.
+            if (parsedURL.toString() === 'about:blank') {
+                return PluginsPopUpsManager.handleNewWindow(webContentsId, details);
+            }
+
+            // Check for mattermost protocol - handle internally
+            if (isMattermostProtocol(parsedURL)) {
+                ViewManager.handleDeepLink(parsedURL);
                 return {action: 'deny'};
             }
 
-            // Check for valid URL
-            // Let the browser handle invalid URIs
-            if (!isValidURI(details.url)) {
-                shell.openExternal(details.url);
+            // Check for other custom protocols
+            if (isCustomProtocol(parsedURL)) {
+                allowProtocolDialog.handleDialogEvent(parsedURL.protocol, details.url);
                 return {action: 'deny'};
             }
 
@@ -264,9 +238,6 @@ export class WebContentsEventManager {
                         win,
                         serverURL,
                     };
-                    this.customLogins[this.popupWindow.win.webContents.id] = {
-                        inProgress: false,
-                    };
 
                     popup = this.popupWindow.win;
                     popup.webContents.on('will-redirect', (event, url) => {
@@ -281,7 +252,6 @@ export class WebContentsEventManager {
                         }
                     });
                     popup.webContents.on('will-navigate', this.generateWillNavigate(popup.webContents.id));
-                    popup.webContents.on('did-start-navigation', this.generateDidStartNavigation(popup.webContents.id));
                     popup.webContents.setWindowOpenHandler(this.denyNewWindow);
                     popup.once('closed', () => {
                         this.popupWindow = undefined;
@@ -319,27 +289,6 @@ export class WebContentsEventManager {
         };
     };
 
-    private generateHandleConsoleMessage = (webContentsId: number) => (_: Event, level: number, message: string, line: number, sourceId: string) => {
-        const wcLog = this.log(webContentsId).withPrefix('renderer');
-        let logFn = wcLog.debug;
-        switch (level) {
-        case ConsoleMessageLevel.Error:
-            logFn = wcLog.error;
-            break;
-        case ConsoleMessageLevel.Warning:
-            logFn = wcLog.warn;
-            break;
-        }
-
-        // Only include line entries if we're debugging
-        const entries = [message];
-        if (['debug', 'silly'].includes(getLevel())) {
-            entries.push(`(${path.basename(sourceId)}:${line})`);
-        }
-
-        logFn(...entries);
-    };
-
     removeWebContentsListeners = (id: number) => {
         if (this.listeners[id]) {
             this.listeners[id]();
@@ -351,11 +300,6 @@ export class WebContentsEventManager {
         addListeners?: (contents: WebContents) => void,
         removeListeners?: (contents: WebContents) => void,
     ) => {
-        // initialize custom login tracking
-        this.customLogins[contents.id] = {
-            inProgress: false,
-        };
-
         if (this.listeners[contents.id]) {
             this.removeWebContentsListeners(contents.id);
         }
@@ -363,19 +307,15 @@ export class WebContentsEventManager {
         const willNavigate = this.generateWillNavigate(contents.id);
         contents.on('will-navigate', willNavigate);
 
-        // handle custom login requests (oath, saml):
-        // 1. are we navigating to a supported local custom login path from the `/login` page?
-        //    - indicate custom login is in progress
-        // 2. are we finished with the custom login process?
-        //    - indicate custom login is NOT in progress
-        const didStartNavigation = this.generateDidStartNavigation(contents.id);
-        contents.on('did-start-navigation', didStartNavigation);
-
         const spellcheck = Config.useSpellChecker;
         const newWindow = this.generateNewWindowListener(contents.id, spellcheck);
         contents.setWindowOpenHandler(newWindow);
 
-        const consoleMessage = this.generateHandleConsoleMessage(contents.id);
+        // Defer handling of new popup windows to PluginsPopUpsManager. These still need to be
+        // previously allowed from generateNewWindowListener through PluginsPopUpsManager.handleNewWindow.
+        contents.on('did-create-window', PluginsPopUpsManager.generateHandleCreateWindow(contents.id));
+
+        const consoleMessage = generateHandleConsoleMessage(this.log(contents.id));
         contents.on('console-message', consoleMessage);
 
         addListeners?.(contents);
@@ -383,7 +323,6 @@ export class WebContentsEventManager {
         const removeWebContentsListeners = () => {
             try {
                 contents.removeListener('will-navigate', willNavigate);
-                contents.removeListener('did-start-navigation', didStartNavigation);
                 contents.removeListener('console-message', consoleMessage);
                 removeListeners?.(contents);
             } catch (e) {

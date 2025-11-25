@@ -31,6 +31,7 @@ export const APP_MENU_WILL_CLOSE = 'app-menu-will-close';
 export const LOAD_RETRY = 'load_retry';
 export const LOAD_SUCCESS = 'load_success';
 export const LOAD_FAILED = 'load_fail';
+export const LOAD_INCOMPATIBLE_SERVER = 'load_incompatible_server';
 
 export const MAXIMIZE_CHANGE = 'maximized_change';
 
@@ -46,10 +47,7 @@ export const MODAL_RESULT = 'modal-result';
 export const MODAL_OPEN = 'modal-open';
 export const MODAL_CLOSE = 'modal-close';
 export const NOTIFY_MENTION = 'notify_mention';
-export const WINDOW_CLOSE = 'window_close';
-export const WINDOW_MINIMIZE = 'window_minimize';
-export const WINDOW_MAXIMIZE = 'window_maximize';
-export const WINDOW_RESTORE = 'window_restore';
+export const EXIT_FULLSCREEN = 'exit-fullscreen';
 export const GET_FULL_SCREEN_STATUS = 'get-full-screen-status';
 
 export const UPDATE_TARGET_URL = 'update_target_url';
@@ -61,14 +59,10 @@ export const PLAY_SOUND = 'play_sound';
 export const GET_DOWNLOAD_LOCATION = 'get_download_location';
 
 export const UPDATE_MENTIONS = 'update_mentions';
-export const IS_UNREAD = 'is_unread';
-export const UNREAD_RESULT = 'unread_result';
 export const UNREADS_AND_MENTIONS = 'unreads-and-mentions';
 export const SESSION_EXPIRED = 'session_expired';
 
 export const REACT_APP_INITIALIZED = 'react-app-initialized';
-
-export const TOGGLE_BACK_BUTTON = 'toggle-back-button';
 
 export const SHOW_SETTINGS_WINDOW = 'show-settings-window';
 
@@ -100,8 +94,7 @@ export const CHECK_FOR_UPDATES = 'check-for-updates';
 export const NO_UPDATE_AVAILABLE = 'no-update-available';
 
 export const BROWSER_HISTORY_PUSH = 'browser-history-push';
-export const APP_LOGGED_IN = 'app-logged-in';
-export const APP_LOGGED_OUT = 'app-logged-out';
+export const TAB_LOGIN_CHANGED = 'tab-login-changed';
 
 export const GET_AVAILABLE_SPELL_CHECKER_LANGUAGES = 'get-available-spell-checker-languages';
 
@@ -111,6 +104,7 @@ export const GET_MODAL_UNCLOSEABLE = 'get-modal-uncloseable';
 
 export const UPDATE_PATHS = 'update-paths';
 
+export const SET_URL_FOR_URL_VIEW = 'set-url-for-url-view';
 export const UPDATE_URL_VIEW_WIDTH = 'update-url-view-width';
 
 export const CALL_JOINED_BROWSER = 'call-joined-browser';
@@ -133,6 +127,9 @@ export const WINDOW_WILL_UNLOADED = 'window-will-unloaded';
 export const DISPATCH_GET_DESKTOP_SOURCES = 'dispatch-get-desktop-sources';
 
 export const RELOAD_CURRENT_VIEW = 'reload-current-view';
+export const OPEN_SERVER_EXTERNALLY = 'open-server-externally';
+export const OPEN_SERVER_UPGRADE_LINK = 'open-server-upgrade-link';
+export const OPEN_CHANGELOG_LINK = 'open-changelog-link';
 
 export const PING_DOMAIN = 'ping-domain';
 export const PING_DOMAIN_RESPONSE = 'ping-domain-response';
@@ -156,7 +153,6 @@ export const GET_APP_THEME = 'get-app-theme';
 
 // Calls
 export const GET_DESKTOP_SOURCES = 'get-desktop-sources';
-export const DESKTOP_SOURCES_RESULT = 'desktop-sources-result';
 export const DESKTOP_SOURCES_MODAL_REQUEST = 'desktop-sources-modal-request';
 export const CALL_DIALING = 'call-dialing';
 export const CALLS_JOIN_CALL = 'calls-join-call';
@@ -166,12 +162,14 @@ export const CALL_OPEN_WINDOW = 'open-kmeet-window';
 export const CALL_RING_CLOSE_WINDOW = 'call-ring-close-window';
 export const CALL_RING_WINDOW_IS_OPEN = 'call-ring-close-window-is-open';
 export const CALLS_WIDGET_SHARE_SCREEN = 'calls-widget-share-screen';
-export const CALLS_WIDGET_CHANNEL_LINK_CLICK = 'calls-widget-channel-link-click';
 export const CALLS_LINK_CLICK = 'calls-link-click';
 export const CALLS_JOINED_CALL = 'calls-joined-call';
 export const CALLS_POPOUT_FOCUS = 'calls-popout-focus';
 export const CALLS_ERROR = 'calls-error';
 export const CALLS_JOIN_REQUEST = 'calls-join-request';
+export const CALLS_WIDGET_OPEN_THREAD = 'calls-widget-open-thread';
+export const CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL = 'calls-widget-open-stop-recording-modal';
+export const CALLS_WIDGET_OPEN_USER_SETTINGS = 'calls-widget-open-user-settings';
 
 export const REQUEST_CLEAR_DOWNLOADS_DROPDOWN = 'request-clear-downloads-dropdown';
 export const CLOSE_DOWNLOADS_DROPDOWN = 'close-downloads-dropdown';
@@ -184,7 +182,6 @@ export const DOWNLOADS_DROPDOWN_OPEN_FILE = 'downloads-dropdown-open-file';
 export const REQUEST_HAS_DOWNLOADS = 'request-has-downloads';
 export const DOWNLOADS_DROPDOWN_FOCUSED = 'downloads-dropdown-focused';
 export const RECEIVE_DOWNLOADS_DROPDOWN_SIZE = 'receive-downloads-dropdown-size';
-export const GET_DOWNLOADED_IMAGE_THUMBNAIL_LOCATION = 'get-downloaded-image-thumbnail-location';
 
 export const OPEN_DOWNLOADS_DROPDOWN_MENU = 'open-downloads-dropdown-menu';
 export const CLOSE_DOWNLOADS_DROPDOWN_MENU = 'close-downloads-dropdown-menu';
@@ -238,3 +235,24 @@ export const TEAM_MOUSE_IN = 'team-mouse-in';
 export const TEAM_MOUSE_OUT = 'team-mouse-out';
 export const USER_LOCALE = 'user-locale';
 export const UPDATE_SERVERS_SIDEBAR_MODAL_SHORTCUT = 'update-servers-sidebar-modal-shortcut';
+export const OPEN_NOTIFICATION_PREFERENCES = 'open-notification-preferences';
+export const OPEN_WINDOWS_CAMERA_PREFERENCES = 'open-windows-camera-preferences';
+export const OPEN_WINDOWS_MICROPHONE_PREFERENCES = 'open-windows-microphone-preferences';
+export const GET_MEDIA_ACCESS_STATUS = 'get-media-access-status';
+
+export const GET_NONCE = 'get-nonce';
+
+export const DEVELOPER_MODE_UPDATED = 'developer-mode-updated';
+export const IS_DEVELOPER_MODE_ENABLED = 'is-developer-mode-enabled';
+
+export const REFRESH_PERMISSION = 'refresh-permission';
+export const GET_LOCAL_PERMISSIONS = 'get-permissions';
+
+export const METRICS_SEND = 'metrics-send';
+export const METRICS_RECEIVE = 'metrics-receive';
+export const METRICS_REQUEST = 'metrics-request';
+
+export const GET_UNIQUE_SERVERS_WITH_PERMISSIONS = 'get-unique-servers-with-permissions';
+export const ADD_SERVER = 'add-server';
+export const EDIT_SERVER = 'edit-server';
+export const REMOVE_SERVER = 'remove-server';

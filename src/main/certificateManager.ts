@@ -3,17 +3,18 @@
 
 import type {Certificate, WebContents, Event} from 'electron';
 
+import {ModalConstants} from 'common/constants';
 import {Logger} from 'common/log';
 
 import type {CertificateModalData} from 'types/certificate';
 
-import {getLocalURLString, getLocalPreload} from './utils';
+import {getLocalPreload} from './utils';
 import modalManager from './views/modalManager';
 import MainWindow from './windows/mainWindow';
 
 const log = new Logger('CertificateManager');
 const preload = getLocalPreload('internalAPI.js');
-const html = getLocalURLString('certificateModal.html');
+const html = 'kchat-desktop://renderer/certificateModal.html';
 
 type CertificateModalResult = {
     cert: Certificate;
@@ -45,7 +46,7 @@ export class CertificateManager {
         if (!mainWindow) {
             return;
         }
-        const modalPromise = modalManager.addModal<CertificateModalData, CertificateModalResult>(`certificate-${url}`, html, preload, {url, list}, mainWindow);
+        const modalPromise = modalManager.addModal<CertificateModalData, CertificateModalResult>(`${ModalConstants.CERTIFICATE_MODAL}-${url}`, html, preload, {url, list}, mainWindow);
         if (modalPromise) {
             modalPromise.then((data) => {
                 const {cert} = data;

@@ -3,28 +3,28 @@
 // See LICENSE.txt for license information.
 'use strict';
 
-import type {MenuItemConstructorOptions, MenuItem, WebContents} from 'electron';
-import {app, Menu, session, shell, clipboard} from 'electron';
+import type {MenuItem, MenuItemConstructorOptions} from 'electron';
+import {app, clipboard, ipcMain, Menu, session, shell} from 'electron';
+import log from 'electron-log';
 
+import ServerViewState from 'app/serverViewState';
+import {SHOW_NEW_SERVER_MODAL} from 'common/communication';
 import type {Config} from 'common/config';
+import {ModalConstants} from 'common/constants';
+import ServerManager from 'common/servers/serverManager';
 import {t} from 'common/utils/util';
+import {clearAllData, clearDataForServer} from 'main/app/utils';
 import type {UpdateManager} from 'main/autoUpdater';
+import DeveloperMode from 'main/developerMode';
 import Diagnostics from 'main/diagnostics';
 import downloadsManager from 'main/downloadsManager';
 import {localizeMessage} from 'main/i18nManager';
-import TokenManager from 'main/tokenManager';
-import {getLogsPath, getLocalPreload, getLocalURLString} from 'main/utils';
+import tokenManager from 'main/tokenManager';
+import {getLocalPreload} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import serversSidebar from 'main/views/serversSidebar';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
-
-// import CallsWidgetWindow from 'main/windows/callsWidgetWindow';
-// import log from 'electron-log';
-// import ServerViewState from 'app/serverViewState';
-// import {OPEN_SERVERS_DROPDOWN, SHOW_NEW_SERVER_MODAL} from 'common/communication';
-// import {getViewDisplayName} from 'common/views/View';
-// import type {ViewType} from 'common/views/View';
 
 export function createTemplate(config: Config, updateManager: UpdateManager) {
     const separatorItem: MenuItemConstructorOptions = {
@@ -58,23 +58,14 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             }
 
             ModalManager.addModal(
-                'settingsModal',
-                getLocalURLString('settings.html'),
+                ModalConstants.SETTINGS_MODAL,
+                'kchat-desktop://renderer/settings.html',
                 getLocalPreload('internalAPI.js'),
                 null,
                 mainWindow,
             );
         },
     });
-
-    /*if (config.enableServerManagement === true && ServerManager.hasServers()) {
-        platformAppMenu.push({
-            label: localizeMessage('main.menus.app.file.signInToAnotherServer', 'Sign in to Another Server'),
-            click() {
-                ipcMain.emit(SHOW_NEW_SERVER_MODAL);
-            },
-        });
-    }*/
 
     if (isMac) {
         platformAppMenu = platformAppMenu.concat([
@@ -141,7 +132,7 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         }],
     });
 
-    const devToolsSubMenu = [
+    const devToolsSubMenu: Electron.MenuItemConstructorOptions[] = [
         {
             label: localizeMessage('main.menus.app.view.devToolsAppWrapper', 'Developer Tools for Application Wrapper'),
             accelerator: (() => {
@@ -150,14 +141,16 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
                 }
                 return 'Ctrl+Shift+I';
             })(),
-            click(item: Electron.MenuItem, focusedWindow?: WebContents) {
-                if (focusedWindow) {
-                    // toggledevtools opens it in the last known position, so sometimes it goes below the browserview
-                    if (focusedWindow.isDevToolsOpened()) {
-                        focusedWindow.closeDevTools();
-                    } else {
-                        focusedWindow.openDevTools({mode: 'detach'});
-                    }
+            click() {
+                const mainWindow = MainWindow.get();
+                if (!mainWindow) {
+                    return;
+                }
+
+                if (mainWindow.webContents.isDevToolsOpened()) {
+                    mainWindow.webContents.closeDevTools();
+                } else {
+                    mainWindow.webContents.openDevTools({mode: 'detach'});
                 }
             },
         },
@@ -182,9 +175,56 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
     //             CallsWidgetWindow.openDevTools();
     //         },
     //     });
+
+    //     if (CallsWidgetWindow.isPopoutOpen()) {
+    //         devToolsSubMenu.push({
+    //             label: localizeMessage('main.menus.app.view.devToolsCurrentCallWidgetPopout', 'Developer Tools for Call Widget Popout'),
+    //             click() {
+    //                 CallsWidgetWindow.openPopoutDevTools();
+    //             },
+    //         });
+    //     }
     // }
 
-    const viewSubMenu = [{
+    if (DeveloperMode.enabled()) {
+        devToolsSubMenu.push(...[
+            separatorItem,
+            {
+                label: localizeMessage('main.menus.app.view.developerModeBrowserOnly', 'Browser Only Mode'),
+                type: 'checkbox' as const,
+                checked: DeveloperMode.get('browserOnly'),
+                click() {
+                    DeveloperMode.toggle('browserOnly');
+                },
+            },
+            {
+                label: localizeMessage('main.menus.app.view.developerModeDisableNotificationStorage', 'Disable Notification Storage'),
+                type: 'checkbox' as const,
+                checked: DeveloperMode.get('disableNotificationStorage'),
+                click() {
+                    DeveloperMode.toggle('disableNotificationStorage');
+                },
+            },
+            {
+                label: localizeMessage('main.menus.app.view.developerModeDisableUserActivityMonitor', 'Disable User Activity Monitor'),
+                type: 'checkbox' as const,
+                checked: DeveloperMode.get('disableUserActivityMonitor'),
+                click() {
+                    DeveloperMode.toggle('disableUserActivityMonitor');
+                },
+            },
+            {
+                label: localizeMessage('main.menus.app.view.developerModeDisableContextMenu', 'Disable Context Menu'),
+                type: 'checkbox' as const,
+                checked: DeveloperMode.get('disableContextMenu'),
+                click() {
+                    DeveloperMode.toggle('disableContextMenu');
+                },
+            },
+        ]);
+    }
+
+    const viewSubMenu: Electron.MenuItemConstructorOptions[] = [{
         label: localizeMessage('main.menus.app.view.find', 'Find..'),
         accelerator: 'CmdOrCtrl+F',
         click() {
@@ -202,14 +242,20 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         click() {
             session.defaultSession.clearCache();
             session.defaultSession.clearStorageData();
-            TokenManager.reset();
+            tokenManager.reset();
             ViewManager.reload();
         },
-    }, {
-        role: 'togglefullscreen',
-        label: localizeMessage('main.menus.app.view.fullscreen', 'Toggle Full Screen'),
-        accelerator: isMac ? 'Ctrl+Cmd+F' : 'F11',
-    }, separatorItem, {
+    }];
+
+    if (process.platform !== 'linux') {
+        viewSubMenu.push({
+            role: 'togglefullscreen',
+            label: localizeMessage('main.menus.app.view.fullscreen', 'Toggle Full Screen'),
+            accelerator: isMac ? 'Ctrl+Cmd+F' : 'F11',
+        });
+    }
+
+    viewSubMenu.push(separatorItem, {
         label: localizeMessage('main.menus.app.view.actualSize', 'Actual Size'),
         role: 'resetZoom',
         accelerator: 'CmdOrCtrl+0',
@@ -221,6 +267,10 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         role: 'zoomIn',
         visible: false,
         accelerator: 'CmdOrCtrl+Shift+=',
+    }, {
+        role: 'zoomIn',
+        visible: false,
+        accelerator: 'CmdOrCtrl+Plus',
     }, {
         role: 'zoomOut',
         label: localizeMessage('main.menus.app.view.zoomOut', 'Zoom Out'),
@@ -237,9 +287,21 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             return downloadsManager.openDownloadsDropdown();
         },
     }, separatorItem, {
+        id: 'clear-data-for-server',
+        label: localizeMessage('main.menus.app.view.clearDataForServer', 'Clear Data for Current Server'),
+        async click() {
+            return clearDataForServer(ServerViewState.getCurrentServer());
+        },
+    }, {
+        id: 'clear-data',
+        label: localizeMessage('main.menus.app.view.clearAllData', 'Clear All Data'),
+        async click() {
+            return clearAllData();
+        },
+    }, separatorItem, {
         label: localizeMessage('main.menus.app.view.devToolsSubMenu', 'Developer Tools'),
         submenu: devToolsSubMenu,
-    }];
+    });
 
     if (process.platform !== 'darwin' && process.platform !== 'win32') {
         viewSubMenu.push(separatorItem);
@@ -274,7 +336,6 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         }],
     });
 
-    //const servers = ServerManager.getOrderedServers();
     const windowMenu = {
         id: 'window',
         label: localizeMessage('main.menus.app.window', '&Window'),
@@ -294,49 +355,10 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
             label: isMac ? localizeMessage('main.menus.app.window.closeWindow', 'Close Window') : localizeMessage('main.menus.app.window.close', 'Close'),
             accelerator: 'CmdOrCtrl+W',
         }, separatorItem,
-
-        // ...teams.sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).map((team, i) => {
-        //     const items = [];
-        //     items.push({
-        //         label: team.name,
-        //         accelerator: `${process.platform === 'darwin' ? 'Cmd+Ctrl' : 'Ctrl+Shift'}+${i + 1}`,
-        //         click() {
-        //             WindowManager.switchServer(team.name);
-        //         },
-        //     });
-        //     if (WindowManager.getCurrentTeamName() === team.name) {
-        //         team.tabs.filter((tab) => tab.isOpen).sort((teamA, teamB) => teamA.order - teamB.order).slice(0, 9).forEach((tab, i) => {
-        //             items.push({
-        //                 label: `    ${localizeMessage(`common.tabs.${tab.name}`, getTabDisplayName(tab.name as TabType))}`,
-        //                 accelerator: `CmdOrCtrl+${i + 1}`,
-        //                 click() {
-        //                     WindowManager.switchTab(team.name, tab.name);
-        //                 },
-        //             });
-        //         });
-        //     }
-        //     return items;
-        // }).flat(), separatorItem, {
-        //     label: localizeMessage('main.menus.app.window.selectNextTab', 'Select Next Tab'),
-        //     accelerator: 'Ctrl+Tab',
-        //     click() {
-        //         WindowManager.selectNextTab();
-        //     },
-        //     enabled: (teams.length > 1),
-        // }, {
-        //     label: localizeMessage('main.menus.app.window.selectPreviousTab', 'Select Previous Tab'),
-        //     accelerator: 'Ctrl+Shift+Tab',
-        //     click() {
-        //         WindowManager.selectPreviousTab();
-        //     },
-        //     enabled: (teams.length > 1),
-        // }, ...(isMac ? [separatorItem, {
-        //     role: 'front',
-        //     label: localizeMessage('main.menus.app.window.bringAllToFront', 'Bring All to Front'),
-        // }] : []),
         ],
     };
     template.push(windowMenu);
+
     const submenu = [];
     if (updateManager && config.canUpgrade) {
         if (updateManager.versionDownloaded) {
@@ -361,24 +383,18 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
                 },
             });
         }
-    }
-    if (config.helpLink) {
-        submenu.push({
-            label: localizeMessage('main.menus.app.help.learnMore', 'Learn More...'),
-            click() {
-                shell.openExternal(config.helpLink!);
-            },
-        });
         submenu.push(separatorItem);
     }
 
-    /*submenu.push({
+    submenu.push(separatorItem);
+
+    submenu.push({
         id: 'Show logs',
         label: localizeMessage('main.menus.app.help.ShowLogs', 'Show logs'),
         click() {
             shell.showItemInFolder(log.transports.file.getFile().path);
         },
-    });*/
+    });
 
     submenu.push({
         id: 'diagnostics',
@@ -388,26 +404,6 @@ export function createTemplate(config: Config, updateManager: UpdateManager) {
         },
     });
 
-    submenu.push({id: 'Troubleshooting',
-        label: localizeMessage('main.menus.app.help.troubleshooting', 'Troubleshooting'),
-        submenu: [{
-            label: localizeMessage('main.menus.app.help.troubleshooting.open', 'Open log folder'),
-            enabled: true,
-            click() {
-                shell.showItemInFolder(getLogsPath());
-            }}, {
-            label: localizeMessage('main.menus.app.help.troubleshooting.clear', 'Clear logs'),
-            enabled: true,
-            click() {
-                fs.unlink(`${getLogsPath()}/kchat-desktop.log`, (err) => {
-                    if (err) {
-                        throw err;
-                    }
-                    // eslint-disable-next-line no-console
-                    console.log('Delete log file successfully.');
-                });
-            }}],
-    });
     submenu.push(separatorItem);
 
     const version = localizeMessage('main.menus.app.help.versionString', 'Version {version}{commit}', {

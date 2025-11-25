@@ -3,27 +3,32 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Modal, Button, FormGroup, FormControl, FormLabel, FormText, Spinner} from 'react-bootstrap';
 import type {IntlShape} from 'react-intl';
 import {FormattedMessage, injectIntl} from 'react-intl';
 
 import {URLValidationStatus} from 'common/utils/constants';
+import Toggle from 'renderer/components/Toggle';
 
 import type {UniqueServer} from 'types/config';
+import type {Permissions} from 'types/permissions';
 import type {URLValidationResult} from 'types/server';
+
+import Input, {SIZE, STATUS} from './Input';
+import {Modal} from './Modal';
 
 import 'renderer/css/components/NewServerModal.scss';
 
 type Props = {
-    onClose?: () => void;
-    onSave?: (server: UniqueServer) => void;
+    onClose: () => void;
+    onSave?: (server: UniqueServer, permissions?: Permissions) => void;
     server?: UniqueServer;
+    permissions?: Permissions;
     editMode?: boolean;
     show?: boolean;
-    restoreFocus?: boolean;
     currentOrder?: number;
-    setInputRef?: (inputRef: HTMLInputElement) => void;
     intl: IntlShape;
+    prefillURL?: string;
+    unremoveable?: boolean;
 };
 
 type State = {
@@ -34,6 +39,9 @@ type State = {
     saveStarted: boolean;
     validationStarted: boolean;
     validationResult?: URLValidationResult;
+    permissions: Permissions;
+    cameraDisabled: boolean;
+    microphoneDisabled: boolean;
 }
 
 class NewServerModal extends React.PureComponent<Props, State> {
@@ -41,10 +49,6 @@ class NewServerModal extends React.PureComponent<Props, State> {
     serverUrlInputRef?: HTMLInputElement;
     validationTimeout?: NodeJS.Timeout;
     mounted: boolean;
-
-    static defaultProps = {
-        restoreFocus: true,
-    };
 
     constructor(props: Props) {
         super(props);
@@ -57,6 +61,9 @@ class NewServerModal extends React.PureComponent<Props, State> {
             serverOrder: props.currentOrder || 0,
             saveStarted: false,
             validationStarted: false,
+            permissions: {},
+            cameraDisabled: false,
+            microphoneDisabled: false,
         };
     }
 
@@ -68,7 +75,17 @@ class NewServerModal extends React.PureComponent<Props, State> {
         this.mounted = false;
     }
 
-    initializeOnShow = () => {
+    componentDidUpdate(prevProps: Readonly<Props>): void {
+        if (this.props.prefillURL && this.props.prefillURL !== prevProps.prefillURL) {
+            this.setState({serverUrl: this.props.prefillURL});
+            this.validateServerURL(this.props.prefillURL);
+        }
+    }
+
+    initializeOnShow = async () => {
+        const cameraDisabled = window.process.platform === 'win32' && await window.desktop.getMediaAccessStatus('camera') !== 'granted';
+        const microphoneDisabled = window.process.platform === 'win32' && await window.desktop.getMediaAccessStatus('microphone') !== 'granted';
+
         this.setState({
             serverName: this.props.server ? this.props.server.name : '',
             serverUrl: this.props.server ? this.props.server.url : '',
@@ -76,6 +93,9 @@ class NewServerModal extends React.PureComponent<Props, State> {
             saveStarted: false,
             validationStarted: false,
             validationResult: undefined,
+            permissions: this.props.permissions ?? {},
+            cameraDisabled,
+            microphoneDisabled,
         });
 
         if (this.props.editMode && this.props.server) {
@@ -93,6 +113,20 @@ class NewServerModal extends React.PureComponent<Props, State> {
         const serverUrl = e.target.value;
         this.setState({serverUrl, validationResult: undefined});
         this.validateServerURL(serverUrl);
+    };
+
+    handleChangePermission = (permissionKey: string) => {
+        return (e: React.ChangeEvent<HTMLInputElement>) => {
+            this.setState({
+                permissions: {
+                    ...this.state.permissions,
+                    [permissionKey]: {
+                        allowed: e.target.checked,
+                        alwaysDeny: e.target.checked ? undefined : true,
+                    },
+                },
+            });
+        };
     };
 
     validateServerURL = (serverUrl: string) => {
@@ -122,19 +156,13 @@ class NewServerModal extends React.PureComponent<Props, State> {
 
     getServerURLMessage = () => {
         if (this.state.validationStarted) {
-            return (
-                <div>
-                    <Spinner
-                        className='NewServerModal-validationSpinner'
-                        animation='border'
-                        size='sm'
-                    />
-                    <FormattedMessage
-                        id='renderer.components.newServerModal.validating'
-                        defaultMessage='Validating...'
-                    />
-                </div>
-            );
+            return {
+                type: STATUS.INFO,
+                value: this.props.intl.formatMessage({
+                    id: 'renderer.components.newServerModal.validating',
+                    defaultMessage: 'Validating...',
+                }),
+            };
         }
 
         if (!this.state.validationResult) {
@@ -143,152 +171,135 @@ class NewServerModal extends React.PureComponent<Props, State> {
 
         switch (this.state.validationResult?.status) {
         case URLValidationStatus.Missing:
-            return (
-                <div
-                    id='urlValidation'
-                    className='error'
-                >
-                    <i className='icon-close-circle'/>
-                    <FormattedMessage
-                        id='renderer.components.newServerModal.error.urlRequired'
-                        defaultMessage='URL is required.'
-                    />
-                </div>
-            );
+            return {
+                type: STATUS.ERROR,
+                value: this.props.intl.formatMessage({
+                    id: 'renderer.components.newServerModal.error.urlRequired',
+                    defaultMessage: 'URL is required.',
+                }),
+            };
         case URLValidationStatus.Invalid:
-            return (
-                <div
-                    id='urlValidation'
-                    className='error'
-                >
-                    <i className='icon-close-circle'/>
-                    <FormattedMessage
-                        id='renderer.components.newServerModal.error.urlIncorrectFormatting'
-                        defaultMessage='URL is not formatted correctly.'
-                    />
-                </div>
-            );
+            return {
+                type: STATUS.ERROR,
+                value: this.props.intl.formatMessage({
+                    id: 'renderer.components.newServerModal.error.urlIncorrectFormatting',
+                    defaultMessage: 'URL is not formatted correctly.',
+                }),
+            };
         case URLValidationStatus.URLExists:
-            return (
-                <div
-                    id='urlValidation'
-                    className='warning'
-                >
-                    <i className='icon-alert-outline'/>
-                    <FormattedMessage
-                        id='renderer.components.newServerModal.error.serverUrlExists'
-                        defaultMessage='A server named {serverName} with the same Site URL already exists.'
-                        values={{serverName: this.state.validationResult.existingServerName}}
-                    />
-                </div>
-            );
+            return {
+                type: STATUS.WARNING,
+                value: this.props.intl.formatMessage({
+                    id: 'renderer.components.newServerModal.error.serverUrlExists',
+                    defaultMessage: 'A server named {serverName} with the same Site URL already exists.',
+                }, {
+                    serverName: this.state.validationResult.existingServerName,
+                }),
+            };
         case URLValidationStatus.Insecure:
-            return (
-                <div
-                    id='urlValidation'
-                    className='warning'
-                >
-                    <i className='icon-alert-outline'/>
-                    <FormattedMessage
-                        id='renderer.components.newServerModal.warning.insecure'
-                        defaultMessage='Your server URL is potentially insecure. For best results, use a URL with the HTTPS protocol.'
-                    />
-                </div>
-            );
+            return {
+                type: STATUS.WARNING,
+                value: this.props.intl.formatMessage({
+                    id: 'renderer.components.newServerModal.warning.insecure',
+                    defaultMessage: 'Your server URL is potentially insecure. For best results, use a URL with the HTTPS protocol.',
+                }),
+            };
         case URLValidationStatus.NotMattermost:
-            return (
-                <div
-                    id='urlValidation'
-                    className='warning'
-                >
-                    <i className='icon-alert-outline'/>
-                    <FormattedMessage
-                        id='renderer.components.newServerModal.warning.notMattermost'
-                        defaultMessage='The server URL provided does not appear to point to a valid Mattermost server. Please verify the URL and check your connection.'
-                    />
-                </div>
-            );
+            return {
+                type: STATUS.WARNING,
+                value: this.props.intl.formatMessage({
+                    id: 'renderer.components.newServerModal.warning.notMattermost',
+                    defaultMessage: 'The server URL provided does not appear to point to a valid Mattermost server. Please verify the URL and check your connection.',
+                }),
+            };
         case URLValidationStatus.URLNotMatched:
-            return (
-                <div
-                    id='urlValidation'
-                    className='warning'
-                >
-                    <i className='icon-alert-outline'/>
-                    <FormattedMessage
-                        id='renderer.components.newServerModal.warning.urlNotMatched'
-                        defaultMessage='The server URL does not match the configured Site URL on your Mattermost server. Server version: {serverVersion}'
-                        values={{serverVersion: this.state.validationResult.serverVersion}}
-                    />
-                </div>
-            );
+            return {
+                type: STATUS.WARNING,
+                value: this.props.intl.formatMessage({
+                    id: 'renderer.components.newServerModal.warning.urlNotMatched',
+                    defaultMessage: 'The server URL does not match the configured Site URL on your Mattermost server. Server version: {serverVersion}',
+                }, {
+                    serverVersion: this.state.validationResult.serverVersion,
+                }),
+            };
         case URLValidationStatus.URLUpdated:
-            return (
-                <div
-                    id='urlValidation'
-                    className='info'
-                >
-                    <i className='icon-information-outline'/>
-                    <FormattedMessage
-                        id='renderer.components.newServerModal.warning.urlUpdated'
-                        defaultMessage='The server URL provided has been updated to match the configured Site URL on your Mattermost server. Server version: {serverVersion}'
-                        values={{serverVersion: this.state.validationResult.serverVersion}}
-                    />
-                </div>
-            );
+            return {
+                type: STATUS.INFO,
+                value: this.props.intl.formatMessage({
+                    id: 'renderer.components.newServerModal.warning.urlUpdated',
+                    defaultMessage: 'The server URL provided has been updated to match the configured Site URL on your Mattermost server. Server version: {serverVersion}',
+                }, {
+                    serverVersion: this.state.validationResult.serverVersion,
+                }),
+            };
         }
 
-        return (
-            <div
-                id='urlValidation'
-                className='success'
-            >
-                <i className='icon-check-circle'/>
-                <FormattedMessage
-                    id='renderer.components.newServerModal.success.ok'
-                    defaultMessage='Server URL is valid. Server version: {serverVersion}'
-                    values={{serverVersion: this.state.validationResult.serverVersion}}
-                />
-            </div>
-        );
+        return {
+            type: STATUS.SUCCESS,
+            value: this.props.intl.formatMessage({
+                id: 'renderer.components.newServerModal.success.ok',
+                defaultMessage: 'Server URL is valid. Server version: {serverVersion}',
+            }, {
+                serverVersion: this.state.validationResult.serverVersion,
+            }),
+        };
+    };
+
+    openNotificationPrefs = () => {
+        window.desktop.openNotificationPreferences();
+    };
+
+    openWindowsCameraPrefs = () => {
+        window.desktop.openWindowsCameraPreferences();
+    };
+
+    openWindowsMicrophonePrefs = () => {
+        window.desktop.openWindowsMicrophonePreferences();
     };
 
     getServerNameMessage = () => {
+        if (!this.state.validationResult) {
+            return null;
+        }
+
         if (!this.state.serverName.length) {
-            return (
-                <div
-                    id='nameValidation'
-                    className='error'
-                >
-                    <i className='icon-close-circle'/>
-                    <FormattedMessage
-                        id='renderer.components.newServerModal.error.nameRequired'
-                        defaultMessage='Name is required.'
-                    />
-                </div>
-            );
+            return {
+                type: STATUS.ERROR,
+                value: this.props.intl.formatMessage({
+                    id: 'renderer.components.newServerModal.error.nameRequired',
+                    defaultMessage: 'Name is required.',
+                }),
+            };
         }
         return null;
     };
 
     save = () => {
-        if (!this.state.validationResult) {
-            return;
-        }
-
-        if (this.isServerURLErrored()) {
-            return;
-        }
-
-        this.setState({
-            saveStarted: true,
-        }, () => {
-            this.props.onSave?.({
-                url: this.state.serverUrl,
-                name: this.state.serverName,
-                id: this.state.serverId,
+        if (this.props.editMode && this.props.server?.isPredefined) {
+            this.setState({
+                saveStarted: true,
+            }, () => {
+                this.props.onSave?.(this.props.server!, this.state.permissions);
             });
-        });
+        } else {
+            if (!this.state.validationResult) {
+                return;
+            }
+
+            if (this.isServerURLErrored()) {
+                return;
+            }
+
+            this.setState({
+                saveStarted: true,
+            }, () => {
+                this.props.onSave?.({
+                    url: this.state.serverUrl,
+                    name: this.state.serverName,
+                    id: this.state.serverId,
+                }, this.state.permissions);
+            });
+        }
     };
 
     getSaveButtonLabel() {
@@ -331,130 +342,186 @@ class NewServerModal extends React.PureComponent<Props, State> {
         }
         this.wasShown = this.props.show;
 
+        const notificationValues = {
+            link: (msg: React.ReactNode) => (
+                <a
+                    href='#'
+                    onClick={this.openNotificationPrefs}
+                >
+                    {msg}
+                </a>
+            ),
+        };
+
         return (
             <Modal
-                bsClass='modal'
-                className='NewServerModal'
                 show={this.props.show}
                 id='newServerModal'
-                enforceFocus={true}
-                onEntered={() => this.serverUrlInputRef?.focus()}
-                onHide={this.props.onClose}
-                restoreFocus={this.props.restoreFocus}
-                onKeyDown={(e: React.KeyboardEvent) => {
-                    switch (e.key) {
-                    case 'Enter':
-                        this.save();
-
-                        // The add button from behind this might still be focused
-                        e.preventDefault();
-                        e.stopPropagation();
-                        break;
-                    case 'Escape':
-                        this.props.onClose?.();
-                        break;
-                    }
-                }}
+                className='NewServerModal'
+                onExited={this.props.unremoveable ? () => {} : this.props.onClose}
+                modalHeaderText={this.getModalTitle()}
+                confirmButtonText={this.getSaveButtonLabel()}
+                handleEnterKeyPress={this.save}
+                handleConfirm={this.save}
+                isConfirmDisabled={!this.state.serverName.length || !this.state.validationResult || this.isServerURLErrored()}
+                handleCancel={this.props.onClose}
+                bodyDivider={true}
+                footerDivider={true}
             >
-                <Modal.Header>
-                    <Modal.Title>{this.getModalTitle()}</Modal.Title>
-                </Modal.Header>
-
-                <Modal.Body>
-                    <form>
-                        <FormGroup>
-                            <FormLabel>
-                                <FormattedMessage
-                                    id='renderer.components.newServerModal.serverURL'
-                                    defaultMessage='Server URL'
-                                />
-                            </FormLabel>
-                            <FormControl
-                                id='serverUrlInput'
-                                type='text'
-                                value={this.state.serverUrl}
-                                placeholder='https://example.com'
-                                onChange={this.handleServerUrlChange}
-                                onClick={(e: React.MouseEvent<HTMLInputElement>) => {
-                                    e.stopPropagation();
-                                }}
-                                ref={(ref: HTMLInputElement) => {
-                                    this.serverUrlInputRef = ref;
-                                    if (this.props.setInputRef) {
-                                        this.props.setInputRef(ref);
-                                    }
-                                }}
-                                isInvalid={this.isServerURLErrored()}
+                <>
+                    {!(this.props.editMode && this.props.server?.isPredefined) &&
+                        <>
+                            <Input
                                 autoFocus={true}
-                            />
-                            <FormControl.Feedback/>
-                            <FormText>
-                                <FormattedMessage
-                                    id='renderer.components.newServerModal.serverURL.description'
-                                    defaultMessage='The URL of your Mattermost server. Must start with http:// or https://.'
-                                />
-                            </FormText>
-                        </FormGroup>
-                        <FormGroup className='NewServerModal-noBottomSpace'>
-                            <FormLabel>
-                                <FormattedMessage
-                                    id='renderer.components.newServerModal.serverDisplayName'
-                                    defaultMessage='Server Display Name'
-                                />
-                            </FormLabel>
-                            <FormControl
-                                id='serverNameInput'
+                                id='serverUrlInput'
+                                name='url'
                                 type='text'
+                                inputSize={SIZE.LARGE}
+                                value={this.state.serverUrl}
+                                onChange={this.handleServerUrlChange}
+                                customMessage={this.getServerURLMessage() ?? ({
+                                    type: STATUS.INFO,
+                                    value: this.props.intl.formatMessage({
+                                        id: 'renderer.components.newServerModal.serverURL.description',
+                                        defaultMessage: 'The URL of your Mattermost server. Must start with http:// or https://.',
+                                    }),
+                                })}
+                                placeholder={this.props.intl.formatMessage({
+                                    id: 'renderer.components.newServerModal.serverURL',
+                                    defaultMessage: 'Server URL',
+                                })}
+                            />
+                            <Input
+                                id='serverNameInput'
+                                name='name'
+                                type='text'
+                                inputSize={SIZE.LARGE}
                                 value={this.state.serverName}
-                                placeholder={this.props.intl.formatMessage({id: 'renderer.components.newServerModal.serverDisplayName', defaultMessage: 'Server Display Name'})}
                                 onChange={this.handleServerNameChange}
-                                onClick={(e: React.MouseEvent<HTMLInputElement>) => {
-                                    e.stopPropagation();
-                                }}
-                                isInvalid={!this.state.serverName.length}
+                                customMessage={this.getServerNameMessage() ?? ({
+                                    type: STATUS.INFO,
+                                    value: this.props.intl.formatMessage({
+                                        id: 'renderer.components.newServerModal.serverDisplayName.description',
+                                        defaultMessage: 'The name of the server displayed on your desktop app tab bar.',
+                                    }),
+                                })}
+                                placeholder={this.props.intl.formatMessage({
+                                    id: 'renderer.components.newServerModal.serverDisplayName',
+                                    defaultMessage: 'Server display name',
+                                })}
                             />
-                            <FormControl.Feedback/>
-                            <FormText className='NewServerModal-noBottomSpace'>
+                        </>
+                    }
+                    {this.props.editMode &&
+                        <>
+                            <hr/>
+                            <h3 className='NewServerModal__permissions__title'>
                                 <FormattedMessage
-                                    id='renderer.components.newServerModal.serverDisplayName.description'
-                                    defaultMessage='The name of the server displayed on your desktop app tab bar.'
+                                    id='renderer.components.newServerModal.permissions.title'
+                                    defaultMessage='Permissions'
                                 />
-                            </FormText>
-                        </FormGroup>
-                    </form>
-                    <div
-                        className='NewServerModal-validation'
-                    >
-                        {this.getServerNameMessage()}
-                        {this.getServerURLMessage()}
-                    </div>
-                </Modal.Body>
-
-                <Modal.Footer>
-                    {this.props.onClose &&
-                        <Button
-                            id='cancelNewServerModal'
-                            onClick={this.props.onClose}
-                            variant='link'
-                        >
-                            <FormattedMessage
-                                id='label.cancel'
-                                defaultMessage='Cancel'
-                            />
-                        </Button>
+                            </h3>
+                            <Toggle
+                                isChecked={this.state.permissions.media?.allowed}
+                                onChange={this.handleChangePermission('media')}
+                            >
+                                <i className='icon icon-microphone'/>
+                                <div>
+                                    <FormattedMessage
+                                        id='renderer.components.newServerModal.permissions.microphoneAndCamera'
+                                        defaultMessage='Microphone and Camera'
+                                    />
+                                    {this.state.cameraDisabled &&
+                                        <small className='NewServerModal__toggle__description'>
+                                            <FormattedMessage
+                                                id='renderer.components.newServerModal.permissions.microphoneAndCamera.windowsCameraPermissions'
+                                                defaultMessage='Camera is disabled in Windows Settings. Click <link>here</link> to open the Camera Settings.'
+                                                values={{
+                                                    link: (msg: React.ReactNode) => (
+                                                        <a
+                                                            href='#'
+                                                            onClick={this.openWindowsCameraPrefs}
+                                                        >
+                                                            {msg}
+                                                        </a>
+                                                    ),
+                                                }}
+                                            />
+                                        </small>
+                                    }
+                                    {this.state.microphoneDisabled &&
+                                        <small className='NewServerModal__toggle__description'>
+                                            <FormattedMessage
+                                                id='renderer.components.newServerModal.permissions.microphoneAndCamera.windowsMicrophoneaPermissions'
+                                                defaultMessage='Microphone is disabled in Windows Settings. Click <link>here</link> to open the Microphone Settings.'
+                                                values={{
+                                                    link: (msg: React.ReactNode) => (
+                                                        <a
+                                                            href='#'
+                                                            onClick={this.openWindowsMicrophonePrefs}
+                                                        >
+                                                            {msg}
+                                                        </a>
+                                                    ),
+                                                }}
+                                            />
+                                        </small>
+                                    }
+                                </div>
+                            </Toggle>
+                            <Toggle
+                                isChecked={this.state.permissions.notifications?.allowed}
+                                onChange={this.handleChangePermission('notifications')}
+                            >
+                                <i className='icon icon-bell-outline'/>
+                                <div>
+                                    <FormattedMessage
+                                        id='renderer.components.newServerModal.permissions.notifications'
+                                        defaultMessage='Notifications'
+                                    />
+                                    {window.process.platform === 'darwin' &&
+                                        <small className='NewServerModal__toggle__description'>
+                                            <FormattedMessage
+                                                id='renderer.components.newServerModal.permissions.notifications.mac'
+                                                defaultMessage='You may also need to enable notifications in macOS for Mattermost. Click <link>here</link> to open the System Preferences.'
+                                                values={notificationValues}
+                                            />
+                                        </small>
+                                    }
+                                    {window.process.platform === 'win32' &&
+                                        <small className='NewServerModal__toggle__description'>
+                                            <FormattedMessage
+                                                id='renderer.components.newServerModal.permissions.notifications.windows'
+                                                defaultMessage='You may also need to enable notifications in Windows for Mattermost. Click <link>here</link> to open the Notification Settings.'
+                                                values={notificationValues}
+                                            />
+                                        </small>
+                                    }
+                                </div>
+                            </Toggle>
+                            <Toggle
+                                isChecked={this.state.permissions.geolocation?.allowed}
+                                onChange={this.handleChangePermission('geolocation')}
+                            >
+                                <i className='icon icon-map-marker-outline'/>
+                                <FormattedMessage
+                                    id='renderer.components.newServerModal.permissions.geolocation'
+                                    defaultMessage='Location'
+                                />
+                            </Toggle>
+                            <Toggle
+                                isChecked={this.state.permissions.screenShare?.allowed}
+                                onChange={this.handleChangePermission('screenShare')}
+                            >
+                                <i className='icon icon-monitor-share'/>
+                                <FormattedMessage
+                                    id='renderer.components.newServerModal.permissions.screenShare'
+                                    defaultMessage='Screen Share'
+                                />
+                            </Toggle>
+                        </>
                     }
-                    {this.props.onSave &&
-                        <Button
-                            id='saveNewServerModal'
-                            onClick={this.save}
-                            disabled={!this.state.serverName.length || !this.state.validationResult || this.isServerURLErrored()}
-                            variant='primary'
-                        >
-                            {this.getSaveButtonLabel()}
-                        </Button>
-                    }
-                </Modal.Footer>
-
+                </>
             </Modal>
         );
     }

@@ -55,7 +55,7 @@ export type ConfigV3 = {
     notifications: {
         flashWindow: number;
         bounceIcon: boolean;
-        bounceIconType: 'critical' | 'informational';
+        bounceIconType: '' | 'critical' | 'informational';
     };
     showUnreadBadge: boolean;
     useSpellChecker: boolean;
@@ -72,8 +72,11 @@ export type ConfigV3 = {
     alwaysMinimize?: boolean;
     alwaysClose?: boolean;
     logLevel?: string;
+    permissions?: string;
     appLanguage?: string;
     theme?: object;
+    enableMetrics?: boolean;
+    Permissions?: string;
 }
 
 export type ConfigV2 =
@@ -120,6 +123,8 @@ export type AnyConfig = ConfigV3 | ConfigV2 | ConfigV1 | ConfigV0;
 export type BuildConfig = {
     defaultServers?: Server[];
     helpLink: string;
+    academyLink: string;
+    upgradeLink: string;
     enableServerManagement: boolean;
     enableAutoUpdater: boolean;
     managedResources: string[];
@@ -134,7 +139,6 @@ export type RegistryConfig = {
 
 export type CombinedConfig = Omit<Config, 'teams'> & Omit<BuildConfig, 'defaultServers'> & {
     appName: string;
-    useNativeWindow: boolean;
 }
 
 export type LocalConfiguration = Config & {
@@ -147,4 +151,5 @@ export type MigrationInfo = {
     updateTrayIconWin32: boolean;
     masConfigs: boolean;
     closeExtraTabs: boolean;
+    enableMetrics: boolean;
 }

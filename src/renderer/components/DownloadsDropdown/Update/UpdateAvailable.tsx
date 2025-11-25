@@ -1,11 +1,12 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useState} from 'react';
 import {Button} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
 
 import {START_UPDATE_DOWNLOAD_MANUAL} from 'common/communication';
+import LoadingWrapper from 'renderer/components/SaveButton/LoadingWrapper';
 
 import type {DownloadedItem} from 'types/downloads';
 
@@ -17,7 +18,12 @@ type OwnProps = {
 }
 
 const UpdateAvailable = ({item, appName}: OwnProps) => {
+    const [isProcessing, setIsProcessing] = useState(false);
     const onButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (isProcessing) {
+            return;
+        }
+        setIsProcessing(true);
         e?.preventDefault?.();
         window.desktop.downloadsDropdown.startUpdateDownload();
     };
@@ -59,13 +65,25 @@ const UpdateAvailable = ({item, appName}: OwnProps) => {
                 )}
                 <Button
                     id='downloadUpdateButton'
-                    className='primary-button'
+                    className='primary-button DownloadsDropdown__Update__Details__Button'
+                    variant='primary'
                     onClick={onButtonClick}
+                    disabled={isProcessing}
                 >
-                    <FormattedMessage
-                        id='renderer.downloadsDropdown.Update.DownloadUpdate'
-                        defaultMessage='Download Update'
-                    />
+                    <LoadingWrapper
+                        loading={isProcessing}
+                        text={(
+                            <FormattedMessage
+                                id='renderer.downloadsDropdown.Update.Downloading'
+                                defaultMessage='Downloading'
+                            />
+                        )}
+                    >
+                        <FormattedMessage
+                            id='renderer.downloadsDropdown.Update.DownloadUpdate'
+                            defaultMessage='Download Update'
+                        />
+                    </LoadingWrapper>
                 </Button>
                 {isMac && (
                     <Button

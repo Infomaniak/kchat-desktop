@@ -11,10 +11,9 @@ const chai = require('chai');
 const {ipcRenderer} = require('electron');
 const {_electron: electron} = require('playwright');
 const ps = require('ps-node');
+const {SHOW_SETTINGS_WINDOW} = require('src/common/communication');
 
 const {asyncSleep, mkDirAsync, rmDirAsync, unlinkAsync} = require('./utils');
-
-const {SHOW_SETTINGS_WINDOW} = require('../../src/common/communication');
 chai.should();
 
 const sourceRootDir = path.join(__dirname, '../..');
@@ -25,7 +24,7 @@ const electronBinaryPath = (() => {
     const exeExtension = (process.platform === 'win32') ? '.exe' : '';
     return path.join(sourceRootDir, 'node_modules/electron/dist/electron' + exeExtension);
 })();
-const userDataDir = path.join(sourceRootDir, 'e2e/testUserData/');
+const userDataDir = path.join(sourceRootDir, 'e2e/testUserData');
 const configFilePath = path.join(userDataDir, 'config.json');
 const downloadsFilePath = path.join(userDataDir, 'downloads.json');
 const downloadsLocation = path.join(userDataDir, 'Downloads');
@@ -218,17 +217,9 @@ module.exports = {
                 RESOURCES_PATH: userDataDir,
             },
             executablePath: electronBinaryPath,
-            args: [`${path.join(sourceRootDir, 'dist')}`, `--user-data-dir=${userDataDir}`, '--disable-dev-mode', '--no-sandbox', ...args],
+            args: [`${path.join(sourceRootDir, 'e2e/dist')}`, `--user-data-dir=${userDataDir}`, '--disable-dev-shm-usage', '--disable-dev-mode', '--disable-gpu', '--no-sandbox', ...args],
         };
 
-        // if (process.env.MM_DEBUG_SETTINGS) {
-        //     options.chromeDriverLogPath = './chromedriverlog.txt';
-        // }
-        // if (process.platform === 'darwin' || process.platform === 'linux') {
-        //     // on a mac, debugging port might conflict with other apps
-        //     // this changes the default debugging port so chromedriver can run without issues.
-        //     options.chromeDriverArgs.push('remote-debugging-port=9222');
-        //}
         return electron.launch(options).then(async (eapp) => {
             await eapp.evaluate(async ({app}) => {
                 const promise = new Promise((resolve) => {
@@ -244,29 +235,32 @@ module.exports = {
 
     async getServerMap(app) {
         const map = {};
-        await Promise.all(app.windows().map(async (win) => {
-            return win.evaluate(async () => {
-                if (!window.testHelper) {
-                    return null;
-                }
-                const info = await window.testHelper.getViewInfoForTest();
-                return {viewName: `${info.serverName}___${info.viewType}`, webContentsId: info.webContentsId};
-            }).then((result) => {
-                if (result) {
-                    map[result.viewName] = {win, webContentsId: result.webContentsId};
-                }
-            });
-        }));
+        await Promise.all(app.windows().
+            filter((win) => !win.url().includes('mattermost-desktop://')).
+            map(async (win) => {
+                return win.evaluate(async () => {
+                    if (!window.testHelper) {
+                        return null;
+                    }
+                    const info = await window.testHelper.getViewInfoForTest();
+                    if (!info) {
+                        return null;
+                    }
+                    return {viewName: `${info.serverName}___${info.viewType}`, webContentsId: info.webContentsId};
+                }).then((result) => {
+                    if (result) {
+                        map[result.viewName] = {win, webContentsId: result.webContentsId};
+                    }
+                });
+            }));
         return map;
     },
 
     async loginToMattermost(window) {
-        // Do this twice because sometimes the app likes to load the login screen, then go to Loading... again
-        await asyncSleep(2000);
-        await window.waitForSelector('input[placeholder="address@mail.com"]');
-        await window.waitForSelector('input[placeholder="Password"]');
-        await window.waitForSelector('button[type="submit"]');
-
+        await asyncSleep(1000);
+        await window.waitForSelector('#input_loginId');
+        await window.waitForSelector('#input_password-input');
+        await window.waitForSelector('#saveSetting');
         await window.type('#input_loginId', process.env.MM_TEST_USER_NAME);
         await window.type('#input_password-input', process.env.MM_TEST_PASSWORD);
         await window.click('#saveSetting');

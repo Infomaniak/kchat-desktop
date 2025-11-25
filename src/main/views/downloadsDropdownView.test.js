@@ -12,7 +12,6 @@ import {DownloadsDropdownView} from './downloadsDropdownView';
 
 jest.mock('main/utils', () => ({
     getLocalPreload: (file) => file,
-    getLocalURLString: (file) => file,
 }));
 jest.mock('fs', () => ({
     existsSync: jest.fn().mockReturnValue(false),
@@ -37,8 +36,10 @@ jest.mock('electron', () => {
     return {
         app: {
             getAppPath: () => '',
+            getPath: jest.fn(() => '/valid/downloads/path'),
         },
-        BrowserView: jest.fn().mockImplementation(() => ({
+        WebContentsView: jest.fn().mockImplementation(() => ({
+            setBackgroundColor: jest.fn(),
             webContents: {
                 loadURL: jest.fn(),
                 focus: jest.fn(),
@@ -65,6 +66,9 @@ jest.mock('main/downloadsManager', () => ({
     onOpen: jest.fn(),
     onClose: jest.fn(),
 }));
+jest.mock('main/performanceMonitor', () => ({
+    registerView: jest.fn(),
+}));
 jest.mock('main/windows/mainWindow', () => ({
     on: jest.fn(),
     get: jest.fn(),
@@ -74,7 +78,7 @@ jest.mock('main/windows/mainWindow', () => ({
 
 describe('main/views/DownloadsDropdownView', () => {
     beforeEach(() => {
-        MainWindow.get.mockReturnValue({addBrowserView: jest.fn(), setTopBrowserView: jest.fn()});
+        MainWindow.get.mockReturnValue({contentView: {addChildView: jest.fn()}});
         getDarwinDoNotDisturb.mockReturnValue(false);
     });
     describe('getBounds', () => {
