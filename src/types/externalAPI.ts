@@ -22,4 +22,8 @@ export interface ExternalAPI {
     createListener(event: 'calls-error', listener: (err: string, callID?: string, errMsg?: string) => void): () => void;
     createListener(event: 'calls-link-click', listener: (url: string) => void): () => void;
     createListener(event: 'desktop-sources-modal-request', listener: () => void): () => void;
+    createListener(event: 'calls-widget-open-thread', listener: (threadID: string) => void): () => void;
+    createListener(event: 'calls-widget-open-stop-recording-modal', listener: (channelID: string) => void): () => void;
+    createListener(event: 'calls-widget-open-user-settings', listener: () => void): () => void;
+    createListener(event: 'metrics-send', listener: (metricsMap: Map<string, {cpu?: number; memory?: number}>) => void): () => void;
 }

@@ -33,6 +33,7 @@ type State = {
     teamsOrderPreference?: string[];
     isReadyToSwitchServer?: boolean;
     locale?: string;
+    modalOverlayEnabled?: boolean;
 }
 
 const ServersSidebarRenderer = () => {
@@ -50,6 +51,7 @@ const ServersSidebarRenderer = () => {
         teamsOrderPreference?: string[],
         isReadyToSwitchServer?: boolean,
         locale?: string,
+        modalOverlayEnabled?: boolean,
     ) => {
         setState({
             servers,
@@ -63,6 +65,7 @@ const ServersSidebarRenderer = () => {
             teamsOrderPreference,
             isReadyToSwitchServer,
             locale,
+            modalOverlayEnabled,
         });
     };
 
@@ -136,6 +139,7 @@ const ServersSidebarRenderer = () => {
             mentions={state?.mentions}
             expired={state?.expired}
             showButtonsIndex={Boolean(state?.isReadyToSwitchServer)}
+            modalOverlayEnabled={state?.modalOverlayEnabled ?? false}
         />
     );
 };

@@ -123,8 +123,8 @@
     "notarize": {
       "teamId": "864VDCS2QY"
     },
-    "bundleShortVersion": "3.3.4",
-    "bundleVersion": "25"
+    "bundleShortVersion": "3.4.0",
+    "bundleVersion": "27"
   },
   "mas": {
     "hardenedRuntime": false,
@@ -181,16 +181,13 @@
       }
     ],
     "signDlls": true,
-    "publisherName": "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH"
+   "publisherName": "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH"
   },
   "nsis": {
     "artifactName": "${name}-setup-${version}-win.${ext}",
     "packElevateHelper": false
   },
   "rpm": {
-    "fpm": [
-      "--rpm-rpmbuild-define",
-      "_build_id_links none"
-    ]
+    "fpm": ["--rpm-rpmbuild-define", "_build_id_links none", "--rpm-digest=sha256"]
   }
 }

@@ -1,13 +1,14 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {app, shell, Notification} from 'electron';
+import {app, shell, Notification, ipcMain} from 'electron';
 import isDev from 'electron-is-dev';
 import {getDoNotDisturb as getDarwinDoNotDisturb} from 'macos-notification-state';
 
-import {PLAY_SOUND, NOTIFICATION_CLICKED} from 'common/communication';
+import {PLAY_SOUND, NOTIFICATION_CLICKED, BROWSER_HISTORY_PUSH, OPEN_NOTIFICATION_PREFERENCES} from 'common/communication';
 import Config from 'common/config';
 import {Logger} from 'common/log';
+import DeveloperMode from 'main/developerMode';
 
 import getLinuxDoNotDisturb from './dnd-linux';
 import getWindowsDoNotDisturb from './dnd-windows';
@@ -22,10 +23,24 @@ import MainWindow from '../windows/mainWindow';
 const log = new Logger('Notifications');
 
 class NotificationManager {
-    private mentionsPerChannel: Map<string, Mention> = new Map();
-    private allActiveNotifications: Map<string, Notification> = new Map();
+    private mentionsPerChannel?: Map<string, Mention>;
+    private allActiveNotifications?: Map<string, Notification>;
     private upgradeNotification?: NewVersionNotification;
     private restartToUpgradeNotification?: UpgradeNotification;
+
+    constructor() {
+        ipcMain.on(OPEN_NOTIFICATION_PREFERENCES, this.openNotificationPreferences);
+
+        DeveloperMode.switchOff('disableNotificationStorage', () => {
+            this.mentionsPerChannel = new Map();
+            this.allActiveNotifications = new Map();
+        }, () => {
+            this.mentionsPerChannel?.clear();
+            delete this.mentionsPerChannel;
+            this.allActiveNotifications?.clear();
+            delete this.allActiveNotifications;
+        });
+    }
 
     public async displayMention(title: string, body: string, channelId: string, teamId: string, url: string, silent: boolean, webcontents: Electron.WebContents, soundName: string) {
         log.debug('displayMention', {title, body, channelId, teamId, url, silent, soundName});
@@ -33,21 +48,24 @@ class NotificationManager {
 
         if (!Notification.isSupported()) {
             log.error('notification not supported');
-            return {result: 'error', reason: 'notification_api', data: 'notification not supported'};
+            return {status: 'error', reason: 'notification_api', data: 'notification not supported'};
         }
 
         if (dnd) {
+            log.debug('do not disturb is on, will not send');
             return {result: 'not_sent', reason: 'os_dnd'};
         }
 
         const view = ViewManager.getViewByWebContentsId(webcontents.id);
         if (!view) {
-            return {result: 'error', reason: 'missing_view'};
-        }
-        if (!view.view.shouldNotify) {
-            return {result: 'error', reason: 'view_should_not_notify'};
+            log.error('missing view', webcontents.id);
+            return {status: 'error', reason: 'missing_view'};
         }
         const serverName = view.view.server.name;
+        if (!view.view.shouldNotify) {
+            log.debug('should not notify for this view', webcontents.id);
+            return {status: 'not_sent', reason: 'view_should_not_notify'};
+        }
 
         const options = {
             title: `${serverName}: ${title}`,
@@ -56,60 +74,83 @@ class NotificationManager {
             soundName,
         };
 
-        if (!await PermissionsManager.doPermissionRequest(webcontents.id, 'notifications', view.view.server.url.toString())) {
-            return {result: 'not_sent', reason: 'notifications_permission_disallowed'};
+        if (!await PermissionsManager.doPermissionRequest(webcontents.id, 'notifications', {requestingUrl: view.view.server.url.toString(), isMainFrame: false})) {
+            log.verbose('permissions disallowed', webcontents.id, serverName, view.view.server.url.toString());
+            return {status: 'not_sent', reason: 'notifications_permission_disallowed'};
         }
 
         const mention = new Mention(options, channelId, teamId);
-        const mentionKey = `${mention.teamId}:${mention.channelId}`;
-        this.allActiveNotifications.set(mention.uId, mention);
+        this.allActiveNotifications?.set(mention.uId, mention);
 
         mention.on('click', () => {
-            log.debug('notification click', serverName, mention);
+            log.debug('notification click', serverName, mention.uId);
 
-            this.allActiveNotifications.delete(mention.uId);
-            MainWindow.show();
-            if (serverName) {
+            this.allActiveNotifications?.delete(mention.uId);
+
+            // Show the window after navigation has finished to avoid the focus handler
+            // being called before the current channel has updated
+            const focus = () => {
+                MainWindow.show();
                 ViewManager.showById(view.id);
-                webcontents.send(NOTIFICATION_CLICKED, channelId, teamId, url);
-            }
+                ipcMain.off(BROWSER_HISTORY_PUSH, focus);
+            };
+            ipcMain.on(BROWSER_HISTORY_PUSH, focus);
+            webcontents.send(NOTIFICATION_CLICKED, channelId, teamId, url);
         });
 
         mention.on('close', () => {
-            this.allActiveNotifications.delete(mention.uId);
+            this.allActiveNotifications?.delete(mention.uId);
         });
 
         return new Promise((resolve) => {
             // If mention never shows somehow, resolve the promise after 10s
             const timeout = setTimeout(() => {
-                resolve({result: 'error', reason: 'notification_timeout'});
+                log.debug('notification timeout', serverName, mention.uId);
+                resolve({status: 'error', reason: 'notification_timeout'});
             }, 10000);
+            let failed = false;
 
             mention.on('show', () => {
-                log.debug('displayMention.show');
+                // Ensure the failed event isn't also called, if it is we should resolve using its method
+                setTimeout(() => {
+                    if (!failed) {
+                        log.debug('displayMention.show', serverName, mention.uId);
 
-                // On Windows, manually dismiss notifications from the same channel and only show the latest one
-                if (process.platform === 'win32') {
-                    if (this.mentionsPerChannel.has(mentionKey)) {
-                        log.debug(`close ${mentionKey}`);
-                        this.mentionsPerChannel.get(mentionKey)?.close();
-                        this.mentionsPerChannel.delete(mentionKey);
+                        // On Windows, manually dismiss notifications from the same channel and only show the latest one
+                        if (process.platform === 'win32') {
+                            const mentionKey = `${mention.teamId}:${mention.channelId}`;
+                            if (this.mentionsPerChannel?.has(mentionKey)) {
+                                log.debug(`close ${mentionKey}`);
+                                this.mentionsPerChannel?.get(mentionKey)?.close();
+                                this.mentionsPerChannel?.delete(mentionKey);
+                            }
+                            this.mentionsPerChannel?.set(mentionKey, mention);
+                        }
+                        const notificationSound = mention.getNotificationSound();
+                        if (notificationSound && !dnd) {
+                            MainWindow.sendToRenderer(PLAY_SOUND, notificationSound);
+                        }
+
+                        flashFrame(true);
+                        clearTimeout(timeout);
+                        resolve({status: 'success'});
                     }
-                    this.mentionsPerChannel.set(mentionKey, mention);
-                }
-                const notificationSound = mention.getNotificationSound();
-                if (notificationSound && !dnd) {
-                    MainWindow.sendToRenderer(PLAY_SOUND, notificationSound);
-                }
-                flashFrame(true);
-                clearTimeout(timeout);
-                resolve({result: 'success'});
+                }, 0);
             });
 
             mention.on('failed', (_, error) => {
-                this.allActiveNotifications.delete(mention.uId);
+                failed = true;
+                this.allActiveNotifications?.delete(mention.uId);
                 clearTimeout(timeout);
-                resolve({result: 'error', reason: 'electron_notification_failed', data: error});
+
+                // Special case for Windows - means that notifications are disabled at the OS level
+                if (error.includes('HRESULT:-2143420143')) {
+                    log.warn('notifications disabled in Windows settings');
+                    resolve({status: 'not_sent', reason: 'windows_permissions_denied'});
+                } else {
+                    log.error('notification failed to show', serverName, mention.uId, error);
+                    resolve({status: 'error', reason: 'electron_notification_failed', data: error});
+                }
             });
             mention.show();
         });
@@ -128,7 +169,7 @@ class NotificationManager {
         }
 
         const download = new DownloadNotification(fileName, serverName);
-        this.allActiveNotifications.set(download.uId, download);
+        this.allActiveNotifications?.set(download.uId, download);
 
         download.on('show', () => {
             flashFrame(true);
@@ -136,15 +177,15 @@ class NotificationManager {
 
         download.on('click', () => {
             shell.showItemInFolder(path.normalize());
-            this.allActiveNotifications.delete(download.uId);
+            this.allActiveNotifications?.delete(download.uId);
         });
 
         download.on('close', () => {
-            this.allActiveNotifications.delete(download.uId);
+            this.allActiveNotifications?.delete(download.uId);
         });
 
         download.on('failed', () => {
-            this.allActiveNotifications.delete(download.uId);
+            this.allActiveNotifications?.delete(download.uId);
         });
         download.show();
     }
@@ -185,16 +226,33 @@ class NotificationManager {
         });
         this.restartToUpgradeNotification.show();
     }
+
+    private openNotificationPreferences() {
+        switch (process.platform) {
+        case 'darwin':
+            shell.openExternal('x-apple.systempreferences:com.apple.preference.notifications?Notifications');
+            break;
+        case 'win32':
+            shell.openExternal('ms-settings:notifications');
+            break;
+        }
+    }
 }
 
-async function getDoNotDisturb() {
+export async function getDoNotDisturb() {
     if (process.platform === 'win32') {
         return getWindowsDoNotDisturb();
     }
 
     // We have to turn this off for dev mode because the Electron binary doesn't have the focus center API entitlement
     if (process.platform === 'darwin' && !isDev) {
-        return getDarwinDoNotDisturb();
+        try {
+            const dnd = await getDarwinDoNotDisturb();
+            return dnd;
+        } catch (e) {
+            log.warn('macOS DND check threw an error', e);
+            return false;
+        }
     }
 
     if (process.platform === 'linux') {
@@ -210,8 +268,8 @@ function flashFrame(flash: boolean) {
             MainWindow.get()?.flashFrame(flash);
         }
     }
-    if (process.platform === 'darwin' && Config.notifications.bounceIcon) {
-        app.dock.bounce(Config.notifications.bounceIconType);
+    if (process.platform === 'darwin' && Config.notifications.bounceIcon && Config.notifications.bounceIconType) {
+        app.dock?.bounce(Config.notifications.bounceIconType);
     }
 }
 

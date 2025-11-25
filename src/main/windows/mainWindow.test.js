@@ -39,6 +39,7 @@ jest.mock('electron', () => ({
     },
     screen: {
         getDisplayMatching: jest.fn(),
+        getPrimaryDisplay: jest.fn(),
     },
     globalShortcut: {
         register: jest.fn(),
@@ -67,11 +68,14 @@ jest.mock('../contextMenu', () => jest.fn());
 jest.mock('../utils', () => ({
     isInsideRectangle: jest.fn(),
     getLocalPreload: jest.fn(),
-    getLocalURLString: jest.fn(),
+    isKDE: jest.fn(),
 }));
 
 jest.mock('main/i18nManager', () => ({
     localizeMessage: jest.fn(),
+}));
+jest.mock('main/performanceMonitor', () => ({
+    registerView: jest.fn(),
 }));
 
 describe('main/windows/mainWindow', () => {
@@ -92,9 +96,13 @@ describe('main/windows/mainWindow', () => {
                 send: jest.fn(),
                 setWindowOpenHandler: jest.fn(),
             },
+            contentView: {
+                on: jest.fn(),
+            },
             isMaximized: jest.fn(),
             isFullScreen: jest.fn(),
             getBounds: jest.fn(),
+            isMinimized: jest.fn().mockReturnValue(false),
         };
 
         beforeEach(() => {
@@ -104,7 +112,9 @@ describe('main/windows/mainWindow', () => {
             BrowserWindow.mockImplementation(() => baseWindow);
             fs.readFileSync.mockImplementation(() => '{"x":400,"y":300,"width":1280,"height":700,"maximized":false,"fullscreen":false}');
             path.join.mockImplementation(() => 'anyfile.txt');
-            screen.getDisplayMatching.mockImplementation(() => ({bounds: {x: 0, y: 0, width: 1920, height: 1080}}));
+            const primaryDisplay = {id: 1, scaleFactor: 1, bounds: {x: 0, y: 0, width: 1920, height: 1080}};
+            screen.getDisplayMatching.mockReturnValue(primaryDisplay);
+            screen.getPrimaryDisplay.mockReturnValue(primaryDisplay);
             isInsideRectangle.mockReturnValue(true);
             Validator.validateBoundsInfo.mockImplementation((data) => data);
             ContextMenu.mockImplementation(() => ({
@@ -129,6 +139,75 @@ describe('main/windows/mainWindow', () => {
             }));
         });
 
+        it('should set scaled window size on Windows using bounds read from file for non-primary monitor', () => {
+            const originalPlatform = process.platform;
+            Object.defineProperty(process, 'platform', {
+                value: 'win32',
+            });
+
+            screen.getDisplayMatching.mockImplementation(() => ({id: 2, scaleFactor: 2, bounds: {x: 0, y: 0, width: 1920, height: 1080}}));
+            const mainWindow = new MainWindow();
+            mainWindow.init();
+            expect(BrowserWindow).toHaveBeenCalledWith(expect.objectContaining({
+                x: 400,
+                y: 300,
+                width: 640,
+                height: 350,
+                maximized: false,
+                fullscreen: false,
+            }));
+
+            Object.defineProperty(process, 'platform', {
+                value: originalPlatform,
+            });
+        });
+
+        it('should NOT set scaled window size on Windows using bounds read from file for primary monitor', () => {
+            const originalPlatform = process.platform;
+            Object.defineProperty(process, 'platform', {
+                value: 'win32',
+            });
+
+            screen.getDisplayMatching.mockImplementation(() => ({id: 1, scaleFactor: 2, bounds: {x: 0, y: 0, width: 1920, height: 1080}}));
+            const mainWindow = new MainWindow();
+            mainWindow.init();
+            expect(BrowserWindow).toHaveBeenCalledWith(expect.objectContaining({
+                x: 400,
+                y: 300,
+                width: 1280,
+                height: 700,
+                maximized: false,
+                fullscreen: false,
+            }));
+
+            Object.defineProperty(process, 'platform', {
+                value: originalPlatform,
+            });
+        });
+
+        it('should NOT set scaled window size on Mac using bounds read from file for non-primary monitor', () => {
+            const originalPlatform = process.platform;
+            Object.defineProperty(process, 'platform', {
+                value: 'darwin',
+            });
+
+            screen.getDisplayMatching.mockImplementation(() => ({id: 2, scaleFactor: 2, bounds: {x: 0, y: 0, width: 1920, height: 1080}}));
+            const mainWindow = new MainWindow();
+            mainWindow.init();
+            expect(BrowserWindow).toHaveBeenCalledWith(expect.objectContaining({
+                x: 400,
+                y: 300,
+                width: 1280,
+                height: 700,
+                maximized: false,
+                fullscreen: false,
+            }));
+
+            Object.defineProperty(process, 'platform', {
+                value: originalPlatform,
+            });
+        });
+
         it('should set default window size when failing to read bounds from file', () => {
             fs.readFileSync.mockImplementation(() => 'just a bunch of garbage');
             const mainWindow = new MainWindow();
@@ -141,7 +220,6 @@ describe('main/windows/mainWindow', () => {
 
         it('should set default window size when bounds are outside the normal screen', () => {
             fs.readFileSync.mockImplementation(() => '{"x":-400,"y":-300,"width":1280,"height":700,"maximized":false,"fullscreen":false}');
-            screen.getDisplayMatching.mockImplementation(() => ({bounds: {x: 0, y: 0, width: 1920, height: 1080}}));
             isInsideRectangle.mockReturnValue(false);
             const mainWindow = new MainWindow();
             mainWindow.init();
@@ -442,6 +520,9 @@ describe('main/windows/mainWindow', () => {
         });
 
         it('should add override shortcuts for the top menu on Linux to stop it showing up', () => {
+            const {isKDE} = require('../utils');
+            isKDE.mockReturnValue(false);
+
             const originalPlatform = process.platform;
             Object.defineProperty(process, 'platform', {
                 value: 'linux',
@@ -462,6 +543,34 @@ describe('main/windows/mainWindow', () => {
                 value: originalPlatform,
             });
             expect(globalShortcut.registerAll).toHaveBeenCalledWith(['Alt+F', 'Alt+E', 'Alt+V', 'Alt+H', 'Alt+W', 'Alt+P'], expect.any(Function));
+        });
+
+        it('should register global shortcuts even when window is minimized on KDE/KWin', () => {
+            const {isKDE} = require('../utils');
+            isKDE.mockReturnValue(true);
+
+            const originalPlatform = process.platform;
+            Object.defineProperty(process, 'platform', {
+                value: 'linux',
+            });
+            const window = {
+                ...baseWindow,
+                isMinimized: jest.fn().mockReturnValue(true),
+                on: jest.fn().mockImplementation((event, cb) => {
+                    if (event === 'focus') {
+                        cb();
+                    }
+                }),
+            };
+            BrowserWindow.mockImplementation(() => window);
+            const mainWindow = new MainWindow();
+            mainWindow.getBounds = jest.fn();
+            mainWindow.init();
+
+            expect(globalShortcut.registerAll).toHaveBeenCalled();
+            Object.defineProperty(process, 'platform', {
+                value: originalPlatform,
+            });
         });
     });
 

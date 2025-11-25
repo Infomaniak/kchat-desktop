@@ -11,7 +11,7 @@ import type {IkCallInfo} from 'types/callsIk';
 
 import MainWindow from './mainWindow';
 
-import {getLocalPreload, getLocalURLString} from '../utils';
+import {getLocalPreload} from '../utils';
 
 class CallDialingWindow {
     private window?: BrowserWindow;
@@ -31,7 +31,7 @@ class CallDialingWindow {
         const mainWindow = MainWindow.get();
         const mainSession = mainWindow!.webContents.session;
         const preload = getLocalPreload('callDial.js');
-        const localURL = getLocalURLString('callDialing.html');
+        const localURL = 'kchat-desktop://renderer/callDialing.html';
 
         const callDialWindow = new BrowserWindow({
             width: 280,

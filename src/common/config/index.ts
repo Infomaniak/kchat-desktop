@@ -2,13 +2,12 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 
 import {EventEmitter} from 'events';
 
 import {Logger} from 'common/log';
-import Utils, {copy} from 'common/utils/util';
+import {copy} from 'common/utils/util';
 import * as Validator from 'common/Validator';
 import {getDefaultViewsForConfigServer} from 'common/views/View';
 
@@ -36,7 +35,6 @@ export class Config extends EventEmitter {
 
     private registryConfig: RegistryConfig;
     private _predefinedServers: ConfigServer[];
-    private useNativeWindow: boolean;
 
     private combinedData?: CombinedConfig;
     private localConfigData?: ConfigType;
@@ -50,12 +48,8 @@ export class Config extends EventEmitter {
         this.registryConfig = new RegistryConfig();
         this._predefinedServers = [];
         if (buildConfig.defaultServers) {
+            // @ts-expect-error old tsc error
             this._predefinedServers.push(...buildConfig.defaultServers.map((server, index) => getDefaultViewsForConfigServer({...server, order: index})));
-        }
-        try {
-            this.useNativeWindow = os.platform() === 'win32' && !Utils.isVersionGreaterThanOrEqualTo(os.release(), '6.2');
-        } catch {
-            this.useNativeWindow = false;
         }
     }
 
@@ -86,9 +80,7 @@ export class Config extends EventEmitter {
     /**
      * Reload all sources of config data
      *
-     * @param {boolean} synchronize determines whether or not to emit a synchronize event once config has been reloaded
      * @emits {update} emitted once all data has been loaded and merged
-     * @emits {synchronize} emitted when requested by a call to method; used to notify other config instances of changes
      */
     reload = (): void => {
         this.defaultConfigData = copy(defaultPreferences);
@@ -225,6 +217,12 @@ export class Config extends EventEmitter {
     get helpLink() {
         return this.combinedData?.helpLink;
     }
+    get academyLink() {
+        return this.combinedData?.academyLink;
+    }
+    get upgradeLink() {
+        return this.combinedData?.upgradeLink;
+    }
     get minimizeToTray() {
         return this.combinedData?.minimizeToTray;
     }
@@ -254,6 +252,10 @@ export class Config extends EventEmitter {
         return this.combinedData?.theme;
     }
 
+    get enableMetrics() {
+        return this.combinedData?.enableMetrics;
+    }
+
     /**
      * Gets the servers from registry into the config object and reload
      *
@@ -265,6 +267,7 @@ export class Config extends EventEmitter {
 
         this.registryConfigData = registryData;
         if (this.registryConfigData.servers) {
+            // @ts-expect-error old tsc error
             this._predefinedServers.push(...this.registryConfigData.servers.map((server, index) => getDefaultViewsForConfigServer({...server, order: index})));
         }
         this.reload();
@@ -376,7 +379,6 @@ export class Config extends EventEmitter {
             this.localConfigData,
             this.buildConfigData,
             this.registryConfigData,
-            {useNativeWindow: this.useNativeWindow},
         );
 
         // We don't want to include the servers in the combined config, they should only be accesible via the ServerManager

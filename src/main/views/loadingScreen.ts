@@ -1,12 +1,14 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BrowserView, app, ipcMain} from 'electron';
+import {WebContentsView, app, ipcMain} from 'electron';
 
 import {DARK_MODE_CHANGE, LOADING_SCREEN_ANIMATION_FINISHED, MAIN_WINDOW_RESIZED, TOGGLE_LOADING_SCREEN_VISIBILITY} from 'common/communication';
 import {Logger} from 'common/log';
 import {SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
-import {getLocalPreload, getLocalURLString, getWindowBoundaries} from 'main/utils';
+import performanceMonitor from 'main/performanceMonitor';
+import {getLocalPreload, getWindowBoundaries} from 'main/utils';
+import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
 
 import ServersSidebar from './serversSidebar';
@@ -20,7 +22,7 @@ enum LoadingScreenState {
 const log = new Logger('LoadingScreen');
 
 export class LoadingScreen {
-    private view?: BrowserView;
+    private view?: WebContentsView;
     private state: LoadingScreenState;
 
     constructor() {
@@ -57,15 +59,19 @@ export class LoadingScreen {
         if (this.view?.webContents.isLoading()) {
             this.view.webContents.once('did-finish-load', () => {
                 this.view!.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, true);
+                if (ModalManager.isModalDisplayed()) {
+                    mainWindow.contentView.addChildView(this.view!, 1);
+                } else {
+                    mainWindow.contentView.addChildView(this.view!);
+                }
             });
         } else {
             this.view!.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, true);
-        }
-
-        if (mainWindow.getBrowserViews().includes(this.view!)) {
-            mainWindow.setTopBrowserView(this.view!);
-        } else {
-            mainWindow.addBrowserView(this.view!);
+            if (ModalManager.isModalDisplayed()) {
+                mainWindow.contentView.addChildView(this.view!, 1);
+            } else {
+                mainWindow.contentView.addChildView(this.view!);
+            }
         }
 
         this.setBounds();
@@ -83,22 +89,25 @@ export class LoadingScreen {
             this.state = LoadingScreenState.FADING;
             this.view.webContents.send(TOGGLE_LOADING_SCREEN_VISIBILITY, false);
             const mainWindow = MainWindow.get();
+
+            // @ts-expect-error WebContentsView instead of BrowserView
             mainWindow?.removeBrowserView(this.view!);
         }
     };
 
     private create = () => {
-        const preload = getLocalPreload('internalAPI.js');
-        this.view = new BrowserView({webPreferences: {
-            preload,
+        this.view = new WebContentsView({
+            webPreferences: {
+                preload: getLocalPreload('internalAPI.js'),
 
-            // Workaround for this issue: https://github.com/electron/electron/issues/30993
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            transparent: true,
-        }});
-        const localURL = getLocalURLString('loadingScreen.html');
-        this.view.webContents.loadURL(localURL);
+                // For some reason this is required to make the background transparent
+                // for the loading screen, even though the docs say it's the default.
+                // See: https://www.electronjs.org/docs/latest/api/structures/web-preferences
+                transparent: true,
+            }},
+        );
+        performanceMonitor.registerView('LoadingScreen', this.view.webContents);
+        this.view.webContents.loadURL('kchat-desktop://renderer/loadingScreen.html');
     };
 
     private handleAnimationFinished = () => {
@@ -106,11 +115,14 @@ export class LoadingScreen {
 
         if (this.view && this.state !== LoadingScreenState.HIDDEN) {
             this.state = LoadingScreenState.HIDDEN;
-            MainWindow.get()?.removeBrowserView(this.view);
+            MainWindow.get()?.contentView.removeChildView(this.view);
+            this.view.webContents.close();
+            delete this.view;
         }
 
         if (process.env.NODE_ENV === 'test') {
             app.emit('e2e-app-loaded');
+            MainWindow.get()?.focus();
         }
     };
 
@@ -120,7 +132,7 @@ export class LoadingScreen {
             if (!mainWindow) {
                 return;
             }
-            const windowBoundaries = getWindowBoundaries(mainWindow, false, ServersSidebar.shouldDisplaySidebar);
+            const windowBoundaries = getWindowBoundaries(mainWindow, ServersSidebar.shouldDisplaySidebar);
             this.view.setBounds({...windowBoundaries, width: windowBoundaries.width + SERVERS_SIDEBAR_WIDTH, x: windowBoundaries.x - SERVERS_SIDEBAR_WIDTH});
         }
     };

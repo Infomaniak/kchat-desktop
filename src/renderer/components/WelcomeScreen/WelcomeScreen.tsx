@@ -2,18 +2,17 @@
 // See LICENSE.txt for license information.
 
 import classNames from 'classnames';
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 
-import chat2 from 'renderer/assets/svg/chat2.svg';
 import Header from 'renderer/components/Header';
 import LoadingBackground from 'renderer/components/LoadingScreen/LoadingBackground';
 
 import WelcomeScreenSlide from './WelcomeScreenSlide';
 
 import 'renderer/css/components/Button.scss';
-import 'renderer/css/components/WelcomeScreen.scss';
 import 'renderer/css/components/LoadingScreen.css';
+import 'renderer/css/components/WelcomeScreen.scss';
 
 type WelcomeScreenProps = {
     darkMode?: boolean;
@@ -56,12 +55,6 @@ function WelcomeScreen({
                                 id: 'renderer.components.welcomeScreen.slides.welcome.message',
                                 defaultMessage: 'You don’t have a kChat, discover it with kSuite',
                             })}
-                            image={(
-                                <img
-                                    src={chat2}
-                                    draggable={false}
-                                />
-                            )}
                             isMain={true}
                             darkMode={darkMode}
                         />
@@ -71,7 +64,6 @@ function WelcomeScreen({
                             className={classNames(
                                 'WelcomeScreen__button',
                                 'primary-button primary-medium-button',
-                                {'primary-button-inverted': darkMode},
                             )}
                             onClick={handleOnGetStartedClick}
                         >

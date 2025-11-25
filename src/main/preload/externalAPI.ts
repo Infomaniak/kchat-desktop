@@ -8,17 +8,11 @@ import type {DesktopAPI} from '@mattermost/desktop-api';
 
 import {
     NOTIFY_MENTION,
-    IS_UNREAD,
-    UNREAD_RESULT,
     SESSION_EXPIRED,
     REACT_APP_INITIALIZED,
     USER_ACTIVITY_UPDATE,
     BROWSER_HISTORY_PUSH,
-    APP_LOGGED_IN,
-    APP_LOGGED_OUT,
     GET_VIEW_INFO_FOR_TEST,
-    DESKTOP_SOURCES_RESULT,
-    VIEW_FINISHED_RESIZING,
     CALLS_JOIN_CALL,
     CALLS_JOINED_CALL,
     CALLS_LEAVE_CALL,
@@ -33,12 +27,13 @@ import {
     BROWSER_HISTORY_STATUS_UPDATED,
     NOTIFICATION_CLICKED,
     CALLS_WIDGET_RESIZE,
-    CALLS_WIDGET_CHANNEL_LINK_CLICK,
     CALLS_LINK_CLICK,
     CALLS_POPOUT_FOCUS,
+    CALLS_WIDGET_OPEN_THREAD,
+    CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL,
+    CALLS_WIDGET_OPEN_USER_SETTINGS,
     GET_DESKTOP_SOURCES,
     UNREADS_AND_MENTIONS,
-    LEGACY_OFF,
 
     // Infomaniak
     CALL_CLOSED,
@@ -70,6 +65,8 @@ import {
     CALL_CANCEL,
     SWITCH_SERVER_SIDEBAR,
     CALL_JOINED_BROWSER,
+    TAB_LOGIN_CHANGED,
+    METRICS_SEND,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
 import type {CallInfo} from 'main/windows/kmeetCallWindow';
@@ -95,22 +92,15 @@ const desktopAPI: KchatDesktopApi = {
 
     // Initialization
     isDev: () => ipcRenderer.invoke(GET_IS_DEV_MODE),
-    getAppInfo: () => {
-        // Using this signal as the sign to disable the legacy code, since it is run before the app is rendered
-        if (legacyEnabled) {
-            legacyOff();
-        }
-
-        return ipcRenderer.invoke(GET_APP_INFO);
-    },
+    getAppInfo: () => ipcRenderer.invoke(GET_APP_INFO),
     reactAppInitialized: () => ipcRenderer.send(REACT_APP_INITIALIZED),
 
     // Session
     setSessionExpired: (isExpired) => ipcRenderer.send(SESSION_EXPIRED, isExpired),
     onUserActivityUpdate: (listener) => createListener(USER_ACTIVITY_UPDATE, listener),
 
-    onLogin: () => ipcRenderer.send(APP_LOGGED_IN),
-    onLogout: () => ipcRenderer.send(APP_LOGGED_OUT),
+    onLogin: () => ipcRenderer.send(TAB_LOGIN_CHANGED, true),
+    onLogout: () => ipcRenderer.send(TAB_LOGIN_CHANGED, false),
 
     // Unreads/mentions/notifications
     sendNotification: (title, body, channelId, teamId, url, silent, soundName) =>
@@ -154,6 +144,17 @@ const desktopAPI: KchatDesktopApi = {
     focusPopout: () => ipcRenderer.send(CALLS_POPOUT_FOCUS),
     closeDial: () => ipcRenderer.send(CALL_JOINED_BROWSER),
 
+    openThreadForCalls: (threadID) => ipcRenderer.send(CALLS_WIDGET_OPEN_THREAD, threadID),
+    onOpenThreadForCalls: (listener) => createListener(CALLS_WIDGET_OPEN_THREAD, listener),
+
+    openStopRecordingModal: (channelID) => ipcRenderer.send(CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL, channelID),
+    onOpenStopRecordingModal: (listener) => createListener(CALLS_WIDGET_OPEN_STOP_RECORDING_MODAL, listener),
+
+    openCallsUserSettings: () => ipcRenderer.send(CALLS_WIDGET_OPEN_USER_SETTINGS),
+    onOpenCallsUserSettings: (listener) => createListener(CALLS_WIDGET_OPEN_USER_SETTINGS, listener),
+
+    onSendMetrics: (listener) => createListener(METRICS_SEND, listener),
+
     // Utility
     unregister: (channel) => ipcRenderer.removeAllListeners(channel),
 };
@@ -163,7 +164,7 @@ contextBridge.exposeInMainWorld('authManager', {
     tokenRequest: () => ipcRenderer.invoke(TOKEN_REQUEST),
     refreshToken: () => ipcRenderer.invoke(REFRESH_TOKEN),
     resetToken: () => ipcRenderer.invoke(RESET_TOKEN),
-    addTeam: (d) => ipcRenderer.invoke(SERVER_ADDED, d),
+    addTeam: (d: unknown) => ipcRenderer.invoke(SERVER_ADDED, d),
     deleteTeam: () => ipcRenderer.invoke(SERVER_DELETED),
     logout: async () => {
         await ipcRenderer.invoke(RESET_AUTH);
@@ -197,12 +198,6 @@ if (process.env.NODE_ENV === 'test') {
  * Avoid using these unless absolutely necessary
  ****************************************************************************
  */
-
-// Let the main process know when the window has finished resizing
-// This is to reduce the amount of white box that happens when expand the BrowserView
-window.addEventListener('resize', () => {
-    ipcRenderer.send(VIEW_FINISHED_RESIZING);
-});
 
 // Enable secure input on macOS clients when the user is on a password input
 let isPasswordBox = false;
@@ -245,93 +240,7 @@ setInterval(() => {
  ****************************************************************************
  */
 
-/**
- * Legacy helper functions
- */
-
-const onLoad = () => {
-    if (document.getElementById('root') === null) {
-        console.warn('The guest is not assumed as mattermost-webapp');
-        return;
-    }
-    watchReactAppUntilInitialized(() => {
-        console.warn('Legacy preload initialized');
-        ipcRenderer.send(REACT_APP_INITIALIZED);
-        ipcRenderer.invoke(REQUEST_BROWSER_HISTORY_STATUS).then(sendHistoryButtonReturn);
-    });
-};
-
-const onStorageChanged = (e: StorageEvent) => {
-    if (e.key === '__login__' && e.storageArea === localStorage && e.newValue) {
-        ipcRenderer.send(APP_LOGGED_IN);
-    }
-    if (e.key === '__logout__' && e.storageArea === localStorage && e.newValue) {
-        ipcRenderer.send(APP_LOGGED_OUT);
-    }
-};
-
-const isReactAppInitialized = () => {
-    const initializedRoot =
-    document.querySelector('#root.channel-view') || // React 16 webapp
-    document.querySelector('#root .signup-team__container') || // React 16 login
-    document.querySelector('div[data-reactroot]'); // Older React apps
-    if (initializedRoot === null) {
-        return false;
-    }
-    return initializedRoot.children.length !== 0;
-};
-
-const watchReactAppUntilInitialized = (callback: () => void) => {
-    let count = 0;
-    const interval = 500;
-    const timeout = 30000;
-    const timer = setInterval(() => {
-        count += interval;
-        if (isReactAppInitialized() || count >= timeout) { // assumed as webapp has been initialized.
-            clearTimeout(timer);
-            callback();
-        }
-    }, interval);
-};
-
-const checkUnread = () => {
-    if (isReactAppInitialized()) {
-        findUnread();
-    } else {
-        watchReactAppUntilInitialized(() => {
-            findUnread();
-        });
-    }
-};
-
-const findUnread = () => {
-    const classes = ['team-container unread', 'SidebarChannel unread', 'sidebar-item unread-title'];
-    const isUnread = classes.some((classPair) => {
-        const result = document.getElementsByClassName(classPair);
-        return result && result.length > 0;
-    });
-    ipcRenderer.send(UNREAD_RESULT, isUnread);
-};
-
-let sessionExpired: boolean;
-const getUnreadCount = () => {
-    // LHS not found => Log out => Count should be 0, but session may be expired.
-    let isExpired;
-    if (document.getElementById('sidebar-left') === null) {
-        const extraParam = (new URLSearchParams(window.location.search)).get('extra');
-        isExpired = extraParam === 'expired';
-    } else {
-        isExpired = false;
-    }
-    if (isExpired !== sessionExpired) {
-        sessionExpired = isExpired;
-        ipcRenderer.send(SESSION_EXPIRED, sessionExpired);
-    }
-};
-
-/**
- * Legacy message passing code - can be running alongside the new API stuff
- */
+// IK: THIS IS NEEDED
 
 // Disabling no-explicit-any for this legacy code
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -378,10 +287,6 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
     }
     case CALLS_LINK_CLICK: {
         ipcRenderer.send(CALLS_LINK_CLICK, message.link);
-        break;
-    }
-    case GET_DESKTOP_SOURCES: {
-        ipcRenderer.invoke(GET_DESKTOP_SOURCES, message).then(sendDesktopSourcesResult);
         break;
     }
     case CALL_DIALING: {
@@ -460,13 +365,6 @@ window.addEventListener('message', ({origin, data = {}}: {origin?: string; data?
     }
     case CALLS_ERROR: {
         ipcRenderer.send(CALLS_ERROR, message.err, message.callID, message.errMsg);
-        break;
-    }
-    case CALLS_WIDGET_CHANNEL_LINK_CLICK:
-    case CALLS_LEAVE_CALL:
-    case DESKTOP_SOURCES_MODAL_REQUEST:
-    case CALLS_POPOUT_FOCUS: {
-        ipcRenderer.send(type);
         break;
     }
     case THEME_CHANGED: {
@@ -573,20 +471,6 @@ const sendHistoryButtonReturn = (status: {canGoBack: boolean; canGoForward: bool
 
 ipcRenderer.on(BROWSER_HISTORY_STATUS_UPDATED, (event, canGoBack, canGoForward) => sendHistoryButtonReturn({canGoBack, canGoForward}));
 
-const sendDesktopSourcesResult = (sources: Array<{
-    id: string;
-    name: string;
-    thumbnailURL: string;
-}>) => {
-    window.postMessage(
-        {
-            type: DESKTOP_SOURCES_RESULT,
-            message: sources,
-        },
-        window.location.origin,
-    );
-};
-
 const sendCallsJoinedCall = (message: {callID: string; sessionID: string}) => {
     window.postMessage(
         {
@@ -665,23 +549,3 @@ ipcRenderer.on(SWITCH_SERVER_SIDEBAR, (_, serverId) => {
     window.postMessage({type: SWITCH_SERVER_SIDEBAR, message: {serverId}}, window.location.origin);
 });
 
-/**
- * Legacy functionality that needs to be disabled with the new API
- */
-
-let legacyEnabled = true;
-ipcRenderer.on(IS_UNREAD, checkUnread);
-const unreadInterval = setInterval(getUnreadCount, 1000);
-window.addEventListener('storage', onStorageChanged);
-window.addEventListener('load', onLoad);
-
-function legacyOff() {
-    ipcRenderer.send(LEGACY_OFF);
-    ipcRenderer.off(IS_UNREAD, checkUnread);
-    clearInterval(unreadInterval);
-    window.removeEventListener('storage', onStorageChanged);
-    window.removeEventListener('load', onLoad);
-
-    legacyEnabled = false;
-    console.log('New API preload initialized');
-}

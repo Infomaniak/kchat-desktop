@@ -49,9 +49,7 @@ export class TokenManager {
             let storeStr;
             try {
                 storeStr = fs.readFileSync(tokensStorePath, 'utf-8');
-                const jsonData = (typeof storeStr === 'object' ?
-                    storeStr :
-                    JSON.parse(storeStr));
+                const jsonData = (typeof storeStr === 'object' ? storeStr : JSON.parse(storeStr));
 
                 // jsonData = Validator.validateTokensStore(jsonData);
 

@@ -22,6 +22,7 @@ export let migrationInfoPath = '';
 export let downloadsJson = '';
 export let tokensStorePath = '';
 export let permissionsJson = '';
+export let developerModeJson = '';
 
 export function updatePaths(emit = false) {
     userDataPath = app.getPath('userData');
@@ -36,6 +37,7 @@ export function updatePaths(emit = false) {
     downloadsJson = path.resolve(userDataPath, 'downloads.json');
     tokensStorePath = path.resolve(userDataPath, `${isLocalEnv ? 'dev-' : ''}tokens.json`);
     permissionsJson = path.resolve(userDataPath, 'permissions.json');
+    developerModeJson = path.resolve(userDataPath, 'developerMode.json');
 
     if (emit) {
         ipcMain.emit(UPDATE_PATHS);

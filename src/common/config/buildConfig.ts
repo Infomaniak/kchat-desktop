@@ -30,6 +30,8 @@ const buildConfig: BuildConfig = {
         },
     ],
     helpLink: '',
+    academyLink: '',
+    upgradeLink: '',
     enableServerManagement: true,
     enableAutoUpdater: true,
     managedResources: ['trusted'],
