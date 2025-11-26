@@ -7,11 +7,9 @@ import type {MenuItemConstructorOptions, MenuItem} from 'electron';
 import {app, Menu, session, shell, clipboard} from 'electron';
 import log from 'electron-log';
 
-import ServerViewState from 'app/serverViewState';
 import type {Config} from 'common/config';
 import {ModalConstants} from 'common/constants';
 import {t} from 'common/utils/util';
-import {clearAllData, clearDataForServer} from 'main/app/utils';
 import type {UpdateManager} from 'main/autoUpdater';
 import DeveloperMode from 'main/developerMode';
 import Diagnostics from 'main/diagnostics';
