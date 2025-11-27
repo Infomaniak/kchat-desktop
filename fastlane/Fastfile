@@ -11,7 +11,7 @@ lane :publish_test do |options|
     ENV['MACOS_API_KEY'].nil? || ENV['MACOS_API_KEY'].empty?
       api_key_path = "#{ENV['MACOS_API_KEY_ID']}.p8"
       File.open("../#{api_key_path}", 'w') do |f|
-       key_string = ENV['MACOS_API_KEY']
+        key_string = ENV['MACOS_API_KEY']
         p8_array = key_string.split('\n')
         p8_array.each_with_index do |value, index|
           f.write(value)
