@@ -190,6 +190,10 @@ class KmeetCallWindow {
                 enableBlinkFeatures: 'WebAssemblyCSP',
                 nodeIntegration: true,
                 contextIsolation: false,
+
+                // Required for Jitsi SDK to access cross-origin iframes (powermonitor, remotedraw)
+                // This window only loads trusted content from whitelisted origins
+                webSecurity: false,
             },
         });
 
@@ -232,6 +236,9 @@ class KmeetCallWindow {
         setupPowerMonitorMain(this.callWindow);
         setupScreenSharingMain(this.callWindow, app.getName(), electronBuilder.appId);
         new RemoteDrawMain(this.callWindow); // eslint-disable-line no-new
+
+        // Uncomment this line to enable the devtools on the kmeet window (DEV ONLY)
+        // this.callWindow.webContents.openDevTools({mode: 'detach'});
     }
 
     create(callInfo: CallInfo) {
