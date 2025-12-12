@@ -286,7 +286,8 @@ class KmeetCallWindow {
         setupScreenSharingMain(this.callWindow, app.getName(), electronBuilder.appId);
         new RemoteDrawMain(this.callWindow); // eslint-disable-line no-new
 
-        this.callWindow.webContents.openDevTools({mode: 'detach'});
+        // Uncomment this line to enable the devtools on the kmeet window (DEV ONLY)
+        // this.callWindow.webContents.openDevTools({mode: 'detach'});
     }
 
     create(callInfo: CallInfo) {
