@@ -179,15 +179,6 @@ class KmeetCallWindow {
         const preload = getLocalPreload('call.js');
         const session = mainWindow.webContents.session;
 
-        // Whitelisted origins for Kmeet calls
-        // webSecurity is disabled for this window to allow Jitsi SDK cross-origin iframe access
-        // Only these origins are allowed to load in this window
-        const allowedOrigins = [
-            'kchat-desktop://renderer',
-            currentServer.url.origin,
-            'https://kmeet.infomaniak.com',
-        ];
-
         this.callWindow = new BrowserWindow({
             title: callInfo.name,
             show: true,
@@ -207,46 +198,6 @@ class KmeetCallWindow {
         });
 
         this.callInfo = callInfo;
-
-        // Enforce whitelist by blocking navigation to non-whitelisted origins
-        this.callWindow.webContents.on('will-navigate', (event, navigationUrl) => {
-            try {
-                const navURL = new URL(navigationUrl);
-                const isAllowed = allowedOrigins.some((origin) => {
-                    const allowedURL = new URL(origin);
-                    return navURL.origin === allowedURL.origin;
-                });
-
-                if (!isAllowed) {
-                    log.warn(`Blocked navigation to non-whitelisted origin: ${navURL.origin}`);
-                    event.preventDefault();
-                }
-            } catch (error) {
-                log.error('Error checking navigation URL:', error);
-                event.preventDefault();
-            }
-        });
-
-        // Enforce whitelist for new windows
-        this.callWindow.webContents.setWindowOpenHandler(({url: newWindowUrl}) => {
-            try {
-                const navURL = new URL(newWindowUrl);
-                const isAllowed = allowedOrigins.some((origin) => {
-                    const allowedURL = new URL(origin);
-                    return navURL.origin === allowedURL.origin;
-                });
-
-                if (!isAllowed) {
-                    log.warn(`Blocked new window to non-whitelisted origin: ${navURL.origin}`);
-                    return {action: 'deny'};
-                }
-            } catch (error) {
-                log.error('Error checking new window URL:', error);
-                return {action: 'deny'};
-            }
-
-            return {action: 'allow'};
-        });
 
         const localURL = 'kchat-desktop://renderer/call.html';
         this.callWindow.loadURL(localURL, {
