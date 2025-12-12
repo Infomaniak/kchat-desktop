@@ -55,3 +55,7 @@ Installation finished, setup env.
 5 - Now, you can use the terminal from VSCode if needed.
 
 6 - Setup SSH key, pull repo, and run app.
+
+## Certificates
+
+For MacOS certificates, see the internal gitlab wiki
