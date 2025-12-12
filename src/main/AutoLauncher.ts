@@ -21,7 +21,6 @@ export class AutoLauncher {
     constructor() {
         const options: AutoLaunchOptions = {
             name: app.name,
-            isHidden: true,
         };
 
         if (process.platform === 'linux' && process.env.APPIMAGE) {
