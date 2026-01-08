@@ -155,7 +155,6 @@ export async function initialize() {
         return;
     }
 
-    initializeLocale();
     // eslint-disable-next-line no-undef
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -546,7 +545,11 @@ async function initializeAfterAppReady() {
 
     // needs to be done after app ready
     // must be done before update menu
-    initializeLocale();
+    if (Config.appLanguage) {
+        i18nManager.setLocale(Config.appLanguage);
+    } else if (!i18nManager.setLocale(app.getLocale())) {
+        i18nManager.setLocale(app.getLocaleCountryCode());
+    }
 
     handleUpdateMenuEvent();
     DeveloperMode.on(DEVELOPER_MODE_UPDATED, handleUpdateMenuEvent);
@@ -594,13 +597,5 @@ function handleStartDownloadManual() {
 function handleStartUpgrade() {
     if (updateManager) {
         updateManager.handleUpdate();
-    }
-}
-
-function initializeLocale() {
-    if (Config.appLanguage) {
-        i18nManager.setLocale(Config.appLanguage);
-    } else if (!i18nManager.setLocale(app.getLocale())) {
-        i18nManager.setLocale(app.getLocaleCountryCode());
     }
 }
