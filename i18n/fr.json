@@ -41,7 +41,7 @@
   "main.app.utils.clearDataForServer.message": "Cette action effacera toutes les données de session, cache et cookies pour le serveur \"{serverName}\". Êtes-vous sûr de vouloir effacer les données pour ce serveur ?",
   "main.app.utils.migrateMacAppStore.button.dontImport": "Ne pas importer",
   "main.app.utils.migrateMacAppStore.button.selectAndImport": "Sélectionnez le répertoire et importez",
-  "main.app.utils.migrateMacAppStore.dialog.detail": "Il semble qu'une configuration existante de {nom de l'application} existe, voulez-vous l'importer ? Il vous sera demandé de choisir le bon répertoire de configuration.",
+  "main.app.utils.migrateMacAppStore.dialog.detail": "Il semble qu'une configuration existante de {appName} existe, voulez-vous l'importer ? Il vous sera demandé de choisir le bon répertoire de configuration.",
   "main.app.utils.migrateMacAppStore.dialog.message": "Importer une configuration existante",
   "main.autoUpdater.noUpdate.detail": "Vous utilisez la dernière version de l'application de bureau {appName} (version {version}). Vous serez averti lorsqu'une nouvelle version sera disponible pour l'installation.",
   "main.autoUpdater.noUpdate.message": "Vous êtes à jour",
