@@ -93,6 +93,11 @@
             <RemoveFolder Id="ProgramMenuDir" On="uninstall" />
             <RegistryValue Root="HKCU" Key="Software\kChat\Desktop" Type="string" Value="" KeyPath="yes" />
           </Component>
+          <!-- Clean up auto-launch registry entry on uninstall -->
+          <Component Id="RemoveAutoStartRegistry" Guid="A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D">
+            <RegistryValue Root="HKCU" Key="Software\kChat\Desktop" Name="RemoveAutoStartMarker" Type="string" Value="" KeyPath="yes" />
+            <RemoveRegistryValue Id="RemoveAutoStart" Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Run" Name="kChat" />
+          </Component>
         </Directory>
       </Directory>
       <Directory Id="DesktopFolder" Name="Desktop" />
@@ -118,6 +123,7 @@
       <ComponentRef Id="MainExecutableShortcutDesktop" />
       <ComponentRef Id="MainExecutableShortcutStartMenu" />
       <ComponentRef Id="ProgramMenuDir" />
+      <ComponentRef Id="RemoveAutoStartRegistry" />
       <ComponentRef Id="RegInstallLocation" />
       <ComponentRef Id="GPODefinitionFile" />
       <ComponentRef Id="GPOUSEnglishFiles" />

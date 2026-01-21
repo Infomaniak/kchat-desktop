@@ -6,3 +6,8 @@
   StrCmp $1 "" 0 +1
   ExecWait '"$%SYSTEMROOT%\system32\msiexec.exe" /x $1 /qn'
 !macroend
+
+# This macro cleans up the auto-launch registry entry on uninstall
+!macro customUnInstall
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "kChat"
+!macroend
