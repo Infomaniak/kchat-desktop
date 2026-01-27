@@ -1,0 +1,39 @@
+diff --git a/node_modules/@infomaniak/jitsi-meet-electron-sdk/alwaysontop/render/index.js b/node_modules/@infomaniak/jitsi-meet-electron-sdk/alwaysontop/render/index.js
+index 0e8081b..f1a18e9 100644
+--- a/node_modules/@infomaniak/jitsi-meet-electron-sdk/alwaysontop/render/index.js
++++ b/node_modules/@infomaniak/jitsi-meet-electron-sdk/alwaysontop/render/index.js
+@@ -2,6 +2,7 @@
+ 
+ const { EventEmitter } = require('events');
+ const { ipcRenderer } = require('electron');
++const fs = require('fs');
+ const path = require('path');
+ const { logInfo, setLogger } = require('./utils');
+ 
+@@ -197,19 +198,23 @@ class AlwaysOnTop extends EventEmitter {
+         const cssPath = path.join(__dirname, './alwaysontop.css');
+         const jsPath = path.join(__dirname, './alwaysontop.js');
+ 
+-        // Add the markup for the JS to manipulate and load the CSS.
++        // Read CSS and JS inline to avoid file:// scheme issues with secure custom protocols (Electron 33+)
++        const cssContent = fs.readFileSync(cssPath, 'utf-8');
++        const jsContent = fs.readFileSync(jsPath, 'utf-8');
++
++        // Add the markup with inline CSS instead of file:// link.
+         this._aotWindow.document.body.innerHTML = `
+             <div id="react"></div>
+             <video autoplay="" id="video" style="transform: none;" muted></video>
+             <div class="dismiss"></div>
+-            <link rel="stylesheet" href="file://${cssPath}">
++            <style>${cssContent}</style>
+         `;
+ 
+         // JS must be loaded through a script tag, as setting it through
+         // inner HTML maybe not trigger script load.
+         const scriptTag = this._aotWindow.document.createElement('script');
+ 
+-        scriptTag.setAttribute('src', `file://${jsPath}`);
++        scriptTag.textContent = jsContent;
+         this._aotWindow.document.head.appendChild(scriptTag);
+     }
+ 
