@@ -169,7 +169,7 @@
         "@emotion/react": "11.11.4",
         "@floating-ui/react": "0.26.28",
         "@infomaniak/compass-icons": "0.13.0",
-        "@infomaniak/jitsi-meet-electron-sdk": "^6.0.10-nightly.19",
+        "@infomaniak/jitsi-meet-electron-sdk": "^6.0.10-nightly.21",
         "@sentry/electron": "^4.22.0",
         "auto-launch": "5.0.6",
         "bootstrap": "4.6.1",
