@@ -5,6 +5,7 @@ import {WebContentsView, app, ipcMain} from 'electron';
 
 import {DARK_MODE_CHANGE, LOADING_SCREEN_ANIMATION_FINISHED, MAIN_WINDOW_RESIZED, TOGGLE_LOADING_SCREEN_VISIBILITY} from 'common/communication';
 import {Logger} from 'common/log';
+import {TAB_BAR_HEIGHT} from 'common/utils/constants';
 import performanceMonitor from 'main/performanceMonitor';
 import {getLocalPreload} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
@@ -130,7 +131,7 @@ export class LoadingScreen {
                 return;
             }
             const {width, height} = mainWindow.getContentBounds();
-            this.view.setBounds({x: 0, y: 0, width, height});
+            this.view.setBounds({x: 0, y: TAB_BAR_HEIGHT, width, height: height - TAB_BAR_HEIGHT});
         }
     };
 }
