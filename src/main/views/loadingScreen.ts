@@ -5,13 +5,11 @@ import {WebContentsView, app, ipcMain} from 'electron';
 
 import {DARK_MODE_CHANGE, LOADING_SCREEN_ANIMATION_FINISHED, MAIN_WINDOW_RESIZED, TOGGLE_LOADING_SCREEN_VISIBILITY} from 'common/communication';
 import {Logger} from 'common/log';
-import {SERVERS_SIDEBAR_WIDTH} from 'common/utils/constants';
+import {TAB_BAR_HEIGHT} from 'common/utils/constants';
 import performanceMonitor from 'main/performanceMonitor';
-import {getLocalPreload, getWindowBoundaries} from 'main/utils';
+import {getLocalPreload} from 'main/utils';
 import ModalManager from 'main/views/modalManager';
 import MainWindow from 'main/windows/mainWindow';
-
-import ServersSidebar from './serversSidebar';
 
 enum LoadingScreenState {
     VISIBLE = 1,
@@ -132,8 +130,8 @@ export class LoadingScreen {
             if (!mainWindow) {
                 return;
             }
-            const windowBoundaries = getWindowBoundaries(mainWindow, ServersSidebar.shouldDisplaySidebar);
-            this.view.setBounds({...windowBoundaries, width: windowBoundaries.width + SERVERS_SIDEBAR_WIDTH, x: windowBoundaries.x - SERVERS_SIDEBAR_WIDTH});
+            const {width, height} = mainWindow.getContentBounds();
+            this.view.setBounds({x: 0, y: TAB_BAR_HEIGHT, width, height: height - TAB_BAR_HEIGHT});
         }
     };
 }
