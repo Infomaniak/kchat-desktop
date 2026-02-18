@@ -134,7 +134,8 @@
     "provisioningProfile": "./mas.provisionprofile",
     "extendInfo": {
       "ITSAppUsesNonExemptEncryption": false,
-      "NSUserActivityTypes": ["INSendMessageIntent"]
+      "NSUserActivityTypes": ["INSendMessageIntent"],
+      "CFBundleLocalizations": ["en", "fr", "it", "es", "de"]
     },
     "singleArchFiles": "*"
   },
