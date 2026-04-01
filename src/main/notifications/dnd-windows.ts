@@ -20,7 +20,7 @@ function getWindowsDoNotDisturb() {
     case 2:
         return true;
     case 1:
-        return !(isPriority('Kchat.Desktop').value);
+        return !(isPriority('com.infomaniak.chat').value);
     default:
         return false;
     }
