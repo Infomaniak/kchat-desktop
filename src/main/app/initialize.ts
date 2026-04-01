@@ -392,7 +392,7 @@ async function initializeAfterAppReady() {
         }
     });
 
-    app.setAppUserModelId('Kchat.Desktop'); // Use explicit AppUserModelID
+    app.setAppUserModelId('com.infomaniak.chat'); // Use explicit AppUserModelID
     const defaultSession = session.defaultSession;
     defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
         (details, callback) => {

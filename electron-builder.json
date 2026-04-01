@@ -182,7 +182,9 @@
       }
     ],
     "signDlls": true,
-   "publisherName": "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH"
+    "publisherName": "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH",
+    "productName": "kChat",
+    "fileDescription": "kChat"
   },
   "nsis": {
     "artifactName": "${name}-setup-${version}-win.${ext}",
