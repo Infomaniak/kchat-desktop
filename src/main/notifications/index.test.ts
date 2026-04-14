@@ -73,6 +73,7 @@ jest.mock('electron', () => {
         ipcMain: {
             on: jest.fn(),
             off: jest.fn(),
+            handle: jest.fn(),
         },
         Notification: NotificationMock,
         shell: {

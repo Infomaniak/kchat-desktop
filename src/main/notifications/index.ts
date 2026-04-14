@@ -5,7 +5,14 @@ import {app, shell, Notification, ipcMain} from 'electron';
 import isDev from 'electron-is-dev';
 import {getDoNotDisturb as getDarwinDoNotDisturb} from 'macos-notification-state';
 
-import {PLAY_SOUND, NOTIFICATION_CLICKED, BROWSER_HISTORY_PUSH, OPEN_NOTIFICATION_PREFERENCES} from 'common/communication';
+import {
+    PLAY_SOUND,
+    NOTIFICATION_CLICKED,
+    BROWSER_HISTORY_PUSH,
+    OPEN_NOTIFICATION_PREFERENCES,
+    OPEN_MACOS_FOCUS_PREFERENCES,
+    GET_MACOS_FOCUS_STATUS_AUTHORIZATION,
+} from 'common/communication';
 import Config from 'common/config';
 import {Logger} from 'common/log';
 import DeveloperMode from 'main/developerMode';
@@ -30,6 +37,8 @@ class NotificationManager {
 
     constructor() {
         ipcMain.on(OPEN_NOTIFICATION_PREFERENCES, this.openNotificationPreferences);
+        ipcMain.on(OPEN_MACOS_FOCUS_PREFERENCES, this.openMacOSFocusPreferences);
+        ipcMain.handle(GET_MACOS_FOCUS_STATUS_AUTHORIZATION, this.getMacOSFocusStatusAuthorization);
 
         DeveloperMode.switchOff('disableNotificationStorage', () => {
             this.mentionsPerChannel = new Map();
@@ -237,6 +246,33 @@ class NotificationManager {
             break;
         }
     }
+
+    private openMacOSFocusPreferences() {
+        if (process.platform === 'darwin') {
+            // Opens System Settings > Privacy & Security > Focus
+            // This is where users can grant/revoke Focus Status access to apps
+            shell.openExternal('x-apple.systempreferences:com.apple.Focus-Settings.extension');
+        }
+    }
+
+    private getMacOSFocusStatusAuthorization = async (): Promise<'authorized' | 'denied' | 'not-supported'> => {
+        if (process.platform !== 'darwin') {
+            return 'not-supported';
+        }
+
+        if (isDev) {
+            // In dev mode, we can't check focus status due to missing entitlements
+            return 'not-supported';
+        }
+
+        try {
+            await getDarwinDoNotDisturb();
+            return 'authorized';
+        } catch (e) {
+            log.debug('Focus status authorization check failed', e);
+            return 'denied';
+        }
+    };
 }
 
 export async function getDoNotDisturb() {

@@ -106,6 +106,8 @@ declare global {
             openNotificationPreferences: () => void;
             openWindowsCameraPreferences: () => void;
             openWindowsMicrophonePreferences: () => void;
+            openMacOSFocusPreferences: () => void;
+            getMacOSFocusStatusAuthorization: () => Promise<'authorized' | 'denied' | 'not-supported'>;
             getMediaAccessStatus: (mediaType: 'microphone' | 'camera' | 'screen') => Promise<'not-determined' | 'granted' | 'denied' | 'restricted' | 'unknown'>;
 
             refreshPermission: (permission: string) => Promise<boolean>;

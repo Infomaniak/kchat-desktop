@@ -238,6 +238,8 @@ export const UPDATE_SERVERS_SIDEBAR_MODAL_SHORTCUT = 'update-servers-sidebar-mod
 export const OPEN_NOTIFICATION_PREFERENCES = 'open-notification-preferences';
 export const OPEN_WINDOWS_CAMERA_PREFERENCES = 'open-windows-camera-preferences';
 export const OPEN_WINDOWS_MICROPHONE_PREFERENCES = 'open-windows-microphone-preferences';
+export const OPEN_MACOS_FOCUS_PREFERENCES = 'open-macos-focus-preferences';
+export const GET_MACOS_FOCUS_STATUS_AUTHORIZATION = 'get-macos-focus-status-authorization';
 export const GET_MEDIA_ACCESS_STATUS = 'get-media-access-status';
 
 export const GET_NONCE = 'get-nonce';
