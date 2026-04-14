@@ -1,5 +1,9 @@
 .PermissionSetting__heading {
     margin: 0;
+
+    &--system {
+        margin-top: 24px;
+    }
 }
 
 .PermissionSetting__label {

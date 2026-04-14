@@ -383,5 +383,12 @@
   "renderer.components.settingsPage.trayIcon.theme": "Thème d'icône : ",
   "renderer.components.settingsPage.updates": "Mises à jour",
   "renderer.components.showCertificateModal.noCertSelected": "Aucun certificat sélectionné",
-  "renderer.components.teamDropdownButton.noServersConfigured": "Aucun serveur configuré"
+  "renderer.components.teamDropdownButton.noServersConfigured": "Aucun serveur configuré",
+  "renderer.components.settingsPage.permissions.systemTitle": "Autorisations système",
+  "renderer.components.settingsPage.permissions.systemLabel": "Ces autorisations sont gérées par macOS. Cliquez pour ouvrir les Réglages Système.",
+  "renderer.components.settingsPage.permissions.focusStatus.label": "Statut Focus : {status}",
+  "renderer.components.settingsPage.permissions.focusStatus.authorized": "Autorisé",
+  "renderer.components.settingsPage.permissions.focusStatus.denied": "Refusé",
+  "renderer.components.settingsPage.permissions.focusStatus.loading": "Vérification...",
+  "renderer.components.settingsPage.permissions.focusStatus.openSettings": "Ouvrir les Réglages"
 }
