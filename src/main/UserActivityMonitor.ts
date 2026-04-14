@@ -22,6 +22,9 @@ export class UserActivityMonitor extends EventEmitter {
         statusUpdateThresholdMs: number;
     };
 
+    private handleLockScreen = () => this.setActivityState(false, true);
+    private handleSuspend = () => this.setActivityState(false, true);
+
     constructor() {
         super();
 
@@ -67,6 +70,9 @@ export class UserActivityMonitor extends EventEmitter {
 
         this.config = Object.assign({}, this.config, config);
 
+        powerMonitor.on('lock-screen', this.handleLockScreen);
+        powerMonitor.on('suspend', this.handleSuspend);
+
         // Node typings don't map Timeout to number, but then clearInterval requires a number?
         this.systemIdleTimeIntervalID = setInterval(() => {
             try {
@@ -82,7 +88,8 @@ export class UserActivityMonitor extends EventEmitter {
    */
     stopMonitoring() {
         clearInterval(this.systemIdleTimeIntervalID);
-        this.systemIdleTimeIntervalID = -1;
+        powerMonitor.off('lock-screen', this.handleLockScreen);
+        powerMonitor.off('suspend', this.handleSuspend);
     }
 
     /**
@@ -120,7 +127,8 @@ export class UserActivityMonitor extends EventEmitter {
         if (isActive && (this.lastSetActive == null || now - this.lastSetActive >= this.config.statusUpdateThresholdMs)) {
             this.sendStatusUpdate(false);
             this.lastSetActive = now;
-        } else if (!isActive) {
+        } else if (!isActive && this.lastSetActive != null) {
+            this.sendStatusUpdate(false);
             delete this.lastSetActive;
         }
     }
