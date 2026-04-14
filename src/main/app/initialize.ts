@@ -392,7 +392,7 @@ async function initializeAfterAppReady() {
         }
     });
 
-    app.setAppUserModelId('com.infomaniak.chat'); // Use explicit AppUserModelID
+    app.setAppUserModelId('com.infomaniak.chat'); // Use explicit AppUserModelID. This must match the 'desktopName' field in package.json for Windows notifications icon to display correctly.
     const defaultSession = session.defaultSession;
     defaultSession.webRequest.onHeadersReceived({urls: IKLoginAllowedUrls},
         (details, callback) => {
