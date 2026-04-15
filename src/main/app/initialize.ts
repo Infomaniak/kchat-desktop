@@ -86,9 +86,9 @@ import {
     handleDarkModeChange,
     handleGetConfiguration,
     handleGetLocalConfiguration,
-    handleUpdateTheme,
     updateConfiguration,
 } from './config';
+import {handleSystemThemeChange} from './theme';
 import {
     handleMainWindowIsShown,
     handleAppVersion,
@@ -279,8 +279,8 @@ function initializeBeforeAppReady() {
     }
 
     if (process.platform === 'darwin' || process.platform === 'win32') {
-        nativeTheme.on('updated', handleUpdateTheme);
-        handleUpdateTheme();
+        nativeTheme.on('updated', handleSystemThemeChange);
+        handleSystemThemeChange();
     }
 
     protocol.registerSchemesAsPrivileged([

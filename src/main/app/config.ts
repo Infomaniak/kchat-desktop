@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {app, ipcMain, nativeTheme} from 'electron';
+import {app, ipcMain} from 'electron';
 
 import {DARK_MODE_CHANGE, EMIT_CONFIGURATION, RELOAD_CONFIGURATION} from 'common/communication';
 import Config from 'common/config';
@@ -50,12 +50,6 @@ export function updateConfiguration(event: Electron.IpcMainEvent | null, propert
         }, {} as Partial<ConfigType>);
         Config.setMultiple(newData);
     }
-}
-
-export function handleUpdateTheme() {
-    log.debug('Config.handleUpdateTheme');
-
-    Config.set('darkMode', nativeTheme.shouldUseDarkColors);
 }
 
 export function handleConfigUpdate(newConfig: CombinedConfig) {
