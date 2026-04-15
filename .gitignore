@@ -39,4 +39,4 @@ sentry.properties
 *.p8
 
 .aider*
-/.vscode
+.vscode/
