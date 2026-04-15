@@ -128,7 +128,7 @@ export class ViewManager {
         ipcMain.on(CALL_API_AVAILABLE, this.handleCallApiAvailable);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(RESET_TEAMS, this.resetTeams);
-        ipcMain.on(THEME_CHANGED, (_event, data) => {
+        ipcMain.on(THEME_CHANGED, (_event, _callId, data) => {
             updateTheme(data);
             viewManager.sendToAllViews(THEME_CHANGED, data);
         });
