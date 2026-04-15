@@ -215,8 +215,7 @@ export class ServerSidebar {
         const theme = data.theme;
         const teamName = data.teamName;
 
-        // Update sidebar if team matches current server (or if no team specified)
-        if (!teamName || (ServerViewState.hasCurrentServer() && ServerViewState.getCurrentServer().name === teamName)) {
+        if (ServerViewState.hasCurrentServer() && ServerViewState.getCurrentServer().name === teamName) {
             this.preferredTheme = theme;
             this.updateSidebar();
         }
