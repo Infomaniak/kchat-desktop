@@ -58,7 +58,7 @@ import Utils from 'common/utils/util';
 import type {MattermostView} from 'common/views/View';
 import {TAB_MESSAGING} from 'common/views/View';
 import {handleWelcomeScreenModal} from 'main/app/intercom';
-import {initTheme, handleThemeChanged} from 'main/app/theme';
+import {initTheme, updateTheme} from 'main/app/theme';
 import {flushCookiesStore, updateServerInfos} from 'main/app/utils';
 import DeveloperMode from 'main/developerMode';
 import performanceMonitor from 'main/performanceMonitor';
@@ -128,7 +128,10 @@ export class ViewManager {
         ipcMain.on(CALL_API_AVAILABLE, this.handleCallApiAvailable);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(RESET_TEAMS, this.resetTeams);
-        ipcMain.on(THEME_CHANGED, (_event, _viewId, data) => handleThemeChanged(data));
+        ipcMain.on(THEME_CHANGED, (_event, data) => {
+            updateTheme(data);
+            viewManager.sendToAllViews(THEME_CHANGED, data);
+        });
 
         ServerManager.on(SERVERS_UPDATE, this.handleReloadConfiguration);
         DeveloperMode.on(DEVELOPER_MODE_UPDATED, this.handleDeveloperModeUpdated);

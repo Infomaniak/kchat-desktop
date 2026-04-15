@@ -3,10 +3,8 @@
 
 import {nativeTheme} from 'electron';
 
-import {THEME_CHANGED} from 'common/communication';
 import Config from 'common/config';
 import {Logger} from 'common/log';
-import viewManager from 'main/views/viewManager';
 
 const log = new Logger('ThemeManager');
 
@@ -39,8 +37,8 @@ export function isDarkTheme(data: any): boolean {
     return type === 'dark';
 }
 
-export function handleThemeChanged(data: any): void {
-    log.debug('handleThemeChanged', data.ksuiteTheme);
+export function updateTheme(data: any): boolean {
+    log.debug('updateTheme', data.ksuiteTheme);
 
     Config.set('theme', data);
 
@@ -49,7 +47,7 @@ export function handleThemeChanged(data: any): void {
         Config.set('darkMode', isDark);
     }
 
-    viewManager.sendToAllViews(THEME_CHANGED, data);
+    return isDark;
 }
 
 export function handleSystemThemeChange(): void {
