@@ -1,7 +1,9 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import React, {useEffect, useState} from 'react';
-import {defineMessages, useIntl, FormattedMessage} from 'react-intl';
+import {useIntl, FormattedMessage} from 'react-intl';
+
+import {t} from 'common/utils/util';
 
 import type {Permissions} from 'types/permissions';
 
@@ -98,43 +100,20 @@ export const PermissionSettings = () => {
     </div>);
 };
 
-const permissionMessages = defineMessages({
-    allowed: {
-        id: 'renderer.components.settingsPage.permissions.allowed',
-        defaultMessage: 'allowed',
-    },
-    denied: {
-        id: 'renderer.components.settingsPage.permissions.denied',
-        defaultMessage: 'denied',
-    },
-    notifications: {
-        id: 'renderer.components.settingsPage.permissions.notifications',
-        defaultMessage: 'Notification: {allowed}',
-    },
-    geolocation: {
-        id: 'renderer.components.settingsPage.permissions.geolocation',
-        defaultMessage: 'Location: {allowed}',
-    },
-    screenShare: {
-        id: 'renderer.components.settingsPage.permissions.screenShare',
-        defaultMessage: 'Screen Share: {allowed}',
-    },
-    microphoneAndCamera: {
-        id: 'renderer.components.settingsPage.permissions.microphoneAndCamera',
-        defaultMessage: 'Microphone and Camera: {allowed}',
-    },
-    openExternal: {
-        id: 'renderer.components.settingsPage.permissions.openExternal',
-        defaultMessage: 'Open external: {allowed}',
-    },
-});
+t('renderer.components.settingsPage.permissions.allowed');
+t('renderer.components.settingsPage.permissions.denied');
+t('renderer.components.settingsPage.permissions.notifications');
+t('renderer.components.settingsPage.permissions.geolocation');
+t('renderer.components.settingsPage.permissions.screenShare');
+t('renderer.components.settingsPage.permissions.microphoneAndCamera');
+t('renderer.components.settingsPage.permissions.openExternal');
 
 const PermissionLabelMapping: Record<string, string> = {
-    notifications: permissionMessages.notifications.id,
-    geolocation: permissionMessages.geolocation.id,
-    screenShare: permissionMessages.screenShare.id,
-    media: permissionMessages.microphoneAndCamera.id,
-    openExternal: permissionMessages.openExternal.id,
+    notifications: 'renderer.components.settingsPage.permissions.notifications',
+    geolocation: 'renderer.components.settingsPage.permissions.geolocation',
+    screenShare: 'renderer.components.settingsPage.permissions.screenShare',
+    media: 'renderer.components.settingsPage.permissions.microphoneAndCamera',
+    openExternal: 'renderer.components.settingsPage.permissions.openExternal',
 };
 
 const Permission = ({name, allowed, onReset}: {name: Permission['name']; allowed: Permission['allowed']; onReset: (permission: string) => void}) => {

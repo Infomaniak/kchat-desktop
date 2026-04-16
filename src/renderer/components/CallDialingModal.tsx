@@ -5,20 +5,14 @@
 
 import React from 'react';
 import type {IntlShape} from 'react-intl';
-import {defineMessages, FormattedMessage, injectIntl} from 'react-intl';
+import {FormattedMessage, injectIntl} from 'react-intl';
 
-const callMessages = defineMessages({
-    waiting: {
-        id: 'renderer.modals.call.waiting',
-        defaultMessage: 'Waiting...',
-    },
-    calling: {
-        id: 'renderer.modals.call.calling',
-        defaultMessage: 'Incoming call',
-    },
-});
-
+import {t} from 'common/utils/util';
 import {playSoundLoop} from 'renderer/notificationSounds';
+
+// Register dynamic keys for i18n extraction
+t('renderer.modals.call.waiting');
+t('renderer.modals.call.calling');
 
 import type {IkCallInfo, UserProfile} from 'types/callsIk';
 
@@ -55,7 +49,9 @@ class DialingModal extends React.PureComponent<Props, State> {
 
             this.setState({
                 callInfo: msg,
-                trad: this.props.intl.formatMessage(isCurrentUserCaller ? callMessages.waiting : callMessages.calling),
+                trad: this.props.intl.formatMessage({
+                    id: isCurrentUserCaller ? 'renderer.modals.call.waiting' : 'renderer.modals.call.calling',
+                }),
             });
 
             playSoundLoop(isCurrentUserCaller ? 'OutgoingRing' : 'Ring');
