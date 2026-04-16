@@ -5,7 +5,18 @@
 
 import React from 'react';
 import type {IntlShape} from 'react-intl';
-import {FormattedMessage, injectIntl} from 'react-intl';
+import {defineMessages, FormattedMessage, injectIntl} from 'react-intl';
+
+const callMessages = defineMessages({
+    waiting: {
+        id: 'renderer.modals.call.waiting',
+        defaultMessage: 'Waiting...',
+    },
+    calling: {
+        id: 'renderer.modals.call.calling',
+        defaultMessage: 'Incoming call',
+    },
+});
 
 import {playSoundLoop} from 'renderer/notificationSounds';
 
@@ -42,11 +53,10 @@ class DialingModal extends React.PureComponent<Props, State> {
         window.dialApi.onInfo((_, msg) => {
             const isCurrentUserCaller = msg.caller.id === msg.currentUser.id;
 
-            this.setState({callInfo: msg,
-                trad: this.props.intl.formatMessage({
-                    id: isCurrentUserCaller ? 'renderer.modals.call.waiting' : 'renderer.modals.call.calling',
-                    defaultMessage: isCurrentUserCaller ? 'Waiting...' : 'Incoming call',
-                })});
+            this.setState({
+                callInfo: msg,
+                trad: this.props.intl.formatMessage(isCurrentUserCaller ? callMessages.waiting : callMessages.calling),
+            });
 
             playSoundLoop(isCurrentUserCaller ? 'OutgoingRing' : 'Ring');
 
