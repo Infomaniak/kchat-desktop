@@ -58,6 +58,7 @@ import Utils from 'common/utils/util';
 import type {MattermostView} from 'common/views/View';
 import {TAB_MESSAGING} from 'common/views/View';
 import {handleWelcomeScreenModal} from 'main/app/intercom';
+import {initTheme, updateTheme} from 'main/app/theme';
 import {flushCookiesStore, updateServerInfos} from 'main/app/utils';
 import DeveloperMode from 'main/developerMode';
 import performanceMonitor from 'main/performanceMonitor';
@@ -79,6 +80,7 @@ import {getLocalPreload, getAdjustedWindowBoundaries} from '../utils';
 const log = new Logger('ViewManager');
 const URL_VIEW_DURATION = 10 * SECOND;
 const URL_VIEW_HEIGHT = 20;
+
 export class ViewManager {
     private closedViews: Map<string, {srv: MattermostServer; view: MattermostView}>;
     private views: Map<string, MattermostWebContentsView>;
@@ -126,7 +128,10 @@ export class ViewManager {
         ipcMain.on(CALL_API_AVAILABLE, this.handleCallApiAvailable);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(RESET_TEAMS, this.resetTeams);
-        ipcMain.on(THEME_CHANGED, this.handleThemeChanged);
+        ipcMain.on(THEME_CHANGED, (_event, _callId, data) => {
+            updateTheme(data);
+            viewManager.sendToAllViews(THEME_CHANGED, data);
+        });
 
         ServerManager.on(SERVERS_UPDATE, this.handleReloadConfiguration);
         DeveloperMode.on(DEVELOPER_MODE_UPDATED, this.handleDeveloperModeUpdated);
@@ -134,6 +139,10 @@ export class ViewManager {
 
     private init = async () => {
         TokenManager.load();
+
+        // Initialize theme using ThemeManager
+        initTheme();
+
         if (ServerManager.hasServers()) {
             // TODO: This init should be happening elsewhere, future refactor will fix this
             ServerViewState.init();
@@ -275,11 +284,6 @@ export class ViewManager {
 
     resetTeams = () => {
         ServerManager.reloadFromConfig();
-    };
-
-    handleThemeChanged = (_view: any, _viewId: any, data: object) => {
-        Config.set('theme', data);
-        viewManager.sendToAllViews(THEME_CHANGED, data);
     };
 
     handleCallJoined = (_: IpcMainEvent, message: any) => {
@@ -723,6 +727,12 @@ export class ViewManager {
             if (this.getCurrentView() === view) {
                 ServersSidebar.show();
                 LoadingScreen.fade();
+            }
+
+            // Send current theme to the webview
+            if (Config.theme) {
+                log.debug('sending THEME_CHANGED to view', view.id);
+                view.sendToRenderer(THEME_CHANGED, Config.theme);
             }
         }
     };

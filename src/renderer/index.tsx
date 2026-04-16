@@ -42,6 +42,12 @@ class Root extends React.PureComponent<Record<string, never>, State> {
             this.reloadConfig();
         });
 
+        window.desktop.onDarkModeChange((darkMode) => {
+            this.setState((prev) => ({
+                config: prev.config ? {...prev.config, darkMode} : undefined,
+            }));
+        });
+
         // Deny drag&drop navigation in mainWindow.
         // Drag&drop is allowed in webview of index.html.
         document.addEventListener('dragover', (event) => event.preventDefault());

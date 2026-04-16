@@ -105,7 +105,7 @@ export class Config extends EventEmitter {
      * @param {*} data value to save for provided key
      */
     set = (key: keyof ConfigType, data: ConfigType[keyof ConfigType]): void => {
-        log.debug('set');
+        log.silly('set', key);
         this.setMultiple({[key]: data});
     };
 
@@ -121,7 +121,7 @@ export class Config extends EventEmitter {
     setMultiple = (newData: Partial<ConfigType>) => {
         log.debug('setMultiple', newData);
 
-        if (newData.darkMode && newData.darkMode !== this.darkMode) {
+        if (newData.darkMode !== undefined && newData.darkMode !== this.darkMode) {
             this.emit('darkModeChange', newData.darkMode);
         }
         this.localConfigData = Object.assign({}, this.localConfigData, {...newData, teams: this.localConfigData?.teams});
