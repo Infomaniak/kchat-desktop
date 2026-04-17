@@ -14,7 +14,7 @@ import MainPage from './components/MainPage';
 import IntlProvider from './intl_provider';
 
 Sentry.init({
-    dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
+    dsn: process.env.SENTRY_DSN,
 });
 
 // Initialize looger to collect/centralize logs from all processes main/renderer

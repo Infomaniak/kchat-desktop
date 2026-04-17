@@ -11,7 +11,7 @@ import 'renderer/css/components/LoadingAnimation.css';
 import 'renderer/css/components/LoadingScreen.css';
 
 Sentry.init({
-    dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
+    dsn: process.env.SENTRY_DSN,
 });
 
 type Props = Record<string, never>;
