@@ -138,11 +138,9 @@ export async function initialize() {
     });
 
     addEventProcessor(async (event, hint) => {
-        log.silly('Sentry event received:', event.level, event.exception?.values?.[0]?.value);
         if (event.level === 'fatal' || event.level === 'error') {
             const exception = hint.originalException as Error | undefined;
             if (exception) {
-                log.silly('Showing dialog for exception:', exception.message);
                 await CriticalErrorHandler.showExceptionDialog(exception);
             }
         }
