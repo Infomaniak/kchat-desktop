@@ -1,6 +1,12 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import * as Sentry from '@sentry/electron/renderer';
+
+Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+});
+
 import type {IpcRendererEvent} from 'electron';
 import {contextBridge, ipcRenderer, webFrame} from 'electron';
 

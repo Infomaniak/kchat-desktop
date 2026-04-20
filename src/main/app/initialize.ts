@@ -4,7 +4,7 @@
 import path from 'path';
 import {pathToFileURL} from 'url';
 
-import {init} from '@sentry/electron/main';
+import {init, addEventProcessor, preloadInjectionIntegration} from '@sentry/electron/main';
 import {app, ipcMain, nativeTheme, net, protocol, session} from 'electron';
 import installExtension, {REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS} from 'electron-devtools-installer';
 import isDev from 'electron-is-dev';
@@ -128,15 +128,29 @@ const log = new Logger('App.Initialize');
  * Main entry point for the application, ensures that everything initializes in the proper order
  */
 export async function initialize() {
-    CriticalErrorHandler.init();
     global.willAppQuit = false;
-
-    // initialization that can run before the app is ready
-    initializeArgs();
 
     init({
         dsn: process.env.SENTRY_DSN,
+        integrations: [
+            preloadInjectionIntegration(),
+        ],
     });
+
+    addEventProcessor(async (event, hint) => {
+        log.silly('Sentry event received:', event.level, event.exception?.values?.[0]?.value);
+        if (event.level === 'fatal' || event.level === 'error') {
+            const exception = hint.originalException as Error | undefined;
+            if (exception) {
+                log.silly('Showing dialog for exception:', exception.message);
+                await CriticalErrorHandler.showExceptionDialog(exception);
+            }
+        }
+        return event;
+    });
+
+    // initialization that can run before the app is ready
+    initializeArgs();
 
     await initializeConfig();
     initializeAppEventListeners();
