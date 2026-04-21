@@ -3,6 +3,8 @@
 import React, {useEffect, useState} from 'react';
 import {useIntl, FormattedMessage} from 'react-intl';
 
+import {t} from 'common/utils/util';
+
 import type {Permissions} from 'types/permissions';
 
 import './PermissionSettings.scss';
@@ -98,13 +100,20 @@ export const PermissionSettings = () => {
     </div>);
 };
 
+t('renderer.components.settingsPage.permissions.allowed');
+t('renderer.components.settingsPage.permissions.denied');
+t('renderer.components.settingsPage.permissions.notifications');
+t('renderer.components.settingsPage.permissions.geolocation');
+t('renderer.components.settingsPage.permissions.screenShare');
+t('renderer.components.settingsPage.permissions.microphoneAndCamera');
+t('renderer.components.settingsPage.permissions.openExternal');
+
 const PermissionLabelMapping: Record<string, string> = {
     notifications: 'renderer.components.settingsPage.permissions.notifications',
     geolocation: 'renderer.components.settingsPage.permissions.geolocation',
     screenShare: 'renderer.components.settingsPage.permissions.screenShare',
     media: 'renderer.components.settingsPage.permissions.microphoneAndCamera',
     openExternal: 'renderer.components.settingsPage.permissions.openExternal',
-
 };
 
 const Permission = ({name, allowed, onReset}: {name: Permission['name']; allowed: Permission['allowed']; onReset: (permission: string) => void}) => {

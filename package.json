@@ -25,6 +25,8 @@
         "check-types": "tsc",
         "prune": "ts-prune",
         "i18n-extract": "mmjstool i18n extract-desktop",
+        "check:i18n": "node scripts/check-i18n.js",
+        "check:i18n:ci": "node scripts/check-i18n.js --ci",
         "lint:js": "eslint --ext .js,.jsx,.tsx,.ts --cache .",
         "lint:js-quiet": "npm run lint:js -- --quiet",
         "fix:js": "npm run lint:js-quiet -- --fix",

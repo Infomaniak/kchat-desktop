@@ -2,6 +2,7 @@ image: node:20.15.0
 
 stages:
   - setup
+  - translations
   - quality
   - build
   - test
@@ -48,6 +49,16 @@ install:
     expire_in: 1h
     paths:
       - node_modules/
+
+translations:check:
+  stage: translations
+  extends: .node-base
+  needs: ["install"]
+  dependencies:
+    - install
+  script:
+    - npm run check:i18n:ci
+    - git diff --exit-code i18n/ || { echo "⛔ i18n files changed, commit the updates."; exit 1; }
 
 lint:
   stage: quality
