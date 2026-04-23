@@ -61,11 +61,10 @@ describe('main/CriticalErrorHandler', () => {
             process.env = env;
         });
 
-        it('should throw error if app is not ready', () => {
+        it('should defer to app ready event if app is not ready', async () => {
             app.isReady.mockImplementation(() => false);
-            expect(() => {
-                criticalErrorHandler.processUncaughtExceptionHandler(new Error('test'));
-            }).toThrow(Error);
+            await criticalErrorHandler.processUncaughtExceptionHandler(new Error('test'));
+            expect(app.once).toBeCalledWith('ready', expect.any(Function));
             expect(dialog.showMessageBox).not.toBeCalled();
         });
 
@@ -73,8 +72,9 @@ describe('main/CriticalErrorHandler', () => {
             path.join.mockImplementation(() => 'testfile.txt');
             const promise = Promise.resolve({response: process.platform === 'darwin' ? 2 : 0});
             dialog.showMessageBox.mockImplementation(() => promise);
-            criticalErrorHandler.processUncaughtExceptionHandler(new Error('test'));
+            await criticalErrorHandler.processUncaughtExceptionHandler(new Error('test'));
             await promise;
+            await Promise.resolve();
             expect(spawn).toBeCalledWith(expect.any(String), expect.arrayContaining(['testfile.txt']), expect.any(Object));
         });
 
@@ -82,8 +82,9 @@ describe('main/CriticalErrorHandler', () => {
             path.join.mockImplementation(() => 'testfile.txt');
             const promise = Promise.resolve({response: process.platform === 'darwin' ? 0 : 2});
             dialog.showMessageBox.mockImplementation(() => promise);
-            criticalErrorHandler.processUncaughtExceptionHandler(new Error('test'));
+            await criticalErrorHandler.processUncaughtExceptionHandler(new Error('test'));
             await promise;
+            await Promise.resolve();
             expect(app.relaunch).toBeCalled();
         });
     });
