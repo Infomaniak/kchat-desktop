@@ -78,11 +78,19 @@ export const nonTeamUrlPaths = [
 ];
 
 export const localeTranslations: Record<string, string> = {
+    'da': 'Danish',
     'de': 'German',
+    'el': 'Greek',
     'en': 'English',
     'es': 'Spanish',
+    'fi': 'Finnish',
     'fr': 'French',
     'it': 'Italian',
+    'nb': 'Norwegian',
+    'nl': 'Dutch',
+    'pl': 'Polish',
+    'pt': 'Portuguese',
+    'sv': 'Swedish',
 };
 
 export const IKLoginAllowedUrls = [
