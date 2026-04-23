@@ -29,6 +29,8 @@ jest.mock('electron', () => ({
 }));
 
 jest.mock('fs', () => ({
+    readFile: jest.fn(),
+    readdir: jest.fn(),
     writeFileSync: jest.fn(),
 }));
 
