@@ -21,6 +21,7 @@ jest.mock('electron', () => ({
         relaunch: jest.fn(),
         isReady: jest.fn(),
         exit: jest.fn(),
+        once: jest.fn(),
     },
     dialog: {
         showMessageBox: jest.fn(),
@@ -37,6 +38,11 @@ jest.mock('child_process', () => ({
 
 jest.mock('main/i18nManager', () => ({
     localizeMessage: jest.fn(),
+}));
+
+jest.mock('@sentry/electron/main', () => ({
+    captureException: jest.fn(),
+    close: jest.fn(),
 }));
 
 describe('main/CriticalErrorHandler', () => {
