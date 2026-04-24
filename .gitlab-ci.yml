@@ -56,8 +56,25 @@ lint:
   dependencies:
     - install
   script:
-    - npm run lint:js
-  allow_failure: true
+    - npm run lint:js-quiet
+
+check-types:
+  stage: quality
+  extends: .node-base
+  needs: ["install"]
+  dependencies:
+    - install
+  script:
+    - npm run check-types
+
+check-build-types:
+  stage: quality
+  extends: .node-base
+  needs: ["install"]
+  dependencies:
+    - install
+  script:
+    - npm run check-build-config
 
 build:
   stage: build
@@ -73,14 +90,6 @@ build:
       - dist/
       - build/
 
-check-types:
-  stage: test
-  extends: .node-base
-  needs: ["install"]
-  dependencies:
-    - install
-  script:
-    - npm run check-types
 
 unit-tests:
   stage: test
@@ -91,7 +100,7 @@ unit-tests:
   dependencies:
     - install
   script:
-    - npm run test:unit
+    - npm run test
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
   artifacts:
     when: always
