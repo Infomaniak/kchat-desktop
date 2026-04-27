@@ -1,18 +1,17 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as Sentry from '@sentry/electron/renderer';
 import React from 'react';
 import ReactDOM from 'react-dom';
+
+import {initSentryRenderer} from 'common/utils/sentry';
 
 import LoadingScreen from '../../components/LoadingScreen';
 
 import 'renderer/css/components/LoadingAnimation.css';
 import 'renderer/css/components/LoadingScreen.css';
 
-Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-});
+initSentryRenderer();
 
 type Props = Record<string, never>;
 

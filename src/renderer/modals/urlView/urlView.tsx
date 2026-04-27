@@ -2,16 +2,14 @@
 // See LICENSE.txt for license information.
 
 import 'renderer/css/components/HoveringURL.css';
-
-import * as Sentry from '@sentry/electron/renderer';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import {initSentryRenderer} from 'common/utils/sentry';
+
 import UrlDescription from '../../components/urlDescription';
 
-Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-});
+initSentryRenderer();
 
 const start = async () => {
     ReactDOM.render(

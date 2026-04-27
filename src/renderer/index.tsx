@@ -3,19 +3,17 @@
 // See LICENSE.txt for license information.
 
 import 'renderer/css/index.css';
-
-import * as Sentry from '@sentry/electron/renderer';
 import React from 'react';
 import ReactDOM from 'react-dom';
+
+import {initSentryRenderer} from 'common/utils/sentry';
 
 import type {CombinedConfig} from 'types/config';
 
 import MainPage from './components/MainPage';
 import IntlProvider from './intl_provider';
 
-Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-});
+initSentryRenderer();
 
 // Initialize looger to collect/centralize logs from all processes main/renderer
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

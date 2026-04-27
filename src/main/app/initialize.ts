@@ -4,7 +4,6 @@
 import path from 'path';
 import {pathToFileURL} from 'url';
 
-import {init} from '@sentry/electron/main';
 import {app, ipcMain, nativeTheme, net, protocol, session} from 'electron';
 import installExtension, {REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS} from 'electron-devtools-installer';
 import isDev from 'electron-is-dev';
@@ -45,6 +44,7 @@ import {IKOrigin} from 'common/config/ikConfig';
 import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {IKDriveAllowedUrls, IKLoginAllowedUrls, IKWelcomeAllowedUrls, KChatTokenWhitelist} from 'common/utils/constants';
+import {initSentryMain} from 'common/utils/sentry';
 import {parseURL} from 'common/utils/url';
 import AllowProtocolDialog from 'main/allowProtocolDialog';
 import AppVersionManager from 'main/AppVersionManager';
@@ -134,9 +134,7 @@ export async function initialize() {
     // initialization that can run before the app is ready
     initializeArgs();
 
-    init({
-        dsn: process.env.SENTRY_DSN,
-    });
+    initSentryMain();
 
     await initializeConfig();
     initializeAppEventListeners();

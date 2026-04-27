@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-import * as Sentry from '@sentry/electron/renderer';
 import React, {useEffect, useMemo, useState} from 'react';
 import type {DropResult} from 'react-beautiful-dnd';
 import ReactDOM from 'react-dom';
+
+import {initSentryRenderer} from 'common/utils/sentry';
 
 import type {ConfigServer, UniqueServer} from 'types/config';
 import type {Theme} from 'types/theme';
@@ -14,9 +14,7 @@ import type {Theme} from 'types/theme';
 import ServersSidebar from './components/ServersSidebar';
 import {filterAndSortTeamsByDisplayName} from './components/ServersSidebar/utils';
 
-Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-});
+initSentryRenderer();
 
 type State = {
     servers?: UniqueServer[];
