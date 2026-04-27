@@ -42,6 +42,8 @@ export function updateTheme(data: any): boolean {
 
     Config.set('theme', data);
 
+    updateNativeTrafficLightTheme();
+
     const isDark = isDarkTheme(data);
     if (isDark !== Config.darkMode) {
         Config.set('darkMode', isDark);
@@ -57,6 +59,8 @@ export function handleSystemThemeChange(): void {
     if (themeType !== 'auto') {
         return;
     }
+
+    nativeTheme.themeSource = 'system';
 
     const isDark = nativeTheme.shouldUseDarkColors;
     if (isDark !== Config.darkMode) {
@@ -77,5 +81,24 @@ export function initTheme(): void {
         Config.set('darkMode', nativeTheme.shouldUseDarkColors);
     } else {
         Config.set('darkMode', type === 'dark');
+    }
+    updateNativeTrafficLightTheme();
+}
+
+// Needed for macOS traffic light with electron
+function updateNativeTrafficLightTheme() {
+    const currentTheme = Config.theme;
+    const themeType = getThemeType(currentTheme);
+
+    switch (themeType) {
+    case 'light':
+        nativeTheme.themeSource = 'light';
+        break;
+    case 'dark':
+        nativeTheme.themeSource = 'dark';
+        break;
+    case 'auto':
+        nativeTheme.themeSource = 'system';
+        break;
     }
 }
