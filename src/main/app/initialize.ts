@@ -88,7 +88,6 @@ import {
     handleGetLocalConfiguration,
     updateConfiguration,
 } from './config';
-import {handleSystemThemeChange} from './theme';
 import {
     handleMainWindowIsShown,
     handleAppVersion,
@@ -102,6 +101,7 @@ import {
     getScreenPermissions,
     handleShowSettingsModal,
 } from './intercom';
+import {handleSystemThemeChange} from './theme';
 import {
     clearAppCache,
     getDeeplinkingURL,
