@@ -85,11 +85,7 @@ jobs:
               run: |
                   wget -qO - https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_22.04/Release.key | sudo apt-key add -
                   wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 && chmod a+x /usr/local/bin/yq
-                  sudo dpkg --add-architecture arm64
-                  sudo sed -i 's/^deb /deb [arch=amd64] /' /etc/apt/sources.list /etc/apt/sources.list.d/*.list
-                  echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs) main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-                  echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list
-                  sudo apt-get update && sudo apt-get install -y ca-certificates libxtst-dev libpng++-dev gcc-aarch64-linux-gnu g++-aarch64-linux-gnu jq icnsutils graphicsmagick tzdata libpng-dev:arm64 zlib1g-dev:arm64 libx11-dev:arm64 libxtst-dev:arm64
+                  sudo apt-get update || true && sudo apt-get install -y ca-certificates libxtst-dev libpng++-dev gcc-aarch64-linux-gnu g++-aarch64-linux-gnu jq icnsutils graphicsmagick tzdata
                   npm ci
             - name: release/update-version
               uses: ./.github/actions/version
