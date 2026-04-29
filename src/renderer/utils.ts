@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {init as sentryInitRenderer} from '@sentry/electron/renderer';
+import {init} from '@sentry/electron/renderer';
 import prettyBytes from 'pretty-bytes';
 import type {IntlShape, MessageDescriptor} from 'react-intl';
 
@@ -14,7 +14,7 @@ export function initSentryRenderer() {
         return;
     }
 
-    sentryInitRenderer({
+    init({
         dsn: process.env.SENTRY_DSN,
     });
 }

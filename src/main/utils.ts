@@ -8,7 +8,7 @@ import path from 'path';
 import {promisify} from 'util';
 const exec = promisify(execOriginal);
 
-import {init as sentryInitMain} from '@sentry/electron/main';
+import {init} from '@sentry/electron/main';
 import type {BrowserWindow} from 'electron';
 import {app} from 'electron';
 import log from 'electron-log';
@@ -23,7 +23,7 @@ export function initSentryMain() {
         return;
     }
 
-    sentryInitMain({
+    init({
         dsn: process.env.SENTRY_DSN,
     });
 }
