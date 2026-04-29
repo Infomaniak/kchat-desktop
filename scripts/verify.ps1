@@ -28,3 +28,7 @@ $env:Path = @(
 $smctl = "$SmctlDir\smctl.exe"
 
 & "$smctl" sign verify --input="$FilePath" --fingerprint="$Fingerprint"
+
+if ($LASTEXITCODE -ne 0) {
+  throw "SM Tools sign verify command failed with exit code $LASTEXITCODE"
+}

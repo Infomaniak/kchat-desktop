@@ -168,6 +168,7 @@
     "artifactName": "${name}-setup-${version}-${arch}.${ext}"
   },
   "win": {
+    "forceCodeSigning": true,
     "sign": "./scripts/winsign.js",
     "certificateSubjectName": "INFOMANIAK NETWORK SA",
     "target": [

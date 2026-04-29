@@ -45,10 +45,16 @@ try {
 
   Write-Host "[$whoami] Verifying SM Tools install..."
   & "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools\smctl.exe" healthcheck --all
+  if ($LASTEXITCODE -ne 0) {
+    throw "SM Tools healthcheck failed with exit code $LASTEXITCODE"
+  }
 
   # Sync certificate
   Write-Host "[$whoami] Synchronizing certificate..."
   & "C:\Program Files\DigiCert\DigiCert One Signing Manager Tools\smctl.exe" windows certsync --keypair-alias="${env:SM_KEYPAIR_ALIAS}"
+  if ($LASTEXITCODE -ne 0) {
+    throw "SM Tools certsync failed with exit code $LASTEXITCODE"
+  }
 } catch {
   throw $PSItem
 }
