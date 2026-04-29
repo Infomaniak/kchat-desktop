@@ -1,12 +1,23 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {init as sentryInitRenderer} from '@sentry/electron/renderer';
 import prettyBytes from 'pretty-bytes';
 import type {IntlShape, MessageDescriptor} from 'react-intl';
 
 import type {DownloadedItem} from 'types/downloads';
 
 import {Constants} from './constants';
+
+export function initSentryRenderer() {
+    if (global.isDev) {
+        return;
+    }
+
+    sentryInitRenderer({
+        dsn: process.env.SENTRY_DSN,
+    });
+}
 
 const prettyBytesConverter = (value: number | string, excludeUnits?: boolean, totalUnits?: string): string => {
     let returnValue = 'N/A';

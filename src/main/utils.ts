@@ -8,6 +8,7 @@ import path from 'path';
 import {promisify} from 'util';
 const exec = promisify(execOriginal);
 
+import {init as sentryInitMain} from '@sentry/electron/main';
 import type {BrowserWindow} from 'electron';
 import {app} from 'electron';
 import log from 'electron-log';
@@ -16,6 +17,16 @@ import {SERVERS_SIDEBAR_WIDTH, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import Utils from 'common/utils/util';
 
 import type {Args} from 'types/args';
+
+export function initSentryMain() {
+    if (global.isDev) {
+        return;
+    }
+
+    sentryInitMain({
+        dsn: process.env.SENTRY_DSN,
+    });
+}
 
 export function isInsideRectangle(container: Electron.Rectangle, rect: Electron.Rectangle) {
     if (container.x > rect.x) {

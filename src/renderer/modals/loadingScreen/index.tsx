@@ -4,7 +4,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {initSentryRenderer} from 'common/utils/sentry';
+import {initSentryRenderer} from 'renderer/utils';
 
 import LoadingScreen from '../../components/LoadingScreen';
 

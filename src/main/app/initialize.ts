@@ -44,7 +44,6 @@ import {IKOrigin} from 'common/config/ikConfig';
 import {Logger} from 'common/log';
 import ServerManager from 'common/servers/serverManager';
 import {IKDriveAllowedUrls, IKLoginAllowedUrls, IKWelcomeAllowedUrls, KChatTokenWhitelist} from 'common/utils/constants';
-import {initSentryMain} from 'common/utils/sentry';
 import {parseURL} from 'common/utils/url';
 import AllowProtocolDialog from 'main/allowProtocolDialog';
 import AppVersionManager from 'main/AppVersionManager';
@@ -67,6 +66,7 @@ import TokenManager from 'main/tokenManager';
 import Tray from 'main/tray/tray';
 import TrustedOriginsStore from 'main/trustedOrigins';
 import UserActivityMonitor from 'main/UserActivityMonitor';
+import {initSentryMain} from 'main/utils';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
 

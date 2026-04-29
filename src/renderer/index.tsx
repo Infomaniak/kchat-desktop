@@ -6,7 +6,7 @@ import 'renderer/css/index.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {initSentryRenderer} from 'common/utils/sentry';
+import {initSentryRenderer} from 'renderer/utils';
 
 import type {CombinedConfig} from 'types/config';
 

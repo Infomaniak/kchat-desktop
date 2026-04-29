@@ -6,7 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {FormattedMessage} from 'react-intl';
 
-import {initSentryRenderer} from 'common/utils/sentry';
+import {initSentryRenderer} from 'renderer/utils';
 
 import type {DownloadedItem, DownloadedItems} from 'types/downloads';
 
