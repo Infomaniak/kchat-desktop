@@ -1,4 +1,5 @@
 {
+  "npmRebuild": false,
   "publish": {
     "provider": "s3",
     "channel": "beta",
