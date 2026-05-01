@@ -21,53 +21,7 @@ jobs:
                   --arg username "DesktopReleaseBot" \
                   --arg text "[$GITHUB_REF_NAME] Release for desktop app started from GitHub, it should take about 30 minutes to complete." \
                   '{"username":$username,"icon_url": $icon_url, "text": $text }' > /tmp/webhook-data.json
-                  curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOFICATION FAILED! check logs as this will succeed intentionally"
-
-    # build-mac:
-    #     runs-on: macos-12
-    #     env:
-    #       MAC_PROFILE: ${{ secrets.MAC_PROVISION_PROFILE }}
-    #       APPLE_ID: ${{ secrets.APPLEID }}
-    #       APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLEIDPASS }}
-    #       APPLE_TEAM_ID: ${{ secrets.APPLETEAMID }}
-    #       CSC_FOR_PULL_REQUEST: true
-    #       CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-    #       CSC_LINK: ${{ secrets.CSC_LINK }}
-    #       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-    #       SENTRY_RELEASE: ${{ github.ref_name }}
-    #     steps:
-    #         - name: release/checkout-repo
-    #           uses: actions/checkout@v3
-    #         - name: release/setup-node
-    #           uses: actions/setup-node@v3
-    #           with:
-    #               node-version-file: "package.json"
-    #               cache: "npm"
-    #               cache-dependency-path: package-lock.json
-    #         - name: release/install-dependencies
-    #           env:
-    #               NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-    #           run: |
-    #               brew install yq rename
-    #               sudo -H pip install setuptools
-    #               npm ci
-    #         - name: release/copy-provisioning-profile
-    #           run: echo $MAC_PROFILE | base64 -D > ./mac.provisionprofile
-    #         - name: release/update-version
-    #           uses: ./.github/actions/version
-    #         # - name: release/test
-    #         #   uses: ./.github/actions/test
-    #         - name: release/build
-    #           run: |
-    #               npm run package:mac
-    #               mkdir -p ./artifacts
-    #               find ./release -type f \( -name "*.dmg" \) -exec cp {} ./artifacts/ \;
-    #         - name: release/upload-build
-    #           uses: actions/upload-artifact@v3
-    #           with:
-    #               name: artifacts
-    #               path: ./artifacts
-    #               retention-days: 1
+                  curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOFICATION FAILED! check logs as this will succeed intentionally"Ò
 
     build-linux:
         runs-on: ubuntu-latest
@@ -86,16 +40,7 @@ jobs:
               run: |
                   wget -qO - https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_22.04/Release.key | sudo apt-key add -
                   wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 && chmod a+x /usr/local/bin/yq
-                  sudo dpkg --add-architecture arm64
-                  # Restrict legacy .list sources to amd64
-                  sudo sed -i -E '/^deb \[/! s/^deb /deb [arch=amd64] /' /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
-                  # Restrict DEB822 .sources files to amd64 (Ubuntu 24.04+)
-                  find /etc/apt/sources.list.d -name "*.sources" -exec sudo sed -i '/^Architectures:/d' {} \; 2>/dev/null || true
-                  find /etc/apt/sources.list.d -name "*.sources" -exec sudo sed -i 's/^Types: deb$/&\nArchitectures: amd64/' {} \; 2>/dev/null || true
-                  # Add arm64 sources from ports.ubuntu.com (main + security)
-                  DISTRO=$(lsb_release -cs)
-                  printf 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports %s main restricted universe multiverse\ndeb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports %s-updates main restricted universe multiverse\ndeb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports %s-security main restricted universe multiverse\n' "$DISTRO" "$DISTRO" "$DISTRO" | sudo tee /etc/apt/sources.list.d/ubuntu-ports-arm64.list
-                  sudo apt-get update || true && sudo apt-get install -y ca-certificates libxtst-dev libpng++-dev gcc-aarch64-linux-gnu g++-aarch64-linux-gnu jq icnsutils graphicsmagick tzdata libpng-dev:arm64 zlib1g-dev:arm64 libx11-dev:arm64 libxtst-dev:arm64
+                  sudo apt-get update || true && sudo apt-get install -y ca-certificates libxtst-dev libpng++-dev jq icnsutils graphicsmagick tzdata
                   npm ci
             - name: release/update-version
               uses: ./.github/actions/version
@@ -109,7 +54,7 @@ jobs:
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
               run: |
                   mkdir -p ./build/linux
-                  npm run package:linux
+                  npm run package:linux-appImage-x64
                   bash -x ./scripts/cp_artifacts.sh release ./build/linux
             - name: release/upload-build
               uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
@@ -119,7 +64,45 @@ jobs:
                 compression-level: 0
                 retention-days: 14
 
-    build-msi-installer:
+    build-linux-arm:
+        runs-on: ubuntu-22.04-arm
+        steps:
+            - name: release/checkout-repo
+              uses: actions/checkout@v3
+            - name: release/setup-node
+              uses: actions/setup-node@v3
+              with:
+                  node-version-file: "package.json"
+                  cache: "npm"
+                  cache-dependency-path: package-lock.json
+            - name: release/install-dependencies
+              env:
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: |
+                  wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_arm64 && chmod a+x /usr/local/bin/yq
+                  sudo apt-get update || true && sudo apt-get install -y jq icnsutils graphicsmagick tzdata libxtst-dev libpng++-dev
+                  npm ci
+            - name: release/update-version
+              uses: ./.github/actions/version
+            - name: release/build
+              env:
+                  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+                  SENTRY_RELEASE: ${{ github.ref_name }}
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+              run: |
+                  mkdir -p ./build/linux-arm
+                  npm run package:linux-arm-appImage
+                  bash -x ./scripts/cp_artifacts.sh release ./build/linux-arm
+            - name: release/upload-build
+              uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+              with:
+                name: build-linux-arm
+                path: ./build
+                compression-level: 0
+                retention-days: 14
+
+    build-windows:
         runs-on: windows-2022
         steps:
             - name: release/checkout-repo
@@ -186,8 +169,9 @@ jobs:
     github-release:
       runs-on: ubuntu-22.04
       needs:
-        - build-msi-installer
+        - build-windows
         - build-linux
+        - build-linux-arm
       steps:
         - name: release/checkout-repo
           uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -203,7 +187,7 @@ jobs:
           # find ./build/{macos-release,win-release,linux} -type f -exec cp --backup=numbered -t ./ghr-dist {} +
           run: |
             mkdir -p ./ghr-dist
-            find ./build/{win-release,linux} -type f -exec cp --backup=numbered -t ./ghr-dist {} +
+            find ./build/{win-release,linux,linux-arm} -type f -exec cp --backup=numbered -t ./ghr-dist {} +
 
         - name: release/publish-release
           env:
