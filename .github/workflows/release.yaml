@@ -207,17 +207,27 @@ jobs:
     end-notification:
         runs-on: ubuntu-latest
         needs:
+            - begin-notification
+            - build-linux
+            - build-msi-installer
             - github-release
+        if: always()
         steps:
             - name: release/checkout-repo
               uses: actions/checkout@v3
               with:
                   fetch-depth: 0
             - name: release/notify-channel
+              env:
+                  VERSION: ${{ github.ref_name }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+                  BUILD_LINUX_RESULT: ${{ needs.build-linux.result }}
+                  BUILD_MSI_RESULT: ${{ needs.build-msi-installer.result }}
+                  GITHUB_RELEASE_RESULT: ${{ needs.github-release.result }}
               run: |
                   jq --null-input \
                   --arg icon_url "https://infomaniak.kchat.infomaniak.com/static/emoji/kchat.png" \
                   --arg username "DesktopReleaseBot" \
-                  --arg text "$(bash -x scripts/generate_release_post.sh $GITHUB_REF_NAME)" \
+                  --arg text "$(bash -x scripts/generate_release_post.sh)" \
                   '{"username":$username,"icon_url": $icon_url, "text": $text }' > /tmp/webhook-data.json
-                  curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOFICATION FAILED! check logs as this will succeed intentionally"
+                  curl -i -H "Content-Type: application/json" -X POST -d @/tmp/webhook-data.json ${{ secrets.RELEASE_WEBHOOK_URL }} || echo "NOTIFICATION FAILED! check logs as this will succeed intentionally"
