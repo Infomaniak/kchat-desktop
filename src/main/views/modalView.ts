@@ -70,11 +70,8 @@ export class ModalView<T, T2> {
                 this.view.setBounds(getWindowBoundaries(this.windowAttached));
             }
         };
-        if (process.platform === 'linux') {
-            setTimeout(setBoundsFunction, 10);
-        } else {
-            setBoundsFunction();
-        }
+
+        setBoundsFunction();
 
         this.status = Status.SHOWING;
         if (this.view.webContents.isLoading()) {
