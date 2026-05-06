@@ -255,6 +255,7 @@
     "renderer.components.settingsPage.permissions.microphoneAndCamera": "Mikrofoni ja kamera: {allowed}",
     "renderer.components.settingsPage.permissions.notifications": "Ilmoitukset: {allowed}",
     "renderer.components.settingsPage.permissions.openExternal": "Ulkopuoliset linkit: {allowed}",
+  "renderer.components.settingsPage.permissions.fullscreen": "Koko näyttö: {allowed}",
     "renderer.components.settingsPage.permissions.reset": "nollaa",
     "renderer.components.settingsPage.permissions.screenShare": "Näytönjako: {allowed}",
     "renderer.components.settingsPage.permissions.systemLabel": "Nämä käyttöoikeudet hallitaan macOS:n avulla. Napsauta avataksesi Järjestelmäasetukset.",

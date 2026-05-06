@@ -1,5 +1,6 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import * as Sentry from '@sentry/electron/renderer';
 import React, {useEffect, useState} from 'react';
 import {useIntl, FormattedMessage} from 'react-intl';
 
@@ -107,6 +108,7 @@ t('renderer.components.settingsPage.permissions.geolocation');
 t('renderer.components.settingsPage.permissions.screenShare');
 t('renderer.components.settingsPage.permissions.microphoneAndCamera');
 t('renderer.components.settingsPage.permissions.openExternal');
+t('renderer.components.settingsPage.permissions.fullscreen');
 
 const PermissionLabelMapping: Record<string, string> = {
     notifications: 'renderer.components.settingsPage.permissions.notifications',
@@ -114,13 +116,19 @@ const PermissionLabelMapping: Record<string, string> = {
     screenShare: 'renderer.components.settingsPage.permissions.screenShare',
     media: 'renderer.components.settingsPage.permissions.microphoneAndCamera',
     openExternal: 'renderer.components.settingsPage.permissions.openExternal',
+    fullscreen: 'renderer.components.settingsPage.permissions.fullscreen',
 };
 
 const Permission = ({name, allowed, onReset}: {name: Permission['name']; allowed: Permission['allowed']; onReset: (permission: string) => void}) => {
     const {formatMessage} = useIntl();
+    const labelId = PermissionLabelMapping[name];
+    if (!labelId) {
+        Sentry.captureMessage(`PermissionSettings: unmapped permission name "${name}"`, 'warning');
+        return null;
+    }
     const stateKey = allowed ? 'renderer.components.settingsPage.permissions.allowed' : 'renderer.components.settingsPage.permissions.denied';
     const state = capitalize(formatMessage({id: stateKey}));
-    const label = formatMessage({id: PermissionLabelMapping[name]}, {allowed: state});
+    const label = formatMessage({id: labelId}, {allowed: state});
     return (
         <p className='PermissionSetting__content__perm'>
             <label>{label}</label>

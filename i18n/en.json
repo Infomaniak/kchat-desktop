@@ -250,6 +250,7 @@
   "renderer.components.settingsPage.permissions.focusStatus.label": "Focus Status: {status}",
   "renderer.components.settingsPage.permissions.focusStatus.loading": "Checking...",
   "renderer.components.settingsPage.permissions.focusStatus.openSettings": "Open Settings",
+  "renderer.components.settingsPage.permissions.fullscreen": "Fullscreen: {allowed}",
   "renderer.components.settingsPage.permissions.geolocation": "Location: {allowed}",
   "renderer.components.settingsPage.permissions.label": " Review and update the permissions you’ve set for this app",
   "renderer.components.settingsPage.permissions.microphoneAndCamera": "Microphone and Camera: {allowed}",

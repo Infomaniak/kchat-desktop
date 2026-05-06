@@ -255,6 +255,7 @@
   "renderer.components.settingsPage.permissions.microphoneAndCamera": "Microfono e fotocamera: {allowed}",
   "renderer.components.settingsPage.permissions.notifications": "Notifiche: {allowed}",
   "renderer.components.settingsPage.permissions.openExternal": "Link esterni: {allowed}",
+  "renderer.components.settingsPage.permissions.fullscreen": "Schermo intero: {allowed}",
   "renderer.components.settingsPage.permissions.reset": "ripristina",
   "renderer.components.settingsPage.permissions.screenShare": "Condivisione schermo: {allowed}",
   "renderer.components.settingsPage.permissions.systemLabel": "Questi permessi sono gestiti da macOS. Fai clic per aprire le Impostazioni di Sistema.",

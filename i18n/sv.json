@@ -255,6 +255,7 @@
     "renderer.components.settingsPage.permissions.microphoneAndCamera": "Mikrofon och kamera: {allowed}",
     "renderer.components.settingsPage.permissions.notifications": "Notifikationer: {allowed}",
     "renderer.components.settingsPage.permissions.openExternal": "Externa länkar: {allowed}",
+  "renderer.components.settingsPage.permissions.fullscreen": "Helskärm: {allowed}",
     "renderer.components.settingsPage.permissions.reset": "återställa",
     "renderer.components.settingsPage.permissions.screenShare": "Skärmdelning: {allowed}",
     "renderer.components.settingsPage.permissions.systemLabel": "Dessa behörigheter hanteras av macOS. Klicka för att öppna Systeminställningar.",

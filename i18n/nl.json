@@ -255,6 +255,7 @@
     "renderer.components.settingsPage.permissions.microphoneAndCamera": "Microfoon en camera: {allowed}",
     "renderer.components.settingsPage.permissions.notifications": "Meldingen: {allowed}",
     "renderer.components.settingsPage.permissions.openExternal": "Externe links: {allowed}",
+  "renderer.components.settingsPage.permissions.fullscreen": "Volledig scherm: {allowed}",
     "renderer.components.settingsPage.permissions.reset": "terugzetten",
     "renderer.components.settingsPage.permissions.screenShare": "Scherm delen: {allowed}",
     "renderer.components.settingsPage.permissions.systemLabel": "Deze machtigingen worden beheerd door macOS. Klik om de Systeeminstellingen te openen.",

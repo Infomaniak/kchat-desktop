@@ -255,6 +255,7 @@
     "renderer.components.settingsPage.permissions.microphoneAndCamera": "Μικρόφωνο και κάμερα: {allowed}",
     "renderer.components.settingsPage.permissions.notifications": "Ειδοποιήσεις: {allowed}",
     "renderer.components.settingsPage.permissions.openExternal": "Εξωτερικοί σύνδεσμοι: {allowed}",
+  "renderer.components.settingsPage.permissions.fullscreen": "Πλήρης οθόνη: {allowed}",
     "renderer.components.settingsPage.permissions.reset": "επαναφορά",
     "renderer.components.settingsPage.permissions.screenShare": "Κοινή χρήση οθόνης: {allowed}",
     "renderer.components.settingsPage.permissions.systemLabel": "Αυτά τα δικαιώματα διαχειρίζονται από το macOS. Κάντε κλικ για να ανοίξετε τις Ρυθμίσεις Συστήματος.",

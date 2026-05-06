@@ -255,6 +255,7 @@
     "renderer.components.settingsPage.permissions.microphoneAndCamera": "Mikrofon og kamera: {allowed}",
     "renderer.components.settingsPage.permissions.notifications": "Varsler: {allowed}",
     "renderer.components.settingsPage.permissions.openExternal": "Eksterne lenker: {allowed}",
+  "renderer.components.settingsPage.permissions.fullscreen": "Fullskjerm: {allowed}",
     "renderer.components.settingsPage.permissions.reset": "tilbakestille",
     "renderer.components.settingsPage.permissions.screenShare": "Skjermdeling: {allowed}",
     "renderer.components.settingsPage.permissions.systemLabel": "Disse tillatelsene administreres av macOS. Klikk for å åpne Systeminnstillinger.",
