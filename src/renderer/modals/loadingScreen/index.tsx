@@ -4,14 +4,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {initSentryRenderer} from 'renderer/utils';
-
 import LoadingScreen from '../../components/LoadingScreen';
 
 import 'renderer/css/components/LoadingAnimation.css';
 import 'renderer/css/components/LoadingScreen.css';
-
-initSentryRenderer();
 
 type Props = Record<string, never>;
 

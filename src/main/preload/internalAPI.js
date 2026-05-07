@@ -116,8 +116,11 @@ import {
     SET_URL_FOR_URL_VIEW,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
+import {initSentryRenderer} from 'renderer/utils';
 
 console.log('Preload initialized');
+
+initSentryRenderer();
 
 contextBridge.exposeInMainWorld('process', {
     platform: process.platform,

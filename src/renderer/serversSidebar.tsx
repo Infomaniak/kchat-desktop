@@ -6,15 +6,11 @@ import React, {useEffect, useMemo, useState} from 'react';
 import type {DropResult} from 'react-beautiful-dnd';
 import ReactDOM from 'react-dom';
 
-import {initSentryRenderer} from 'renderer/utils';
-
 import type {ConfigServer, UniqueServer} from 'types/config';
 import type {Theme} from 'types/theme';
 
 import ServersSidebar from './components/ServersSidebar';
 import {filterAndSortTeamsByDisplayName} from './components/ServersSidebar/utils';
-
-initSentryRenderer();
 
 type State = {
     servers?: UniqueServer[];

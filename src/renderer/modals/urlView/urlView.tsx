@@ -5,11 +5,7 @@ import 'renderer/css/components/HoveringURL.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {initSentryRenderer} from 'renderer/utils';
-
 import UrlDescription from '../../components/urlDescription';
-
-initSentryRenderer();
 
 const start = async () => {
     ReactDOM.render(

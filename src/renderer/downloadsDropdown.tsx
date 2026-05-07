@@ -6,16 +6,12 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {FormattedMessage} from 'react-intl';
 
-import {initSentryRenderer} from 'renderer/utils';
-
 import type {DownloadedItem, DownloadedItems} from 'types/downloads';
 
 import DownloadsDropdownItem from './components/DownloadsDropdown/DownloadsDropdownItem';
 import IntlProvider from './intl_provider';
 
 import './css/downloadsDropdown.scss';
-
-initSentryRenderer();
 
 type State = {
     downloads: DownloadedItem[];
