@@ -68,8 +68,8 @@ import {
     METRICS_SEND,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
+import {initSentryRenderer} from 'main/utils';
 import type {CallInfo} from 'main/windows/kmeetCallWindow';
-import {initSentryRenderer} from 'renderer/utils';
 
 import type {IkCallInfo} from 'types/callsIk';
 import type {ExternalAPI} from 'types/externalAPI';

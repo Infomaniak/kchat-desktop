@@ -116,7 +116,7 @@ import {
     SET_URL_FOR_URL_VIEW,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
-import {initSentryRenderer} from 'renderer/utils';
+import {initSentryRenderer} from 'main/utils';
 
 console.log('Preload initialized');
 
