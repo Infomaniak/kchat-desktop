@@ -1,12 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as Sentry from '@sentry/electron/renderer';
-
-Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-});
-
+import {init} from '@sentry/electron/renderer';
 import type {IpcRendererEvent} from 'electron';
 import {contextBridge, ipcRenderer, webFrame} from 'electron';
 
@@ -78,6 +73,10 @@ import type {CallInfo} from 'main/windows/kmeetCallWindow';
 
 import type {IkCallInfo} from 'types/callsIk';
 import type {ExternalAPI} from 'types/externalAPI';
+
+init({
+    dsn: process.env.SENTRY_DSN,
+});
 
 const createListener: ExternalAPI['createListener'] = (channel: string, listener: (...args: never[]) => void) => {
     const listenerWithEvent = (_: IpcRendererEvent, ...args: unknown[]) =>
