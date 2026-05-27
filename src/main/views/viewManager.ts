@@ -1,7 +1,7 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {BrowserWindow, IpcMainEvent, IpcMainInvokeEvent, View} from 'electron';
+import type {IpcMainEvent, IpcMainInvokeEvent, View} from 'electron';
 import {WebContentsView, ipcMain, session, shell} from 'electron';
 import isDev from 'electron-is-dev';
 
@@ -34,14 +34,10 @@ import {
     RESET_TOKEN,
     TOKEN_REFRESHED,
     TOKEN_REQUEST,
-    CALL_JOINED,
-    CALL_DECLINED,
     CALL_RINGING,
-    CALL_JOINED_BROWSER,
     THEME_CHANGED,
     REQUEST_BROWSER_HISTORY_STATUS,
     UNREADS_AND_MENTIONS,
-    CALL_API_AVAILABLE,
     OPEN_SERVER_UPGRADE_LINK,
     TAB_LOGIN_CHANGED,
     DEVELOPER_MODE_UPDATED,
@@ -66,7 +62,6 @@ import PermissionsManager from 'main/permissionsManager';
 import TokenManager from 'main/tokenManager';
 import ModalManager from 'main/views/modalManager';
 import callDialingWindow from 'main/windows/callDialingWindow';
-import KmeetCallWindow from 'main/windows/kmeetCallWindow';
 import MainWindow from 'main/windows/mainWindow';
 
 import type {DeveloperSettings} from 'types/settings';
@@ -85,7 +80,6 @@ export class ViewManager {
     private closedViews: Map<string, {srv: MattermostServer; view: MattermostView}>;
     private views: Map<string, MattermostWebContentsView>;
     private currentView?: string;
-    private callWindow?: BrowserWindow | null;
 
     private urlView?: WebContentsView;
     private urlViewCancel?: () => void;
@@ -121,11 +115,6 @@ export class ViewManager {
         ipcMain.handle(RESET_TOKEN, this.handleResetToken);
         ipcMain.handle(RESET_AUTH, this.handleRevokeToken);
 
-        // ipcMain.on(CALL_JOINED, this.handleCallJoined);
-        ipcMain.on(CALL_JOINED_BROWSER, this.handleCallJoinedBrowser);
-
-        // ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
-        ipcMain.on(CALL_API_AVAILABLE, this.handleCallApiAvailable);
         ipcMain.on(CALL_RINGING, this.handleCallDialing);
         ipcMain.handle(RESET_TEAMS, this.resetTeams);
         ipcMain.on(THEME_CHANGED, (_event, _callId, data) => {
@@ -286,40 +275,8 @@ export class ViewManager {
         ServerManager.reloadFromConfig();
     };
 
-    handleCallJoined = (_: IpcMainEvent, message: any) => {
-        //TODO: kMeet integration V2 => open call in a new window.
-        //remove shell.openExternal and uncomment code below.
-        // shell.openExternal(message.url);
-        this.sendToAllViews(CALL_JOINED, message);
-        this.destroyCallWindow();
-        KmeetCallWindow.create(message);
-
-        /*const withDevTools = true;
-        this.callWindow = createCallWindow(this.mainWindow!, withDevTools);
-        this.callWindow.loadURL(message.url);
-        windowManager.sendToMattermostViews(CALL_JOINED, message);*/
-    };
-
-    handleCallJoinedBrowser = (_: IpcMainEvent, message: any) => {
-        this.sendToAllViews(CALL_JOINED, message);
-        this.destroyCallWindow();
-    };
-
     handleCallDialing = (_: IpcMainEvent, message: any) => {
         callDialingWindow.create(message);
-    };
-
-    handleCallDeclined = (_: IpcMainEvent, message: unknown) => {
-        this.sendToAllViews(CALL_DECLINED, message);
-        this.destroyCallWindow();
-    };
-
-    handleCallApiAvailable = (_: IpcMainEvent, message: unknown) => {
-        this.getCurrentView()?.sendToRenderer(CALL_API_AVAILABLE, message);
-    };
-
-    destroyCallWindow = () => {
-        callDialingWindow.destroy();
     };
 
     handleTokenRefreshed = (event: IpcMainEvent, message: any) => {
