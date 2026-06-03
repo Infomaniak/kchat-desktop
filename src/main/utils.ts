@@ -52,16 +52,6 @@ export function initSentryMain() {
     }
 }
 
-export function initSentryRenderer() {
-    if (global.isDev) {
-        return;
-    }
-
-    init({
-        dsn: process.env.SENTRY_DSN,
-    });
-}
-
 export function isInsideRectangle(container: Electron.Rectangle, rect: Electron.Rectangle) {
     if (container.x > rect.x) {
         return false;
