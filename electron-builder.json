@@ -183,7 +183,12 @@
       }
     ],
     "signDlls": true,
-    "publisherName": "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH"
+    "publisherName": [
+      "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Genève, C=CH",
+      "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Gen ve, C=CH",
+      "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=Geneve, C=CH",
+      "CN=\"INFOMANIAK NETWORK SA\", O=\"INFOMANIAK NETWORK SA\", L=Les Acacias, S=GenÃ¨ve, C=CH"
+    ]
   },
   "nsis": {
     "artifactName": "${name}-setup-${version}-win.${ext}",
