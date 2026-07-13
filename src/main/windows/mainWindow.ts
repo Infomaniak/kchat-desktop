@@ -38,7 +38,7 @@ import performanceMonitor from 'main/performanceMonitor';
 import type {SavedWindowState} from 'types/mainWindow';
 
 import ContextMenu from '../contextMenu';
-import {getLocalPreload, isInsideRectangle, isKDE} from '../utils';
+import {getLocalPreload, isInsideRectangle, isKDE, shouldBeHiddenOnStartup} from '../utils';
 
 const log = new Logger('MainWindow');
 const ALT_MENU_KEYS = ['Alt+F', 'Alt+E', 'Alt+V', 'Alt+H', 'Alt+W', 'Alt+P'];
@@ -103,13 +103,13 @@ export class MainWindow extends EventEmitter {
 
         this.win.setMenuBarVisibility(false);
 
-        this.win.once('ready-to-show', () => {
+        this.win.webContents.once('did-finish-load', () => {
             if (!this.win) {
                 return;
             }
             this.win.webContents.zoomLevel = 0;
 
-            if (Config.hideOnStart === false) {
+            if (Config.hideOnStart === false && !shouldBeHiddenOnStartup(global.args)) {
                 this.win.show();
                 if (this.savedWindowState?.maximized) {
                     this.win.maximize();
@@ -117,10 +117,6 @@ export class MainWindow extends EventEmitter {
             }
 
             this.ready = true;
-        });
-
-        this.win.once('restore', () => {
-            this.win?.restore();
         });
         this.win.on('close', this.onClose);
         this.win.on('closed', this.onClosed);

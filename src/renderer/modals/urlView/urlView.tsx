@@ -2,16 +2,10 @@
 // See LICENSE.txt for license information.
 
 import 'renderer/css/components/HoveringURL.css';
-
-import * as Sentry from '@sentry/electron/renderer';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 import UrlDescription from '../../components/urlDescription';
-
-Sentry.init({
-    dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
-});
 
 const start = async () => {
     ReactDOM.render(

@@ -17,10 +17,10 @@ class CallDialingWindow {
     private window?: BrowserWindow;
 
     constructor() {
-        ipcMain.on(CALL_JOINED, this.handleCallAccepted);
-        ipcMain.on(CALL_DECLINED, this.handleCallDeclined);
-        ipcMain.on(CALL_CANCEL, this.handleCallCancel);
-        ipcMain.on(CALL_DIAL_UPDATED, this.handleCallInfoUpdated);
+        ipcMain.on(CALL_JOINED, (_, callInfo: IkCallInfo) => this.handleCallAccepted(callInfo));
+        ipcMain.on(CALL_DECLINED, (_, callInfo: IkCallInfo) => this.handleCallDeclined(callInfo));
+        ipcMain.on(CALL_CANCEL, (_, callInfo: IkCallInfo) => this.handleCallCancel(callInfo));
+        ipcMain.on(CALL_DIAL_UPDATED, (_, callInfo: IkCallInfo) => this.handleCallInfoUpdated(callInfo));
     }
 
     create(callInfo: IkCallInfo) {
@@ -61,8 +61,8 @@ class CallDialingWindow {
 
         callDialWindow.webContents.once('dom-ready', () => callDialWindow?.show());
         callDialWindow.webContents.on('did-finish-load', () => callDialWindow.webContents.send('info-received', callInfo));
-        callDialWindow.on('close', (e) => {
-            this.handleCallDeclined(e, callInfo);
+        callDialWindow.on('close', () => {
+            this.handleCallDeclined(callInfo);
         });
 
         const withDevTools = Boolean(process.env.MM_DEBUG_SETTINGS) || false;
@@ -86,21 +86,21 @@ class CallDialingWindow {
         return Boolean(this.window?.isClosable());
     }
 
-    private handleCallInfoUpdated = (_: any, callInfo: IkCallInfo) => {
+    private handleCallInfoUpdated = (callInfo: IkCallInfo) => {
         ViewManager.sendToAllViews(CALL_DIAL_UPDATED, callInfo);
     };
 
-    private handleCallDeclined = (_: any, callInfo: IkCallInfo) => {
+    private handleCallDeclined = (callInfo: IkCallInfo) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_DECLINED, callInfo);
     };
 
-    private handleCallAccepted = (_: any, callInfo: IkCallInfo) => {
+    private handleCallAccepted = (callInfo: IkCallInfo) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_JOINED, callInfo);
     };
 
-    private handleCallCancel = (_: any, callInfo: IkCallInfo) => {
+    private handleCallCancel = (callInfo: IkCallInfo) => {
         this.destroy();
         ViewManager.sendToAllViews(CALL_CANCEL, callInfo);
     };

@@ -1,7 +1,6 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as Sentry from '@sentry/electron/renderer';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -9,10 +8,6 @@ import LoadingScreen from '../../components/LoadingScreen';
 
 import 'renderer/css/components/LoadingAnimation.css';
 import 'renderer/css/components/LoadingScreen.css';
-
-Sentry.init({
-    dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
-});
 
 type Props = Record<string, never>;
 

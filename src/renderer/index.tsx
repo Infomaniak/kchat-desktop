@@ -3,8 +3,6 @@
 // See LICENSE.txt for license information.
 
 import 'renderer/css/index.css';
-
-import * as Sentry from '@sentry/electron/renderer';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -12,10 +10,6 @@ import type {CombinedConfig} from 'types/config';
 
 import MainPage from './components/MainPage';
 import IntlProvider from './intl_provider';
-
-Sentry.init({
-    dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
-});
 
 // Initialize looger to collect/centralize logs from all processes main/renderer
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

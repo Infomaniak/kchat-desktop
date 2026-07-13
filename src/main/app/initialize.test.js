@@ -129,6 +129,7 @@ jest.mock('electron-is-dev', () => isDev);
 
 jest.mock('electron-log', () => ({
     initialize: jest.fn(),
+    error: jest.fn(),
     debug: jest.fn(),
     warn: jest.fn(),
     info: jest.fn(),

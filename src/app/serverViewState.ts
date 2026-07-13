@@ -108,7 +108,6 @@ export class ServerViewState {
 
     switchServer = (serverId: string, waitForViewToExist = false) => {
         ServerManager.getServerLog(serverId, 'WindowManager').debug('switchServer');
-        MainWindow.show();
         const server = ServerManager.getServer(serverId);
         if (!server) {
             ServerManager.getServerLog(serverId, 'WindowManager').error('Cannot find server in config');

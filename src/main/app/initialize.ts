@@ -4,7 +4,6 @@
 import path from 'path';
 import {pathToFileURL} from 'url';
 
-import {init} from '@sentry/electron/main';
 import {app, ipcMain, nativeTheme, net, protocol, session} from 'electron';
 import installExtension, {REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS} from 'electron-devtools-installer';
 import isDev from 'electron-is-dev';
@@ -67,6 +66,7 @@ import TokenManager from 'main/tokenManager';
 import Tray from 'main/tray/tray';
 import TrustedOriginsStore from 'main/trustedOrigins';
 import UserActivityMonitor from 'main/UserActivityMonitor';
+import {initSentryMain} from 'main/utils';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
 
@@ -134,9 +134,7 @@ export async function initialize() {
     // initialization that can run before the app is ready
     initializeArgs();
 
-    init({
-        dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
-    });
+    initSentryMain();
 
     await initializeConfig();
     initializeAppEventListeners();

@@ -69,6 +69,7 @@ jest.mock('../utils', () => ({
     isInsideRectangle: jest.fn(),
     getLocalPreload: jest.fn(),
     isKDE: jest.fn(),
+    shouldBeHiddenOnStartup: jest.fn().mockReturnValue(false),
 }));
 
 jest.mock('main/i18nManager', () => ({
@@ -93,6 +94,7 @@ describe('main/windows/mainWindow', () => {
             minimize: jest.fn(),
             webContents: {
                 on: jest.fn(),
+                once: jest.fn(),
                 send: jest.fn(),
                 setWindowOpenHandler: jest.fn(),
             },
@@ -232,11 +234,14 @@ describe('main/windows/mainWindow', () => {
         it('should reset zoom level and maximize if applicable on ready-to-show', () => {
             const window = {
                 ...baseWindow,
-                once: jest.fn().mockImplementation((event, cb) => {
-                    if (event === 'ready-to-show') {
-                        cb();
-                    }
-                }),
+                webContents: {
+                    ...baseWindow.webContents,
+                    once: jest.fn().mockImplementation((event, cb) => {
+                        if (event === 'did-finish-load') {
+                            cb();
+                        }
+                    }),
+                },
             };
             BrowserWindow.mockImplementation(() => window);
             fs.readFileSync.mockImplementation(() => '{"x":400,"y":300,"width":1280,"height":700,"maximized":true,"fullscreen":false}');
@@ -250,11 +255,14 @@ describe('main/windows/mainWindow', () => {
         it('should not show window on ready-to-show', () => {
             const window = {
                 ...baseWindow,
-                once: jest.fn().mockImplementation((event, cb) => {
-                    if (event === 'ready-to-show') {
-                        cb();
-                    }
-                }),
+                webContents: {
+                    ...baseWindow.webContents,
+                    once: jest.fn().mockImplementation((event, cb) => {
+                        if (event === 'did-finish-load') {
+                            cb();
+                        }
+                    }),
+                },
             };
             BrowserWindow.mockImplementation(() => window);
             fs.readFileSync.mockImplementation(() => '{"x":400,"y":300,"width":1280,"height":700,"maximized":true,"fullscreen":false}');

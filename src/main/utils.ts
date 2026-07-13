@@ -4,10 +4,12 @@
 
 import {exec as execOriginal} from 'child_process';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
 const exec = promisify(execOriginal);
 
+import {init, setContext} from '@sentry/electron/main';
 import type {BrowserWindow} from 'electron';
 import {app} from 'electron';
 import log from 'electron-log';
@@ -16,6 +18,39 @@ import {SERVERS_SIDEBAR_WIDTH, TAB_BAR_HEIGHT} from 'common/utils/constants';
 import Utils from 'common/utils/util';
 
 import type {Args} from 'types/args';
+
+export function initSentryMain() {
+    if (global.isDev) {
+        return;
+    }
+
+    init({
+        dsn: process.env.SENTRY_DSN,
+    });
+
+    try {
+        setContext('App-Build Information', {
+            appName: app.getName(),
+            appVersion: app.getVersion(),
+            electronVersion: process.versions.electron,
+
+            // eslint-disable-next-line no-undef
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            macAppStore: __IS_MAC_APP_STORE__,
+        });
+
+        setContext('Platform Information', {
+            platform: process.platform,
+            platformRelease: os.release(),
+            arch: os.arch(),
+            totalMemory: os.totalmem(),
+            freeMemory: os.freemem(),
+        });
+    } catch (e) {
+        log.error('Failed to add Sentry context', {e});
+    }
+}
 
 export function isInsideRectangle(container: Electron.Rectangle, rect: Electron.Rectangle) {
     if (container.x > rect.x) {

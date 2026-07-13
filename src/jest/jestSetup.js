@@ -35,3 +35,9 @@ jest.mock('common/log', () => {
     };
 });
 
+jest.mock('@sentry/electron/main', () => ({
+    init: jest.fn(),
+    captureException: jest.fn(),
+    close: jest.fn(),
+}));
+

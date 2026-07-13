@@ -1,7 +1,6 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import * as Sentry from '@sentry/electron/renderer';
 import classNames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -13,10 +12,6 @@ import DownloadsDropdownItem from './components/DownloadsDropdown/DownloadsDropd
 import IntlProvider from './intl_provider';
 
 import './css/downloadsDropdown.scss';
-
-Sentry.init({
-    dsn: 'https://bafc5cd5580a437a9bfd407e8d5f69bf@sentry-kchat.infomaniak.com/5',
-});
 
 type State = {
     downloads: DownloadedItem[];

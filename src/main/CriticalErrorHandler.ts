@@ -6,6 +6,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
+import {captureException, close} from '@sentry/electron/main';
 import {app, dialog} from 'electron';
 
 import {Logger} from 'common/log';
@@ -19,10 +20,15 @@ export class CriticalErrorHandler {
         process.on('uncaughtException', this.processUncaughtExceptionHandler);
     };
 
-    private processUncaughtExceptionHandler = (err: Error) => {
+    private processUncaughtExceptionHandler = async (err: Error) => {
         if (process.env.NODE_ENV === 'test') {
             return;
         }
+
+        captureException(err, {
+            level: 'fatal',
+        });
+        await close();
 
         /*if (!isSigPipeError(err)) {
             this.processUncaughtExceptionHandler(err)

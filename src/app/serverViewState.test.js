@@ -53,6 +53,7 @@ jest.mock('main/views/modalManager', () => ({
 }));
 jest.mock('main/utils', () => ({
     getLocalPreload: jest.fn(),
+    shouldBeHiddenOnStartup: jest.fn(),
 }));
 jest.mock('main/windows/mainWindow', () => ({
     get: jest.fn(),

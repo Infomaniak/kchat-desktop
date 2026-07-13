@@ -25,6 +25,7 @@ const codeDefinitions = {
     __DISABLE_GPU__: JSON.stringify(process.env.MM_DESKTOP_BUILD_DISABLEGPU === 'true'),
 };
 codeDefinitions['process.env.NODE_ENV'] = JSON.stringify(process.env.NODE_ENV);
+codeDefinitions['process.env.SENTRY_DSN'] = JSON.stringify(process.env.SENTRY_DSN);
 if (isTest) {
     codeDefinitions['process.resourcesPath'] = 'process.env.RESOURCES_PATH';
 }

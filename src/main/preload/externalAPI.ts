@@ -64,14 +64,17 @@ import {
     CALL_RING_WINDOW_IS_OPEN,
     CALL_CANCEL,
     SWITCH_SERVER_SIDEBAR,
-    CALL_JOINED_BROWSER,
     TAB_LOGIN_CHANGED,
     METRICS_SEND,
 } from 'common/communication';
 import {IKOrigin} from 'common/config/ikConfig';
+import {initSentryRenderer} from 'common/utils/sentry';
 import type {CallInfo} from 'main/windows/kmeetCallWindow';
 
+import type {IkCallInfo} from 'types/callsIk';
 import type {ExternalAPI} from 'types/externalAPI';
+
+initSentryRenderer();
 
 const createListener: ExternalAPI['createListener'] = (channel: string, listener: (...args: never[]) => void) => {
     const listenerWithEvent = (_: IpcRendererEvent, ...args: unknown[]) =>
@@ -142,7 +145,6 @@ const desktopAPI: KchatDesktopApi = {
     isRingCallWindowOpen: () => ipcRenderer.invoke(CALL_RING_WINDOW_IS_OPEN),
 
     focusPopout: () => ipcRenderer.send(CALLS_POPOUT_FOCUS),
-    closeDial: () => ipcRenderer.send(CALL_JOINED_BROWSER),
 
     openThreadForCalls: (threadID) => ipcRenderer.send(CALLS_WIDGET_OPEN_THREAD, threadID),
     onOpenThreadForCalls: (listener) => createListener(CALLS_WIDGET_OPEN_THREAD, listener),
@@ -178,11 +180,13 @@ contextBridge.exposeInMainWorld('authManager', {
     },
 });
 
+type CallCallback = (event: IpcRendererEvent, callInfo: IkCallInfo) => void;
+
 contextBridge.exposeInMainWorld('callManager', {
-    onCallJoined: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_JOINED, callback),
-    onCallDeclined: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_DECLINED, callback),
-    onCallEnded: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_ENDED, callback),
-    onCallCancel: (callback: (...any: unknown[]) => void) => ipcRenderer.on(CALL_CANCEL, callback),
+    onCallJoined: (callback: CallCallback) => ipcRenderer.on(CALL_JOINED, callback),
+    onCallDeclined: (callback: CallCallback) => ipcRenderer.on(CALL_DECLINED, callback),
+    onCallEnded: (callback: CallCallback) => ipcRenderer.on(CALL_ENDED, callback),
+    onCallCancel: (callback: CallCallback) => ipcRenderer.on(CALL_CANCEL, callback),
 });
 
 // Specific info for the testing environment
