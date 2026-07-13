@@ -91,6 +91,26 @@ const prettyETA = (ms = 0, intl: IntlShape) => {
     return `${eta} ${intl.formatMessage({id: 'renderer.downloadsDropdown.remaining', defaultMessage: 'remaining'})}`;
 };
 
+export function getInitialsFromName(name: string): string {
+    const trimmed = name.trim();
+    if (!trimmed) {
+        return '';
+    }
+
+    const words = trimmed.split(/[\s'-]+/).filter((w) => w.length > 0);
+
+    if (words.length >= 2) {
+        return (words[0][0] + words[1][0]).toUpperCase();
+    }
+
+    const word = words[0];
+    if (word.length === 1) {
+        return word.toUpperCase();
+    }
+
+    return (word[0] + word[1]).toUpperCase();
+}
+
 export {
     getDownloadingFileStatus,
     getFileSizeOrBytesProgress,

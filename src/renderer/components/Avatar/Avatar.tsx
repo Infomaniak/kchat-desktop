@@ -5,6 +5,8 @@ import React from 'react';
 
 import '../../css/components/Avatar.scss';
 
+import {getInitialsFromName} from 'renderer/utils';
+
 import {
     AVATAR_ELEMENTS,
     AVATAR_SIZE_MAP,
@@ -83,7 +85,7 @@ const Avatar = (props: PAvatar): JSX.Element => {
                             ...childStyle,
                         }}
                     >
-                        {name.toUpperCase().slice(0, 2)}
+                        {getInitialsFromName(name)}
                     </div>
                 )
             }

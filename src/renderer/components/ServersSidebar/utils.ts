@@ -1,6 +1,9 @@
 // Copyright (c) 2016-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import type {CSSProperties} from 'react';
+
+import {getInitialsFromName} from 'renderer/utils';
 
 import type {ConfigServer, ServerTeam} from 'types/config';
 import type {Theme} from 'types/theme';
@@ -10,7 +13,10 @@ export function imageURLForTeam(team: ServerTeam) {
 }
 
 export function initialForTeam(team?: ServerTeam) {
-    return team?.name ? team.name.replace(/\s/g, '').substring(0, 2) : '??';
+    if (team?.name?.toLowerCase() === 'infomaniak') {
+        return 'IK';
+    }
+    return team?.name ? getInitialsFromName(team.name) : '??';
 }
 
 export function toRgbValues(hexStr: string): string {
