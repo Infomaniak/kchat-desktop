@@ -41,6 +41,7 @@
         "build-prod-mas": "cross-env NODE_ENV=production IS_MAC_APP_STORE=true run-s check-build-config build",
         "build-prod-upgrade": "cross-env NODE_ENV=production CAN_UPGRADE=true run-s check-build-config build",
         "build-test": "cross-env NODE_ENV=test run-p build:*",
+        "build-dev-windows": "cross-env NODE_ENV=production run-s check-build-config build && electron-builder --win --x64 --publish=never --dir --config.win.forceCodeSigning=false --config.extraMetadata.electronBuilderPublish=null --config.win.sign=scripts/nosign.js",
         "create-linux-dev-shortcut": "node scripts/create_linux_dev_shortcut.js",
         "start": "npm run create-linux-dev-shortcut && electron dist/ --disable-dev-mode",
         "restart": "run-s build start",

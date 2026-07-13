@@ -50,6 +50,10 @@ function parseArgs(args: string[]) {
         boolean('fullscreen').
         describe('fullscreen', 'Opens the application in fullscreen mode.').
 
+        alias('hidden', 'h').
+        boolean('hidden').
+        describe('hidden', 'Starts the application hidden.').
+
         // Typically, yargs is capable of acquiring the app's version
         // through package.json.  However, for us this is
         // unsuccessful, perhaps due to a complication during the

@@ -37,6 +37,7 @@ export class AutoLauncher {
         }
         const appLauncher = new AutoLaunch({
             name: app.name,
+            isHidden: true,
         });
         const enabled = await appLauncher.isEnabled();
         if (enabled) {

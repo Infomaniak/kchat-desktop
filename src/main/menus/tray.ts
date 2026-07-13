@@ -22,6 +22,7 @@ export function createTemplate() {
             return {
                 label: server.name.length > 50 ? `${server.name.slice(0, 50)}...` : server.name,
                 click: () => {
+                    MainWindow.show();
                     ServerViewState.switchServer(server.id);
                 },
             };
