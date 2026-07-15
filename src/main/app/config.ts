@@ -10,6 +10,7 @@ import AutoLauncher from 'main/AutoLauncher';
 import {setUnreadBadgeSetting} from 'main/badge';
 import Tray from 'main/tray/tray';
 import LoadingScreen from 'main/views/loadingScreen';
+import viewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
 
 import type {CombinedConfig, Config as ConfigType} from 'types/config';
@@ -107,6 +108,7 @@ export function handleDarkModeChange(darkMode: boolean) {
     Tray.refreshImages(Config.trayIconTheme);
     MainWindow.sendToRenderer(DARK_MODE_CHANGE, darkMode);
     LoadingScreen.setDarkMode(darkMode);
+    viewManager.setDarkMode(darkMode);
 
     ipcMain.emit(EMIT_CONFIGURATION, true, Config.data);
 }

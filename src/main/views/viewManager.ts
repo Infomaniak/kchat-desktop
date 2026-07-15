@@ -8,6 +8,7 @@ import isDev from 'electron-is-dev';
 import ServerViewState from 'app/serverViewState';
 import AppState from 'common/appState';
 import {
+    DARK_MODE_CHANGE,
     UPDATE_TARGET_URL,
     LOAD_SUCCESS,
     LOAD_FAILED,
@@ -154,6 +155,10 @@ export class ViewManager {
         this.loadServer(server);
     };
 
+    setDarkMode = (darkMode: boolean) => {
+        this.urlView?.webContents.send(DARK_MODE_CHANGE, darkMode);
+    };
+
     private initURLView = () => {
         const mainWindow = MainWindow.get();
         if (!mainWindow) {
@@ -163,7 +168,7 @@ export class ViewManager {
         const urlView = new WebContentsView({webPreferences: {preload: getLocalPreload('internalAPI.js')}});
         urlView.setBackgroundColor('#00000000');
 
-        urlView.webContents.loadURL('mattermost-desktop://renderer/urlView.html');
+        urlView.webContents.loadURL('kchat-desktop://renderer/urlView.html');
 
         MainWindow.get()?.contentView.addChildView(urlView);
 

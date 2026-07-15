@@ -25,6 +25,16 @@ body {
   border-right: solid thin lightgray;
 }
 
+.darkMode .HoveringURL {
+  color: #c8c8c8;
+  background-color: #1e1e1e;
+  border-top: solid thin #383A3F;
+}
+
+.darkMode .HoveringURL-left {
+  border-right: solid thin #383A3F;
+}
+
 .HoveringURL p {
   margin: 0;
   font-size: small;
