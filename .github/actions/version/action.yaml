@@ -18,6 +18,7 @@ runs:
 
               if [ "$CURRENT_VERSION" != "$TAG_VERSION" ]; then
                 npm --no-git-tag-version version $TAG_VERSION
+                npm install --package-lock-only
               else
                 echo "Version is already up-to-date."
               fi

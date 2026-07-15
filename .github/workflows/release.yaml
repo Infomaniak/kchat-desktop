@@ -54,7 +54,7 @@ jobs:
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
               run: |
                   mkdir -p ./build/linux
-                  npm run package:linux-appImage-x64
+                  npm run package:linux-appImage-x64 -- --publish always
                   bash -x ./scripts/cp_artifacts.sh release ./build/linux
             - name: release/upload-build
               uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
@@ -92,7 +92,7 @@ jobs:
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
               run: |
                   mkdir -p ./build/linux-arm
-                  npm run package:linux-appImage-arm
+                  npm run package:linux-appImage-arm -- --publish always
                   bash -x ./scripts/cp_artifacts.sh release ./build/linux-arm
             - name: release/upload-build
               uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
