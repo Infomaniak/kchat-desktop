@@ -34,7 +34,8 @@ export class UserActivityMonitor extends EventEmitter {
 
         this.config = {
             updateFrequencyMs: 1 * 1000, // eslint-disable-line no-magic-numbers
-            inactiveThresholdMs: 60 * 1000, // eslint-disable-line no-magic-numbers
+            // 5 minutes — keep in sync with the backend away timeout
+            inactiveThresholdMs: 5 * 60 * 1000, // eslint-disable-line no-magic-numbers
             statusUpdateThresholdMs: 60 * 1000, // eslint-disable-line no-magic-numbers
         };
     }
