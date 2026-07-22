@@ -54,7 +54,9 @@ class DialingModal extends React.PureComponent<Props, State> {
                 }),
             });
 
-            playSoundLoop(isCurrentUserCaller ? 'OutgoingRing' : 'Ring');
+            if (!msg.silent) {
+                playSoundLoop(isCurrentUserCaller ? 'OutgoingRing' : 'Ring');
+            }
 
             setTimeout(() => {
                 const {callInfo} = this.state;

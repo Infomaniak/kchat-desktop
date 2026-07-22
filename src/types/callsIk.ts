@@ -15,4 +15,5 @@ export type IkCallInfo = {
     id: string;
     nicknames: string;
     toneTimeOut: number;
+    silent?: boolean;
 }
