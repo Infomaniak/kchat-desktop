@@ -52,21 +52,29 @@ export function updateTheme(data: any): boolean {
     return isDark;
 }
 
+let systemThemeChangeTimeout: NodeJS.Timeout | null = null;
+
 export function handleSystemThemeChange(): void {
-    const currentTheme = Config.theme;
-    const themeType = getThemeType(currentTheme);
-
-    if (themeType !== 'auto') {
-        return;
+    if (systemThemeChangeTimeout) {
+        clearTimeout(systemThemeChangeTimeout);
     }
 
-    nativeTheme.themeSource = 'system';
+    systemThemeChangeTimeout = setTimeout(() => {
+        systemThemeChangeTimeout = null;
 
-    const isDark = nativeTheme.shouldUseDarkColors;
-    if (isDark !== Config.darkMode) {
-        log.debug('Auto mode: updated darkMode to', isDark);
-        Config.set('darkMode', isDark);
-    }
+        const currentTheme = Config.theme;
+        const themeType = getThemeType(currentTheme);
+
+        if (themeType !== 'auto') {
+            return;
+        }
+
+        const isDark = nativeTheme.shouldUseDarkColors;
+        if (isDark !== Config.darkMode) {
+            log.debug('Auto mode: updated darkMode to', isDark);
+            Config.set('darkMode', isDark);
+        }
+    }, 300);
 }
 
 export function initTheme(): void {
