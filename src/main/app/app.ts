@@ -10,6 +10,7 @@ import updateManager from 'main/autoUpdater';
 import CertificateStore from 'main/certificateStore';
 import {localizeMessage} from 'main/i18nManager';
 import Tray from 'main/tray/tray';
+import UserActivityMonitor from 'main/UserActivityMonitor';
 import ViewManager from 'main/views/viewManager';
 import MainWindow from 'main/windows/mainWindow';
 
@@ -93,6 +94,7 @@ export function handleAppBeforeQuit() {
     global.willAppQuit = true;
 
     updateManager.handleOnQuit();
+    UserActivityMonitor.stopMonitoring();
 }
 
 export async function handleAppCertificateError(event: Event, webContents: WebContents, url: string, error: string, certificate: Certificate, callback: (isTrusted: boolean) => void) {
